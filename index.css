@@ -325,6 +325,22 @@ header {
   font-weight: 600;
 }
 
+/* Blank-first forms: the red "*" mandatory marker and invalid-control cues. */
+.req {
+  color: var(--color-crimson);
+  font-weight: 700;
+  margin-left: 1px;
+}
+.input-invalid {
+  border-color: var(--color-crimson) !important;
+}
+.survey-question-invalid {
+  border-color: var(--color-crimson);
+}
+.survey-question-invalid legend {
+  color: var(--color-crimson);
+}
+
 .survey-question {
   background: #faf9f6;
   border: 1px solid var(--color-card-border);

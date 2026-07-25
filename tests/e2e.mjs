@@ -26,24 +26,45 @@ page.on("console", msg => {
 const readState = () => page.evaluate(() =>
   JSON.parse(localStorage.getItem("lifequest_state") || "null"));
 
-// --- FLOW 1: express onboarding -> dashboard ---
-// Fill a name, walk to the step where "See my results now" unlocks, take it.
+// --- FLOW 1: full onboarding -> dashboard ---
+// Blank-first: nothing is pre-filled, every required field must be answered,
+// and there is no express shortcut. Fill the whole form (all six steps, even the
+// hidden ones), then walk each step and submit.
 try {
   await page.goto(BASE, { waitUntil: "networkidle" });
   await page.waitForSelector("#onboarding-form", { timeout: 10000 });
   await page.fill("#onb-name", "E2E Runner");
 
-  // Pages 0 and 1 -> page 2, where the express button first renders.
-  await page.click('#onb-page-0 .btn-onb-next');
-  await page.click('#onb-page-1 .btn-onb-next');
-  await page.click('#onb-page-2 .btn-onb-express');
+  // Number inputs -> their min (a valid in-range value); dropdowns -> their
+  // first real option; every survey question -> its first radio.
+  await page.evaluate(() => {
+    document.querySelectorAll('#onboarding-form input[type="number"]').forEach(i => {
+      i.value = i.min !== "" ? i.min : "1";
+      i.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    document.querySelectorAll("#onboarding-form select").forEach(s => {
+      const opt = Array.from(s.options).find(o => o.value !== "");
+      if (opt) { s.value = opt.value; s.dispatchEvent(new Event("change", { bubbles: true })); }
+    });
+    document.querySelectorAll("#onboarding-form fieldset.survey-question").forEach(fs => {
+      const r = fs.querySelector('input[type="radio"]');
+      if (r) { r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true })); }
+    });
+  });
+
+  // Advance through steps 0..4, then submit on step 5. Each Next re-validates
+  // the step, so a missed field would fail here rather than silently pass.
+  for (let i = 0; i < 5; i++) {
+    await page.click(`#onb-page-${i} .btn-onb-next`);
+  }
+  await page.click('#onboarding-form button[type="submit"]');
 
   await page.waitForSelector("#tab-dashboard", { timeout: 10000 });
   const state = await readState();
-  if (!state?.onboarded) problems.push("flow1: state not onboarded after express finish");
+  if (!state?.onboarded) problems.push("flow1: state not onboarded after completing the assessment");
   if (state?.profile?.name !== "E2E Runner") problems.push("flow1: profile name not saved");
-  if (state?.profile?.assessmentComplete !== false) {
-    problems.push("flow1: express baseline must be marked assessmentComplete=false");
+  if (state?.profile?.assessmentComplete !== true) {
+    problems.push("flow1: a completed baseline must be marked assessmentComplete=true");
   }
   if (!state?.baseline?.date) problems.push("flow1: no baseline captured");
   const dashboardText = await page.textContent("#main-view");
@@ -54,7 +75,7 @@ try {
   const avgPolygon = await page.$('#radar-chart-container polygon[stroke-dasharray="5,4"]');
   if (!avgPolygon) problems.push("flow1: radar is missing the dashed population-average polygon");
 } catch (err) {
-  problems.push(`flow1 (express onboarding): ${err.message}`);
+  problems.push(`flow1 (full onboarding): ${err.message}`);
 }
 
 // --- FLOW 2: weekly review -> measured values land, pledges grade, points pay ---

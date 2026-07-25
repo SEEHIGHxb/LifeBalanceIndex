@@ -1,15 +1,22 @@
 // views/onboarding.js - the six-step baseline assessment (onboarding) view.
-// Moved verbatim from the old monolithic ui.js; behavior unchanged.
+//
+// Blank-first policy (v2.3.0): every field starts empty, every mandatory field
+// carries a red "*", and the user cannot advance a step or finish until each
+// visible required control is answered. This deliberately removes the old
+// "Optional" steps and the "See my results now" express shortcut — a first
+// baseline must be filled in full, so no aspect is scored from a silent default.
 
 import { stateManager } from "../state.js";
-import { validateProfile, buildProvidedFlags, buildAnsweredFlags } from "../validation.js";
-import { numberField, instrumentBlock, collectInstrument } from "./instrument-forms.js";
+import { buildProvidedFlags, buildAnsweredFlags } from "../validation.js";
+import {
+  numberField, instrumentBlock, collectInstrument, validateScope
+} from "./instrument-forms.js";
 import { birthdayFields } from "./helpers.js";
 import { t, tp } from "../i18n.js";
 
 // Maps each validated numeric field (validation.js FIELD_CONSTRAINTS keys) to
-// its onboarding input id — used for reading, inline error placement, and
-// coverage tracking. Both directions are needed, so it is defined once here.
+// its onboarding input id — used for reading and coverage tracking. The inputs
+// also carry data-field so validateScope range-checks them per step.
 const ONB_NUMERIC_IDS = {
   income: "onb-income", savingsRate: "onb-savings", digitalLiteracy: "onb-digital",
   weeklyLearningHours: "onb-learning", weeklyVigorousDays: "onb-vig-days",
@@ -21,6 +28,24 @@ const ONB_NUMERIC_IDS = {
   volunteeringHours: "onb-volunteer"
 };
 
+// A red required marker, matching instrument-forms.js.
+const REQ = `<span class="req" aria-hidden="true">*</span>`;
+
+// A mandatory dropdown: starts on a disabled blank "— Select —", so the user
+// must make a conscious choice (gender keeps "Prefer not to say" as a real
+// option). Carries data-required + an inline error span for validateScope.
+function selectField(id, label, options) {
+  return `
+    <div class="form-group">
+      <label for="${id}">${label} ${REQ}</label>
+      <select id="${id}" class="form-control" data-required="1">
+        <option value="" disabled selected>${t("— Select —")}</option>
+        ${options.map(o => `<option value="${o.v}">${t(o.l)}</option>`).join("")}
+      </select>
+      <span class="field-error d-none" id="${id}-err" aria-live="polite"></span>
+    </div>`;
+}
+
 // 1. RENDER ONBOARDING SURVEY
 export function renderOnboarding(containerId, onComplete) {
   const container = document.getElementById(containerId);
@@ -29,88 +54,73 @@ export function renderOnboarding(containerId, onComplete) {
   const pages = [
     {
       title: t("Step 1: Profile & Finance"),
-      optional: false,
       why: t("We start with income and demographics so your scores can be compared against real population benchmarks."),
       body: `
         <div class="form-group">
           <label for="onb-name">${t("Name")}</label>
-          <input type="text" id="onb-name" class="form-control" placeholder="${t("E.g., Alex")}" value="${t("Guest")}" maxlength="40">
+          <input type="text" id="onb-name" class="form-control" placeholder="${t("E.g., Alex")}" value="" maxlength="40">
         </div>
         <div class="grid-2">
-          ${numberField("onb-age", t("Age"), 25, 'min="15" max="100"')}
-          <div class="form-group">
-            <label for="onb-gender">${t("Gender (for benchmark norms)")}</label>
-            <select id="onb-gender" class="form-control">
-              <option value="unspecified">${t("Prefer not to say")}</option>
-              <option value="male">${t("Male")}</option>
-              <option value="female">${t("Female")}</option>
-            </select>
-          </div>
+          ${numberField("onb-age", t("Age"), "", 'min="15" max="100"', { required: true, placeholder: "15–100" })}
+          ${selectField("onb-gender", t("Gender (for benchmark norms)"), [
+            { v: "unspecified", l: "Prefer not to say" },
+            { v: "male", l: "Male" },
+            { v: "female", l: "Female" }
+          ])}
         </div>
         ${birthdayFields({ idPrefix: "onb-birthday" })}
         <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin: -6px 0 12px;">
           ${t("Optional — month and day only, so the app knows when your year turns. Your birth year is never asked for and never stored.")}
         </p>
-        <div class="form-group">
-          <label for="onb-region">${t("Primary Region (Cost of Living Mapping)")}</label>
-          <select id="onb-region" class="form-control">
-            <option value="Provinces">${t("Provinces / Upcountry Thailand")}</option>
-            <option value="Bangkok">${t("Bangkok & Vicinity")}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="onb-employment">${t("Employment Status")}</label>
-          <select id="onb-employment" class="form-control">
-            <option value="Office Worker">${t("Office Worker / Salary Employee")}</option>
-            <option value="Freelancer">${t("Freelancer / Independent")}</option>
-            <option value="Business Owner">${t("Business Owner / Entrepreneur")}</option>
-            <option value="Unemployed">${t("Unemployed / Looking for Work")}</option>
-            <option value="Student">${t("Student")}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="onb-relationship">${t("Relationship Status")}</label>
-          <select id="onb-relationship" class="form-control">
-            <option value="Single">${t("Single")}</option>
-            <option value="Coupled">${t("In a Relationship / Married")}</option>
-          </select>
-        </div>
-        ${numberField("onb-income", t("Monthly Individual Income (Net THB)"), 15000, 'min="0"')}
-        ${numberField("onb-savings", t("Monthly Savings Rate (% of Income)"), 10, 'min="0" max="100"')}
+        ${selectField("onb-region", t("Primary Region (Cost of Living Mapping)"), [
+          { v: "Provinces", l: "Provinces / Upcountry Thailand" },
+          { v: "Bangkok", l: "Bangkok & Vicinity" }
+        ])}
+        ${selectField("onb-employment", t("Employment Status"), [
+          { v: "Office Worker", l: "Office Worker / Salary Employee" },
+          { v: "Freelancer", l: "Freelancer / Independent" },
+          { v: "Business Owner", l: "Business Owner / Entrepreneur" },
+          { v: "Unemployed", l: "Unemployed / Looking for Work" },
+          { v: "Student", l: "Student" }
+        ])}
+        ${selectField("onb-relationship", t("Relationship Status"), [
+          { v: "Single", l: "Single" },
+          { v: "Coupled", l: "In a Relationship / Married" }
+        ])}
+        ${numberField("onb-income", t("Monthly Individual Income (Net THB)"), "", 'min="0"', { required: true, field: "income" })}
+        ${numberField("onb-savings", t("Monthly Savings Rate (% of Income)"), "", 'min="0" max="100"', { required: true, field: "savingsRate", placeholder: "0–100" })}
         ${instrumentBlock("cfpb")}`
     },
     {
       title: t("Step 2: Physical Baseline"),
-      optional: false,
       why: t("A few body and activity numbers place your physical health against national norms."),
       body: `
         <div class="grid-2">
-          ${numberField("onb-height", t("Height (cm)"), 170, 'min="100" max="250"')}
-          ${numberField("onb-weight", t("Weight (kg)"), 60, 'min="25" max="300"')}
+          ${numberField("onb-height", t("Height (cm)"), "", 'min="100" max="250"', { required: true, field: "height", placeholder: "100–250" })}
+          ${numberField("onb-weight", t("Weight (kg)"), "", 'min="25" max="300"', { required: true, field: "weight", placeholder: "25–300" })}
         </div>
         <div class="grid-2">
-          ${numberField("onb-sleep", t("Average Nightly Sleep (Hours)"), 7, 'min="0" max="16" step="0.5"')}
-          ${numberField("onb-veg", t("Vegetable/Fruit Portions per Day"), 2, 'min="0" max="15"')}
+          ${numberField("onb-sleep", t("Average Nightly Sleep (Hours)"), "", 'min="0" max="16" step="0.5"', { required: true, field: "sleepHours", placeholder: "0–16" })}
+          ${numberField("onb-veg", t("Vegetable/Fruit Portions per Day"), "", 'min="0" max="15"', { required: true, field: "vegetablePortions", placeholder: "0–15" })}
         </div>
-        ${numberField("onb-water", t("Water Intake per Day (Liters)"), 1.5, 'min="0" max="10" step="0.1"')}
+        ${numberField("onb-water", t("Water Intake per Day (Liters)"), "", 'min="0" max="10" step="0.1"', { required: true, field: "waterLiters", placeholder: "0–10" })}
         <p class="instrument-title">${t("Weekly Physical Activity (IPAQ)")}</p>
         <div class="grid-2">
-          ${numberField("onb-vig-days", t("Vigorous Exercise (Days/Week)"), 0, 'min="0" max="7"')}
-          ${numberField("onb-vig-mins", t("Vigorous Minutes per Day"), 0, 'min="0" max="600"')}
+          ${numberField("onb-vig-days", t("Vigorous Exercise (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyVigorousDays", placeholder: "0–7" })}
+          ${numberField("onb-vig-mins", t("Vigorous Minutes per Day"), "", 'min="0" max="600"', { required: true, field: "weeklyVigorousMins", placeholder: "0–600" })}
         </div>
         <div class="grid-2">
-          ${numberField("onb-mod-days", t("Moderate Exercise (Days/Week)"), 0, 'min="0" max="7"')}
-          ${numberField("onb-mod-mins", t("Moderate Minutes per Day"), 0, 'min="0" max="600"')}
+          ${numberField("onb-mod-days", t("Moderate Exercise (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyModerateDays", placeholder: "0–7" })}
+          ${numberField("onb-mod-mins", t("Moderate Minutes per Day"), "", 'min="0" max="600"', { required: true, field: "weeklyModerateMins", placeholder: "0–600" })}
         </div>
         <div class="grid-2">
-          ${numberField("onb-walk-days", t("Walking (Days/Week)"), 3, 'min="0" max="7"')}
-          ${numberField("onb-walk-mins", t("Walking Minutes per Day"), 20, 'min="0" max="600"')}
+          ${numberField("onb-walk-days", t("Walking (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyWalkingDays", placeholder: "0–7" })}
+          ${numberField("onb-walk-mins", t("Walking Minutes per Day"), "", 'min="0" max="600"', { required: true, field: "weeklyWalkingMins", placeholder: "0–600" })}
         </div>
         ${instrumentBlock("jss")}`
     },
     {
       title: t("Step 3: Mental Well-Being"),
-      optional: false,
       why: t("Two validated screens (ST-5, WHO-5) estimate stress and well-being. This is a self-check, not a diagnosis."),
       body: `
         ${instrumentBlock("st5")}
@@ -118,8 +128,7 @@ export function renderOnboarding(containerId, onComplete) {
     },
     {
       title: t("Step 4: Relationships"),
-      optional: true,
-      why: t("Optional — you can see your results now, or answer to score social connection and loneliness."),
+      why: t("Score your social connection and loneliness."),
       body: `
         ${instrumentBlock("lsns")}
         ${instrumentBlock("ucla")}
@@ -129,41 +138,35 @@ export function renderOnboarding(containerId, onComplete) {
     },
     {
       title: t("Step 5: Goals & Learning"),
-      optional: true,
-      why: t("Optional — self-efficacy and perseverance, plus your weekly learning habits."),
+      why: t("Self-efficacy and perseverance, plus your weekly learning habits."),
       body: `
         ${instrumentBlock("gse")}
         ${instrumentBlock("grit")}
         <div class="grid-2">
-          ${numberField("onb-learning", t("Weekly Learning / Study Hours"), 2, 'min="0" max="80" step="0.5"')}
-          ${numberField("onb-digital", t("Digital Literacy Self-Rating (0-100)"), 50, 'min="0" max="100"')}
+          ${numberField("onb-learning", t("Weekly Learning / Study Hours"), "", 'min="0" max="80" step="0.5"', { required: true, field: "weeklyLearningHours", placeholder: "0–80" })}
+          ${numberField("onb-digital", t("Digital Literacy Self-Rating (0-100)"), "", 'min="0" max="100"', { required: true, field: "digitalLiteracy", placeholder: "0–100" })}
         </div>`
     },
     {
       title: t("Step 6: Contribution, Environment & Future"),
-      optional: true,
-      why: t("Optional — prosocial habits, everyday environmental behavior, and your long-term outlook."),
+      why: t("Prosocial habits, everyday environmental behavior, and your long-term outlook."),
       body: `
         ${instrumentBlock("ptm")}
         <div class="grid-2">
-          ${numberField("onb-donations", t("Monthly Donations (THB)"), 0, 'min="0"')}
-          ${numberField("onb-volunteer", t("Volunteering Hours per Month"), 0, 'min="0" max="300"')}
+          ${numberField("onb-donations", t("Monthly Donations (THB)"), "", 'min="0"', { required: true, field: "monthlyDonations" })}
+          ${numberField("onb-volunteer", t("Volunteering Hours per Month"), "", 'min="0" max="168"', { required: true, field: "volunteeringHours", placeholder: "0–168" })}
         </div>
         ${instrumentBlock("geb")}
-        ${numberField("onb-plastics", t("Single-Use Plastic Items per Day"), 3, 'min="0" max="100"')}
+        ${numberField("onb-plastics", t("Single-Use Plastic Items per Day"), "", 'min="0" max="100"', { required: true, field: "singleUsePlastics", placeholder: "0–100" })}
         ${instrumentBlock("lfis")}
-        <div class="form-group">
-          <label for="onb-pension">${t("Long-term pension / retirement products (SSF, RMF, stock portfolio)?")}</label>
-          <select id="onb-pension" class="form-control">
-            <option value="false">${t("No, not yet planning pension")}</option>
-            <option value="true">${t("Yes, retirement assets secured")}</option>
-          </select>
-        </div>`
+        ${selectField("onb-pension", t("Long-term pension / retirement products (SSF, RMF, stock portfolio)?"), [
+          { v: "false", l: "No, not yet planning pension" },
+          { v: "true", l: "Yes, retirement assets secured" }
+        ])}`
     }
   ];
 
   const totalSteps = pages.length;
-  const EXPRESS_FROM = 2; // "See my results now" unlocks once the core aspects (steps 1-3) are done
 
   container.innerHTML = `
     <div class="onboarding-container card">
@@ -181,14 +184,12 @@ export function renderOnboarding(containerId, onComplete) {
       <form id="onboarding-form">
         ${pages.map((page, i) => `
           <div class="survey-page ${i === 0 ? "" : "d-none"}" id="onb-page-${i}">
-            <h3 class="card-header">${page.title}${page.optional ? ` <span class="onb-optional">${t("Optional")}</span>` : ""}</h3>
+            <h3 class="card-header">${page.title}</h3>
             <p class="onb-why">${page.why}</p>
             ${page.body}
             <div class="onb-nav">
               ${i > 0 ? `<button type="button" class="btn btn-onb-prev" data-page="${i}">${t("Back")}</button>` : `<span></span>`}
               <div class="onb-nav-right">
-                ${i >= EXPRESS_FROM && i < totalSteps - 1
-                  ? `<button type="button" class="btn btn-onb-express">${t("See my results now")}</button>` : ""}
                 ${i < totalSteps - 1
                   ? `<button type="button" class="btn btn-primary btn-onb-next" data-page="${i}">${t("Next")}</button>`
                   : `<button type="submit" class="btn btn-primary">${t("Complete Assessment")}</button>`}
@@ -200,15 +201,17 @@ export function renderOnboarding(containerId, onComplete) {
     </div>
   `;
 
+  const errorEl = () => document.getElementById("onboarding-error");
+  const showError = (msg) => { const el = errorEl(); el.textContent = msg; el.classList.remove("d-none"); };
+  const hideError = () => errorEl().classList.add("d-none");
+
   const updateProgress = (idx) => {
     const fill = document.getElementById("onb-progress-fill");
     const label = document.getElementById("onb-step-label");
     const time = document.getElementById("onb-step-time");
     if (fill) fill.style.width = `${Math.round(((idx + 1) / totalSteps) * 100)}%`;
     if (label) label.textContent = tp("Step {n} of {total}", { n: idx + 1, total: totalSteps });
-    if (time) time.textContent = idx >= EXPRESS_FROM
-      ? t("You can finish here anytime")
-      : t("About 5 minutes total");
+    if (time) time.textContent = t("About 5 minutes total");
   };
 
   const showPage = (idx) => {
@@ -219,54 +222,74 @@ export function renderOnboarding(containerId, onComplete) {
     container.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  // Next advances only when the current step is complete and in range.
   container.querySelectorAll(".btn-onb-next").forEach(btn => {
-    btn.addEventListener("click", () => showPage(parseInt(btn.dataset.page) + 1));
+    btn.addEventListener("click", () => {
+      const idx = parseInt(btn.dataset.page);
+      const invalid = validateScope(document.getElementById(`onb-page-${idx}`));
+      if (invalid) {
+        showError(t("Please answer every question on this step."));
+        invalid.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+      hideError();
+      showPage(idx + 1);
+    });
   });
   container.querySelectorAll(".btn-onb-prev").forEach(btn => {
-    btn.addEventListener("click", () => showPage(parseInt(btn.dataset.page) - 1));
+    btn.addEventListener("click", () => { hideError(); showPage(parseInt(btn.dataset.page) - 1); });
   });
 
-  // Show couple questions only when relevant
+  // Couple-only questions appear only once "Coupled" is chosen (blank/Single
+  // keep the RAS block hidden, so validateScope skips it).
   const relationshipSelect = document.getElementById("onb-relationship");
   relationshipSelect.addEventListener("change", () => {
-    document.getElementById("ras-block").classList.toggle("d-none", relationshipSelect.value === "Single");
+    document.getElementById("ras-block").classList.toggle("d-none", relationshipSelect.value !== "Coupled");
   });
 
   updateProgress(0);
 
-  // Coverage capture (the linchpin): numeric inputs are pre-filled and
-  // instrument radios are pre-checked at their defaults, so the only reliable
-  // signal that the user actually answered is an interaction event. A change
-  // never fires for a pre-selected default, so these sets stay honest.
+  // Coverage capture: the user must now answer everything, so these sets end up
+  // fully populated — but they still record interaction honestly (e.g. the RAS
+  // instrument stays unanswered, hence answered=false, for single users).
   const touchedFields = new Set();
   const touchedInstruments = new Set();
   const idToField = Object.fromEntries(
     Object.entries(ONB_NUMERIC_IDS).map(([field, id]) => [id, field])
   );
+  const clearControlError = (el) => {
+    const group = el.closest(".form-group") || el.closest("fieldset.survey-question");
+    const errEl = group && group.querySelector(".field-error");
+    if (errEl) { errEl.textContent = ""; errEl.classList.add("d-none"); }
+    el.classList.remove("input-invalid");
+    if (group && group.tagName === "FIELDSET") group.classList.remove("survey-question-invalid");
+  };
   const form = document.getElementById("onboarding-form");
   form.addEventListener("input", (e) => {
     const field = idToField[e.target.id];
     if (field) touchedFields.add(field);
+    clearControlError(e.target);
   });
   form.addEventListener("change", (e) => {
     const match = (e.target.name || "").match(/^([a-z0-9]+)-q\d+$/i);
     if (match) touchedInstruments.add(match[1]);
+    clearControlError(e.target);
   });
 
-  const clearFieldErrors = () => {
-    Object.values(ONB_NUMERIC_IDS).forEach(id => {
-      const errEl = document.getElementById(`${id}-err`);
-      if (errEl) { errEl.textContent = ""; errEl.classList.add("d-none"); }
-    });
-  };
-
-  // Build the survey payload from whatever is currently in the DOM. Unfilled
-  // sections keep their safe instrument/field defaults, so an early finish via
-  // "See my results now" (express=true) still yields a valid baseline.
-  const doSubmit = (express) => {
-    const errorEl = document.getElementById("onboarding-error");
-    errorEl.classList.add("d-none");
-    clearFieldErrors();
+  // Build the survey payload from the DOM and submit. By the time this runs
+  // every step has passed validateScope, so no field is blank or out of range.
+  const doSubmit = () => {
+    hideError();
+    // Final full-form sweep: validate every step, jump to the first offender.
+    for (let i = 0; i < totalSteps; i++) {
+      const invalid = validateScope(document.getElementById(`onb-page-${i}`));
+      if (invalid) {
+        showPage(i);
+        showError(t("Please answer every question before submitting."));
+        invalid.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
+    }
     try {
       const val = (id) => document.getElementById(id).value;
 
@@ -314,37 +337,21 @@ export function renderOnboarding(containerId, onComplete) {
         lfis: collectInstrument("lfis")
       };
 
-      // Block on hard-invalid input before it degrades into a fake score.
-      // Blank optional fields still pass (they fall back to safe defaults).
-      const { ok, errors } = validateProfile(surveyData);
-      if (!ok) {
-        for (const [field, message] of Object.entries(errors)) {
-          const errEl = document.getElementById(`${ONB_NUMERIC_IDS[field]}-err`);
-          if (errEl) { errEl.textContent = message; errEl.classList.remove("d-none"); }
-        }
-        errorEl.textContent = t("Please fix the highlighted fields before continuing.");
-        errorEl.classList.remove("d-none");
-        return;
-      }
-
       const coverage = {
         provided: buildProvidedFlags(touchedFields),
         answered: buildAnsweredFlags(touchedInstruments)
       };
-      stateManager.submitOnboarding(surveyData, express, coverage);
+      // express is always false now: a baseline is always completed in full.
+      stateManager.submitOnboarding(surveyData, false, coverage);
       onComplete();
     } catch (err) {
       console.error("Onboarding submission failed:", err);
-      errorEl.textContent = t("Assessment Error: ") + err.message;
-      errorEl.classList.remove("d-none");
+      showError(t("Assessment Error: ") + err.message);
     }
   };
 
-  container.querySelectorAll(".btn-onb-express").forEach(btn => {
-    btn.addEventListener("click", () => doSubmit(true));
-  });
   document.getElementById("onboarding-form").addEventListener("submit", (e) => {
     e.preventDefault();
-    doSubmit(false);
+    doSubmit();
   });
 }

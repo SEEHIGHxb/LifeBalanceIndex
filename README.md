@@ -18,7 +18,10 @@ set in Sarabun.
 
 ## Features
 
-- **Baseline assessment (6 steps)** using validated instruments:
+- **Baseline assessment (6 steps)** using validated instruments — every field
+  starts blank with a required `*` and must be answered (no pre-filled defaults),
+  so each aspect reflects answers you actually gave; the monthly re-assessment and
+  in-depth assessment are blank-first too:
   - Finance: CFPB Financial Well-Being (5 items) + NSO Thailand income percentiles (Bangkok/Provinces) + savings rate
   - Physical: IPAQ MET-minutes, Asian BMI bands, sleep quality + duration, nutrition
   - Mental: ST-5 (Thai DMH stress index) + WHO-5 Well-Being Index

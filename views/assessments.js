@@ -8,7 +8,8 @@ import { isAspectDeepVerified } from "../aspects.js";
 import { t } from "../i18n.js";
 import {
   instrumentBlock, collectInstrument,
-  deepInstrumentBlock, collectDeepInstrument
+  deepInstrumentBlock, collectDeepInstrument,
+  validateScope
 } from "./instrument-forms.js";
 
 // 2c. RENDER THE MONTHLY MINI RE-ASSESSMENT (#/checkin)
@@ -44,6 +45,13 @@ export function renderCheckin(containerId, state, onComplete) {
     e.preventDefault();
     const errorEl = document.getElementById("checkin-error");
     errorEl.classList.add("d-none");
+    const invalid = validateScope(document.getElementById("checkin-form"));
+    if (invalid) {
+      errorEl.textContent = t("Please answer every question before submitting.");
+      errorEl.classList.remove("d-none");
+      invalid.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     try {
       const shifts = stateManager.submitCheckin({
         who5: collectInstrument("who5"),
@@ -109,6 +117,13 @@ export function renderDeepAssessment(containerId, state, onComplete) {
       e.preventDefault();
       const errorEl = document.getElementById("deep-error");
       errorEl.classList.add("d-none");
+      const invalid = validateScope(form);
+      if (invalid) {
+        errorEl.textContent = t("Please answer every question before submitting.");
+        errorEl.classList.remove("d-none");
+        invalid.scrollIntoView({ behavior: "smooth", block: "center" });
+        return;
+      }
       try {
         const aspect = form.dataset.aspect;
         const keys = form.dataset.keys.split(",").filter(Boolean);

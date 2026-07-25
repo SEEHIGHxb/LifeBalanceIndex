@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `31`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `32`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,57 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.3.0] — 2026-07-24 (APP_VERSION 32)
+
+Two display/UX changes, no schema change and no migration.
+
+### Percentile standing on its own line
+
+On the Overview's **Aspect Scores** panel, each aspect's benchmark standing used
+to cram the plain-language sentence, the band chip, the exact percentile, and the
+method tag onto one line — which wrapped mid-phrase (worse in Thai, which runs
+longer). The exact `Nth percentile · typical range …` detail now sits on its own
+second line, under the "Ahead of about N% of people like you" sentence. EN and TH
+both, since they share one template.
+
+### Blank-first assessments with mandatory `*` markers
+
+The three **answering** forms — first-time onboarding, the monthly re-assessment,
+and the in-depth assessment — now start **blank**. Nothing is pre-filled or
+pre-selected: every number field is empty, every survey question is unanswered,
+and dropdowns start on a "— Select —" placeholder. Each mandatory field shows a
+red **`*`**, and you cannot advance an onboarding step (or submit a check-in /
+deep section) until every visible required field is answered and in range.
+
+Consequently the onboarding **"Optional" steps and the "See my results now"
+express shortcut are gone** — a first baseline is now always completed in full.
+Birthday stays optional (privacy: the year is never asked for). The **Profile
+page and Weekly Review are unchanged** — they are edit screens, so they keep their
+pre-filled values.
+
+### Why
+
+Pre-filling let a user click through onboarding and be scored almost entirely on
+default values they never actually chose — a silent, low-quality baseline. Forcing
+a conscious answer for every field means each aspect score reflects the user's own
+data. (A visible side effect: new baselines now read "High" confidence throughout,
+because the "Estimated" badge only ever came from those silent defaults.)
+
+### Changed
+
+- `views/instrument-forms.js`: `numberField` gains an optional `opts`
+  (`required`/`placeholder`/`field`) — the pre-filled 4-arg form used by the
+  Profile page and Weekly Review is unchanged; instrument radios render blank
+  with a `*` and an inline error slot; new `validateScope`/`clearScopeErrors`
+  enforce completeness against a DOM subtree (native `required` can't, because
+  onboarding hides earlier steps).
+- `views/onboarding.js`: blank fields, `*` markers, `— Select —` dropdowns,
+  per-step and final validation, Optional/express removed.
+- `views/assessments.js`: check-in and each deep section validate before submit.
+- `views/helpers.js` / `views/dashboard.js`: two-line compact benchmark standing.
+- `index.css`: `.req`, `.input-invalid`, `.survey-question-invalid`.
+- `th.js`: 7 new strings.
 
 ## [2.2.0] — 2026-07-24 (APP_VERSION 31)
 

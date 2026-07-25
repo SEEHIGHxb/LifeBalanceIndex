@@ -149,7 +149,12 @@ export function benchmarkStanding(b, { compact = false } = {}) {
     high: percentileLabel(b.range.high)
   });
   if (compact) {
-    return `<span class="benchmark-plain">${percentilePhrase(b.percentile)}</span> ${chip} <span class="benchmark-detail">${detail}</span>`;
+    // Two lines: the plain-language standing + band chip, then the exact
+    // percentile detail on its own line so it never crowds the sentence (and
+    // does not wrap mid-phrase in Thai, which runs longer).
+    return `
+      <p class="benchmark-plain-lead">${percentilePhrase(b.percentile)} ${chip}</p>
+      <p class="benchmark-detail">${detail} <span class="benchmark-method">(${methodTag(b.method)})</span></p>`;
   }
   return `
     <p class="benchmark-plain-lead">${percentilePhrase(b.percentile)} ${chip}</p>

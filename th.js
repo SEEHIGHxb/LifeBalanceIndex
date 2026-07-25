@@ -1239,5 +1239,12 @@ export const TH = {
   "Choose both a month and a day, or leave both blank.": "เลือกทั้งเดือนและวัน หรือเว้นว่างทั้งคู่",
   "That isn't a real date — check the day for that month.": "วันที่นี้ไม่ถูกต้อง — ตรวจสอบวันของเดือนนั้นอีกครั้ง",
   "Profile updated.": "อัปเดตโปรไฟล์แล้ว",
-  "Profile updated — {parts}": "อัปเดตโปรไฟล์แล้ว — {parts}"
+  "Profile updated — {parts}": "อัปเดตโปรไฟล์แล้ว — {parts}",
+  "— Select —": "— เลือก —",
+  "Required.": "จำเป็นต้องกรอก",
+  "Please answer every question on this step.": "กรุณาตอบทุกคำถามในขั้นตอนนี้",
+  "Please answer every question before submitting.": "กรุณาตอบทุกคำถามก่อนส่ง",
+  "Score your social connection and loneliness.": "ประเมินความสัมพันธ์ทางสังคมและความเหงาของคุณ",
+  "Self-efficacy and perseverance, plus your weekly learning habits.": "การรับรู้ความสามารถของตนเองและความมุ่งมั่น รวมถึงนิสัยการเรียนรู้รายสัปดาห์ของคุณ",
+  "Prosocial habits, everyday environmental behavior, and your long-term outlook.": "นิสัยเอื้อสังคม พฤติกรรมรักษ์สิ่งแวดล้อมในชีวิตประจำวัน และมุมมองระยะยาวของคุณ"
 };

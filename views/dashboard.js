@@ -12,7 +12,7 @@ import { balanceIndex, balanceBand, weakestAspect, gradeAllAspects } from "../gr
 import { seasonPace } from "../season.js";
 import { t, tp, dateLocale } from "../i18n.js";
 import {
-  escapeHtml, aspectLabel, confidenceBadge, benchmarkStanding, methodTag,
+  escapeHtml, aspectLabel, confidenceBadge, benchmarkStanding,
   estimatedAspects, mentalHealthNotice, gradeBadge, balanceIndexBlock, CHECKIN_ASPECTS
 } from "./helpers.js";
 
@@ -166,7 +166,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
                   </div>
                   ${b ? `
                   <div class="benchmark-line" title="${escapeHtml(b.summary)}">
-                    ${benchmarkStanding(b, { compact: true })} <span class="benchmark-method">(${methodTag(b.method)})</span>
+                    ${benchmarkStanding(b, { compact: true })}
                   </div>` : ""}
                 </a>
               `;

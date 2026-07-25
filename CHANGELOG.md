@@ -65,7 +65,12 @@ because the "Estimated" badge only ever came from those silent defaults.)
 - `views/assessments.js`: check-in and each deep section validate before submit.
 - `views/helpers.js` / `views/dashboard.js`: two-line compact benchmark standing.
 - `index.css`: `.req`, `.input-invalid`, `.survey-question-invalid`.
-- `th.js`: 7 new strings.
+- `th.js`: 7 new strings; 6 now-dead ones pruned (`See my results now`,
+  `You can finish here anytime`, `Optional`, and the three `Optional — …` step
+  blurbs). The i18n-coverage test only enforces code → TH, so orphaned entries
+  never fail CI — and dead keys are where stale terminology hides. Kept
+  `Quick-start results.`: the Overview still shows it to saves made with the old
+  express path (`assessmentComplete === false`).
 
 ## [2.2.0] — 2026-07-24 (APP_VERSION 31)
 

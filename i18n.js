@@ -1,8 +1,8 @@
 // i18n.js - Tiny EN/TH localization layer.
 //
-// English strings ARE the canonical keys: t("Weekly Commitment") looks the
+// English strings ARE the canonical keys: t("Weekly Review") looks the
 // exact English text up in the Thai dictionary (th.js) and falls back to
-// English when no entry exists (e.g. user-authored routine names). The
+// English when no entry exists (e.g. the user's own name). The
 // language choice lives in its own localStorage key so it survives a
 // game-data reset. Pure module: no DOM at import time, fully testable.
 

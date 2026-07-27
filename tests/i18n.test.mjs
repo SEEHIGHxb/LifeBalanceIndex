@@ -38,9 +38,18 @@ test("setLang persists to its own storage key and rejects junk", () => {
 });
 
 test("tp interpolates named placeholders in both languages", () => {
-  assert.equal(tp("Activity recorded: +{xp} points{detail}.", { xp: 20, detail: "" }), "Activity recorded: +20 points.");
+  const key = "Weekly review saved: {met}/{total} pledges met.";
+  assert.equal(tp(key, { met: 3, total: 5 }), "Weekly review saved: 3/5 pledges met.");
   setLang("th");
-  assert.equal(tp("Activity recorded: +{xp} points{detail}.", { xp: 20, detail: "" }), "บันทึกกิจกรรมแล้ว: +20 คะแนน");
+  assert.equal(tp(key, { met: 3, total: 5 }), "บันทึกการทบทวนรายสัปดาห์แล้ว: ทำได้ 3/5 คำมั่น");
+});
+
+test("tp interpolates an empty value without leaving a gap", () => {
+  // Deliberately NOT a dictionary key: t()/tp() fall back to the English text,
+  // which is all this case needs. Keeping the edge case off a real string means
+  // retiring a feature can never quietly delete this coverage — which is how
+  // the old "Activity recorded" key outlived the feature that produced it.
+  assert.equal(tp("+{xp} points{detail}.", { xp: 20, detail: "" }), "+20 points.");
 });
 
 test("tp leaves unknown placeholders untouched (mistakes stay visible)", () => {

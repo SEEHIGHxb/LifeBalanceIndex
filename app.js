@@ -15,7 +15,7 @@ import {
   renderMethodology,
   getLumiTip,
   openDialog
-} from "./ui.js?v=32";
+} from "./ui.js?v=33";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -169,7 +169,7 @@ function confirmReset() {
     html: `
     <div class="popup-card">
       <h2 class="popup-title" style="font-family: var(--font-serif); font-weight: bold;">${t("Erase all data?")}</h2>
-      <p style="font-size: 0.95rem; margin-bottom: 8px;">${t("This deletes every logged routine, your goals, and your baseline assessment.")}</p>
+      <p style="font-size: 0.95rem; margin-bottom: 8px;">${t("This deletes every weekly review, your pledges, and your baseline assessment.")}</p>
       <p style="font-size: 0.95rem; margin-bottom: 20px;"><strong>${t("It cannot be undone, and this browser holds the only copy.")}</strong></p>
       <div style="display: flex; flex-direction: column; gap: 8px;">
         <button class="btn btn-primary btn-reset-export">${t("Download a backup, then erase")}</button>
@@ -473,7 +473,7 @@ function showToast(text, variant = "success") {
   setTimeout(() => popup.remove(), TOAST_DURATION_MS);
 }
 
-// Rewarding confirmation when a routine is logged: a card pops in with the
+// Rewarding confirmation when a weekly review is submitted: a card pops in with the
 // points earned and the aspects that improved, then rises and fades. Built
 // with textContent (no innerHTML) since it renders live user/session values.
 function showReward(xp, impacts, detail = "") {

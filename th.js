@@ -64,7 +64,6 @@ export const TH = {
   "Data exported.": "ส่งออกข้อมูลแล้ว",
   "Data imported successfully.": "นำเข้าข้อมูลสำเร็จ",
   "Import failed: {msg}": "นำเข้าไม่สำเร็จ: {msg}",
-  "Activity recorded: +{xp} points{detail}.": "บันทึกกิจกรรมแล้ว: +{xp} คะแนน{detail}",
   "Re-assessment complete: {parts} (+40 points)": "ประเมินซ้ำเสร็จสิ้น: {parts} (+40 คะแนน)",
   "Re-assessment needs a baseline — complete the initial assessment first.": "การประเมินซ้ำต้องมีข้อมูลพื้นฐานก่อน — กรุณาทำแบบประเมินเริ่มต้นให้เสร็จก่อน",
   // Level is the user's age now, so this moment is a birthday, not an
@@ -77,9 +76,6 @@ export const TH = {
   "Your age band changed, so the finance score was recalculated.":
     "ช่วงอายุของคุณเปลี่ยนไป คะแนนด้านการเงินจึงถูกคำนวณใหม่",
   "Continue": "ดำเนินการต่อ",
-
-  // --- Proficiency tiers ---
-  "Foundational": "ระดับพื้นฐาน",
 
   // --- Aspects ---
   "Finance": "การเงิน",

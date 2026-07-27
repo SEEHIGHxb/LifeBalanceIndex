@@ -49,7 +49,7 @@ function baseState(overrides = {}) {
   return {
     profile: {
       level: 35, age: 35, birthMonth: null, birthDay: null, birthdayPromptDismissed: false,
-      lifetimeXp: 2140, rank: "Foundational",
+      lifetimeXp: 2140,
       season: { startDate: "2026-03-13T17:00:00.000Z", earnedXp: 6200, possibleXp: 7280, lastAccrualWeek: null },
       lastLevelUp: null,
       ...(overrides.profile || {})

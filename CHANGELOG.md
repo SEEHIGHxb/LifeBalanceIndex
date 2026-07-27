@@ -18,7 +18,8 @@ but not a minor version.
 
 ## [2.3.1] — 2026-07-25 (APP_VERSION 33)
 
-Copy only — no schema change, no migration, no behaviour change.
+Copy, plus the guards that keep it from rotting again — no schema change, no
+migration, no behaviour change.
 
 ### Stale "log routines" vocabulary retired
 
@@ -83,6 +84,38 @@ removed.
   header illustrated `t()` with `"Weekly Commitment"` — a string that had itself
   been dead since the commitment feature was removed, and whose `th.js` entry
   only survived the orphan sweep *because* that comment referenced it.
+
+### Added: an orphan guard, so this cannot silently recur
+
+`tests/i18n-orphans.test.mjs` asserts the direction nothing checked before —
+**TH → code**. 118 dead keys accumulated precisely because
+`i18n-coverage.test.mjs` only proves the reverse, so a key whose English string
+left the code was invisible to CI forever.
+
+It scans for each key as a **quoted string literal** in any source file. That
+covers the `t(variable)` calls a literal-argument scanner cannot see: a value
+reaching `t()` through a variable still has to be *written* as a quoted string
+in the data module that defines it. The scan deliberately excludes `tests/` and
+prose files — a key propped up only by a test asserting its translation, or by
+a changelog entry describing the feature that was removed, is still dead. An
+`ALLOWLIST` covers strings intentionally landing ahead of use, and a second test
+fails when an allowlist entry outlives the key it documents.
+
+Turning it on immediately caught two more, both of exactly that shape:
+`"Activity recorded: +{xp} points{detail}."`, alive only because
+`tests/i18n.test.mjs` used it as its `tp()` interpolation example, and
+`"Foundational"`, alive only because one fixture still carried a `rank` field
+from the removed tier system. The `tp()` test now interpolates a live string,
+with its empty-value edge case moved onto a deliberately synthetic key so that
+retiring a feature can never quietly delete that coverage again. `th.js`: 833 →
+831.
+
+### Fixed: privacy.html served a six-release-stale stylesheet
+
+`privacy.html` pinned `./index.css?v=27`. `tests/consistency.test.mjs` checked
+only `index.html` and `app.js`, so the page sat six versions behind without ever
+failing CI. Bumped to `?v=33`, and `privacy.html` added to the guard's file list
+— a page omitted from the check is a page nobody notices going stale.
 
 ## [2.3.0] — 2026-07-24 (APP_VERSION 32)
 

@@ -50,8 +50,11 @@ test("plastics are asked, scored, and displayed in pieces per DAY everywhere", (
 });
 
 test("every ?v=N cache buster matches APP_VERSION", () => {
-  // Any ?v=<digits> in the two files that reference versioned assets.
-  for (const f of ["index.html", "app.js"]) {
+  // Any ?v=<digits> in the files that reference versioned assets. privacy.html
+  // was left out of this list for six releases and silently drifted to ?v=27,
+  // serving a stale stylesheet to anyone who opened it — a page omitted from
+  // the guard is a page nobody notices going stale.
+  for (const f of ["index.html", "app.js", "privacy.html"]) {
     const found = [...read(f).matchAll(/\?v=(\d+)/g)].map(m => m[1]);
     assert.ok(found.length > 0, `${f}: expected at least one ?v=N cache buster`);
     for (const v of found) {

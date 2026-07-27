@@ -15,7 +15,7 @@
 // nothing changed, so the bandwidth is negligible and the version can never
 // tear. Do NOT "optimise" this back to a plain fetch(req).
 
-const CACHE_NAME = "lifequest-v32";
+const CACHE_NAME = "lifequest-v33";
 
 const APP_SHELL = [
   "./",
@@ -56,7 +56,7 @@ const APP_SHELL = [
   "./i18n.js",
   "./th.js",
   "./manifest.webmanifest",
-  "./assets/lumi.png?v=32",
+  "./assets/lumi.png?v=33",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
   // Self-hosted faces. Only the subsets the UI can actually render are
@@ -64,7 +64,7 @@ const APP_SHELL = [
   // `latin-ext` files are declared in fonts.css but left out on purpose —
   // unicode-range means the browser only fetches them for accented
   // codepoints our own copy never contains, so precaching them would add
-  // ~415 KB to every install to cover user-typed routine names alone.
+  // ~415 KB to every install to cover user-typed names alone.
   "./assets/fonts/fonts.css",
   "./assets/fonts/inter-latin-400.woff2",
   "./assets/fonts/inter-latin-500.woff2",

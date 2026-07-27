@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `32`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `33`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,74 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.3.1] — 2026-07-25 (APP_VERSION 33)
+
+Copy only — no schema change, no migration, no behaviour change.
+
+### Stale "log routines" vocabulary retired
+
+Three completeness notes still told users to **log routines**, an instruction that
+has been impossible to follow since v27/1.5.0 removed daily activity logging
+(`views/actions.js` and `views/ledger.js` are gone; there is no ledger to log
+into). They now point at the **Weekly Review** (`#/review`), which is the thing
+that actually confirms an estimated score: `submitWeeklyReview` writes each
+measured field and marks it `provided`, which is exactly what upgrades an
+aspect's confidence tier off `estimated`.
+
+- `views/dashboard.js` — the `assessmentComplete === false` quick-start note:
+  "Log routines to shape them" → "Submit a Weekly Review to shape them".
+- `views/dashboard.js` — the `estimatedAspects` completeness note: "or log
+  related routines to confirm them" → "or submit a Weekly Review to confirm
+  them".
+- `views/aspect.js` — the per-aspect "Estimated score." note: "or log routines
+  to confirm it" → "or submit a Weekly Review to confirm it".
+
+The quick-start note is only reachable by saves made through the old express
+onboarding path (`assessmentComplete === false`), which v32 removed — no *new*
+save can set it. It is reworded rather than deleted precisely because those
+pre-v32 saves are still live on the site.
+
+### Erase-data dialog named a feature that no longer exists
+
+`app.js`'s "Erase all data?" confirmation said it deletes *"every logged routine,
+your goals, and your baseline assessment"* — naming, as the thing you are about
+to lose, a feature deleted several releases ago. It now names what the save
+actually holds: **"every weekly review, your pledges, and your baseline
+assessment."** (`resetState` replaces the whole save, so all three are accurate.)
+
+### 118 dead Thai keys pruned
+
+`tests/i18n-coverage.test.mjs` only enforces code → TH, so a key whose English
+string disappeared from the code stays in `th.js` forever. Those orphans were
+where the pre-v27 vocabulary was still hiding. `th.js` goes **951 → 833 keys**,
+all of them entries no longer reachable from any source file or data module:
+the routine presets and ledger UI, the old rank tiers (`S-Rank`…), the retired
+proficiency labels (`Developing`…`Exemplary`), the daily/epic quest machinery,
+and the v1 commitment-pledge strings.
+
+Verified before deleting: a key was kept unless it appears nowhere as a quoted
+string literal in any source file **and** nowhere in the deep-walked exports of
+every data module — the two ways `t()` can be reached, including the
+`t(variable)` calls the coverage test cannot see. Two section headers left
+labelling unrelated survivors were handled: `Routines ledger` → `Shared dialog
+actions`, while `Routine presets` and `Missions` emptied entirely and were
+removed.
+
+### Changed
+
+- `th.js`: the three completeness-note keys renamed to match their new English
+  text (English strings *are* the i18n keys, so a rename that misses `th.js`
+  silently falls back to English) and their Thai retranslated onto the existing
+  weekly-review vocabulary — `ส่งการทบทวนรายสัปดาห์`, matching
+  `"Complete Weekly Review"`.
+- `app.js`: `showReward()`'s comment said "when a routine is logged"; its only
+  caller is now `handleReviewComplete`.
+- `i18n.js` / `sw.js`: comments citing "user-authored routine names" as the
+  example of untranslatable text now cite the user's own name. The `i18n.js`
+  header illustrated `t()` with `"Weekly Commitment"` — a string that had itself
+  been dead since the commitment feature was removed, and whose `th.js` entry
+  only survived the orphan sweep *because* that comment referenced it.
 
 ## [2.3.0] — 2026-07-24 (APP_VERSION 32)
 

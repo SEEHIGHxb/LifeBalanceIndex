@@ -73,7 +73,7 @@ export function renderAspectPage(containerId, state, aspectKey) {
 
     ${detail.confidence && detail.confidence.tier === "estimated" ? `
       <div class="quickstart-note completeness-note">
-        <p><strong>${t("Estimated score.")}</strong> ${tp("This score comes from default answers. Answer the {aspect} questions or log routines to confirm it.", { aspect: detail.label })}${
+        <p><strong>${t("Estimated score.")}</strong> ${tp("This score comes from default answers. Answer the {aspect} questions or submit a Weekly Review to confirm it.", { aspect: detail.label })}${
           CHECKIN_ASPECTS.includes(aspectKey) && state.baseline
             ? ` <a href="#/checkin">${t("Start Re-assessment")}</a>`
             : ""

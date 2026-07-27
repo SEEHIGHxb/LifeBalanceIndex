@@ -80,7 +80,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
       </div>` : ""}
     ${state.profile.assessmentComplete === false ? `
       <div class="quickstart-note">
-        <p><strong>${t("Quick-start results.")}</strong> ${t("Aspects beyond your first sections use baseline estimates. Log routines to shape them, and monthly re-assessments refine your survey scores over time.")}</p>
+        <p><strong>${t("Quick-start results.")}</strong> ${t("Aspects beyond your first sections use baseline estimates. Submit a Weekly Review to shape them, and monthly re-assessments refine your survey scores over time.")}</p>
       </div>` : ""}
     ${(() => {
       const estimated = estimatedAspects(state);
@@ -88,7 +88,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
       const canDeepen = estimated.some(k => CHECKIN_ASPECTS.includes(k));
       return `
       <div class="quickstart-note completeness-note">
-        <p><strong>${t("Some scores are estimates.")}</strong> ${tp("These are scored from default answers: {aspects}. Re-run your assessment or log related routines to confirm them.", { aspects: estimated.map(aspectLabel).join(", ") })}${canDeepen ? ` <a href="#/checkin">${t("Deepen my survey scores")}</a>` : ""}</p>
+        <p><strong>${t("Some scores are estimates.")}</strong> ${tp("These are scored from default answers: {aspects}. Re-run your assessment or submit a Weekly Review to confirm them.", { aspects: estimated.map(aspectLabel).join(", ") })}${canDeepen ? ` <a href="#/checkin">${t("Deepen my survey scores")}</a>` : ""}</p>
       </div>`;
     })()}
     ${(() => {

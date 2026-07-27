@@ -24,12 +24,6 @@ export const TH = {
   // --- Core-surface i18n leaks fixed (finding #10) ---
   "Life Balance Index": "ดัชนีสมดุลชีวิต",
   "Lv.": "Lv.",
-  "Points: {xp} / {needed}": "คะแนน: {xp} / {needed}",
-  "S-Rank": "ระดับ S",
-  "A-Rank": "ระดับ A",
-  "B-Rank": "ระดับ B",
-  "C-Rank": "ระดับ C",
-  "D-Rank": "ระดับ D",
   // Recovery banner + storage-error toast (findings #1/#2, now translated)
   "We found earlier data we couldn't open after an update. Download it before it's replaced.": "เราพบข้อมูลเก่าที่เปิดไม่ได้หลังการอัปเดต ดาวน์โหลดเก็บไว้ก่อนที่จะถูกแทนที่",
   "Download old data": "ดาวน์โหลดข้อมูลเก่า",
@@ -64,11 +58,8 @@ export const TH = {
   "Import": "นำเข้า",
   "Reset Data": "ล้างข้อมูล",
   "Overview": "ภาพรวม",
-  "Activity Log": "บันทึกกิจกรรม",
   "Goals": "เป้าหมาย",
   "Peer Comparison": "เปรียบเทียบกับผู้อื่น",
-  "Are you sure you want to erase all records and your baseline assessment? This cannot be undone.":
-    "แน่ใจหรือไม่ว่าต้องการลบบันทึกทั้งหมดและแบบประเมินพื้นฐานของคุณ? การกระทำนี้ย้อนกลับไม่ได้",
   "Importing a backup replaces ALL current data. Continue?": "การนำเข้าข้อมูลสำรองจะแทนที่ข้อมูลปัจจุบันทั้งหมด ดำเนินการต่อหรือไม่?",
   "Data exported.": "ส่งออกข้อมูลแล้ว",
   "Data imported successfully.": "นำเข้าข้อมูลสำเร็จ",
@@ -86,16 +77,9 @@ export const TH = {
   "Your age band changed, so the finance score was recalculated.":
     "ช่วงอายุของคุณเปลี่ยนไป คะแนนด้านการเงินจึงถูกคำนวณใหม่",
   "Continue": "ดำเนินการต่อ",
-  'Goal completed: "{title}" (+{xp} points)': 'บรรลุเป้าหมาย: "{title}" (+{xp} คะแนน)',
 
   // --- Proficiency tiers ---
   "Foundational": "ระดับพื้นฐาน",
-  "Developing": "กำลังพัฒนา",
-  "Progressing": "ก้าวหน้า",
-  "Proficient": "ชำนาญ",
-  "Advanced": "ขั้นสูง",
-  "Distinguished": "ดีเด่น",
-  "Exemplary": "เป็นแบบอย่าง",
 
   // --- Aspects ---
   "Finance": "การเงิน",
@@ -135,12 +119,11 @@ export const TH = {
   "A few body and activity numbers place your physical health against national norms.": "ตัวเลขร่างกายและกิจกรรมเพียงไม่กี่ข้อ ช่วยวัดสุขภาพกายของคุณเทียบกับเกณฑ์ระดับประเทศ",
   "Two validated screens (ST-5, WHO-5) estimate stress and well-being. This is a self-check, not a diagnosis.": "แบบคัดกรองที่ผ่านการรับรองสองชุด (ST-5, WHO-5) ประเมินความเครียดและสุขภาวะ นี่เป็นการตรวจสอบตนเอง ไม่ใช่การวินิจฉัย",
   "Quick-start results.": "ผลลัพธ์แบบเริ่มเร็ว",
-  "Aspects beyond your first sections use baseline estimates. Log routines to shape them, and monthly re-assessments refine your survey scores over time.": "ด้านที่อยู่นอกเหนือช่วงแรกใช้ค่าประมาณพื้นฐาน บันทึกกิจวัตรเพื่อปรับให้ตรงขึ้น และการประเมินซ้ำรายเดือนจะปรับคะแนนแบบสอบถามของคุณให้แม่นยำขึ้นเมื่อเวลาผ่านไป",
+  "Aspects beyond your first sections use baseline estimates. Submit a Weekly Review to shape them, and monthly re-assessments refine your survey scores over time.": "ด้านที่อยู่นอกเหนือช่วงแรกใช้ค่าประมาณพื้นฐาน ส่งการทบทวนรายสัปดาห์เพื่อปรับให้ตรงขึ้น และการประเมินซ้ำรายเดือนจะปรับคะแนนแบบสอบถามของคุณให้แม่นยำขึ้นเมื่อเวลาผ่านไป",
   "points": "คะแนน",
   "Name": "ชื่อ",
   "E.g., Alex": "เช่น อเล็กซ์",
   "Guest": "ผู้มาเยือน",
-  "Age (for population benchmarks)": "อายุ (ใช้เทียบสถิติประชากร)",
   "Gender (for benchmark norms)": "เพศ (ใช้เทียบเกณฑ์มาตรฐาน)",
   "Prefer not to say": "ไม่ระบุ",
   "Male": "ชาย",
@@ -369,77 +352,10 @@ export const TH = {
   "I plan my finances with a horizon of 10 years or more.": "ฉันวางแผนการเงินโดยมองไกล 10 ปีขึ้นไป",
   "I support causes addressing global existential risks (climate, pandemics, AI safety).": "ฉันสนับสนุนประเด็นความเสี่ยงระดับโลก (สภาพภูมิอากาศ โรคระบาด ความปลอดภัยของ AI)",
 
-  // --- Routine presets ---
-  "Add to Savings": "หยอดเงินออม",
-  "Deposit money/savings (+8 Finance)": "ฝากเงิน/เงินออม (+8 การเงิน)",
-  "Amount saved": "จำนวนเงินที่ออม",
-  "THB": "บาท",
-  "CBT Journaling": "เขียนบันทึก CBT",
-  "Write cognitive reappraisal (+8 Mental)": "เขียนปรับมุมมองความคิด (+8 จิตใจ)",
-  "Physiological Sigh": "ถอนหายใจคลายเครียด",
-  "Breath control vagus reset (+5 Mental)": "ฝึกลมหายใจรีเซ็ตระบบประสาท (+5 จิตใจ)",
-  "Exercise Session": "ออกกำลังกาย",
-  "Exercise MVPA (+10 Phys, +3 Mental)": "ออกกำลังระดับปานกลาง-หนัก (+10 ร่างกาย +3 จิตใจ)",
-  "Duration": "ระยะเวลา",
-  "minutes": "นาที",
-  "Veggie Portions": "กินผักผลไม้",
-  "Eat healthy greens (+5 Physical)": "กินผักผลไม้เพื่อสุขภาพ (+5 ร่างกาย)",
-  "Portions today": "จำนวนส่วนวันนี้",
-  "portions": "ส่วน",
-  "Water Intake": "ดื่มน้ำ",
-  "Hydration target (+5 Physical)": "ดื่มน้ำให้ถึงเป้า (+5 ร่างกาย)",
-  "Amount today": "ปริมาณวันนี้",
-  "liters": "ลิตร",
-  "Connect with Friend": "ติดต่อเพื่อน",
-  "Call relative or friend (+10 Rel, +2 Ment)": "โทรหาญาติหรือเพื่อน (+10 ความสัมพันธ์ +2 จิตใจ)",
-  "Relationship Date": "เดตกับคู่รัก",
-  "Quality partner time (+8 Relationships)": "เวลาคุณภาพกับคู่ (+8 ความสัมพันธ์)",
-  "Make Merit / Donation": "ทำบุญ / บริจาค",
-  "Tham Bun / Donate (+10 Social, -2 Fin)": "ทำบุญ/บริจาค (+10 สังคม -2 การเงิน)",
-  "Amount donated": "จำนวนเงินบริจาค",
-  "Volunteer": "จิตอาสา",
-  "Community service (+12 Social)": "งานอาสาเพื่อชุมชน (+12 สังคม)",
-  "Time spent": "เวลาที่ใช้",
-  "hours": "ชั่วโมง",
-  "Separate Recycling": "แยกขยะรีไซเคิล",
-  "Household waste sort (+8 Env)": "แยกขยะในบ้าน (+8 สิ่งแวดล้อม)",
-  "Ride BTS / MRT": "นั่ง BTS / MRT",
-  "Avoid car commute (+8 Env)": "เลี่ยงการใช้รถส่วนตัว (+8 สิ่งแวดล้อม)",
-  "Study AI / Data Sci": "เรียน AI / วิทยาการข้อมูล",
-  "Upskill future tech (+10 Future, +5 Goals)": "อัปสกิลเทคโนโลยีอนาคต (+10 อนาคต +5 เป้าหมาย)",
-  "Study time": "เวลาเรียน",
-  "Mentor / Teach": "สอน / เป็นพี่เลี้ยง",
-  "Share upskilling (+8 Future, +2 Rel)": "ถ่ายทอดความรู้ (+8 อนาคต +2 ความสัมพันธ์)",
-
-  // --- Missions ---
-  "Stay Hydrated": "ดื่มน้ำให้พอ",
-  "Log your 2L+ hydration once today.": "บันทึกการดื่มน้ำ 2 ลิตรขึ้นไปวันนี้ 1 ครั้ง",
-  "Breath Control": "ควบคุมลมหายใจ",
-  "Log 3 physiological sighs to reset stress.": "บันทึกการถอนหายใจคลายเครียด 3 ครั้ง",
-  "Active Core": "ขยับให้ครบ",
-  "Log at least 3 exercise sessions this week.": "บันทึกการออกกำลังกายอย่างน้อย 3 ครั้งในสัปดาห์นี้",
-  "Safety Deposit": "เงินฝากนิรภัย",
-  "Log a savings deposit 10 times.": "บันทึกการฝากเงินออม 10 ครั้ง",
-  "3 deposits logged": "ฝากแล้ว 3 ครั้ง",
-  "6 deposits logged": "ฝากแล้ว 6 ครั้ง",
-  "10 deposits logged": "ฝากแล้ว 10 ครั้ง",
-  "DAILY": "รายวัน",
-  "WEEKLY": "รายสัปดาห์",
-  "EPIC": "มหากาพย์",
-  "Active Goals": "เป้าหมายที่กำลังทำ",
-  "Goals progress automatically as you log matching routines. Daily goals reset each day, weekly goals each week.":
-    "เป้าหมายคืบหน้าอัตโนมัติเมื่อคุณบันทึกกิจวัตรที่เกี่ยวข้อง เป้าหมายรายวันรีเซ็ตทุกวัน รายสัปดาห์รีเซ็ตทุกสัปดาห์",
-  "All goals completed. New cycles begin tomorrow.": "ทำเป้าหมายครบแล้ว รอบใหม่เริ่มพรุ่งนี้",
-  "Aspect: {aspect} • +{xp} points": "ด้าน: {aspect} • +{xp} คะแนน",
-  "{current} / {target} logged": "บันทึกแล้ว {current} / {target}",
-  "Completed Goals": "เป้าหมายที่สำเร็จ",
-  "No completed goals in this cycle yet.": "ยังไม่มีเป้าหมายที่สำเร็จในรอบนี้",
-  "Completed: +{xp} points": "สำเร็จ: +{xp} คะแนน",
-
   // --- Dashboard ---
   "Erase all data": "ลบข้อมูลทั้งหมด",
   "Erase all data?": "ลบข้อมูลทั้งหมดหรือไม่",
-  "This deletes every logged routine, your goals, and your baseline assessment.": "การดำเนินการนี้จะลบกิจวัตรที่บันทึกไว้ทั้งหมด เป้าหมาย และผลประเมินพื้นฐานของคุณ",
+  "This deletes every weekly review, your pledges, and your baseline assessment.": "การดำเนินการนี้จะลบการทบทวนรายสัปดาห์ทั้งหมด คำมั่น และผลประเมินพื้นฐานของคุณ",
   "It cannot be undone, and this browser holds the only copy.": "ไม่สามารถกู้คืนได้ และเบราว์เซอร์นี้เก็บข้อมูลสำเนาเดียวเท่านั้น",
   "Download a backup, then erase": "ดาวน์โหลดไฟล์สำรอง แล้วจึงลบ",
   "Erase without a backup": "ลบโดยไม่สำรองข้อมูล",
@@ -488,7 +404,6 @@ export const TH = {
     "ยังไม่มีปีที่บันทึกไว้ — ปีแรกของคุณจะปิดในวันเกิดครั้งถัดไป",
   "{xp} / {possible} points": "{xp} / {possible} คะแนน",
   "That date doesn't exist — check the day of the month.": "ไม่มีวันที่นี้จริง — โปรดตรวจสอบวันที่ของเดือน",
-  "Weekly Commitment": "คำมั่นประจำสัปดาห์",
   "Aspect Radar": "เรดาร์รายด้าน",
   "Recommendations": "คำแนะนำ",
   "Targeting your weakest measured components — tap one to open that aspect.": "เจาะจงองค์ประกอบที่อ่อนที่สุดของคุณ — แตะเพื่อเปิดด้านนั้น",
@@ -500,20 +415,8 @@ export const TH = {
   "Benchmark sources & methodology": "แหล่งอ้างอิงและวิธีการเทียบ",
   'Percentiles compare your baseline answers with published population statistics — they are honest approximations, not exact ranks. "Estimate" marks curves calibrated to a published anchor point.':
     'เปอร์เซ็นไทล์เทียบคำตอบพื้นฐานของคุณกับสถิติประชากรที่ตีพิมพ์ — เป็นค่าประมาณอย่างตรงไปตรงมา ไม่ใช่อันดับที่แน่นอน ป้าย "ค่าประมาณ" หมายถึงเส้นโค้งที่ปรับเทียบกับจุดอ้างอิงที่ตีพิมพ์',
-  "Recent Activity": "กิจกรรมล่าสุด",
-  "No logs recorded yet. Ledger is clean.": "ยังไม่มีบันทึก สมุดยังว่างอยู่",
-  "Logged:": "บันทึก:",
-  "Reward +{xp} points.": "รางวัล +{xp} คะแนน",
-
-  // --- Commitment pin ---
-  "{aspect} • this week": "{aspect} • สัปดาห์นี้",
-  "Commitment progress": "ความคืบหน้าคำมั่น",
-  "✅ Pledge complete — bonus points banked. Resets next week.": "✅ ทำตามคำมั่นสำเร็จ — รับโบนัสคะแนนแล้ว เริ่มใหม่สัปดาห์หน้า",
-  "Log {n} more {aspect} routine(s) for +{xp} bonus points.": "บันทึกกิจวัตรด้าน{aspect}อีก {n} ครั้ง เพื่อรับโบนัส +{xp} คะแนน",
 
   // --- Aspect pages ---
-  "Log {title}": "บันทึก {title}",
-  "Remove routine": "ลบกิจวัตร",
   "Standing vs Society": "สถานะเทียบกับสังคม",
   "Percentile vs society": "เปอร์เซ็นไทล์เทียบสังคม",
   "Sources": "แหล่งอ้างอิง",
@@ -521,17 +424,7 @@ export const TH = {
   "Component Breakdown": "องค์ประกอบย่อย",
   "Baseline survey data needed for this breakdown.": "ต้องมีข้อมูลแบบประเมินพื้นฐานจึงจะแสดงส่วนนี้ได้",
   "Suggested Focus": "จุดที่ควรโฟกัส",
-  "End Commitment": "ยกเลิกคำมั่น",
-  "You're already committed to {link} this week — one pledge at a time keeps it honest.":
-    "สัปดาห์นี้คุณให้คำมั่นกับด้าน{link}อยู่แล้ว — ทีละหนึ่งคำมั่นถึงจะทำได้จริง",
-  "Pledge a weekly routine count for {aspect}. Hitting it earns bonus points; the pledge renews every week until you end it.":
-    "ตั้งคำมั่นจำนวนกิจวัตรต่อสัปดาห์สำหรับด้าน{aspect} ทำถึงเป้าได้โบนัสคะแนน และคำมั่นจะต่ออายุทุกสัปดาห์จนกว่าคุณจะยกเลิก",
-  "Routine logs per week (3-21)": "จำนวนบันทึกต่อสัปดาห์ (3-21)",
-  "Commit": "ให้คำมั่น",
   "Trend (Weekly Snapshots)": "แนวโน้ม (ภาพรวมรายสัปดาห์)",
-  "Log a {aspect} Routine": "บันทึกกิจวัตรด้าน{aspect}",
-  "No routines target this aspect yet — register one in the Routines Ledger.": "ยังไม่มีกิจวัตรสำหรับด้านนี้ — ลงทะเบียนได้ในสมุดกิจวัตร",
-  "End this week's commitment? Progress will be discarded.": "ยกเลิกคำมั่นของสัปดาห์นี้? ความคืบหน้าจะถูกลบ",
   "No snapshots yet — trends appear after your first weekly sync.": "ยังไม่มีภาพรวม — แนวโน้มจะแสดงหลังซิงก์รายสัปดาห์ครั้งแรก",
 
   // --- Confidence & completeness (Phase 2) ---
@@ -541,11 +434,11 @@ export const TH = {
   "Score confidence: {answered} of {total} inputs answered": "ความเชื่อมั่นของคะแนน: ตอบแล้ว {answered} จาก {total} รายการ",
   "{answered}/{total} inputs answered": "ตอบแล้ว {answered}/{total} รายการ",
   "Some scores are estimates.": "บางคะแนนเป็นค่าประมาณ",
-  "These are scored from default answers: {aspects}. Re-run your assessment or log related routines to confirm them.":
-    "คะแนนเหล่านี้คิดจากคำตอบเริ่มต้น: {aspects} ทำแบบประเมินใหม่หรือบันทึกกิจวัตรที่เกี่ยวข้องเพื่อยืนยัน",
+  "These are scored from default answers: {aspects}. Re-run your assessment or submit a Weekly Review to confirm them.":
+    "คะแนนเหล่านี้คิดจากคำตอบเริ่มต้น: {aspects} ทำแบบประเมินใหม่หรือส่งการทบทวนรายสัปดาห์เพื่อยืนยัน",
   "Estimated score.": "คะแนนประมาณการ",
-  "This score comes from default answers. Answer the {aspect} questions or log routines to confirm it.":
-    "คะแนนนี้มาจากคำตอบเริ่มต้น ตอบคำถามด้าน{aspect}หรือบันทึกกิจวัตรเพื่อยืนยัน",
+  "This score comes from default answers. Answer the {aspect} questions or submit a Weekly Review to confirm it.":
+    "คะแนนนี้มาจากคำตอบเริ่มต้น ตอบคำถามด้าน{aspect}หรือส่งการทบทวนรายสัปดาห์เพื่อยืนยัน",
 
   // --- Monthly re-sync page ---
   "MONTHLY RE-ASSESSMENT": "การประเมินซ้ำประจำเดือน",
@@ -555,22 +448,8 @@ export const TH = {
   "Complete Re-assessment": "เสร็จสิ้นการประเมินซ้ำ",
   "Re-assessment Error: ": "การประเมินซ้ำผิดพลาด: ",
 
-  // --- Routines ledger ---
-  "Log Routine": "บันทึกกิจวัตร",
-  "Select a routine below to record it. Your aspect scores update automatically (max 5 logs per routine per day).":
-    "เลือกกิจวัตรด้านล่างเพื่อบันทึก คะแนนรายด้านของคุณจะอัปเดตอัตโนมัติ (สูงสุด 5 ครั้งต่อกิจวัตรต่อวัน)",
-  "Register New Routine": "ลงทะเบียนกิจวัตรใหม่",
-  "Registered routines appear in the routine grid and can be logged like presets.": "กิจวัตรที่ลงทะเบียนจะปรากฏในตารางและบันทึกได้เหมือนรายการสำเร็จรูป",
-  "Routine Name": "ชื่อกิจวัตร",
-  "E.g., Practice Meditating": "เช่น ฝึกนั่งสมาธิ",
-  "Target Aspect": "ด้านที่ต้องการพัฒนา",
-  "Aspect Sync Impact (+1 to +15)": "ผลต่อค่าด้าน (+1 ถึง +15)",
-  "Points Reward (+5 to +50)": "รางวัลคะแนน (+5 ถึง +50)",
-  "Register Routine": "ลงทะเบียนกิจวัตร",
-  "Enter the real amount — it becomes part of your measured record.": "กรอกจำนวนจริง — จะถูกเก็บเป็นข้อมูลที่วัดได้ของคุณ",
+  // --- Shared dialog actions ---
   "Cancel": "ยกเลิก",
-  "Log It": "บันทึกเลย",
-  'Daily limit reached for "{name}" (max {max} logs). Take a break and return tomorrow.': 'วันนี้บันทึก "{name}" ครบแล้ว (สูงสุด {max} ครั้ง) พักก่อนแล้วค่อยกลับมาใหม่พรุ่งนี้',
 
   // --- Rankings / Crew Codes ---
   "Comparison Codes": "รหัสเปรียบเทียบ",
@@ -586,8 +465,6 @@ export const TH = {
   "{n} participants added. Sample rows are marked.": "เพิ่มผู้เข้าร่วม {n} คน แถวตัวอย่างมีป้ายกำกับ",
   "Rank": "อันดับ",
   "Participant": "ผู้เข้าร่วม",
-  "Level": "เลเวล",
-  "Total Points": "คะแนนรวม",
   "Balance": "ดัชนีสมดุล",
   "Tier": "ระดับ",
   "Sample": "ตัวอย่าง",
@@ -685,8 +562,6 @@ export const TH = {
   "That code is damaged — ask the participant to copy it again.": "รหัสนี้เสียหาย — ให้ผู้เข้าร่วมคัดลอกส่งมาใหม่อีกครั้ง",
   "Unsupported comparison code version.": "เวอร์ชันรหัสเปรียบเทียบไม่รองรับ",
   "Comparison code is missing a name.": "รหัสเปรียบเทียบไม่มีชื่อ",
-  "Comparison code has an invalid level.": "รหัสเปรียบเทียบมีเลเวลไม่ถูกต้อง",
-  "Comparison code has invalid points.": "รหัสเปรียบเทียบมีคะแนนไม่ถูกต้อง",
   "Comparison code has invalid aspect scores.": "รหัสเปรียบเทียบมีคะแนนรายด้านไม่ถูกต้อง",
   "Nadia": "นาเดีย",
   "Marcus": "มาร์คัส",
@@ -717,8 +592,6 @@ export const TH = {
     "ทางเลือกในแต่ละวันกำหนดรอยเท้าทางสิ่งแวดล้อมของคุณ การแยกขยะรีไซเคิลวันนี้เป็นก้าวง่าย ๆ",
   "Long-term security grows from consistent habits — saving and upskilling both anchor your future.":
     "ความมั่นคงระยะยาวเติบโตจากนิสัยที่สม่ำเสมอ — การออมและการอัปสกิลต่างช่วยยึดอนาคตของคุณ",
-  "Log a routine today to keep your assessment current and track your progress.":
-    "บันทึกกิจวัตรวันนี้เพื่อให้แบบประเมินของคุณเป็นปัจจุบันและติดตามความก้าวหน้า",
 
   // --- Component labels & details (aspects.js) ---
   "Income standing": "สถานะรายได้",
@@ -759,7 +632,6 @@ export const TH = {
   "Plastic reduction": "การลดพลาสติก",
   "{n} single-use pieces/day (Thai avg ~3)": "พลาสติกใช้ครั้งเดียว {n} ชิ้น/วัน (เฉลี่ยไทย ~3)",
   "Green habits (GEB)": "นิสัยรักษ์โลก (GEB)",
-  "Raw {n}/24 at baseline ": "คะแนนดิบ {n}/24 ณ จุดเริ่มต้น",
   "Future skills": "ทักษะแห่งอนาคต",
   "{h}h/week toward future-proof skills — reuses your weekly learning hours": "{h} ชม./สัปดาห์กับทักษะที่พร้อมรับอนาคต — ใช้ชั่วโมงการเรียนรู้รายสัปดาห์ร่วมกัน",
   "Long-term security": "ความมั่นคงระยะยาว",
@@ -784,10 +656,7 @@ export const TH = {
   "WHO-5 well-being {score}/100 vs general-population norms": "สุขภาวะ WHO-5 {score}/100 เทียบเกณฑ์ประชากรทั่วไป",
   "Percentile is against a German WHO-5 community sample — no representative Thai WHO-5 norm is published, so read it as indicative.":
     "เปอร์เซ็นไทล์เทียบกับกลุ่มตัวอย่างชุมชนเยอรมัน WHO-5 — ยังไม่มีเกณฑ์ WHO-5 ของไทยที่เป็นตัวแทน จึงควรถือเป็นค่าชี้แนวโน้มเท่านั้น",
-  "range ≈ {low}–{high}": "ช่วงประมาณ {low}–{high}",
   "Deepen my survey scores": "เพิ่มความแม่นยำของคะแนนแบบสอบถาม",
-  "The range is an indicative band reflecting the method's precision, not a statistical confidence interval.":
-    "ช่วงนี้เป็นแถบโดยประมาณที่สะท้อนความแม่นยำของวิธีคำนวณ ไม่ใช่ช่วงความเชื่อมั่นทางสถิติ",
   "LSNS-6 score {n}/30 is under the social-isolation cutoff of 12.": "คะแนน LSNS-6 {n}/30 ต่ำกว่าจุดตัดภาวะโดดเดี่ยวทางสังคมที่ 12",
   "LSNS-6 score {n}/30 is above the social-isolation cutoff of 12.": "คะแนน LSNS-6 {n}/30 สูงกว่าจุดตัดภาวะโดดเดี่ยวทางสังคมที่ 12",
   "Loneliness (UCLA-3) and social network (LSNS-6) vs published community samples": "ความเหงา (UCLA-3) และเครือข่ายสังคม (LSNS-6) เทียบกับกลุ่มตัวอย่างที่ตีพิมพ์",
@@ -902,7 +771,6 @@ export const TH = {
   "Please fix the highlighted fields before continuing.":
     "กรุณาแก้ไขช่องที่ไฮไลต์ก่อนดำเนินการต่อ",
 
-  // --- Friendlier percentiles + deep assessment (Phase 4) ---
   // NOTE: the in-depth questionnaire ITEM texts are translated in the
   // "Deep instrument item texts" block at the end of this file. They are
   // unofficial Thai renderings kept faithful to the published English items
@@ -948,7 +816,6 @@ export const TH = {
   "Below average": "ต่ำกว่าค่าเฉลี่ย",
   "Bottom 25%": "25% ล่าง",
 
-  // --- Letter grades and the Balance Index (Phase L1) ---
   // Grade band labels (GRADE_BANDS in grades.js) — rendered via t(variable),
   // so the data-walking guard in tests/i18n-coverage.test.mjs pins them.
   "Top 30%": "30% แรก",
@@ -1076,7 +943,6 @@ export const TH = {
   "8–10 hours": "8–10 ชั่วโมง",
   "More than 10 hours": "มากกว่า 10 ชั่วโมง",
 
-  // --- Deep instrument item texts ---
   // Unofficial Thai renderings of the deep-only items (items shared with the
   // onboarding short forms are translated in the onboarding block above, and
   // the two sets must read as one voice: questions end "…บ่อยแค่ไหน?",

@@ -188,12 +188,18 @@ export const INSTRUMENTS = {
     ]
   },
   grit: {
+    // Canonical Grit wording. Items 1 and 3 used to carry a merged second
+    // clause ("...I don't give up easily.", "...I never give up."), which was
+    // non-standard AND blocked the carry-over below: grit12 asks these same
+    // four items verbatim, so wording drift would have forced the user to
+    // answer them twice. Same items, same order, same option scale — stored
+    // baselines are sums over these indices and need no migration.
     title: "Grit-S (Perseverance)",
     items: [
       { text: "I finish whatever I begin.", options: LIKE_ME_5, def: 4 },
-      { text: "Setbacks don't discourage me. I don't give up easily.", options: LIKE_ME_5, def: 3 },
+      { text: "Setbacks don't discourage me.", options: LIKE_ME_5, def: 3 },
       { text: "I am a hard worker.", options: LIKE_ME_5, def: 4 },
-      { text: "I am diligent. I never give up.", options: LIKE_ME_5, def: 4 }
+      { text: "I am diligent.", options: LIKE_ME_5, def: 4 }
     ]
   },
   ptm: {
@@ -556,6 +562,48 @@ export const DEEP_SECTIONS = [
 
 export function deepInstrumentSize(key) {
   return DEEP_INSTRUMENTS[key].items.length;
+}
+
+// ---------------------------------------------------------------------------
+// CARRY-OVER — ask each question ONCE.
+//
+// Five deep instruments are supersets of a short form already answered at
+// onboarding, so they used to re-ask 24 identical questions. Every question is
+// now asked exactly once, at onboarding, and the deep form asks only the items
+// the short form does NOT cover.
+//
+// This works without storing per-item answers because the baseline already
+// holds `rawSum(shortForm)` — a sum over PRECISELY the carried items. So the
+// full-length raw sum reconstructs exactly:
+//
+//     deep[key] = baseline[from] + rawSum(answers to the remaining items)
+//
+// which keeps each published scale scored over its full item set and its
+// normalizer range untouched (verified by tests/deep-carry.test.mjs).
+//
+// `pairs` are [deepItemIndex, shortItemIndex]. The short indices must cover the
+// short form completely and exactly once, or the sum above would double-count
+// or drop items — the test asserts that, plus identical text and identical
+// option VALUES for every pair.
+export const DEEP_CARRY = {
+  cfpb10: { from: "cfpb", pairs: [[2, 0], [4, 1], [5, 2], [7, 3], [9, 4]] },
+  gse10: { from: "gse", pairs: [[0, 0], [1, 1], [3, 2], [4, 3], [5, 4], [9, 5]] },
+  grit12: { from: "grit", pairs: [[3, 1], [5, 2], [8, 0], [11, 3]] },
+  lsnsR: { from: "lsns", pairs: [[0, 0], [2, 1], [3, 2], [6, 3], [8, 4], [9, 5]] },
+  ras7: { from: "ras", pairs: [[0, 0], [1, 1], [2, 2]] }
+};
+
+// Which items of a deep instrument still need asking, given a baseline.
+// Everything is asked when the baseline holds no usable short-form sum — an
+// import with the key missing, or `ras` on someone who was single at
+// onboarding and is coupled now. Callers must treat this as the single source
+// of truth for both rendering and scoring so the two can never disagree.
+export function deepAskIndices(deepKey, baseline) {
+  const all = DEEP_INSTRUMENTS[deepKey].items.map((_, i) => i);
+  const carry = DEEP_CARRY[deepKey];
+  if (!carry || !baseline || !Number.isFinite(baseline[carry.from])) return all;
+  const carried = new Set(carry.pairs.map(p => p[0]));
+  return all.filter(i => !carried.has(i));
 }
 
 // Instruments to show for one deep section, filtering coupled-only ones out for

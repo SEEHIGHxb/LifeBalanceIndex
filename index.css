@@ -1387,6 +1387,13 @@ header {
   font-weight: 600;
   margin-bottom: 8px;
 }
+/* Explains why a full-length scale shows fewer questions than its name implies:
+   the shared items were already answered at the baseline assessment. */
+.carry-note {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  margin: -6px 0 12px;
+}
 
 /* --- Log feedback moment: reward pop --- */
 .reward-pop {

@@ -11,7 +11,7 @@
 
 import { INSTRUMENTS, DEEP_INSTRUMENTS } from "../surveys.js";
 import { validateProfile } from "../validation.js";
-import { t } from "../i18n.js";
+import { t, tp } from "../i18n.js";
 
 // A red required marker. aria-hidden so a screen reader hears "required" from
 // the control's own state, not a stray asterisk read out mid-label.
@@ -38,10 +38,14 @@ export function numberField(id, label, value, attrs = "", opts = {}) {
     </div>`;
 }
 
-function radioQuestion(instrKey, itemIndex, item) {
+// `itemIndex` identifies the item within its instrument (it names the radio
+// group and must match the canonical scale). `displayIndex` is what the user
+// sees; it differs only when some items are skipped as carried-over, so the
+// numbering still reads 1, 2, 3 with no gaps.
+function radioQuestion(instrKey, itemIndex, item, displayIndex = itemIndex) {
   return `
     <fieldset class="survey-question" data-required="1">
-      <legend>${itemIndex + 1}. ${t(item.text)} ${REQ_MARK}</legend>
+      <legend>${displayIndex + 1}. ${t(item.text)} ${REQ_MARK}</legend>
       <div class="radio-group">
         ${item.options.map(o => `
           <label class="radio-option">
@@ -71,19 +75,33 @@ export function collectInstrument(instrKey) {
 
 // Deep-assessment instruments live in DEEP_INSTRUMENTS and use a "deep-" name
 // prefix so their radios never collide with an onboarding form on the page.
-export function deepInstrumentBlock(instrKey) {
+//
+// `askIndices` (surveys.js deepAskIndices) lists the items still to ask; the
+// rest were already answered at onboarding and are carried over at scoring
+// time, so re-asking them would put the same question to the user twice. The
+// radio NAME keeps the item's original index while the visible number counts
+// the asked items, so the form reads 1..n with no gaps yet collect and score
+// stay aligned with the canonical scale.
+export function deepInstrumentBlock(instrKey, askIndices) {
   const instr = DEEP_INSTRUMENTS[instrKey];
+  const ask = askIndices || instr.items.map((_, i) => i);
+  const carried = instr.items.length - ask.length;
   return `
     <div class="instrument-block">
       <p class="instrument-title">${t(instr.title)}</p>
-      ${instr.items.map((item, i) => radioQuestion(`deep-${instrKey}`, i, item)).join("")}
+      ${carried > 0 ? `<p class="carry-note">${tp("{n} answers carry over from your baseline — only the new questions are asked here.", { n: carried })}</p>` : ""}
+      ${ask.map((itemIndex, position) =>
+        radioQuestion(`deep-${instrKey}`, itemIndex, instr.items[itemIndex], position)
+      ).join("")}
     </div>`;
 }
 
-export function collectDeepInstrument(instrKey) {
-  return DEEP_INSTRUMENTS[instrKey].items.map((item, i) => {
+export function collectDeepInstrument(instrKey, askIndices) {
+  const instr = DEEP_INSTRUMENTS[instrKey];
+  const ask = askIndices || instr.items.map((_, i) => i);
+  return ask.map(i => {
     const el = document.querySelector(`input[name="deep-${instrKey}-q${i}"]:checked`);
-    return el ? parseInt(el.value) : item.def;
+    return el ? parseInt(el.value) : instr.items[i].def;
   });
 }
 

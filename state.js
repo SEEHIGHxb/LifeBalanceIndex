@@ -28,7 +28,7 @@ import {
   calculateHumanityFutureScore, deepAspectScore, weeklyAspectShifts,
   ageBandShifts, profileEditShifts, clamp100
 } from "./scoring.js";
-import { INSTRUMENTS, DEEP_INSTRUMENTS } from "./surveys.js";
+import { INSTRUMENTS, DEEP_INSTRUMENTS, DEEP_CARRY, deepAskIndices } from "./surveys.js";
 import { isStraightLined } from "./validation.js";
 
 const STORAGE_KEY = "lifequest_state";
@@ -782,17 +782,41 @@ export class GameStateManager {
     let anyFlagged = false;
     for (const [key, arr] of Object.entries(deepData)) {
       if (!Array.isArray(arr)) continue;
+      // Where a deep scale is a superset of an onboarding short form, the
+      // shared items are not re-asked — the baseline already stores their sum —
+      // so the full-length raw sum is that stored sum plus what was answered
+      // here. (A check-in refreshes baseline.gse/.ras, so the carried part is
+      // the most recent reading of those items, not a stale onboarding one.)
+      //
+      // Either shape is accepted, told apart by length, so a caller holding the
+      // whole canonical scale stays correct: the asked subset carries, a
+      // full-length array is taken as answered in full. Any other length is a
+      // caller bug — dropped rather than summed into a wrong score.
+      const instr = DEEP_INSTRUMENTS[key];
+      const asked = deepAskIndices(key, b);
+      let indices, carriedSum;
+      if (arr.length === instr.items.length) {
+        indices = instr.items.map((_, i) => i);
+        carriedSum = 0;
+      } else if (arr.length === asked.length) {
+        indices = asked;
+        carriedSum = b[DEEP_CARRY[key].from];
+      } else {
+        continue;
+      }
+
       // Response quality (G3): a straight-lined long-form instrument (same
       // option position on every item despite reverse-keyed items — including
       // an untouched all-defaults submission) is rejected outright: careless
-      // data never enters scoring and cannot mark the section verified.
-      if (isStraightLined(DEEP_INSTRUMENTS[key], arr)) {
+      // data never enters scoring and cannot mark the section verified. Judged
+      // against the items actually put to the user, not the canonical scale.
+      if (isStraightLined({ items: indices.map(i => instr.items[i]) }, arr)) {
         deepFlagged[key] = true;
         anyFlagged = true;
         continue;
       }
       delete deepFlagged[key]; // an honest retake clears an earlier flag
-      deep[key] = rawSum(arr);
+      deep[key] = carriedSum + rawSum(arr);
       deepAnswered[key] = true;
     }
     const deepDone = { ...(b.deepDone || {}) };

@@ -1189,17 +1189,42 @@ header {
   font-weight: 600;
   color: var(--color-navy);
 }
+/* This sentence is prose, so it sets its own font rather than inheriting the
+   monospace stack from .benchmark-line — monospace is both wrong for prose and
+   ~20% wider, which is what pushed the band chip onto its own line (the widest
+   chip, "Around average", overflowed the 429px card by exactly 1px). Sans at
+   0.86rem leaves ~56px of slack, and also restores the hierarchy: at 0.95rem
+   this secondary line was larger than the aspect name above it (0.85rem).
+
+   Inline flow, not flex: as a flex row the sentence is one unbounded item, so
+   the chip is the only thing that can wrap and it drops to a line by itself.
+   Inline lets the sentence wrap mid-phrase and the chip trail the last line —
+   which is what keeps this readable on a phone, where sentence + chip cannot
+   share one line at any legible size. */
 .benchmark-plain-lead {
-  font-size: 0.95rem;
+  font-family: var(--font-sans);
+  font-size: 0.86rem;
+  line-height: 1.45;
   margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
 }
+.benchmark-plain-lead .percentile-band {
+  margin-left: 6px;
+}
+/* 0.72rem is the size .benchmark-line already sets for this whole block; the
+   0.75rem override was making the longest detail ("… (vs participation rates)")
+   overshoot the card by 6px and take a second line. Where a longer percentile
+   still forces a wrap, the nowrap below guarantees it breaks before the
+   parenthetical rather than inside it. */
 .benchmark-detail {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--color-text-secondary);
+}
+/* Keep the method tag whole: "(vs participation rates)" was breaking after
+   "participation", leaving an orphaned "rates)". Scoped to .benchmark-detail so
+   the standalone <p class="benchmark-method-line"> on the aspect page, which is
+   meant to be a block, is unaffected. */
+.benchmark-detail .benchmark-method {
+  white-space: nowrap;
 }
 .benchmark-verified { color: var(--color-navy); font-weight: 700; }
 .percentile-definition {
@@ -1210,18 +1235,22 @@ header {
 }
 .benchmark-method-line { margin-top: 4px; }
 
-/* Band chip: a coarse plain-language label next to the number. */
+/* Band chip: a coarse plain-language label next to the number. Sized to stay
+   on the sentence's line: nowrap so a two-word band ("Around average") can
+   never split, and trimmed slightly (0.62->0.6rem, 7->6px, tighter tracking)
+   because it is a label, not something to read word by word. */
 .percentile-band {
   display: inline-block;
   font-family: var(--font-sans);
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  padding: 1px 7px;
+  padding: 1px 6px;
   border-radius: 999px;
   border: 1px solid currentColor;
   line-height: 1.5;
+  white-space: nowrap;
 }
 .band-top10, .band-top25 { color: var(--color-nectar); }
 .band-above { color: var(--color-gold); }

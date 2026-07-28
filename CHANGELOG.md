@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `34`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `35`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.4.1] — 2026-07-28 (APP_VERSION 35)
+
+### Fixed
+
+- **Aspect Scores rows no longer break across three lines.** The band chip
+  ("Around average") was dropping onto a line of its own, and the method tag
+  was splitting mid-phrase into `(vs participation` / `rates)`. Every row is now
+  exactly two lines at a uniform height.
+
+  Causes, measured in the browser rather than guessed at:
+
+  | Symptom | Cause | Fix |
+  | --- | --- | --- |
+  | Chip on its own line | `.benchmark-plain-lead` inherited the **monospace** stack from `.benchmark-line`. Monospace is wrong for prose and ~20% wider: the sentence measured 309px and the widest chip 113px against a 429px card — over by **1px**. | Set `--font-sans` and 0.86rem on the sentence. Slack goes from −1px to +56px. |
+  | Chip *orphaned* when it does wrap | The lead was a flex row, so the sentence was one unbounded item and the chip was the only thing able to wrap. | Inline flow, so the sentence wraps mid-phrase and the chip trails the last line. |
+  | `(vs participation rates)` split | Nothing held the parenthetical together. | `white-space: nowrap`, scoped to `.benchmark-detail` so the standalone block tag on the aspect page is unaffected. |
+  | Detail line wrapping | `.benchmark-detail` overrode to 0.75rem, overshooting the card by 6px. | 0.72rem — the size `.benchmark-line` already declares for this block. |
+
+  Also corrects a hierarchy inversion: at 0.95rem this secondary sentence was
+  *larger* than the aspect name above it (0.85rem).
+
+  Desktop rows go 3 lines → 2 (115px → 42px); mobile 375px goes 3 lines → 2
+  (115px → 80px). At a 277px card the sentence and chip cannot share a line at
+  any legible size, so two lines is the floor there.
 
 ## [2.4.0] — 2026-07-28 (APP_VERSION 34)
 

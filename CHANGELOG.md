@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `33`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `34`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,72 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.4.0] — 2026-07-28 (APP_VERSION 34)
+
+Every question is now asked **once**. No schema change, no migration.
+
+### The in-depth assessment stopped re-asking the baseline's questions
+
+Five in-depth instruments are supersets of a short form already answered during
+the baseline assessment, so they put **24 identical questions** to the user a
+second time — the whole of CFPB-5 inside CFPB-10, GSE-6 inside GSE-10, LSNS-6
+inside LSNS-R, RAS-3 inside RAS-7, Grit-S inside Grit-12. Each of those is now
+asked only at onboarding, and the in-depth form asks only the items the short
+form does not cover:
+
+| Section | Instrument | Was | Now |
+|---|---|---|---|
+| Finance | CFPB-10 | 10 | **5** |
+| Personal Goals | GSE-10 | 10 | **4** |
+| Personal Goals | Grit-12 | 12 | **8** |
+| Relationships | LSNS-R | 12 | **6** |
+| Relationships | RAS-7 (couples) | 7 | **4** |
+
+A coupled user's in-depth assessment drops from 94 questions to 70.
+
+**Nothing was removed from a published scale.** Every instrument is still scored
+over its full item set, because the baseline already stores `rawSum(shortForm)`
+— a sum over precisely the carried items — so the full-length raw sum
+reconstructs exactly:
+
+```
+deep[key] = baseline[shortForm] + rawSum(answers to the remaining items)
+```
+
+`DEEP_NORM`'s ranges and the official CFPB lookup table therefore apply
+unchanged, and a carried submission produces the identical raw sum to
+administering all ten items (asserted in `tests/deep-carry.test.mjs`). This is
+also why no schema change was needed: the sums being reused have been stored
+since v1, so **existing saves get the shorter forms immediately**.
+
+Three invariants make the arithmetic safe, all now enforced by tests: a carried
+item must match its onboarding item in **text** and in **option values**, and
+the carried set must cover the short form **completely and exactly once**.
+Violate any one and the sum would silently double-count or drop items — a wrong
+score with no error.
+
+- `surveys.js`: new `DEEP_CARRY` map and `deepAskIndices(deepKey, baseline)`,
+  the single source of truth for both rendering and scoring so the two cannot
+  disagree about which items were asked.
+- Grit-S items 2 and 4 now use the **canonical** wording (`Setbacks don't
+  discourage me.`, `I am diligent.`). They previously carried a non-standard
+  merged second clause, which was both a fidelity problem and the one thing
+  blocking those items from carrying over. Item count, order, and option scale
+  are unchanged, so stored `baseline.grit` sums remain valid.
+- Everything is still asked in full when there is no short-form sum to carry:
+  an older import missing the key, or `ras` for someone who was single at
+  onboarding and is coupled now.
+- `submitDeepAssessment` accepts either shape — the asked subset or the whole
+  canonical scale — telling them apart by length, so a caller holding the full
+  array stays correct. Any other length is a caller bug and is dropped rather
+  than summed into a wrong score.
+- Straight-line detection now judges the items **actually put to the user**.
+  Coverage is unchanged: the reduced CFPB-10, Grit-12 and RAS-7 sets stay
+  mixed-keyed, and the sets that become uniformly keyed (GSE-10, LSNS-R) were
+  never judged anyway.
+- `th.js`: one new string; the two merged Grit variants pruned (their canonical
+  replacements were already translated for Grit-12).
 
 ## [2.3.1] — 2026-07-25 (APP_VERSION 33)
 

@@ -328,9 +328,7 @@ export const TH = {
   "I can solve most problems if I invest the necessary effort.": "ฉันแก้ปัญหาส่วนใหญ่ได้ ถ้าทุ่มเทความพยายามเท่าที่จำเป็น",
   "I can usually handle whatever comes my way.": "ฉันมักรับมือกับสิ่งที่ผ่านเข้ามาได้เสมอ",
   "I finish whatever I begin.": "ฉันทำสิ่งที่เริ่มไว้ให้เสร็จเสมอ",
-  "Setbacks don't discourage me. I don't give up easily.": "อุปสรรคไม่ทำให้ฉันท้อ ฉันไม่ยอมแพ้ง่าย ๆ",
   "I am a hard worker.": "ฉันเป็นคนขยัน",
-  "I am diligent. I never give up.": "ฉันมุ่งมั่นพากเพียร ไม่เคยยอมแพ้",
   "How often do you donate money to charity, temples, or people in need?": "คุณบริจาคเงินให้การกุศล วัด หรือผู้เดือดร้อนบ่อยแค่ไหน?",
   "How often do you help friends or family members who are in need?": "คุณช่วยเหลือเพื่อนหรือครอบครัวที่เดือดร้อนบ่อยแค่ไหน?",
   "How often do you help strangers (e.g., giving directions, carrying things)?": "คุณช่วยเหลือคนแปลกหน้า (เช่น บอกทาง ช่วยถือของ) บ่อยแค่ไหน?",
@@ -799,6 +797,8 @@ export const TH = {
     "เสร็จแล้ว — คะแนนด้านนี้ได้รับการยืนยัน คุณทำซ้ำเพื่ออัปเดตได้",
   "Update this section": "อัปเดตหมวดนี้",
   "Save this section": "บันทึกหมวดนี้",
+  "{n} answers carry over from your baseline — only the new questions are asked here.":
+    "{n} คำตอบนำมาจากการประเมินพื้นฐานของคุณ — ที่นี่จะถามเฉพาะคำถามใหม่เท่านั้น",
   "{aspect} verified in depth — score now {score} (+60 points)":
     "{aspect} ยืนยันเชิงลึกแล้ว — คะแนนตอนนี้ {score} (+60 คะแนน)",
   "In-depth assessment needs a baseline — complete the initial assessment first.":

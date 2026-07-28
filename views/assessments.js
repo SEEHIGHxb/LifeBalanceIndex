@@ -3,7 +3,7 @@
 // monolithic ui.js; behavior unchanged.
 
 import { stateManager } from "../state.js";
-import { DEEP_SECTIONS, deepSectionInstruments } from "../surveys.js";
+import { DEEP_SECTIONS, deepSectionInstruments, deepAskIndices } from "../surveys.js";
 import { isAspectDeepVerified } from "../aspects.js";
 import { t } from "../i18n.js";
 import {
@@ -91,7 +91,7 @@ export function renderDeepAssessment(containerId, state, onComplete) {
         <p class="onb-why">${t(section.blurb)}</p>
         ${done ? `<p class="deep-done-note">${t("Completed — this aspect's score is verified. You can redo it to update.")}</p>` : ""}
         <form class="deep-form" data-aspect="${section.aspect}" data-keys="${keys.join(",")}">
-          ${keys.map(deepInstrumentBlock).join("")}
+          ${keys.map(k => deepInstrumentBlock(k, deepAskIndices(k, state.baseline))).join("")}
           <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 12px;">${done ? t("Update this section") : t("Save this section")}</button>
         </form>
       </div>`;
@@ -128,7 +128,10 @@ export function renderDeepAssessment(containerId, state, onComplete) {
         const aspect = form.dataset.aspect;
         const keys = form.dataset.keys.split(",").filter(Boolean);
         const deepData = {};
-        keys.forEach(k => { deepData[k] = collectDeepInstrument(k); });
+        // Same baseline the form was built from, so the asked-item set here
+        // matches what was rendered; submitDeepAssessment derives it again to
+        // reconstruct the full-length sum.
+        keys.forEach(k => { deepData[k] = collectDeepInstrument(k, deepAskIndices(k, state.baseline)); });
         const result = stateManager.submitDeepAssessment(aspect, deepData);
         if (result && result.flagged) {
           errorEl.textContent = t("Some answers all sat on the same option, so that questionnaire was not counted. Vary your answers to reflect your real experience and save again.");

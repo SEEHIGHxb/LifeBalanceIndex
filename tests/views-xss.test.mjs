@@ -165,6 +165,56 @@ test("renderYearReview counts down and keeps the archive visible once the birthd
     "the year screen renders numbers and runway, never a verdict");
 });
 
+// --- SIDE BY SIDE ---
+//
+// The only view that renders a name someone ELSE authored: a participant name
+// arrives inside a pasted comparison code, so it is attacker-controlled by
+// construction rather than by a corrupted backup.
+
+test("renderLeaderboard escapes a hostile participant name in every sink", async () => {
+  const { renderLeaderboard } = await import("../views/leaderboard.js");
+  const captured = installGlobals();
+  const aspects = {
+    finance: 90, physical: 90, mental: 90, relationships: 90,
+    personalGoals: 90, socialContribution: 90, environment: 90, humanityFuture: 90
+  };
+  renderLeaderboard("main-view", {
+    profile: { name: "Me" },
+    // All zeros, so every aspect of the hostile participant clears an average
+    // the user does not — forcing the complement line to render too.
+    aspects: Object.fromEntries(Object.keys(aspects).map(k => [k, 0])),
+    friends: [{ id: BREAKOUT, name: PAYLOAD, aspects }]
+  });
+  assertEscaped(captured.html, PAYLOAD, "participant name");
+  assert.ok(!captured.html.includes(BREAKOUT), "participant id reached innerHTML verbatim");
+  assert.ok(captured.html.includes("clears the population average"),
+    "the complement line should have rendered (otherwise this test proves nothing)");
+});
+
+test("renderLeaderboard is not a scoreboard: no rank, no tier, no ordering", async () => {
+  // A regression guard on the DESIGN, not just the markup. The competitive
+  // furniture was removed deliberately (see the module header); this fails if
+  // any of it comes back.
+  const { renderLeaderboard } = await import("../views/leaderboard.js");
+  const captured = installGlobals();
+  const strong = {
+    finance: 95, physical: 95, mental: 95, relationships: 95,
+    personalGoals: 95, socialContribution: 95, environment: 95, humanityFuture: 95
+  };
+  renderLeaderboard("main-view", {
+    profile: { name: "Me" },
+    aspects: Object.fromEntries(Object.keys(strong).map(k => [k, 10])),
+    friends: [{ id: "f1", name: "Ken", aspects: strong }]
+  });
+  const html = captured.html;
+  assert.ok(!/>Rank<|>Tier<|>Sample</.test(html), "a rank/tier/sample column came back");
+  assert.ok(!/#1|1st|Top of the board/i.test(html), "an ordinal placement came back");
+  // The user's column must precede every participant's regardless of score:
+  // the far stronger friend must NOT be sorted ahead of the weaker user.
+  assert.ok(html.indexOf("(You)") < html.indexOf("Ken"),
+    "columns were reordered by score — the board must never rank");
+});
+
 test("escapeHtml neutralises every HTML-significant character", async () => {
   const { escapeHtml } = await import("../views/helpers.js");
   assert.equal(escapeHtml(`<>&"'`), "&lt;&gt;&amp;&quot;&#39;");

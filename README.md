@@ -69,11 +69,14 @@ set in Sarabun.
 - **Backup**: one-click JSON export / import, on the Profile & Data page
 - **Hash routing** (`#/dashboard`, `#/review`, `#/aspect/<key>`, `#/checkin`, ...) — browser back/forward work
 - **Radar chart**: dependency-free SVG rendering of the 8 aspects
-- **Peer comparison (comparison codes)**: share your `LQ1-...` code with
-  others and paste theirs to compare against real users — a code carries only
-  your name and the eight aspect scores (no age, no points), and the board ranks
-  on the Balance Index; no backend, no accounts. Codes shared before v2.0 still
-  decode. Sample profiles pad the board until you add participants
+- **Side by Side (comparison codes)**: share your `LQ1-...` code with others
+  and paste theirs to lay your eight aspects out beside theirs — a code carries
+  only a name and the eight aspect scores (no age, no points); no backend, no
+  accounts. Codes shared before v2.0 still decode. **Deliberately not a
+  leaderboard**: no rank, no tier, no ordering by score, and no sample
+  profiles. Every cell is marked against the *population* average, which is the
+  comparison this app is actually about; a friend's column is there to show you
+  where you differ, not who is ahead
 - **Age as level, seasonal XP**: your level is simply your age (a fact, not a
   claim), ticking up on your birthday. XP accrues within each level-year and
   resets at the birthday, with every closed year filed to a season archive — the

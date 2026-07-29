@@ -59,7 +59,6 @@ export const TH = {
   "Reset Data": "ล้างข้อมูล",
   "Overview": "ภาพรวม",
   "Goals": "เป้าหมาย",
-  "Peer Comparison": "เปรียบเทียบกับผู้อื่น",
   "Importing a backup replaces ALL current data. Continue?": "การนำเข้าข้อมูลสำรองจะแทนที่ข้อมูลปัจจุบันทั้งหมด ดำเนินการต่อหรือไม่?",
   "Data exported.": "ส่งออกข้อมูลแล้ว",
   "Data imported successfully.": "นำเข้าข้อมูลสำเร็จ",
@@ -445,23 +444,27 @@ export const TH = {
   // --- Shared dialog actions ---
   "Cancel": "ยกเลิก",
 
-  // --- Rankings / Crew Codes ---
+  // --- Side by Side / Comparison Codes ---
   "Comparison Codes": "รหัสเปรียบเทียบ",
-  "Peer comparison uses <strong>real people</strong>: share your code with others over LINE or Discord, and paste theirs below. A code carries only your name and the eight aspect scores — no age, no points, nothing else. Re-paste a newer code any time to update a participant.":
-    "การเปรียบเทียบกับผู้อื่นใช้<strong>คนจริง</strong>: แชร์รหัสของคุณให้ผู้อื่นทาง LINE หรือ Discord แล้วนำรหัสของพวกเขามาวางด้านล่าง รหัสมีแค่ชื่อและคะแนนรายด้านทั้งแปด — ไม่มีอายุ ไม่มีคะแนนสะสม ไม่มีอย่างอื่น วางรหัสใหม่ได้ทุกเมื่อเพื่ออัปเดตผู้เข้าร่วม",
+  "Share your code with others over LINE or Discord, and paste theirs below. A code carries only a name and the eight aspect scores — no age, no points, nothing else. Re-paste a newer code any time to update someone.":
+    "แชร์รหัสของคุณให้ผู้อื่นทาง LINE หรือ Discord แล้วนำรหัสของพวกเขามาวางด้านล่าง รหัสมีแค่ชื่อและคะแนนรายด้านทั้งแปด — ไม่มีอายุ ไม่มีคะแนนสะสม ไม่มีอย่างอื่น วางรหัสใหม่ได้ทุกเมื่อเพื่ออัปเดตข้อมูลของแต่ละคน",
   "Your Comparison Code": "รหัสเปรียบเทียบของคุณ",
   "Copy": "คัดลอก",
   "Copied!": "คัดลอกแล้ว!",
-  "Add a participant's code": "เพิ่มรหัสของผู้เข้าร่วม",
+  "Add someone's code": "เพิ่มรหัสของคนอื่น",
   "Add": "เพิ่ม",
-  "No participants added yet — sample profiles fill the board until you add codes.": "ยังไม่มีผู้เข้าร่วม — โปรไฟล์ตัวอย่างจะเติมกระดานจนกว่าคุณจะเพิ่มรหัส",
-  "{n} participant added. Sample rows are marked.": "เพิ่มผู้เข้าร่วม {n} คน แถวตัวอย่างมีป้ายกำกับ",
-  "{n} participants added. Sample rows are marked.": "เพิ่มผู้เข้าร่วม {n} คน แถวตัวอย่างมีป้ายกำกับ",
-  "Rank": "อันดับ",
-  "Participant": "ผู้เข้าร่วม",
-  "Balance": "ดัชนีสมดุล",
-  "Tier": "ระดับ",
-  "Sample": "ตัวอย่าง",
+  "Side by Side": "เทียบเคียงกัน",
+  "Not a ranking. Each column is one person's eight aspects, marked against the population average — so you can see where you differ, not who is ahead.":
+    "ไม่ใช่การจัดอันดับ แต่ละคอลัมน์คือคะแนนทั้งแปดด้านของแต่ละคน โดยเทียบกับค่าเฉลี่ยของประชากร — เพื่อให้เห็นว่าคุณต่างกันตรงไหน ไม่ใช่ว่าใครนำใคร",
+  "No one added yet. Paste someone's comparison code above to see their eight aspects beside yours.":
+    "ยังไม่ได้เพิ่มใคร วางรหัสเปรียบเทียบของคนอื่นด้านบนเพื่อดูคะแนนทั้งแปดด้านของเขาเทียบกับของคุณ",
+  // "Population average" is already defined once for the radar legend above —
+  // the Side by Side column header reuses that same key.
+  "Aspect": "ด้าน",
+  "At or above the population average": "เท่ากับหรือสูงกว่าค่าเฉลี่ยของประชากร",
+  "Below the population average": "ต่ำกว่าค่าเฉลี่ยของประชากร",
+  "{name} clears the population average in {aspects}, where you do not yet.":
+    "{name} ทำได้ถึงค่าเฉลี่ยของประชากรในด้าน{aspects} ซึ่งคุณยังไปไม่ถึง",
   "{name} (You)": "{name} (คุณ)",
   "Remove {name}": "ลบ {name}",
   "Remove participant": "ลบผู้เข้าร่วม",
@@ -557,12 +560,6 @@ export const TH = {
   "Unsupported comparison code version.": "เวอร์ชันรหัสเปรียบเทียบไม่รองรับ",
   "Comparison code is missing a name.": "รหัสเปรียบเทียบไม่มีชื่อ",
   "Comparison code has invalid aspect scores.": "รหัสเปรียบเทียบมีคะแนนรายด้านไม่ถูกต้อง",
-  "Nadia": "นาเดีย",
-  "Marcus": "มาร์คัส",
-  "Priya": "ปรียา",
-  "Kenji": "เคนจิ",
-  "Sofia": "โซเฟีย",
-  "Liam": "เลียม",
 
   // --- Backup / import errors ---
   "File is not valid JSON.": "ไฟล์ไม่ใช่ JSON ที่ถูกต้อง",
@@ -841,6 +838,8 @@ export const TH = {
     "ตอบแบบสอบถามของด้านนี้เพื่อปลดล็อกเกรด",
   "A harmonic mean of how your eight aspects compare with the population — 50 is the average person, and it rises fastest when your weakest aspect rises. This is this app's own summary figure, not a published measure.":
     "ค่าเฉลี่ยฮาร์มอนิกของการเปรียบเทียบทั้งแปดด้านของคุณกับประชากร — 50 คือคนทั่วไปโดยเฉลี่ย และจะขยับขึ้นเร็วที่สุดเมื่อด้านที่อ่อนที่สุดของคุณดีขึ้น นี่เป็นตัวเลขสรุปที่แอปนี้สร้างขึ้นเอง ไม่ใช่มาตรวัดที่มีการเผยแพร่",
+  "You are at or above the population average in {count} of {total} aspects.":
+    "คุณอยู่ในระดับเท่ากับหรือสูงกว่าค่าเฉลี่ยของประชากร {count} จาก {total} ด้าน",
   "Lifting {aspect} would move it most.": "การยกระดับด้าน{aspect}จะทำให้ค่านี้ขยับมากที่สุด",
   "A letter grade (A-F) comes from an aspect's population percentile, never from its 0-100 score: A is the top 10%, B the top 30%, C the typical middle (30th-69th), D below typical, and F the bottom 10%. The percentile is the part of an aspect that compares you with published data, so it is the only part worth grading. An aspect whose questionnaires you have not answered is shown as “not graded” — never as an F, because missing data is not a failing result.":
     "เกรด (A-F) มาจากเปอร์เซ็นไทล์เทียบประชากรของแต่ละด้าน ไม่ได้มาจากคะแนน 0-100: A คือ 10% แรก, B คือ 30% แรก, C คือช่วงกลางทั่วไป (เปอร์เซ็นไทล์ที่ 30-69), D คือต่ำกว่าทั่วไป และ F คือ 10% ล่าง เปอร์เซ็นไทล์คือส่วนของคะแนนที่เทียบคุณกับข้อมูลที่เผยแพร่จริง จึงเป็นส่วนเดียวที่ควรนำมาให้เกรด ด้านที่คุณยังไม่ได้ตอบแบบสอบถามจะแสดงว่า “ยังไม่ให้เกรด” ไม่ใช่ F เพราะการไม่มีข้อมูลไม่ใช่ผลลัพธ์ที่ล้มเหลว",

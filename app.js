@@ -15,7 +15,7 @@ import {
   renderMethodology,
   getLumiTip,
   openDialog
-} from "./ui.js?v=35";
+} from "./ui.js?v=36";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -87,7 +87,7 @@ function applyChromeTranslations() {
   setText("tab-dashboard", t("Overview"));
   setText("tab-review", t("Weekly Review"));
   setText("tab-quests", t("Goals"));
-  setText("tab-leaderboard", t("Peer Comparison"));
+  setText("tab-leaderboard", t("Side by Side"));
   setText("footer-privacy", t("Privacy & Data"));
   setText("footer-methodology", t("Methodology"));
   setText("footer-source", t("Source code & license"));
@@ -265,7 +265,7 @@ function renderActiveTab() {
 function announceRoute(route) {
   const el = document.getElementById("route-announcer");
   if (!el) return;
-  const tabNames = { dashboard: "Overview", review: "Weekly Review", quests: "Goals", leaderboard: "Peer Comparison" };
+  const tabNames = { dashboard: "Overview", review: "Weekly Review", quests: "Goals", leaderboard: "Side by Side" };
   let label;
   if (route.type === "aspect") label = t(ASPECT_META[route.key]?.label || route.key);
   else if (route.type === "checkin") label = t("Re-assessment");

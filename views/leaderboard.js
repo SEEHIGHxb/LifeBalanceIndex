@@ -1,57 +1,80 @@
-// views/leaderboard.js - the Peer Comparison tab: comparison codes and the
-// rankings table. The board ranks on the Balance Index (harmonic mean of the
-// eight aspect scores) — no age, no points appear anywhere on it.
+// views/leaderboard.js - the Side by Side tab: comparison codes and an
+// aspect-by-aspect comparison with the people you have added.
+//
+// DELIBERATELY NOT A LEADERBOARD (despite the module name, kept so the route
+// id `leaderboard` and every cached path stay stable). This app's purpose is to
+// tell one person whether they are at least the average of the POPULATION —
+// a non-rivalrous comparison, since everyone can be above average on
+// volunteering and nothing breaks. Ranking the same scores against five
+// friends asks a different and worse question: who is winning. It converts
+// "I could give more" into "I'm fine, better than Ken", and there is no
+// version of that which helps someone lift anything.
+//
+// So this screen has NO rank column, NO ordering by score, NO tier badge, and
+// NO composite figure for anyone. What it has is the eight aspects laid out in
+// parallel columns, each marked against the population average — the same
+// yardstick the rest of the app uses. Difference is visible; ordering is not.
+//
+// The sample/NPC profiles are gone too. A board that invents opponents to look
+// populated is a board nobody was filling.
 
 import { stateManager } from "../state.js";
 import { encodeComparisonCode, decodeComparisonCode } from "../comparison-code.js";
-import { balanceIndex, balanceBand } from "../grades.js";
+import { ASPECT_KEYS } from "../aspects.js";
+import { AVERAGE_ASPECT_SCORES } from "../averages.js";
 import { t, tp } from "../i18n.js";
-import { escapeHtml } from "./helpers.js";
+import { escapeHtml, aspectLabel } from "./helpers.js";
 
-// Sample profiles that fill the board until real codes are added. They carry
-// aspect scores (not a level or a point total) because the board ranks on the
-// Balance Index derived from those scores. Chosen to spread monotonically from
-// a strong all-rounder to a low, spiky profile so the ordering reads clearly.
-const MOCK_COMPETITORS = [
-  { name: "Nadia", aspects: { finance: 72, physical: 80, mental: 78, relationships: 82, personalGoals: 70, socialContribution: 60, environment: 65, humanityFuture: 58 } },
-  { name: "Marcus", aspects: { finance: 68, physical: 75, mental: 70, relationships: 72, personalGoals: 66, socialContribution: 40, environment: 55, humanityFuture: 50 } },
-  { name: "Priya", aspects: { finance: 55, physical: 58, mental: 60, relationships: 57, personalGoals: 54, socialContribution: 50, environment: 55, humanityFuture: 48 } },
-  { name: "Kenji", aspects: { finance: 50, physical: 55, mental: 52, relationships: 48, personalGoals: 45, socialContribution: 35, environment: 50, humanityFuture: 40 } },
-  { name: "Sofia", aspects: { finance: 45, physical: 48, mental: 50, relationships: 42, personalGoals: 40, socialContribution: 38, environment: 44, humanityFuture: 35 } },
-  { name: "Liam", aspects: { finance: 40, physical: 42, mental: 38, relationships: 35, personalGoals: 30, socialContribution: 25, environment: 38, humanityFuture: 28 } }
-];
+// One cell: the score, plus whether it clears the population average for that
+// aspect. Same test as the dashboard headline (aspectsAtOrAboveAverage), so a
+// person reads the same verdict on both screens.
+function scoreCell(score, aspectKey) {
+  const value = Number.isFinite(score) ? Math.round(score) : 0;
+  const above = value >= AVERAGE_ASPECT_SCORES[aspectKey];
+  const title = above
+    ? t("At or above the population average")
+    : t("Below the population average");
+  return `
+    <td class="sbs-cell">
+      <span class="sbs-score">${escapeHtml(value)}</span>
+      <span class="sbs-mark ${above ? "sbs-above" : "sbs-below"}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}">${above ? "▲" : "▽"}</span>
+    </td>`;
+}
 
-// 5. RENDER LEADERBOARD
+// The one genuinely useful thing a peer tells you that the population cannot:
+// which aspects they have cleared that you have not. Framed as something to
+// learn from, never as a deficit — no "they beat you", no count, no total.
+function complementLine(person, myAspects) {
+  const gaps = ASPECT_KEYS.filter(key =>
+    (person.aspects || {})[key] >= AVERAGE_ASPECT_SCORES[key] &&
+    !((myAspects || {})[key] >= AVERAGE_ASPECT_SCORES[key])
+  );
+  if (gaps.length === 0) return "";
+  return `<li>${tp("{name} clears the population average in {aspects}, where you do not yet.", {
+    name: escapeHtml(person.name),
+    aspects: gaps.map(aspectLabel).join(", ")
+  })}</li>`;
+}
+
 export function renderLeaderboard(containerId, state, onRefresh) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
   const friends = state.friends || [];
-  const userEntry = {
-    name: tp("{name} (You)", { name: state.profile.name }),
-    aspects: state.aspects,
-    isUser: true
-  };
-  const friendEntries = friends.map(f => ({ ...f, isFriend: true }));
-  // Sample rows pad the board until real participants are added.
-  const npcEntries = MOCK_COMPETITORS.map(pl => ({ ...pl, isNpc: true }));
-
-  // Rank on the Balance Index alone — the only board metric now.
-  const allPlayers = [...npcEntries, ...friendEntries, userEntry]
-    .map(pl => {
-      const balance = balanceIndex(pl.aspects || {});
-      return { ...pl, balance, band: balanceBand(balance) };
-    })
-    .sort((a, b) => b.balance - a.balance);
-
   const myCode = encodeComparisonCode(state);
+  // Column order is fixed and meaningless on purpose: the population, then
+  // you, then everyone in the order they were added. Never sorted by score.
+  const people = [
+    { name: tp("{name} (You)", { name: state.profile.name }), aspects: state.aspects, isUser: true },
+    ...friends
+  ];
 
   container.innerHTML = `
-    <div style="max-width: 650px; margin: 0 auto;">
+    <div style="max-width: 720px; margin: 0 auto;">
       <div class="card">
         <h3 class="card-header">${t("Comparison Codes")}</h3>
         <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 12px;">
-          ${t("Peer comparison uses <strong>real people</strong>: share your code with others over LINE or Discord, and paste theirs below. A code carries only your name and the eight aspect scores — no age, no points, nothing else. Re-paste a newer code any time to update a participant.")}
+          ${t("Share your code with others over LINE or Discord, and paste theirs below. A code carries only a name and the eight aspect scores — no age, no points, nothing else. Re-paste a newer code any time to update someone.")}
         </p>
         <div class="form-group">
           <label for="my-comparison-code">${t("Your Comparison Code")}</label>
@@ -62,7 +85,7 @@ export function renderLeaderboard(containerId, state, onRefresh) {
         </div>
         <form id="add-friend-form">
           <div class="form-group">
-            <label for="friend-code">${t("Add a participant's code")}</label>
+            <label for="friend-code">${t("Add someone's code")}</label>
             <div style="display: flex; gap: 8px;">
               <input type="text" id="friend-code" class="form-control" placeholder="LQ1-..." style="font-family: var(--font-mono); font-size: 0.75rem;" required>
               <button type="submit" class="btn btn-primary" style="white-space: nowrap;">${t("Add")}</button>
@@ -73,45 +96,39 @@ export function renderLeaderboard(containerId, state, onRefresh) {
       </div>
 
       <div class="card">
-        <h3 class="card-header">${t("Peer Comparison")}</h3>
-        <p style="font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 15px;">
-          ${friends.length === 0
-            ? t("No participants added yet — sample profiles fill the board until you add codes.")
-            : tp(friends.length === 1
-                ? "{n} participant added. Sample rows are marked."
-                : "{n} participants added. Sample rows are marked.", { n: friends.length })}
+        <h3 class="card-header">${t("Side by Side")}</h3>
+        <p class="sbs-intro">
+          ${t("Not a ranking. Each column is one person's eight aspects, marked against the population average — so you can see where you differ, not who is ahead.")}
         </p>
-
+        ${friends.length === 0 ? `
+          <p class="sbs-empty">${t("No one added yet. Paste someone's comparison code above to see their eight aspects beside yours.")}</p>` : `
         <div class="table-scroll">
-        <table style="width: 100%; border-collapse: collapse; text-align: left;">
-          <thead>
-            <tr style="border-bottom: 1px solid var(--color-card-border); font-family: var(--font-serif); font-size: 1.05rem; color: var(--color-navy);">
-              <th style="padding: 10px;">${t("Rank")}</th>
-              <th style="padding: 10px;">${t("Participant")}</th>
-              <th style="padding: 10px; text-align: center;">${t("Balance")}</th>
-              <th style="padding: 10px; text-align: center;">${t("Tier")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${allPlayers.map((player, idx) => {
-              const rowStyle = player.isUser ? `background: var(--color-astral-glow); font-weight: bold; border: 1px solid var(--color-gold);` : `border-bottom: 1px solid var(--color-card-border);`;
-              const badgeClass = idx === 0 ? `background: var(--color-gold); color: #fff;` : idx === 1 ? `background: #b8b2a6; color: #fff;` : `background: var(--bg-primary); color: var(--color-text-secondary);`;
-              return `
-                <tr style="${rowStyle}">
-                  <td style="padding: 12px 10px;"><span style="border-radius:50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; border: 1px solid var(--color-gold); ${badgeClass}">${idx + 1}</span></td>
-                  <td style="padding: 12px 10px;">
-                    ${escapeHtml(player.isNpc ? t(player.name) : player.name)}
-                    ${player.isNpc ? `<span class="npc-tag">${t("Sample")}</span>` : ""}
-                    ${player.isFriend ? `<button type="button" class="friend-remove" data-friend-id="${escapeHtml(player.id)}" aria-label="${tp("Remove {name}", { name: escapeHtml(player.name) })}" title="${t("Remove participant")}">✕</button>` : ""}
-                  </td>
-                  <td style="padding: 12px 10px; text-align: center; font-family: var(--font-mono);">${escapeHtml(player.balance)}</td>
-                  <td style="padding: 12px 10px; text-align: center;"><span class="holo-badge">${escapeHtml(t(player.band.label))}</span></td>
-                </tr>
-              `;
-            }).join("")}
-          </tbody>
-        </table>
+          <table class="sbs-table">
+            <thead>
+              <tr>
+                <th scope="col">${t("Aspect")}</th>
+                <th scope="col" class="sbs-avg-head">${t("Population average")}</th>
+                ${people.map(p => `
+                  <th scope="col"${p.isUser ? ' class="sbs-you"' : ""}>
+                    ${escapeHtml(p.name)}
+                    ${p.isUser ? "" : `<button type="button" class="friend-remove" data-friend-id="${escapeHtml(p.id)}" aria-label="${tp("Remove {name}", { name: escapeHtml(p.name) })}" title="${t("Remove participant")}">✕</button>`}
+                  </th>`).join("")}
+              </tr>
+            </thead>
+            <tbody>
+              ${ASPECT_KEYS.map(key => `
+                <tr>
+                  <th scope="row" class="sbs-aspect">${aspectLabel(key)}</th>
+                  <td class="sbs-cell sbs-avg">${escapeHtml(AVERAGE_ASPECT_SCORES[key])}</td>
+                  ${people.map(p => scoreCell((p.aspects || {})[key], key)).join("")}
+                </tr>`).join("")}
+            </tbody>
+          </table>
         </div>
+        ${(() => {
+          const lines = friends.map(f => complementLine(f, state.aspects)).join("");
+          return lines ? `<ul class="sbs-notes">${lines}</ul>` : "";
+        })()}`}
       </div>
     </div>
   `;

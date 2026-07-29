@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `35`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `36`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,95 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.5.0] — 2026-07-28 (APP_VERSION 36)
+
+### The app finally says its thesis in one sentence
+
+This app exists to answer one question — *"am I at least the average of the
+population?"* — and until now it never answered it directly. The answer was
+implied in three places at once: eight per-aspect percentiles, the dashed
+population polygon on the radar, and the Balance Index (where 50 *is* the
+average person). A reader had to assemble it themselves.
+
+The Balance Index card now states it outright, above the methodology caption:
+
+> **You are at or above the population average in 5 of 8 aspects.**
+
+- `grades.js`: new pure export `aspectsAtOrAboveAverage(aspects)` → `{count,
+  total}`. "At or above" is judged on the **population-relative** standing
+  (`relativeToPopulation(...) >= 50`), the same scale the Balance Index runs
+  on, so the sentence and the number beside it can never disagree. Equivalent
+  to `score >= populationAverage`, but routed through `relativeToPopulation`
+  so the definition of "average" lives in exactly one place — a test pins the
+  two readings together.
+- **Not softened at the low end.** `0 of 8` renders as plainly as `8 of 8`.
+  Special-casing bad news would make this a congratulation engine instead of a
+  mirror; the forward-looking half of the answer is the existing gold
+  `weakestAspect` line directly beneath it ("Lifting Environment would move it
+  most"), so the card reads fact → lever.
+- `views/helpers.js`: `balanceIndexBlock(index, band, weakest)` gains an
+  optional 4th argument `standing`. Placed **above** the harmonic-mean caption
+  on purpose — the reading order is now *what the number is → what it means
+  about you → how it was built*.
+- `index.css`: `.balance-index-standing` at 0.88rem/600, sized between the
+  1rem title and the 0.76rem caption. Navy rather than gold: this is a
+  statement of fact, and the gold line below it is the call to action.
+- `views/dashboard.js`: computes `standing` alongside `index`/`weakest` and
+  passes it through. `renderDashboard`'s signature is unchanged.
+- `th.js`: one new string.
+- `tests/grades.test.mjs`: four new tests. The boundary is pinned hard —
+  *exactly at* the population average must **count** (the claim is "at or
+  above"), one point under must not. An off-by-one here would tell a person
+  standing at the average that they are below it.
+
+### Peer Comparison defanged → "Side by Side"
+
+The board ranked people. This app exists to tell one person whether they are at
+least the average of the **population** — a comparison nobody loses, since
+everyone can be above average on volunteering and nothing breaks. Ranking the
+same eight scores against five friends asks a different and worse question:
+*who is winning*. It turns "I could give more" into "I'm fine, better than
+Ken", and no version of that helps anyone lift anything.
+
+The tell was already in the code: **sample/NPC profiles filled the board when
+it was empty**. A board that has to invent opponents to look populated is a
+board nobody was filling.
+
+Kept: comparison codes, the sharing flow, the wire format (`LQ1-…` codes from
+before v2.0 still decode), and the route id `leaderboard` — so no cached path,
+bookmark, or shared code breaks.
+
+Removed: the **Rank** column and its gold/silver placement badges, the **Tier**
+column, sorting by Balance Index, the Balance Index itself (a composite figure
+for another person is a score to beat), and all six sample profiles.
+
+In their place, `views/leaderboard.js` renders an **aspect matrix**: rows are
+the eight aspects, columns are the population average, then you, then everyone
+in the order they were added — an order that is fixed and meaningless on
+purpose. Each cell carries a ▲/▽ mark for whether it clears the population
+average for that aspect, using the same test as the new dashboard headline, so
+both screens give one person the same verdict. Beneath it, one line per
+participant: *"Ken clears the population average in Mental, Relationships,
+where you do not yet."* — the one thing a peer can tell you that the population
+cannot, framed as something to learn from rather than a deficit.
+
+- Tab label "Peer Comparison" → "Side by Side" (`index.html`, `app.js`). The
+  route id and module filename stay `leaderboard` deliberately; the module
+  header explains why it is not one.
+- `index.css`: `.npc-tag` retired; new `.sbs-*` block. No rank-badge styling
+  survives.
+- `th.js`: 9 new strings; **17 pruned** — `Rank`, `Participant`, `Balance`,
+  `Tier`, `Sample`, the two sample-count plurals, the old intro copy, and the
+  six NPC names (Nadia, Marcus, Priya, Kenji, Sofia, Liam). `Population
+  average` was already defined for the radar legend and is reused.
+- `tests/views-xss.test.mjs`: two new tests. One escapes a hostile participant
+  name — this is the only view rendering a name **someone else authored**, so
+  it is attacker-controlled by construction rather than by a corrupt backup.
+  The other is a guard on the *design*: it fails if a rank, tier, or sample
+  column returns, or if a far stronger participant is ever sorted ahead of the
+  user.
+- `README.md`: feature entry rewritten, including why it is not a leaderboard.
 
 ## [2.4.1] — 2026-07-28 (APP_VERSION 35)
 

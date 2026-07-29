@@ -119,6 +119,30 @@ export function balanceIndex(aspects) {
   return Math.round(scores.length / reciprocalSum);
 }
 
+// THE HEADLINE QUESTION: "am I at least the average of the population?"
+//
+// The app already answers this eight separate times (one percentile per
+// aspect) and once obliquely (the Balance Index, where 50 is the average
+// person). It never answered it in a single sentence — which is the one
+// sentence this app exists to say. This reduces it to a count.
+//
+// "At or above" is judged on the POPULATION-RELATIVE standing (>= 50), the
+// same scale the Balance Index runs on, so the headline and the number beside
+// it can never disagree. Equivalent to `score >= populationAverage`, but stated
+// through relativeToPopulation so the definition of "average" lives in exactly
+// one place.
+//
+// Deliberately NOT special-cased at the low end: 0 of 8 renders as plainly as
+// 8 of 8. Softening the sentence when the news is bad would make it a
+// congratulation engine rather than a mirror. The forward-looking half of the
+// answer is `weakestAspect()`, which is rendered alongside it.
+export function aspectsAtOrAboveAverage(aspects) {
+  const count = ASPECT_KEYS.filter(key =>
+    relativeToPopulation((aspects || {})[key], AVERAGE_ASPECT_SCORES[key]) >= 50
+  ).length;
+  return { count, total: ASPECT_KEYS.length };
+}
+
 // Plain-language band for a Balance Index, for the personal-page caption and
 // the comparison board tier. Same canonical-English convention as GRADE_BANDS.
 // Thresholds sit on the population-relative scale where 50 is the average

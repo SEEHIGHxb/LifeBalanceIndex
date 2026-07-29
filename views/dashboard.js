@@ -8,7 +8,7 @@ import { AVERAGE_ASPECT_SCORES } from "../averages.js";
 import { getAllBenchmarks, collectSources } from "../benchmarks.js";
 import { getAspectConfidence, ASPECT_KEYS, isAspectDeepVerified } from "../aspects.js";
 import { getTopSuggestions, getMentalHealthNotice } from "../suggestions.js";
-import { balanceIndex, balanceBand, weakestAspect, gradeAllAspects } from "../grades.js";
+import { balanceIndex, balanceBand, weakestAspect, gradeAllAspects, aspectsAtOrAboveAverage } from "../grades.js";
 import { seasonPace } from "../season.js";
 import { t, tp, dateLocale } from "../i18n.js";
 import {
@@ -41,6 +41,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
   const index = balanceIndex(state.aspects);
   const indexBand = balanceBand(index);
   const weakest = weakestAspect(state.aspects);
+  const standing = aspectsAtOrAboveAverage(state.aspects);
   const suggestions = getTopSuggestions(state, 3);
   const checkinDue = stateManager.isCheckinDue();
   const reviewDue = stateManager.isWeeklyReviewDue();
@@ -130,7 +131,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
         </div>
 
         <div class="card">
-          ${balanceIndexBlock(index, indexBand, weakest)}
+          ${balanceIndexBlock(index, indexBand, weakest, standing)}
         </div>
 
         <div class="card">

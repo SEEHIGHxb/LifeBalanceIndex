@@ -10,7 +10,8 @@ import assert from "node:assert/strict";
 import {
   GRADE_BANDS, GRADE_PRIORITY, BALANCE_BANDS,
   gradeForPercentile, gradeForBenchmark, gradeAllAspects,
-  isBottomGrade, balanceIndex, balanceBand, weakestAspect, relativeToPopulation
+  isBottomGrade, balanceIndex, balanceBand, weakestAspect, relativeToPopulation,
+  aspectsAtOrAboveAverage
 } from "../grades.js";
 import { ASPECT_KEYS } from "../aspects.js";
 import { AVERAGE_ASPECT_SCORES } from "../averages.js";
@@ -210,4 +211,42 @@ test("weakestAspect names the aspect with the lowest population-relative standin
   assert.equal(weak.aspect, "environment");
   assert.ok(weak.score < 50);
   assert.equal(weakestAspect({}).score, 0);
+});
+
+// --- "AM I AT LEAST AVERAGE?" HEADLINE ---
+//
+// This is the app's thesis sentence, so the boundary is pinned: exactly AT the
+// population average must COUNT (the claim is "at or above"), and one point
+// under must not. An off-by-one here would tell a person at the average that
+// they are below it.
+
+test("aspectsAtOrAboveAverage counts an exactly-average life as 8 of 8", () => {
+  const standing = aspectsAtOrAboveAverage(AVERAGE_ASPECT_SCORES);
+  assert.deepEqual(standing, { count: 8, total: ASPECT_KEYS.length });
+});
+
+test("aspectsAtOrAboveAverage excludes an aspect a hair below its average", () => {
+  // finance and physical pushed just under; the other six stay exactly at
+  // their averages and must still count.
+  const aspects = {
+    ...AVERAGE_ASPECT_SCORES,
+    finance: AVERAGE_ASPECT_SCORES.finance - 1,
+    physical: AVERAGE_ASPECT_SCORES.physical - 1
+  };
+  assert.equal(aspectsAtOrAboveAverage(aspects).count, 6);
+});
+
+test("aspectsAtOrAboveAverage agrees with a direct score-vs-average comparison", () => {
+  // The headline must never diverge from the raw definition of "average",
+  // whatever relativeToPopulation does internally.
+  const aspects = { ...uniform(45), socialContribution: 90, environment: 12 };
+  const expected = ASPECT_KEYS.filter(k => aspects[k] >= AVERAGE_ASPECT_SCORES[k]).length;
+  assert.equal(aspectsAtOrAboveAverage(aspects).count, expected);
+});
+
+test("aspectsAtOrAboveAverage reports 0 of 8 without softening, and tolerates junk", () => {
+  assert.deepEqual(aspectsAtOrAboveAverage(uniform(0)), { count: 0, total: 8 });
+  assert.deepEqual(aspectsAtOrAboveAverage({}), { count: 0, total: 8 });
+  assert.deepEqual(aspectsAtOrAboveAverage(null), { count: 0, total: 8 });
+  assert.deepEqual(aspectsAtOrAboveAverage(uniform(100)), { count: 8, total: 8 });
 });

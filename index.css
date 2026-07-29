@@ -977,19 +977,66 @@ header {
   line-height: 1.45;
 }
 
-/* Peer comparison: sample-row tag + remove control */
-.npc-tag {
-  font-family: var(--font-sans);
-  font-size: 0.62rem;
-  font-weight: 600;
+/* --- Side by Side: an aspect matrix, deliberately not a scoreboard ---
+   No rank badges, no gold/silver first-and-second styling, no tier chips —
+   those all existed to express an ORDER, and the screen no longer has one.
+   The only emphasis left is on the population-average column and the mark
+   telling you whether a cell clears it, because that is the app's yardstick. */
+.sbs-intro {
+  font-size: 0.85rem;
   color: var(--color-text-secondary);
-  background: #f2efe8;
-  border: 1px solid var(--color-card-border);
-  border-radius: 3px;
-  padding: 1px 6px;
-  margin-left: 6px;
-  vertical-align: middle;
+  margin-bottom: 14px;
+  line-height: 1.45;
 }
+.sbs-empty {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  padding: 18px;
+  text-align: center;
+  border: 1px dashed var(--color-card-border);
+  border-radius: 4px;
+}
+.sbs-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.85rem;
+}
+.sbs-table th,
+.sbs-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--color-card-border);
+  white-space: nowrap;
+}
+.sbs-table thead th {
+  font-family: var(--font-serif);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-navy);
+  vertical-align: bottom;
+}
+/* The population column is the reference every other column is read against,
+   so it is set apart typographically rather than by rank-style decoration. */
+.sbs-avg-head,
+.sbs-avg {
+  color: var(--color-text-secondary);
+  background: var(--bg-primary);
+}
+.sbs-you { color: var(--color-gold); }
+.sbs-aspect { font-weight: 500; }
+.sbs-cell { text-align: center; font-family: var(--font-mono); }
+.sbs-score { font-weight: 600; }
+.sbs-mark { margin-left: 5px; font-size: 0.7rem; }
+.sbs-above { color: var(--color-gold); }
+.sbs-below { color: var(--color-text-secondary); }
+.sbs-notes {
+  margin-top: 14px;
+  padding-left: 18px;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+.sbs-notes li { margin-bottom: 4px; }
 
 .friend-remove {
   background: none;
@@ -1350,6 +1397,19 @@ header {
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 4px;
+}
+/* The one sentence the app exists to say. Sized between the title (1rem) and
+   the methodology caption (0.76rem) so the reading order is: what the number
+   is -> what it means about you -> how it was built. Navy, not gold: this is a
+   statement of fact, not a call to action — the gold line below it is the
+   action. */
+.balance-index-standing {
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-navy);
+  line-height: 1.4;
+  margin-bottom: 6px;
 }
 .balance-index-caption {
   font-size: 0.76rem;

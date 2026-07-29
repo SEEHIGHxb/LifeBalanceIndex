@@ -104,13 +104,20 @@ export function gradeBadge(grade) {
 }
 
 // The Balance Index headline block for a personal page. `index` is the
-// harmonic mean from grades.js; `weakest` is its {aspect, score} drag point.
+// harmonic mean from grades.js; `weakest` is its {aspect, score} drag point;
+// `standing` is the {count, total} from aspectsAtOrAboveAverage().
+//
+// The standing sentence sits ABOVE the caption on purpose. "Am I at least the
+// average of the population?" is the question this app exists to answer, and
+// until now the answer was only ever implied — spread across eight percentiles
+// and folded into one composite number. It is stated first; the caption
+// explaining how the composite is built is fine print underneath it.
 //
 // The caption is deliberate: this number is the app's own aggregate, not a
 // published measure, and every surface that shows it says so. Removing that
 // line would put an uncited construct next to eight cited ones with nothing
 // to tell them apart.
-export function balanceIndexBlock(index, band, weakest) {
+export function balanceIndexBlock(index, band, weakest, standing = null) {
   return `
     <div class="balance-index">
       <div class="balance-index-figure">
@@ -119,6 +126,7 @@ export function balanceIndexBlock(index, band, weakest) {
       </div>
       <div class="balance-index-body">
         <p class="balance-index-title">${t("Balance Index")} <span class="balance-band band-${band.key}">${t(band.label)}</span></p>
+        ${standing ? `<p class="balance-index-standing">${tp("You are at or above the population average in {count} of {total} aspects.", { count: standing.count, total: standing.total })}</p>` : ""}
         <p class="balance-index-caption">${t("A harmonic mean of how your eight aspects compare with the population — 50 is the average person, and it rises fastest when your weakest aspect rises. This is this app's own summary figure, not a published measure.")}</p>
         ${weakest ? `<p class="balance-index-weakest">${tp("Lifting {aspect} would move it most.", { aspect: aspectLabel(weakest.aspect) })}</p>` : ""}
       </div>

@@ -115,6 +115,50 @@ export function percentileBand(percentile) {
   return PERCENTILE_BANDS.find(b => percentile >= b.min) || PERCENTILE_BANDS[PERCENTILE_BANDS.length - 1];
 }
 
+// --- TWO-STAGE, BAND-LOCKED PERCENTILES ---
+//
+// Three aspects have no published DISTRIBUTION to sit on — CAF, the Pollution
+// Control Dept and OECD publish participation RATES and averages ("52% of
+// Thais donated"), not a curve. Anchoring on a single cited rate made those
+// percentiles nearly constant: humanityFuture could only ever return 30 or 70,
+// because it was a two-valued function of one checkbox, and socialContribution
+// could never reach an A no matter what someone actually did.
+//
+// So the percentile is built in two stages:
+//   1. the CITED rate decides which BAND you are in — this is the published
+//      claim, and it is the only thing that can move you across a boundary;
+//   2. the MEASURED intensity (the app's own instrument composite) decides
+//      where inside that band you sit.
+//
+// BAND-LOCKED means stage 2 can never cross a boundary stage 1 set: a
+// non-donor at maximum prosocial intensity still lands below the floor of the
+// donor band. The cited claim survives intact; only the resolution inside it
+// improves. Every consumer surface says so — the notes line below and the
+// methodology page both state that the band is cited and the position within
+// it is this app's composite.
+//
+// `intensity` is 0-1, or null when the instrument was never answered (older
+// saves, express onboarding). Null returns `fallback` — the exact fixed
+// percentile this benchmark returned before the two-stage design — rather than
+// the band midpoint. Using the midpoint would have moved some people's grade
+// purely because the band geometry changed (a volunteer with no answers went
+// 82 -> 90, i.e. B -> A, having done nothing). A grade must only move when the
+// person's own answers move it.
+function positionInBand(floor, ceil, intensity, fallback) {
+  if (!Number.isFinite(intensity)) return fallback;
+  const at = Math.max(0, Math.min(1, intensity));
+  return Math.round(floor + at * (ceil - floor));
+}
+
+// Normalized 0-1 reading of a raw instrument sum, or null when absent.
+function intensityOf(raw, max) {
+  return Number.isFinite(raw) ? Math.max(0, Math.min(1, raw / max)) : null;
+}
+
+// The honesty disclosure that makes the two-stage design legible rather than a
+// hidden fudge. Shown on every aspect that uses it.
+const TWO_STAGE_NOTE = () => t("The band comes from published participation data; where you sit inside it is this app's own composite of your answers, and can never move you into a different band.");
+
 export function ordinal(n) {
   const rem100 = n % 100;
   if (rem100 >= 11 && rem100 <= 13) return `${n}th`;
@@ -286,68 +330,137 @@ function personalGoalsBenchmark(baseline) {
 }
 
 // --- SOCIAL CONTRIBUTION: giving participation vs CAF Thailand rates ---
-function socialContributionBenchmark(profile) {
-  const donates = parseFloat(profile.monthlyDonations || 0) > 0;
+//
+// STAGE 1 (cited). CAF Thailand 2024: 52% donated money, 19% volunteered.
+// Those two rates carve the population into three non-overlapping bands, and
+// nothing a person answers can move them between bands:
+//   volunteers      -> the top 19%                      [81, 99]
+//   donates only    -> above the 48% who gave nothing,
+//                      below the 19% who volunteer      [48, 80]
+//   neither         -> the bottom 48%                   [ 2, 47]
+// Giving as a share of income is capped at 5% — well under a tithe, and the
+// point at which "gives regularly" stops being the interesting variable. That
+// cap is the app's own choice, and it only positions WITHIN a band.
+const SOCIAL_BANDS = {
+  volunteers: [81, 99],
+  donates: [48, 80],
+  neither: [2, 47]
+};
+const GENEROUS_GIVING_SHARE = 0.05;
+
+function socialContributionBenchmark(profile, baseline) {
+  const donations = parseFloat(profile.monthlyDonations || 0);
+  const income = parseFloat(profile.monthlyIncome || 0);
+  const donates = donations > 0;
   const volunteers = parseFloat(profile.volunteeringHours || 0) > 0;
-  // Thailand 2024: 52% donated, 19% volunteered. Band midpoints:
-  // neither -> middle of the non-donor 48%; donor -> middle of the donor
-  // band; volunteer -> inside the top 19%; both -> upper end of it.
-  let percentile, band;
-  if (donates && volunteers) {
-    percentile = 88;
-    band = "donates and volunteers — inside the 19% of Thais who volunteer";
-  } else if (volunteers) {
-    percentile = 82;
-    band = "volunteers — inside the 19% of Thais who volunteer";
-  } else if (donates) {
-    percentile = 62;
-    band = "donates — inside the 52% of Thais who gave money";
-  } else {
-    percentile = 24;
-    band = "no regular giving yet — 52% of Thais donated last year";
-  }
+
+  const key = volunteers ? "volunteers" : donates ? "donates" : "neither";
+  const [floor, ceil] = SOCIAL_BANDS[key];
+  // Pre-two-stage fixed values, used only when PTM was never answered.
+  const fallback = volunteers ? (donates ? 88 : 82) : donates ? 62 : 24;
+
+  // STAGE 2 (this app's own). The five PTM items carry helping, civic and
+  // local behaviour; giving share carries magnitude, which the participation
+  // rate deliberately ignores. Falls back to PTM alone when income is unknown,
+  // and to the band midpoint when the instrument was never answered.
+  const ptm = intensityOf((baseline || {}).ptm, 20);
+  const share = income > 0 ? Math.min(1, (donations / income) / GENEROUS_GIVING_SHARE) : null;
+  const intensity = ptm === null ? null
+    : share === null ? ptm
+    : (0.6 * ptm) + (0.4 * share);
+
+  const band = key === "volunteers"
+    ? (donates
+      ? "donates and volunteers — inside the 19% of Thais who volunteer"
+      : "volunteers — inside the 19% of Thais who volunteer")
+    : key === "donates"
+      ? "donates — inside the 52% of Thais who gave money"
+      : "no regular giving yet — 52% of Thais donated last year";
+
   return {
-    percentile,
+    percentile: positionInBand(floor, ceil, intensity, fallback),
     method: "threshold",
     summary: tp("Giving participation: {band}", { band: t(band) }),
-    notes: [t("Participation-rate placement, not an exact rank — CAF publishes yes/no rates, not amounts.")],
+    notes: [
+      t("Participation-rate placement, not an exact rank — CAF publishes yes/no rates, not amounts."),
+      TWO_STAGE_NOTE()
+    ],
     sources: [SOURCES.cafWgi]
   };
 }
 
 // --- ENVIRONMENT: single-use plastics vs Thai daily average ---
+//
+// STAGE 1 (cited). Plastic use per day, banded around the post-ban Thai
+// average of ~3 pieces. The bands are contiguous and ordered, so a heavier
+// plastic user can never be placed above a lighter one whatever else they do.
+// Each band's midpoint reproduces the single fixed percentile this used to
+// return (90, 78, 64, 50, 34, 20, 10), so the calibration is unchanged.
+// `fallback` is the fixed percentile each band returned before the two-stage
+// design, used when GEB was never answered.
 const PLASTIC_BANDS = [
-  { max: 0, percentile: 90 },
-  { max: 1, percentile: 78 },
-  { max: 2, percentile: 64 },
-  { max: 3, percentile: 50 }, // ~ current Thai average of ~3 pieces/day
-  { max: 5, percentile: 34 },
-  { max: 7, percentile: 20 },
-  { max: Infinity, percentile: 10 }
+  { max: 0, floor: 86, ceil: 99, fallback: 90 },
+  { max: 1, floor: 72, ceil: 85, fallback: 78 },
+  { max: 2, floor: 58, ceil: 71, fallback: 64 },
+  { max: 3, floor: 44, ceil: 57, fallback: 50 }, // ~ Thai average of ~3/day
+  { max: 5, floor: 28, ceil: 43, fallback: 34 },
+  { max: 7, floor: 14, ceil: 27, fallback: 20 },
+  { max: Infinity, floor: 2, ceil: 13, fallback: 10 }
 ];
 
-function environmentBenchmark(profile) {
+function environmentBenchmark(profile, baseline) {
   const pieces = parseInt(profile.singleUsePlastics || 0);
-  const { percentile } = PLASTIC_BANDS.find(b => pieces <= b.max);
+  const { floor, ceil, fallback } = PLASTIC_BANDS.find(b => pieces <= b.max);
+  // STAGE 2 (this app's own): the six GEB items — recycling, single-use
+  // avoidance, transit, energy habits, eco-product choice. Plastic count alone
+  // said nothing about any of them.
+  const intensity = intensityOf((baseline || {}).geb, 24);
   return {
-    percentile,
+    percentile: positionInBand(floor, ceil, intensity, fallback),
     method: "estimate",
     summary: tp("{pieces} single-use plastic pieces/day vs the ~3/day Thai average", { pieces }),
-    notes: [t("Banded around the post-plastic-ban Thai average; per-person distribution data is not published.")],
+    notes: [
+      t("Banded around the post-plastic-ban Thai average; per-person distribution data is not published."),
+      TWO_STAGE_NOTE()
+    ],
     sources: [SOURCES.thaiPlastic]
   };
 }
 
 // --- HUMANITY'S FUTURE: long-term security vs Thai retirement coverage ---
-function humanityFutureBenchmark(profile) {
+//
+// STAGE 1 (cited). Most Thai workers lack adequate retirement savings and ~2
+// in 3 over-60s are ineligible for a social-security annuity, so holding
+// long-term investments places a person above that majority. Two bands,
+// non-overlapping — midpoints 71 and 28, matching the 70/30 this used to
+// return.
+//
+// This aspect was the worst offender: a two-valued function of one checkbox,
+// which meant the aspect carrying the app's "lift humanity up" thesis could
+// only ever grade C or B, and every LFIS answer about legacy, philanthropy and
+// long-horizon thinking changed the score but not the standing.
+// `fallback` is the fixed 70/30 this returned before the two-stage design.
+const FUTURE_BANDS = {
+  invested: { floor: 50, ceil: 92, fallback: 70 },
+  none: { floor: 8, ceil: 49, fallback: 30 }
+};
+
+function humanityFutureBenchmark(profile, baseline) {
   const invested = Boolean(profile.longTermInvestments);
+  const { floor, ceil, fallback } = invested ? FUTURE_BANDS.invested : FUTURE_BANDS.none;
+  // STAGE 2 (this app's own): the five LFIS items — future skills, legacy,
+  // philanthropic intent, long-horizon risk thinking, security planning.
+  const intensity = intensityOf((baseline || {}).lfis, 20);
   return {
-    percentile: invested ? 70 : 30,
+    percentile: positionInBand(floor, ceil, intensity, fallback),
     method: "threshold",
     summary: t(invested
       ? "Holds long-term retirement investments — ahead of most Thai workers"
       : "No long-term retirement investments yet — like most Thai workers"),
-    notes: [t("Most Thai workers lack adequate retirement savings; ~2 in 3 over-60s get no social-security annuity.")],
+    notes: [
+      t("Most Thai workers lack adequate retirement savings; ~2 in 3 over-60s get no social-security annuity."),
+      TWO_STAGE_NOTE()
+    ],
     sources: [SOURCES.thaiRetirement]
   };
 }
@@ -364,9 +477,12 @@ export function getAllBenchmarks(state) {
     mental: mentalBenchmark(baseline),
     relationships: relationshipsBenchmark(baseline),
     personalGoals: personalGoalsBenchmark(baseline),
-    socialContribution: socialContributionBenchmark(profile),
-    environment: environmentBenchmark(profile),
-    humanityFuture: humanityFutureBenchmark(profile)
+    // These three take `baseline` too: their cited sources publish
+    // participation rates, not distributions, so the instrument sums are what
+    // give the percentile any resolution inside the cited band.
+    socialContribution: socialContributionBenchmark(profile, baseline),
+    environment: environmentBenchmark(profile, baseline),
+    humanityFuture: humanityFutureBenchmark(profile, baseline)
   };
   // Attach an indicative percentile range to every computable benchmark in one
   // place (immutably) so each *Benchmark function stays focused on its score.

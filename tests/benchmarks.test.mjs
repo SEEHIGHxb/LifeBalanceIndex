@@ -351,6 +351,85 @@ test("grit note discloses the perseverance-only short form and prefers the full 
   );
 });
 
+// --- TWO-STAGE, BAND-LOCKED PERCENTILES (the outward three) ---
+//
+// socialContribution, environment and humanityFuture sit on published
+// participation RATES, not distributions. Before the two-stage design their
+// percentiles were nearly constant — humanityFuture returned 30 or 70 and
+// nothing else, so the aspect carrying the app's "lift humanity" thesis could
+// only ever grade C or B. These tests pin the three properties that make the
+// fix legitimate: it resolves, it never crosses a cited boundary, and it does
+// not regrade anyone who has not answered.
+
+const OUTWARD_BASELINE = { ...BASELINE, ptm: 10, geb: 12, lfis: 10 };
+const bench = (profileOverrides, instruments) =>
+  getAllBenchmarks(makeState(profileOverrides, instruments === null ? null : { ...OUTWARD_BASELINE, ...instruments }));
+
+test("the outward three respond to their instruments, not just to a checkbox", () => {
+  // Same profile, opposite instrument answers: the percentile must move.
+  const low = bench({ monthlyDonations: 200, longTermInvestments: true, singleUsePlastics: 2 }, { ptm: 0, geb: 0, lfis: 0 });
+  const high = bench({ monthlyDonations: 200, longTermInvestments: true, singleUsePlastics: 2 }, { ptm: 20, geb: 24, lfis: 20 });
+  assert.ok(high.socialContribution.percentile > low.socialContribution.percentile,
+    "PTM answers must move the social-contribution standing");
+  assert.ok(high.environment.percentile > low.environment.percentile,
+    "GEB answers must move the environment standing");
+  assert.ok(high.humanityFuture.percentile > low.humanityFuture.percentile,
+    "LFIS answers must move the humanity's-future standing");
+});
+
+test("band lock: measured intensity can never cross a cited participation boundary", () => {
+  // The strongest possible non-participant must still rank below the weakest
+  // possible participant. This is what keeps the CITED claim intact.
+  const bestNonGiver = bench({ monthlyDonations: 0, volunteeringHours: 0 }, { ptm: 20 }).socialContribution.percentile;
+  const worstGiver = bench({ monthlyDonations: 1, volunteeringHours: 0 }, { ptm: 0 }).socialContribution.percentile;
+  assert.ok(bestNonGiver < worstGiver,
+    `a non-giver (${bestNonGiver}) outranked a giver (${worstGiver}) — the band lock is broken`);
+
+  const bestUninvested = bench({ longTermInvestments: false }, { lfis: 20 }).humanityFuture.percentile;
+  const worstInvested = bench({ longTermInvestments: true }, { lfis: 0 }).humanityFuture.percentile;
+  assert.ok(bestUninvested < worstInvested,
+    `an uninvested profile (${bestUninvested}) outranked an invested one (${worstInvested})`);
+
+  const bestHeavyPlastic = bench({ singleUsePlastics: 10 }, { geb: 24 }).environment.percentile;
+  const worstLightPlastic = bench({ singleUsePlastics: 0 }, { geb: 0 }).environment.percentile;
+  assert.ok(bestHeavyPlastic < worstLightPlastic,
+    `10 pieces/day (${bestHeavyPlastic}) outranked 0 pieces/day (${worstLightPlastic})`);
+});
+
+test("an unanswered instrument returns the exact pre-two-stage percentile", () => {
+  // No baseline => no measured intensity => the legacy fixed value. A person's
+  // grade must only move when their own answers move it, never because the
+  // band geometry changed underneath them.
+  // PROFILE already donates, so the non-giver case must zero both fields.
+  const noGiving = { monthlyDonations: 0, volunteeringHours: 0 };
+  assert.equal(bench(noGiving, null).socialContribution.percentile, 24);
+  assert.equal(bench({ ...noGiving, monthlyDonations: 100 }, null).socialContribution.percentile, 62);
+  assert.equal(bench({ ...noGiving, volunteeringHours: 5 }, null).socialContribution.percentile, 82);
+  assert.equal(bench({ monthlyDonations: 100, volunteeringHours: 5 }, null).socialContribution.percentile, 88);
+  assert.deepEqual(
+    [0, 1, 2, 3, 4, 6, 10].map(p => bench({ singleUsePlastics: p }, null).environment.percentile),
+    [90, 78, 64, 50, 34, 20, 10]
+  );
+  assert.equal(bench({ longTermInvestments: true }, null).humanityFuture.percentile, 70);
+  assert.equal(bench({ longTermInvestments: false }, null).humanityFuture.percentile, 30);
+});
+
+test("giving as a share of income positions within the donor band", () => {
+  // Participation alone said a 50 THB donor and a 5,000 THB donor were
+  // identical. Magnitude is exactly what CAF's yes/no rate cannot capture.
+  const token = bench({ monthlyIncome: 20000, monthlyDonations: 50 }, { ptm: 10 }).socialContribution.percentile;
+  const generous = bench({ monthlyIncome: 20000, monthlyDonations: 1500 }, { ptm: 10 }).socialContribution.percentile;
+  assert.ok(generous > token, `a 7.5%-of-income donor (${generous}) must outrank a 0.25% donor (${token})`);
+});
+
+test("every outward aspect discloses that the band is cited and the position is not", () => {
+  const set = bench({ monthlyDonations: 100 }, {});
+  for (const key of ["socialContribution", "environment", "humanityFuture"]) {
+    assert.ok(set[key].notes.some(n => /can never move you into a different band/i.test(n)),
+      `${key} does not disclose the two-stage design`);
+  }
+});
+
 test("income uses one shared cited model — the benchmark card matches incomePercentile (#9)", () => {
   assert.equal(incomePercentile(0, "Provinces"), 1, "zero income floors at the 1st percentile");
   assert.equal(incomePercentile(12900, "Provinces"), 50, "national median reads ~50th");

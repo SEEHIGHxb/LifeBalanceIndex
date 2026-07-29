@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `36`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `37`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,74 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.6.0] — 2026-07-29 (APP_VERSION 37)
+
+### The three outward aspects finally measure something
+
+Social contribution, environment and humanity's future carry this app's actual
+thesis — three of eight aspects point *away* from the self, which is what makes
+this unlike a sleep-and-steps tracker. They also had the thinnest instruments in
+the app. Measured across the entire input space, here is every percentile they
+could **ever** return:
+
+| Aspect | Reachable percentiles | Reachable grades | Driven by |
+| --- | --- | --- | --- |
+| Social Contribution | 24, 62, 82, 88 | D, C, B — **A unreachable** | 2 booleans |
+| Environment | 10, 20, 34, 50, 64, 78, 90 | D, C, B, A — F unreachable | 1 number (plastic/day) |
+| Humanity's Future | **30, 70** | **C or B, and nothing else** | 1 checkbox |
+
+Donating ฿50 and ฿50,000 produced an identical percentile. All five LFIS items,
+all six GEB items and all five PTM items moved the *score* but had **zero**
+effect on the percentile — which is what the letter grade, the standing
+sentence and the pledge ordering are all built from.
+
+This was not sloppiness. CAF, the Pollution Control Dept and OECD publish
+participation **rates and averages**, not distributions, and `benchmarks.js`
+refuses to invent a curve it cannot cite. The thinness was the price of that
+honesty.
+
+**Two-stage, band-locked percentiles** keep the honesty and add the resolution:
+
+1. the **cited rate** decides which band you are in — the published claim, and
+   the only thing that can move you across a boundary;
+2. the **measured intensity** (the instrument composite) decides where inside
+   that band you sit.
+
+Band-locked means stage 2 can never cross a boundary stage 1 set. The strongest
+possible non-donor still ranks below the weakest donor; a 10-pieces-a-day
+plastic user can never pass someone at zero. Measured after the change:
+
+| Aspect | Distinct percentiles | Grades |
+| --- | --- | --- |
+| Social Contribution | 4 → **31** | all five |
+| Environment | 7 → **35** | all five |
+| Humanity's Future | 2 → **10** | all five |
+
+- `benchmarks.js`: new `positionInBand()` / `intensityOf()` helpers and a shared
+  `TWO_STAGE_NOTE` disclosure rendered on all three aspects. The three benchmark
+  functions now take `baseline` (the raw `ptm`/`geb`/`lfis` sums onboarding
+  already stored but never used for standings). `getAllBenchmarks(state)` is
+  unchanged; no exported signature moved.
+- Social contribution's within-band position blends the five PTM items with
+  **giving as a share of income**, capped at 5% — magnitude is precisely what a
+  yes/no participation rate cannot capture. Falls back to PTM alone when income
+  is unknown.
+- **Nobody gets silently regraded.** When an instrument was never answered
+  (older saves, express onboarding), the percentile returns the *exact*
+  pre-existing fixed value rather than the band midpoint — a test pins all 15
+  legacy values. An early draft used the midpoint and moved a volunteer from 82
+  to 90 (B → A) for doing nothing; that is the bug this fallback exists to
+  prevent. A grade may only move when the person's own answers move it.
+- Scores, `AVERAGE_ASPECT_SCORES`, the Balance Index and the new headline
+  sentence are all untouched — they run off the calculators, not the
+  benchmarks. No schema change, no migration.
+- `views/methodology.js` + `th.js`: the two-stage design is stated on the
+  methodology page and in the note under every affected standing. A hidden fudge
+  would be worse than the thin instrument it replaced.
+- `tests/benchmarks.test.mjs`: six new tests — resolution, the three band-lock
+  invariants, exact legacy fallback, giving-share ordering, and that every
+  affected aspect discloses the design.
 
 ## [2.5.0] — 2026-07-28 (APP_VERSION 36)
 

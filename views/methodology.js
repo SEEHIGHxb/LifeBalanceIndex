@@ -40,6 +40,61 @@ export function scoreStability(state) {
   return { count: checkins.length, avg: Math.round(avg * 10) / 10 };
 }
 
+// WHERE EACH COMPARISON COMES FROM.
+//
+// A percentile is only as honest as the sample behind it, and a 2026-07
+// literature sweep established that no representative Thai general-adult norm
+// is published for ANY of the questionnaires this app uses. Rather than bury
+// that, the page states each aspect's reference sample outright — including the
+// one aspect where the sample is so wrong that no rank is printed at all.
+//
+// `rank` is the promise the app makes about that row:
+//   "ranked" - a percentile against a named published distribution
+//   "band"   - placement against published participation rates, not a curve
+//   "none"   - measured, but deliberately not ranked
+// `sample` stays in English: it names a published dataset, the same rule the
+// CITES labels above follow. `where` and `rank` are keys into the label maps
+// below rather than raw strings, so every translatable string in this table is
+// a LITERAL t() call the i18n coverage test can see — a t(variable) would be
+// invisible to it and would silently ship untranslated.
+const COMPARISON_SAMPLES = [
+  { aspect: "Finance", sample: "Thai worker wages (Labour Force Survey via Bank of Thailand)", where: "thWorking", rank: "ranked" },
+  { aspect: "Physical", sample: "Thai adults meeting the WHO activity guideline; Thai NHES for BMI", where: "thAdults", rank: "ranked" },
+  { aspect: "Mental", sample: "WHO-5 community norms, representative German sample", where: "deAdults", rank: "ranked" },
+  { aspect: "Relationships", sample: "UCLA-3: US Health and Retirement Study, ages 57-85. LSNS-6: European over-65s.", where: "wrongAge", rank: "none" },
+  { aspect: "Personal Goals", sample: "General Self-Efficacy Scale, 25-country pooled norms (N=19,120)", where: "multi", rank: "ranked" },
+  { aspect: "Social Contribution", sample: "CAF World Giving Index — Thai donating and volunteering rates", where: "thAdults", rank: "band" },
+  { aspect: "Environment", sample: "Thai single-use plastic use per person per day", where: "thAdults", rank: "band" },
+  { aspect: "Humanity's Future", sample: "Thai retirement-savings coverage (ILO / OECD)", where: "thWorkers", rank: "band" }
+];
+
+const RANK_LABELS = () => ({
+  ranked: t("Ranked"),
+  band: t("Band placement"),
+  none: t("Not ranked")
+});
+
+const WHERE_LABELS = () => ({
+  thWorking: t("Thailand · working age"),
+  thAdults: t("Thailand · adults"),
+  thWorkers: t("Thailand · workers"),
+  deAdults: t("Germany · adults"),
+  multi: t("25 countries · adults"),
+  wrongAge: t("Wrong age band for this app's users")
+});
+
+function comparisonRows() {
+  const ranks = RANK_LABELS();
+  const wheres = WHERE_LABELS();
+  return COMPARISON_SAMPLES.map(row => `
+    <tr${row.rank === "none" ? ' class="provenance-unranked"' : ""}>
+      <th scope="row">${escapeHtml(t(row.aspect))}</th>
+      <td>${escapeHtml(row.sample)}</td>
+      <td>${escapeHtml(wheres[row.where])}</td>
+      <td>${escapeHtml(ranks[row.rank])}</td>
+    </tr>`).join("");
+}
+
 // `cites` empty means the aspect uses app-authored items — that is disclosed
 // instead of dressed up with a borrowed citation.
 function aspectSection(title, formula, rationale, cites) {
@@ -121,6 +176,26 @@ export function renderMethodology(containerId, state) {
         t("Four equal parts because there is no published evidence for ranking them — an honest uniform prior."),
         ["cfc"]
       )}
+    </div>
+
+    <div class="card">
+      <h4 class="card-header">${t("Who you are actually compared with")}</h4>
+      <p class="aspect-blurb">${t("A percentile is a claim about where you sit among a group of people — so the group matters as much as the number. A literature search in July 2026 found no representative Thai general-adult norm published for any of the questionnaires here. Every reference sample is therefore either foreign or non-representative, and this table says which is which instead of leaving you to assume the comparison is with Thai people your age.")}</p>
+      <div class="provenance-scroll">
+        <table class="provenance-table">
+          <thead>
+            <tr>
+              <th scope="col">${t("Aspect")}</th>
+              <th scope="col">${t("Compared with")}</th>
+              <th scope="col">${t("Sample")}</th>
+              <th scope="col">${t("What is claimed")}</th>
+            </tr>
+          </thead>
+          <tbody>${comparisonRows()}</tbody>
+        </table>
+      </div>
+      <p class="aspect-blurb">${t("Relationships is the one aspect with no rank at all. Its two questionnaires are normed on people a generation older — UCLA-3 on US adults aged 57-85, LSNS-6 on European over-65s — and loneliness does not move in one direction with age, so the size and even the direction of the error are unknown. Your scores and the social-isolation cutoff are still shown, because those are real measurements; the rank is withheld, because it would be a guess wearing a number's clothes.")}</p>
+      <p class="aspect-blurb">${t("Where a comparison is foreign but the age range fits — the German WHO-5 sample, the 25-country self-efficacy norms — the rank is shown and the sample is named next to it, on the aspect page as well as here. Read those as indicative rather than as your standing among Thai adults.")}</p>
     </div>
 
     <div class="card">

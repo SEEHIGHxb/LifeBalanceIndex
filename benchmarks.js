@@ -36,11 +36,11 @@ const SOURCES = {
     url: "https://he01.tci-thaijo.org/index.php/jmht/article/view/1296"
   },
   ucla3: {
-    label: "UCLA 3-item Loneliness Scale, US population-based HRS sample (mean 3.89, SD 1.34)",
+    label: "UCLA 3-item Loneliness Scale, US Health and Retirement Study sample AGED 57-85 (mean 3.89, SD 1.34) - an older-adult norm, not a working-age one",
     url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC2394670/"
   },
   lsns6: {
-    label: "LSNS-6 in three European community samples (means 16.1-17.9, SD ~5.5; < 12 = social isolation risk)",
+    label: "LSNS-6 in three European community samples of OLDER ADULTS (means 16.1-17.9, SD ~5.5). The < 12 isolation cutoff is the instrument's own validated threshold and does not depend on the age of the norming sample.",
     url: "https://www.researchgate.net/publication/6867225_Performance_of_an_Abbreviated_Version_of_the_Lubben_Social_Network_Scale_Among_Three_European_Community-Dwelling_Older_Adult_Populations"
   },
   gseScholz: {
@@ -192,6 +192,7 @@ function financeBenchmark(profile) {
   return {
     percentile,
     method: "estimate",
+    population: profile.region === "Bangkok" ? t("Bangkok workers") : t("Thai workers"),
     summary: tp(profile.region === "Bangkok"
       ? "Income of {income} THB/mo vs Bangkok workers"
       : "Income of {income} THB/mo vs Thai workers", { income: Math.round(income).toLocaleString() }),
@@ -241,26 +242,48 @@ function physicalBenchmark(profile) {
   return {
     percentile: toPercentile(p01),
     method: "estimate",
+    population: t("Thai adults"),
     summary: tp("{met} MET-min/week vs Thai adults (WHO guideline = 600)", { met: Math.round(met) }),
     notes,
     sources: [SOURCES.thaiSpa, SOURCES.nhesBmi]
   };
 }
 
-// --- Thai norm sourcing (researched 2026-07) ---
+// --- Thai norm sourcing (researched 2026-07, re-audited 2026-07-29) ---
+//
 // The profile-based benchmarks above (income, activity, BMI, giving, plastics,
-// retirement) already use Thai sources. The survey-instrument benchmarks below
-// (WHO-5, UCLA-3/LSNS-6, GSE) keep foreign GENERAL-POPULATION norms on purpose:
-// no representative Thai general-population norm appears to be published for any
-// of them. The Thai studies that do exist are non-representative and would trade
-// a country mismatch for a worse sampling bias, so they are deliberately NOT used:
-//   - WHO-5: only Thai primary-care patients (mean 14.32/25, SD 5.26; Saipanish
-//     2009, PubMed 19335382) — a clinical, low-skewed sample, not the public.
-//   - GSE: only Thais with type-2 diabetes (PeerJ 2022, PMC9135036) — clinical.
-//   - UCLA-3 / LSNS-6: only older-adult regional samples (e.g. Thanakwang 2012,
-//     Nan Province, age 60+) — wrong age band, not general-population.
-// Keeping a representative foreign norm + the in-UI caveat is the honest choice;
-// revisit only if a representative Thai general-population dataset is published.
+// retirement) use Thai sources. The survey-instrument benchmarks below do not,
+// and a literature sweep confirmed why: NO representative Thai general-adult
+// community norm is published for ANY of the twelve instruments this app uses.
+// Every Thai figure that exists is a non-representative proxy — hospital
+// outpatients, university students, or older adults.
+//
+// So each survey benchmark falls into one of three cases, and the case decides
+// whether it may claim a percentile at all:
+//
+//   1. FOREIGN NORM, COMPARABLE AGE — a rank is defensible; the UI must name
+//      the sample rather than imply it is Thai or "people like you".
+//        - WHO-5: representative German adults (mean 67.6/100, SD 23.0).
+//          The Thai alternative is primary-care outpatients at Ramathibodi
+//          (mean 14.32/25, SD 5.26, N=274, mean age 44.6; Saipanish 2009,
+//          doi:10.1111/j.1440-1819.2009.01933.x — verified at source). That
+//          trades a country mismatch for a clinical sampling bias, so the
+//          representative foreign norm is kept.
+//        - GSE: 25-country pooled adult norms, N=19,120. There is no Thai GSE
+//          norm at all; a widely-circulated "Thai" figure traces to a study of
+//          135 head nurses in Yunnan, CHINA (Zhang et al. 2021, Nursing Journal
+//          CMU 48(3)) and is not usable.
+//
+//   2. WRONG POPULATION ENTIRELY — no rank may be claimed. UCLA-3 is normed on
+//      US adults aged 57-85 and LSNS-6 on European older adults, so ranking a
+//      28-year-old against either is not an approximation, it is a category
+//      error. `relationships` therefore returns NO percentile (see below).
+//
+//   3. THAI INSTRUMENT, BANDS ONLY — ST-5 has official Thai DMH cut-off bands
+//      but no published national mean/SD, so it informs a note, never a rank.
+//
+// Revisit when a representative Thai general-adult dataset is published; the
+// open research brief lives in docs/research/.
 
 // --- MENTAL: WHO-5 vs community norms ---
 function mentalBenchmark(baseline) {
@@ -275,26 +298,47 @@ function mentalBenchmark(baseline) {
   return {
     percentile: toPercentile(normalCdf(score100, 67.56, 22.96)),
     method: "distribution",
+    population: t("adults in a German community sample"),
     summary: tp("WHO-5 well-being {score}/100 vs general-population norms", { score: score100 }),
     notes,
     sources: [SOURCES.who5Norms, SOURCES.st5Dmh]
   };
 }
 
-// --- RELATIONSHIPS: loneliness + social network vs published samples ---
+// --- RELATIONSHIPS: measured, but deliberately NOT ranked ---
+//
+// This aspect returns a benchmark with NO percentile. Both of its instruments
+// are normed on people a generation older than this app's users: UCLA-3 on the
+// US Health and Retirement Study (ages 57-85) and LSNS-6 on European older
+// adults. Ranking a working-age Thai adult against either is not a rough
+// approximation — the direction of the error is not even known. Loneliness is
+// U-shaped across the lifespan, so the UCLA norm probably makes users look
+// LONELIER than they are, while working-age people carry workplace ties the
+// LSNS norm never counted, which probably makes them look BETTER connected.
+// Two unquantified biases pointing opposite ways is not a percentile.
+//
+// What survives is everything that does not depend on a norming sample:
+//   - the raw instrument readings, which the user answered and can act on;
+//   - the LSNS-6 < 12 isolation cutoff, which is the instrument's OWN validated
+//     threshold, published with the scale rather than derived from a sample.
+// So the aspect still says something true and useful; it just stops claiming a
+// rank it cannot support. `unranked` carries the reason, and every consumer
+// surface renders it as an explicit disclosure, never as missing data.
 function relationshipsBenchmark(baseline) {
   if (!baseline || !Number.isFinite(baseline.ucla) || !Number.isFinite(baseline.lsns)) return null;
-  const uclaP = 1 - normalCdf(baseline.ucla, 3.89, 1.34); // lower loneliness = better
-  const lsnsP = normalCdf(baseline.lsns, 17.0, 5.5);
   const notes = [
+    tp("Loneliness (UCLA-3) {ucla}/9 — lower is better. Social network (LSNS-6) {lsns}/30 — higher is better.",
+      { ucla: baseline.ucla, lsns: baseline.lsns }),
     tp(baseline.lsns < 12
       ? "LSNS-6 score {n}/30 is under the social-isolation cutoff of 12."
       : "LSNS-6 score {n}/30 is above the social-isolation cutoff of 12.", { n: baseline.lsns })
   ];
   return {
-    percentile: toPercentile((uclaP + lsnsP) / 2),
+    percentile: null,
+    unranked: t("Both scales are normed on older adults — UCLA-3 on US adults aged 57-85, LSNS-6 on European over-65s. No Thai working-age norm is published for either, so this app will not pretend to rank you on it. Your scores and the isolation cutoff below are still real measurements."),
     method: "estimate",
-    summary: t("Loneliness (UCLA-3) and social network (LSNS-6) vs published community samples"),
+    population: null,
+    summary: t("Loneliness (UCLA-3) and social network (LSNS-6) — measured, not ranked"),
     notes,
     sources: [SOURCES.ucla3, SOURCES.lsns6]
   };
@@ -323,6 +367,7 @@ function personalGoalsBenchmark(baseline) {
     // form is an approximation.
     percentile: toPercentile(normalCdf(perItem, 2.955, 0.532)),
     method: deepGse ? "distribution" : "estimate",
+    population: t("adults in the 25-country GSE norms"),
     summary: t("Self-efficacy (GSE) vs 25-country norms, N=19,120"),
     notes,
     sources: [SOURCES.gseScholz, SOURCES.gritDuckworth]
@@ -380,6 +425,7 @@ function socialContributionBenchmark(profile, baseline) {
   return {
     percentile: positionInBand(floor, ceil, intensity, fallback),
     method: "threshold",
+    population: t("Thai adults"),
     summary: tp("Giving participation: {band}", { band: t(band) }),
     notes: [
       t("Participation-rate placement, not an exact rank — CAF publishes yes/no rates, not amounts."),
@@ -418,6 +464,7 @@ function environmentBenchmark(profile, baseline) {
   return {
     percentile: positionInBand(floor, ceil, intensity, fallback),
     method: "estimate",
+    population: t("Thai adults"),
     summary: tp("{pieces} single-use plastic pieces/day vs the ~3/day Thai average", { pieces }),
     notes: [
       t("Banded around the post-plastic-ban Thai average; per-person distribution data is not published."),
@@ -454,6 +501,7 @@ function humanityFutureBenchmark(profile, baseline) {
   return {
     percentile: positionInBand(floor, ceil, intensity, fallback),
     method: "threshold",
+    population: t("Thai workers"),
     summary: t(invested
       ? "Holds long-term retirement investments — ahead of most Thai workers"
       : "No long-term retirement investments yet — like most Thai workers"),
@@ -487,10 +535,22 @@ export function getAllBenchmarks(state) {
   // Attach an indicative percentile range to every computable benchmark in one
   // place (immutably) so each *Benchmark function stays focused on its score.
   // Deep-verified aspects get the narrower band.
+  //
+  // An UNRANKED benchmark (relationships) has no percentile, so it gets no
+  // range: a margin around a number that does not exist would be exactly the
+  // precision theater this module refuses. Consumers must branch on the
+  // percentile being finite, never assume `range` is present.
   const deepDone = (baseline && baseline.deepDone) || {};
   const withRanges = {};
   for (const [key, b] of Object.entries(set)) {
-    withRanges[key] = b ? { ...b, range: percentileRange(b.percentile, b.method, !!deepDone[key]), verified: !!deepDone[key] } : null;
+    if (!b) {
+      withRanges[key] = null;
+      continue;
+    }
+    const verified = !!deepDone[key];
+    withRanges[key] = Number.isFinite(b.percentile)
+      ? { ...b, range: percentileRange(b.percentile, b.method, verified), verified }
+      : { ...b, range: null, verified };
   }
   return withRanges;
 }

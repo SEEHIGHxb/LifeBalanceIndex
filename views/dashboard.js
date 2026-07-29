@@ -160,7 +160,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
                 <a href="#/aspect/${key}" class="aspect-row" aria-label="${tp("Open {aspect} details", { aspect: aspectLabel(key) })}">
                   <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 500; margin-bottom: 2px;">
                     <span>${aspectLabel(key)} ${confidenceBadge(getAspectConfidence(state, key))} <span class="aspect-row-arrow">&rsaquo;</span></span>
-                    <span class="aspect-row-figures">${gradeBadge(grades[key])} <span class="text-gold" style="font-family: var(--font-mono); font-weight: bold;">${val}%</span></span>
+                    <span class="aspect-row-figures">${gradeBadge(grades[key], b && !grades[key] ? b.unranked : null)} <span class="text-gold" style="font-family: var(--font-mono); font-weight: bold;">${val}%</span></span>
                   </div>
                   <div class="xp-bar-container" style="height: 5px; margin-top: 0;" role="progressbar" aria-label="${aspectLabel(key)}" aria-valuenow="${val}" aria-valuemin="0" aria-valuemax="100">
                     <div class="xp-bar-fill" style="width: ${val}%; background-color: var(--color-gold);"></div>

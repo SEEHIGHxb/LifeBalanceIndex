@@ -65,6 +65,34 @@ test("the methodology page states what the app does not measure", () => {
     "the statement is set apart, not styled as fine print");
 });
 
+// The provenance table is the app's answer to "compared with whom?" — the
+// single question a percentile is meaningless without. Pinned as a test for the
+// same reason as the non-goal above: it is the honesty guarantee on eight
+// printed ranks, and it must not be lost in a future copy edit.
+test("the methodology page names the reference sample behind every comparison", () => {
+  renderMethodology("main-view", { checkins: [] });
+  const html = captured.html;
+  assert.match(html, /Who you are actually compared with/, "the section exists");
+  assert.match(html, /provenance-table/, "rendered as a table, not buried in prose");
+  // Each aspect's row names the sample it is compared against.
+  assert.match(html, /Labour Force Survey/, "finance names its Thai wage source");
+  assert.match(html, /representative German sample/, "mental names the German WHO-5 sample");
+  assert.match(html, /25-country pooled norms/, "personal goals names the pooled GSE norm");
+  assert.match(html, /World Giving Index/, "social contribution names CAF");
+  // The unranked row is visually and semantically distinct.
+  assert.match(html, /provenance-unranked/, "the unranked row is marked, not styled like the rest");
+  assert.match(html, /ages 57-85/, "the wrong-population problem is stated with the actual age band");
+});
+
+test("the methodology page states that no representative Thai norm exists", () => {
+  renderMethodology("main-view", { checkins: [] });
+  const html = captured.html;
+  assert.match(html, /no representative Thai general-adult norm published/,
+    "the finding that drove this disclosure is stated outright, not implied");
+  assert.match(html, /guess wearing a number(&#39;|')s clothes/,
+    "the reason for withholding the relationships rank is given in plain language");
+});
+
 test("the stability line reports count and average once check-ins exist", () => {
   renderMethodology("main-view", {
     checkins: [{ date: "2026-01-01", sums: {}, shifts: { mental: 3, personalGoals: -5 } }]

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `38`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `39`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,55 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.7.0] — 2026-07-29 (APP_VERSION 39)
+
+### Say who you are compared with — and stop ranking where we can't
+
+A literature sweep of all twelve instruments this app uses established that **no
+representative Thai general-adult norm is published for any of them.** Every
+Thai figure that exists is a non-representative proxy: hospital outpatients,
+university students, or older adults. Two of the numbers already in the app were
+worse than foreign — they were from the wrong generation.
+
+Until now every percentile was captioned *"Ahead of about N% of people like
+you."* That sentence was true only for the Thai-sourced aspects. It was being
+printed next to a German community norm, a 25-country pooled norm, and — for
+relationships — a US sample **aged 57 to 85**.
+
+**Changed**
+
+- Every benchmark now declares the **population** it ranks against, and the UI
+  names it: *"Ahead of about 62% of adults in a German community sample"*. The
+  generic phrasing survives only as a fallback.
+- **`relationships` no longer produces a percentile or a letter grade.** Its two
+  instruments are normed on older adults (UCLA-3 on US ages 57-85, LSNS-6 on
+  European over-65s). Loneliness is U-shaped across the lifespan, so the UCLA
+  norm likely makes working-age users look lonelier than they are, while the
+  LSNS norm never counted workplace ties and likely makes them look better
+  connected. Two unquantified biases pointing opposite ways is not a percentile.
+  The aspect still shows both raw readings and the LSNS-6 `< 12` isolation
+  cutoff — that threshold ships with the instrument and does not depend on the
+  norming sample.
+- New **"Not ranked"** state, distinct from "Not graded". "Not graded" means you
+  have not answered yet and can unlock it; "Not ranked" means the app has your
+  answers and is declining to rank them. Rendered on the dashboard row, the
+  aspect page and the grade chip, always with the reason attached.
+- `#/methodology` gains **"Who you are actually compared with"** — a table of
+  all eight aspects naming the reference sample, its country, its age band, and
+  whether a rank is claimed at all.
+- `SOURCES` labels for UCLA-3 and LSNS-6 now state their age bands outright, and
+  the Thai-norm sourcing note in `benchmarks.js` was rewritten: it had described
+  both as foreign *general-population* norms, which they are not.
+
+**Not changed:** the Balance Index, the "N of 8 aspects at or above average"
+headline, and every aspect's 0-100 score. Those run on raw scores against the
+derived population average in `averages.js`, not on percentiles, so removing one
+rank does not move them.
+
+**Why it matters:** a percentile is a claim about rank within a comparable
+group. Where the group is not comparable, the honest output is not a softer
+number — it is no number, plus the reason. 294 → 298 tests.
 
 ## [2.6.1] — 2026-07-29 (APP_VERSION 38)
 

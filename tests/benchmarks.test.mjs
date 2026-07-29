@@ -2,6 +2,7 @@
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { normalCdf, ordinal, getAllBenchmarks, collectSources, percentileRange, percentileBand, incomePercentile } from "../benchmarks.js";
+import { gradeForBenchmark } from "../grades.js";
 import { GameStateManager } from "../state.js";
 
 function installMockStorage(initial = {}) {
@@ -78,17 +79,49 @@ test("ordinal renders English suffixes including the 11-13 exceptions", () => {
 
 // --- STRUCTURE ---
 
+// `relationships` is measured but deliberately unranked — its instruments are
+// normed on older adults, so it carries no percentile. Every OTHER aspect must
+// still produce one.
+const UNRANKED_ASPECTS = ["relationships"];
+const RANKED_ASPECTS = ALL_ASPECTS.filter(k => !UNRANKED_ASPECTS.includes(k));
+
 test("getAllBenchmarks returns an entry per aspect with percentile, method, sources", () => {
   const all = getAllBenchmarks(makeState());
   assert.deepEqual(Object.keys(all).sort(), [...ALL_ASPECTS].sort());
   for (const key of ALL_ASPECTS) {
     const b = all[key];
     assert.ok(b, `${key} should be computable with a full baseline`);
-    assert.ok(b.percentile >= 1 && b.percentile <= 99, `${key} percentile in 1-99`);
     assert.ok(["distribution", "threshold", "estimate"].includes(b.method));
     assert.ok(Array.isArray(b.sources) && b.sources.length > 0, `${key} must cite sources`);
     b.sources.forEach(src => assert.match(src.url, /^https:\/\//));
   }
+  for (const key of RANKED_ASPECTS) {
+    assert.ok(all[key].percentile >= 1 && all[key].percentile <= 99, `${key} percentile in 1-99`);
+    assert.ok(all[key].population, `${key} must name the population it ranks against`);
+  }
+});
+
+// The point of the unranked state: the app HAS the answers and still refuses to
+// print a rank, because both norms come from people a generation older. This
+// must never quietly become a number again.
+test("relationships is measured but carries no percentile, no range and no grade", () => {
+  const b = getAllBenchmarks(makeState()).relationships;
+  assert.ok(b, "the aspect still produces a benchmark — it is measured, just not ranked");
+  assert.equal(b.percentile, null, "no percentile");
+  assert.equal(b.range, null, "no margin around a number that does not exist");
+  assert.equal(b.population, null, "no population is claimed");
+  assert.match(b.unranked, /57-85|older adults/, "the reason names the wrong-population problem");
+  assert.equal(gradeForBenchmark(b), null, "and therefore no letter grade");
+});
+
+test("relationships still reports both raw readings and the LSNS isolation cutoff", () => {
+  const isolated = getAllBenchmarks(makeState({}, { ...BASELINE, ucla: 9, lsns: 8 })).relationships;
+  const connected = getAllBenchmarks(makeState({}, { ...BASELINE, ucla: 3, lsns: 25 })).relationships;
+  assert.ok(isolated.notes.some(n => n.includes("under the social-isolation cutoff")));
+  assert.ok(connected.notes.some(n => n.includes("above the social-isolation cutoff")));
+  // The user's own numbers survive the loss of the rank — that is the whole
+  // point of "measured, not ranked".
+  assert.ok(isolated.notes.some(n => n.includes("9/9") && n.includes("8/30")));
 });
 
 test("survey-based aspects return null without a stored baseline (pre-benchmark saves)", () => {
@@ -154,13 +187,6 @@ test("mental percentile tracks WHO-5 and flags the ST-5 stress band", () => {
 
   const stressed = getAllBenchmarks(makeState({}, { ...BASELINE, st5: 9 })).mental;
   assert.ok(stressed.notes.some(n => n.includes("stress problem")));
-});
-
-test("relationships percentile falls with loneliness and flags LSNS isolation risk", () => {
-  const connected = getAllBenchmarks(makeState({}, { ...BASELINE, ucla: 3, lsns: 25 })).relationships;
-  const lonely = getAllBenchmarks(makeState({}, { ...BASELINE, ucla: 9, lsns: 8 })).relationships;
-  assert.ok(connected.percentile > lonely.percentile);
-  assert.ok(lonely.notes.some(n => n.includes("under the social-isolation cutoff")));
 });
 
 test("personal goals percentile tracks GSE per-item score against the 25-country norm", () => {
@@ -286,7 +312,7 @@ test("percentileRange widens by method and clamps to 1-99", () => {
 
 test("getAllBenchmarks attaches a range that brackets each percentile", () => {
   const all = getAllBenchmarks(makeState());
-  for (const key of ALL_ASPECTS) {
+  for (const key of RANKED_ASPECTS) {
     const b = all[key];
     assert.ok(b.range, `${key} carries a range`);
     assert.ok(b.range.low >= 1 && b.range.high <= 99, `${key} range stays within 1-99`);

@@ -4,3 +4,8 @@ Thumbs.db
 
 # Claude Code local tooling config (launch.json, local settings)
 .claude/
+
+# Raw deep-research exports (multi-MB binaries). The verified findings live in
+# docs/research/*.md — the raw files are inputs, and several of their numbers
+# turned out to be fabricated, so they are not a citable record.
+docs/research/*.docx

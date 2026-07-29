@@ -93,7 +93,16 @@ export function componentConfidenceChip(tier) {
 // "not graded" chip — NOT as an F. An unanswered questionnaire is missing
 // data, and showing it as a failing grade would be the app inventing a verdict
 // it has no measurement for.
-export function gradeBadge(grade) {
+// `unrankedReason` distinguishes the two very different ways a grade can be
+// absent. "Not graded" means the user has not answered yet and CAN unlock it;
+// "Not ranked" means the app has the answers but no defensible population to
+// rank them against, and no amount of answering will change that. Collapsing
+// the two would tell people to go and complete a questionnaire they already
+// completed.
+export function gradeBadge(grade, unrankedReason = null) {
+  if (!grade && unrankedReason) {
+    return `<span class="grade-badge grade-unranked" title="${escapeHtml(unrankedReason)}">${t("Not ranked")}</span>`;
+  }
   if (!grade) {
     return `<span class="grade-badge grade-none" title="${escapeHtml(t("Answer this aspect's questionnaires to unlock its grade."))}">${t("Not graded")}</span>`;
   }
@@ -142,13 +151,35 @@ export function balanceIndexBlock(index, band, weakest, standing = null) {
 // stay available as secondary detail.
 
 // The headline sentence a non-technical reader understands at a glance.
-export function percentilePhrase(percentile) {
-  return tp("Ahead of about {pct}% of people like you", { pct: percentile });
+//
+// `population` NAMES the group the percentile is actually against. The old
+// wording said "people like you" for every aspect, which was true only for the
+// Thai-sourced ones — the WHO-5 comparison is a German community sample and the
+// GSE comparison is a 25-country pooled norm, and calling either "people like
+// you" to a Thai user was the app overstating what it knows. Falls back to the
+// generic phrasing only when a benchmark has not declared its population.
+export function percentilePhrase(percentile, population = null) {
+  return population
+    ? tp("Ahead of about {pct}% of {population}", { pct: percentile, population })
+    : tp("Ahead of about {pct}% of people like you", { pct: percentile });
 }
 
 // One shared "Standing vs society" block, used on the dashboard row and the
 // aspect gauge. `compact` trims it to a single line for the dashboard list.
+//
+// A benchmark with no finite percentile is UNRANKED: measured, but with no
+// defensible population to rank against (see relationshipsBenchmark). It states
+// that plainly instead of a number — never a silent blank, and never a 0.
+//
+// Only the one-line statement, not the full reason: the reason is a paragraph,
+// and both callers already surface it within the same screen — the aspect page
+// in its grade-explainer card, the dashboard in the grade chip's tooltip.
+// Printing it here too put the identical paragraph twice a few hundred pixels
+// apart, which reads as a stutter rather than as emphasis.
 export function benchmarkStanding(b, { compact = false } = {}) {
+  if (!Number.isFinite(b.percentile)) {
+    return `<p class="benchmark-plain-lead benchmark-unranked-lead">${t("Not ranked against a population")}</p>`;
+  }
   const band = percentileBand(b.percentile);
   const chip = `<span class="percentile-band band-${band.key}">${t(band.label)}</span>`;
   const detail = tp("{pct} percentile · typical range {low}–{high}", {
@@ -161,11 +192,11 @@ export function benchmarkStanding(b, { compact = false } = {}) {
     // percentile detail on its own line so it never crowds the sentence (and
     // does not wrap mid-phrase in Thai, which runs longer).
     return `
-      <p class="benchmark-plain-lead">${percentilePhrase(b.percentile)} ${chip}</p>
+      <p class="benchmark-plain-lead">${percentilePhrase(b.percentile, b.population)} ${chip}</p>
       <p class="benchmark-detail">${detail} <span class="benchmark-method">(${methodTag(b.method)})</span></p>`;
   }
   return `
-    <p class="benchmark-plain-lead">${percentilePhrase(b.percentile)} ${chip}</p>
+    <p class="benchmark-plain-lead">${percentilePhrase(b.percentile, b.population)} ${chip}</p>
     <p class="benchmark-detail">${detail}${b.verified ? ` · <span class="benchmark-verified">${t("in-depth verified")}</span>` : ""}</p>
     <p class="gauge-note percentile-definition">${t("“Percentile” = the share of people you're ahead of, so higher is better. The range shows how precise this estimate is, not a statistical confidence interval.")}</p>`;
 }

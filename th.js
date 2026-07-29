@@ -652,7 +652,6 @@ export const TH = {
   "Deepen my survey scores": "เพิ่มความแม่นยำของคะแนนแบบสอบถาม",
   "LSNS-6 score {n}/30 is under the social-isolation cutoff of 12.": "คะแนน LSNS-6 {n}/30 ต่ำกว่าจุดตัดภาวะโดดเดี่ยวทางสังคมที่ 12",
   "LSNS-6 score {n}/30 is above the social-isolation cutoff of 12.": "คะแนน LSNS-6 {n}/30 สูงกว่าจุดตัดภาวะโดดเดี่ยวทางสังคมที่ 12",
-  "Loneliness (UCLA-3) and social network (LSNS-6) vs published community samples": "ความเหงา (UCLA-3) และเครือข่ายสังคม (LSNS-6) เทียบกับกลุ่มตัวอย่างที่ตีพิมพ์",
   "Self-efficacy (GSE) vs 25-country norms, N=19,120": "การรับรู้ความสามารถของตนเอง (GSE) เทียบเกณฑ์ 25 ประเทศ N=19,120",
   "Your 6-item GSE is compared per-item against 10-item GSE norms — a short-form approximation, not an exact match.":
     "GSE แบบ 6 ข้อของคุณถูกเทียบรายข้อกับเกณฑ์ GSE แบบ 10 ข้อ — เป็นการประมาณจากแบบสั้น ไม่ใช่การเทียบที่ตรงกันพอดี",
@@ -834,8 +833,6 @@ export const TH = {
   "Grades and the Balance Index": "เกรดและดัชนีสมดุล",
   "Grade {letter} — {band} of people like you (percentile {pct}).":
     "เกรด {letter} — {band} ของคนที่คล้ายคุณ (เปอร์เซ็นไทล์ที่ {pct})",
-  "{band} of people like you, from the population comparison below.":
-    "{band} ของคนที่คล้ายคุณ จากการเทียบกับประชากรด้านล่าง",
   "Grades come from the cited percentile, not from the 0-100 score — the score is this app's own composite, while the percentile is the part that compares you with real published data.":
     "เกรดมาจากเปอร์เซ็นไทล์ที่อ้างอิงแหล่งข้อมูล ไม่ได้มาจากคะแนน 0-100 เพราะคะแนนเป็นค่าที่แอปนี้ประกอบขึ้นเอง ส่วนเปอร์เซ็นไทล์คือส่วนที่เทียบคุณกับข้อมูลที่เผยแพร่จริง",
   "This aspect is graded from its population comparison, which needs its questionnaires answered first.":
@@ -1107,5 +1104,49 @@ export const TH = {
   "Please answer every question before submitting.": "กรุณาตอบทุกคำถามก่อนส่ง",
   "Score your social connection and loneliness.": "ประเมินความสัมพันธ์ทางสังคมและความเหงาของคุณ",
   "Self-efficacy and perseverance, plus your weekly learning habits.": "การรับรู้ความสามารถของตนเองและความมุ่งมั่น รวมถึงนิสัยการเรียนรู้รายสัปดาห์ของคุณ",
-  "Prosocial habits, everyday environmental behavior, and your long-term outlook.": "นิสัยเอื้อสังคม พฤติกรรมรักษ์สิ่งแวดล้อมในชีวิตประจำวัน และมุมมองระยะยาวของคุณ"
+  "Prosocial habits, everyday environmental behavior, and your long-term outlook.": "นิสัยเอื้อสังคม พฤติกรรมรักษ์สิ่งแวดล้อมในชีวิตประจำวัน และมุมมองระยะยาวของคุณ",
+
+  // Comparison populations — who each percentile is actually measured against.
+  "Thai workers": "แรงงานไทย",
+  "Bangkok workers": "แรงงานในกรุงเทพฯ",
+  "Thai adults": "ผู้ใหญ่ชาวไทย",
+  "adults in a German community sample": "ผู้ใหญ่ในกลุ่มตัวอย่างชุมชนชาวเยอรมัน",
+  "adults in the 25-country GSE norms": "ผู้ใหญ่ในเกณฑ์อ้างอิง GSE จาก 25 ประเทศ",
+  "people like you": "คนที่คล้ายคุณ",
+  "Ahead of about {pct}% of {population}": "นำหน้าประมาณ {pct}% ของ{population}",
+  "{band} of {population}, from the population comparison below.":
+    "{band}ของ{population} จากการเปรียบเทียบกับประชากรด้านล่าง",
+
+  // The unranked state — measured, but with no defensible population to rank against.
+  "Not ranked": "ไม่จัดอันดับ",
+  "Not ranked against a population": "ไม่ได้จัดอันดับเทียบกับประชากรกลุ่มใด",
+  "Not ranked — on purpose.": "ไม่จัดอันดับ — โดยตั้งใจ",
+  "Loneliness (UCLA-3) and social network (LSNS-6) — measured, not ranked":
+    "ความเหงา (UCLA-3) และเครือข่ายทางสังคม (LSNS-6) — วัดผลได้ แต่ไม่จัดอันดับ",
+  "Loneliness (UCLA-3) {ucla}/9 — lower is better. Social network (LSNS-6) {lsns}/30 — higher is better.":
+    "ความเหงา (UCLA-3) {ucla}/9 — ยิ่งต่ำยิ่งดี เครือข่ายทางสังคม (LSNS-6) {lsns}/30 — ยิ่งสูงยิ่งดี",
+  "Both scales are normed on older adults — UCLA-3 on US adults aged 57-85, LSNS-6 on European over-65s. No Thai working-age norm is published for either, so this app will not pretend to rank you on it. Your scores and the isolation cutoff below are still real measurements.":
+    "แบบวัดทั้งสองชุดสร้างเกณฑ์อ้างอิงจากผู้สูงอายุ — UCLA-3 จากผู้ใหญ่ชาวอเมริกันอายุ 57-85 ปี และ LSNS-6 จากชาวยุโรปอายุเกิน 65 ปี ยังไม่มีเกณฑ์อ้างอิงของคนไทยวัยทำงานที่ตีพิมพ์สำหรับทั้งสองชุด แอปนี้จึงจะไม่แสร้งจัดอันดับให้คุณ ส่วนคะแนนของคุณและเกณฑ์ความโดดเดี่ยวด้านล่างยังเป็นการวัดผลจริง",
+  "A grade is a rank against a population. Where the published norms come from the wrong population, this app shows your measurements and withholds the rank rather than printing one it cannot stand behind.":
+    "เกรดคือการจัดอันดับเทียบกับประชากรกลุ่มหนึ่ง เมื่อเกณฑ์อ้างอิงที่ตีพิมพ์มาจากประชากรผิดกลุ่ม แอปนี้จะแสดงผลการวัดของคุณและงดแสดงอันดับ แทนที่จะแสดงตัวเลขที่ยืนยันไม่ได้",
+
+  // Methodology — the comparison-provenance table.
+  "Who you are actually compared with": "คุณถูกเปรียบเทียบกับใครกันแน่",
+  "Compared with": "เปรียบเทียบกับ",
+  "Sample": "กลุ่มตัวอย่าง",
+  "What is claimed": "สิ่งที่แอปอ้าง",
+  "Ranked": "จัดอันดับ",
+  "Band placement": "จัดช่วงตามอัตราการมีส่วนร่วม",
+  "Thailand · working age": "ไทย · วัยทำงาน",
+  "Thailand · adults": "ไทย · ผู้ใหญ่",
+  "Thailand · workers": "ไทย · แรงงาน",
+  "Germany · adults": "เยอรมนี · ผู้ใหญ่",
+  "25 countries · adults": "25 ประเทศ · ผู้ใหญ่",
+  "Wrong age band for this app's users": "ช่วงอายุไม่ตรงกับผู้ใช้แอปนี้",
+  "A percentile is a claim about where you sit among a group of people — so the group matters as much as the number. A literature search in July 2026 found no representative Thai general-adult norm published for any of the questionnaires here. Every reference sample is therefore either foreign or non-representative, and this table says which is which instead of leaving you to assume the comparison is with Thai people your age.":
+    "เปอร์เซ็นไทล์คือการบอกว่าคุณอยู่ตรงไหนในกลุ่มคนกลุ่มหนึ่ง — กลุ่มที่ใช้เทียบจึงสำคัญพอ ๆ กับตัวเลข การค้นคว้าเอกสารวิชาการเมื่อกรกฎาคม 2569 ไม่พบเกณฑ์อ้างอิงของผู้ใหญ่ไทยทั่วไปที่เป็นตัวแทนประชากรสำหรับแบบสอบถามชุดใดเลยที่ใช้ในแอปนี้ กลุ่มอ้างอิงทุกกลุ่มจึงเป็นชาวต่างชาติหรือไม่ได้เป็นตัวแทนประชากร ตารางนี้จึงระบุให้ชัดว่าอันไหนเป็นอย่างไร แทนที่จะปล่อยให้คุณเข้าใจเองว่ากำลังถูกเทียบกับคนไทยวัยเดียวกัน",
+  "Relationships is the one aspect with no rank at all. Its two questionnaires are normed on people a generation older — UCLA-3 on US adults aged 57-85, LSNS-6 on European over-65s — and loneliness does not move in one direction with age, so the size and even the direction of the error are unknown. Your scores and the social-isolation cutoff are still shown, because those are real measurements; the rank is withheld, because it would be a guess wearing a number's clothes.":
+    "ความสัมพันธ์เป็นด้านเดียวที่ไม่มีการจัดอันดับเลย แบบสอบถามทั้งสองชุดสร้างเกณฑ์อ้างอิงจากคนที่อายุมากกว่าหนึ่งรุ่น — UCLA-3 จากผู้ใหญ่ชาวอเมริกันอายุ 57-85 ปี และ LSNS-6 จากชาวยุโรปอายุเกิน 65 ปี — และความเหงาไม่ได้เปลี่ยนไปในทิศทางเดียวตามอายุ ขนาดและแม้แต่ทิศทางของความคลาดเคลื่อนจึงไม่อาจทราบได้ คะแนนของคุณและเกณฑ์ความโดดเดี่ยวยังแสดงอยู่ เพราะนั่นคือการวัดผลจริง ส่วนอันดับถูกงดไว้ เพราะมันจะเป็นเพียงการเดาที่สวมเสื้อคลุมเป็นตัวเลข",
+  "Where a comparison is foreign but the age range fits — the German WHO-5 sample, the 25-country self-efficacy norms — the rank is shown and the sample is named next to it, on the aspect page as well as here. Read those as indicative rather than as your standing among Thai adults.":
+    "กรณีที่กลุ่มเทียบเป็นชาวต่างชาติแต่ช่วงอายุตรงกัน — กลุ่มตัวอย่าง WHO-5 ชาวเยอรมัน และเกณฑ์การรับรู้ความสามารถของตนเองจาก 25 ประเทศ — จะแสดงอันดับพร้อมระบุกลุ่มตัวอย่างกำกับไว้ ทั้งในหน้าด้านนั้นและที่นี่ ให้อ่านผลเหล่านั้นเป็นเพียงตัวชี้บอกคร่าว ๆ ไม่ใช่สถานะของคุณเมื่อเทียบกับผู้ใหญ่ชาวไทย"
 };

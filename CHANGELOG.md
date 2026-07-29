@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `37`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `38`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,49 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.6.1] — 2026-07-29 (APP_VERSION 38)
+
+### The non-goal, written down
+
+The app prints a great many numbers about a person: eight scores, eight
+percentiles, eight letter grades and one index. Everything above this entry was
+built to make those numbers *honest*. Nothing in the app had ever stated the
+limit on what an honest number can be taken to mean.
+
+`#/methodology` now says it, in the intro card, immediately after the
+not-a-diagnosis disclaimer:
+
+> One thing this app does not measure: your worth as a person. Every number here
+> is built from behavior you reported and circumstances you were handed — what
+> you earn, how you slept, who is near you, how much time you have — and all of
+> those move. Read a low score as a description of a situation, never as a
+> judgment on the person living in it.
+
+Three deliberate choices in that wording:
+
+- It names what the numbers **are** built from, not only what they are not. A
+  bare "this doesn't measure your worth" is a reassurance; naming behavior and
+  circumstance is an argument, and an argument survives a bad week.
+- "Circumstances you were handed" is the load-bearing phrase. Several aspects —
+  finance most obviously, but also relationships and physical — score
+  conditions a person did not choose. A grade on those is a description of a
+  situation, and the sentence says so.
+- It is **not** softened at the low end and it is not hidden in fine print. It
+  is styled apart (`.methodology-nongoal`, navy with a rule down the left) so it
+  reads as a statement of intent rather than a legal footer.
+
+`tests/methodology.test.mjs` pins all four claims — including the class name —
+so a future copy edit cannot quietly drop it.
+
+### Files
+
+- `views/methodology.js`: one `<p>` in the intro card.
+- `index.css`: new `.methodology-nongoal`. No existing selector touched.
+- `th.js`: +1 key.
+- `tests/methodology.test.mjs`: +1 test, 4 assertions.
+
+No scoring, schema, or state change. 295 tests.
 
 ## [2.6.0] — 2026-07-29 (APP_VERSION 37)
 

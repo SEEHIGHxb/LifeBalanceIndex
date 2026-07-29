@@ -68,6 +68,7 @@ export function renderMethodology(containerId, state) {
       <h2 class="aspect-title">${t("How scores are measured")}</h2>
       <p class="aspect-blurb">${t("Each aspect score (0-100) combines published, validated questionnaires with facts you report about your life. This page shows every instrument, how it is scored, how the parts are weighted, and the known limitations — so no number is a black box.")}</p>
       <p class="aspect-blurb">${t("This is a self-reflection tool, not a medical or psychological diagnosis. If a score worries you, treat it as a prompt to talk to a professional, not as a verdict.")}</p>
+      <p class="aspect-blurb methodology-nongoal">${t("One thing this app does not measure: your worth as a person. Every number here is built from behavior you reported and circumstances you were handed — what you earn, how you slept, who is near you, how much time you have — and all of those move. Read a low score as a description of a situation, never as a judgment on the person living in it.")}</p>
     </div>
 
     <div class="card">

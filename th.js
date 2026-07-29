@@ -193,6 +193,8 @@ export const TH = {
     "คะแนนแต่ละด้าน (0-100) มาจากแบบสอบถามมาตรฐานที่ตีพิมพ์แล้ว ร่วมกับข้อมูลจริงที่คุณรายงาน หน้านี้แสดงเครื่องมือทุกชิ้น วิธีคิดคะแนน น้ำหนักของแต่ละส่วน และข้อจำกัดที่ทราบ — เพื่อให้ไม่มีตัวเลขใดเป็นกล่องดำ",
   "This is a self-reflection tool, not a medical or psychological diagnosis. If a score worries you, treat it as a prompt to talk to a professional, not as a verdict.":
     "นี่คือเครื่องมือสำรวจตนเอง ไม่ใช่การวินิจฉัยทางการแพทย์หรือจิตวิทยา หากคะแนนใดทำให้กังวล โปรดถือเป็นสัญญาณให้ปรึกษาผู้เชี่ยวชาญ ไม่ใช่คำตัดสิน",
+  "One thing this app does not measure: your worth as a person. Every number here is built from behavior you reported and circumstances you were handed — what you earn, how you slept, who is near you, how much time you have — and all of those move. Read a low score as a description of a situation, never as a judgment on the person living in it.":
+    "มีสิ่งหนึ่งที่แอปนี้ไม่ได้วัด นั่นคือคุณค่าความเป็นมนุษย์ของคุณ ทุกตัวเลขที่นี่สร้างขึ้นจากพฤติกรรมที่คุณรายงานและสภาพแวดล้อมที่คุณได้รับมา — รายได้ การนอน ผู้คนรอบตัว เวลาที่คุณมี — และทั้งหมดนั้นเปลี่ยนแปลงได้ โปรดอ่านคะแนนที่ต่ำในฐานะคำอธิบายของสถานการณ์ ไม่ใช่คำตัดสินคุณค่าของคนที่กำลังอยู่ในสถานการณ์นั้น",
   "The eight aspects": "แปดด้านของชีวิต",
   "60% income percentile (lognormal model calibrated to Thai Labour Force Survey wages) + 40% CFPB Financial Well-Being score (official age-banded table) + a savings-rate bonus of up to 10 points.":
     "60% เปอร์เซ็นไทล์รายได้ (แบบจำลอง lognormal เทียบค่าจ้างจากการสำรวจภาวะการทำงานของไทย) + 40% คะแนนสุขภาวะทางการเงิน CFPB (ตารางทางการแยกช่วงอายุ) + โบนัสอัตราการออมสูงสุด 10 คะแนน",

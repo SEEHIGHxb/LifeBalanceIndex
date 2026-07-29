@@ -718,6 +718,17 @@ header {
   margin-top: 4px;
 }
 
+/* The non-goal statement on #/methodology. Set apart from the surrounding
+   blurbs on purpose: it is the one paragraph that says what the eight numbers
+   are NOT, and it must not read as fine print. */
+.methodology-nongoal {
+  color: var(--color-navy);
+  border-left: 3px solid var(--color-navy);
+  padding-left: 12px;
+  margin-top: 14px;
+  line-height: 1.55;
+}
+
 .aspect-score-badge {
   flex-shrink: 0;
   background: #faf9f6;

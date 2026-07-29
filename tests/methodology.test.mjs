@@ -50,6 +50,21 @@ test("the methodology page cites validated instruments and discloses app-authore
   assert.match(html, /Complete a monthly re-assessment/, "stability placeholder shown without check-ins");
 });
 
+// The app's stated non-goal. Deliberately a test and not merely a comment: this
+// sentence is the guardrail on every percentile, grade and index the app
+// prints, and it must not be quietly dropped in some future copy edit.
+test("the methodology page states what the app does not measure", () => {
+  renderMethodology("main-view", { checkins: [] });
+  const html = captured.html;
+  assert.match(html, /does not measure: your worth as a person/, "the non-goal is stated outright");
+  assert.match(html, /behavior you reported and circumstances you were handed/,
+    "it says what the numbers ARE built from, not only what they are not");
+  assert.match(html, /never as a judgment on the person living in it/,
+    "a low score is explicitly disclaimed as a verdict on the person");
+  assert.match(html, /class="aspect-blurb methodology-nongoal"/,
+    "the statement is set apart, not styled as fine print");
+});
+
 test("the stability line reports count and average once check-ins exist", () => {
   renderMethodology("main-view", {
     checkins: [{ date: "2026-01-01", sums: {}, shifts: { mental: 3, personalGoals: -5 } }]

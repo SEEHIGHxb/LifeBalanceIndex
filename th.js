@@ -522,7 +522,8 @@ export const TH = {
   "Sleep pledge": "คำมั่นการนอน",
   "Average at least {target} hours of sleep per night.": "นอนเฉลี่ยอย่างน้อยคืนละ {target} ชั่วโมง",
   "Vegetables pledge": "คำมั่นกินผัก",
-  "Average at least {target} vegetable portions per day.": "กินผักเฉลี่ยอย่างน้อยวันละ {target} ส่วน",
+  "Average at least {target} vegetable portions per day (WHO: 400 g of fruit and vegetables, about 5 portions).":
+    "กินผักเฉลี่ยอย่างน้อยวันละ {target} ส่วน (WHO: ผักและผลไม้ 400 กรัมต่อวัน ราว 5 ส่วน)",
   "Exercise days pledge": "คำมั่นวันออกกำลังกาย",
   "Exercise (vigorous or moderate) on at least {target} days this week.": "ออกกำลังกาย (หนักหรือปานกลาง) อย่างน้อย {target} วันในสัปดาห์นี้",
   "Activity volume pledge": "คำมั่นปริมาณกิจกรรม",
@@ -640,8 +641,16 @@ export const TH = {
   "The income spread (log-sigma 0.65) is an assumed wage dispersion, not published decile data — the rank is approximate.":
     "การกระจายของรายได้ (log-sigma 0.65) เป็นค่าสมมติของการกระจายค่าจ้าง ไม่ใช่ข้อมูลเดไซล์ที่ตีพิมพ์ — อันดับจึงเป็นค่าโดยประมาณ",
   "{met} MET-min/week vs Thai adults (WHO guideline = 600)": "{met} MET-นาที/สัปดาห์ เทียบกับผู้ใหญ่ไทย (เกณฑ์ WHO = 600)",
-  "BMI {bmi} — below the BMI-25 line that {share}% of Thai adults are over.": "BMI {bmi} — ต่ำกว่าเส้น BMI 25 ที่ผู้ใหญ่ไทย {share}% อยู่เหนือเส้นนี้",
-  "BMI {bmi} — in the {share}% of Thai adults at BMI 25+.": "BMI {bmi} — อยู่ในกลุ่ม {share}% ของผู้ใหญ่ไทยที่ BMI 25 ขึ้นไป",
+  // These two are built as tp(bmi < 23 ? "..." : "...") in benchmarks.js, so the
+  // literal does not sit directly after tp( and the scanner in
+  // tests/i18n-coverage.test.mjs cannot see them. They must be maintained BY
+  // HAND — if the English changes and these are not updated, Thai mode silently
+  // falls back to English with no test failure. Same trap for any other
+  // ternary-inside-tp() string in benchmarks.js.
+  "BMI {bmi} — below the WHO Asia-Pacific overweight line of 23.0. For reference, {share}% of Thai adults are at BMI 25 or above.":
+    "BMI {bmi} — ต่ำกว่าเส้นน้ำหนักเกินของ WHO เอเชีย-แปซิฟิก ที่ 23.0 เพื่อการเทียบเคียง ผู้ใหญ่ไทย {share}% มี BMI 25 ขึ้นไป",
+  "BMI {bmi} — at or above the WHO Asia-Pacific overweight line of 23.0, which is lower than the global 25 because risk rises earlier in Asian populations. For reference, {share}% of Thai adults are at BMI 25 or above.":
+    "BMI {bmi} — อยู่ที่หรือเหนือเส้นน้ำหนักเกินของ WHO เอเชีย-แปซิฟิก ที่ 23.0 ซึ่งต่ำกว่าเส้นสากล 25 เพราะความเสี่ยงในประชากรเอเชียเพิ่มขึ้นที่ BMI ต่ำกว่า เพื่อการเทียบเคียง ผู้ใหญ่ไทย {share}% มี BMI 25 ขึ้นไป",
   'ST-5 stress score {n}/15 — "{band}" band on the Thai DMH scale.': 'คะแนนความเครียด ST-5 {n}/15 — อยู่ในเกณฑ์ "{band}" ของกรมสุขภาพจิต',
   "no stress problem": "ไม่มีปัญหาความเครียด",
   "possible stress problem": "อาจมีปัญหาความเครียด",
@@ -673,6 +682,72 @@ export const TH = {
   "No long-term retirement investments yet — like most Thai workers": "ยังไม่มีการลงทุนเพื่อเกษียณระยะยาว — เหมือนแรงงานไทยส่วนใหญ่",
   "Most Thai workers lack adequate retirement savings; ~2 in 3 over-60s get no social-security annuity.":
     "แรงงานไทยส่วนใหญ่มีเงินเก็บเกษียณไม่พอ; ผู้สูงวัย 60+ ราว 2 ใน 3 ไม่มีสิทธิ์รับบำนาญประกันสังคม",
+
+  // --- GUIDELINE CHECKS (criteria.js + the aspect card + methodology table) ---
+  // Terminology note: "เกณฑ์แนะนำ" (recommended standard) is used throughout for
+  // a guideline, kept distinct from "เกณฑ์เทียบประชากร"/percentile wording, because
+  // the whole point of this layer is that a guideline is NOT a population rank.
+  "Meets guideline": "ผ่านเกณฑ์แนะนำ",
+  "Below guideline": "ต่ำกว่าเกณฑ์แนะนำ",
+  "Not measured": "ยังไม่ได้วัด",
+  "Guideline checks": "การตรวจตามเกณฑ์แนะนำ",
+  "Guideline sources": "แหล่งอ้างอิงเกณฑ์แนะนำ",
+  "These compare you with published health guidelines, not with a population. A guideline states what a body needs, so it applies regardless of country — which is why these checks exist for aspects where no representative Thai norm does. They do not affect your score, grade or Balance Index.":
+    "ส่วนนี้เทียบคุณกับเกณฑ์แนะนำด้านสุขภาพที่มีการเผยแพร่ ไม่ใช่เทียบกับกลุ่มประชากร เกณฑ์แนะนำระบุสิ่งที่ร่างกายต้องการ จึงใช้ได้ไม่ว่าอยู่ประเทศใด — นี่คือเหตุผลที่การตรวจแบบนี้มีอยู่ในด้านที่ยังไม่มีเกณฑ์ประชากรไทยที่เป็นตัวแทน ส่วนนี้ไม่มีผลต่อคะแนน เกรด หรือดัชนีสมดุลของคุณ",
+
+  // Criterion names and detail lines (criteria.js)
+  "Aerobic activity": "กิจกรรมแอโรบิก",
+  "{moderate} min moderate (walking included) and {vigorous} min vigorous per week. The guideline is {modTarget} min moderate, or {vigTarget} min vigorous, or an equivalent mix.":
+    "ระดับปานกลาง {moderate} นาที (รวมการเดิน) และระดับหนัก {vigorous} นาทีต่อสัปดาห์ เกณฑ์แนะนำคือปานกลาง {modTarget} นาที หรือหนัก {vigTarget} นาที หรือผสมกันในสัดส่วนเทียบเท่า",
+  "Muscle strengthening": "การฝึกความแข็งแรงของกล้ามเนื้อ",
+  "The weekly review does not ask about strength training yet, so this cannot be checked.":
+    "แบบทบทวนรายสัปดาห์ยังไม่ได้ถามเรื่องการฝึกความแข็งแรง จึงยังตรวจข้อนี้ไม่ได้",
+  "{days} days per week of strength work. The guideline is {target} or more.":
+    "ฝึกความแข็งแรง {days} วันต่อสัปดาห์ เกณฑ์แนะนำคือ {target} วันขึ้นไป",
+  "Body mass index": "ดัชนีมวลกาย",
+  "Add your height and weight to check this.": "กรอกส่วนสูงและน้ำหนักเพื่อตรวจข้อนี้",
+  "BMI {bmi}. The WHO Asia-Pacific overweight line is {line}, lower than the global 25 because risk rises earlier in Asian populations.":
+    "BMI {bmi} เส้นน้ำหนักเกินของ WHO เอเชีย-แปซิฟิก อยู่ที่ {line} ซึ่งต่ำกว่าเส้นสากล 25 เพราะความเสี่ยงในประชากรเอเชียเพิ่มขึ้นที่ BMI ต่ำกว่า",
+  "Add your typical sleep hours to check this.": "กรอกจำนวนชั่วโมงนอนโดยทั่วไปเพื่อตรวจข้อนี้",
+  "{hours} hours a night. The recommended range for your age is {low}-{high} hours.":
+    "นอนคืนละ {hours} ชั่วโมง ช่วงที่แนะนำสำหรับอายุของคุณคือ {low}-{high} ชั่วโมง",
+  "Fruit and vegetables": "ผักและผลไม้",
+  "Add your daily vegetable portions to check this.": "กรอกจำนวนส่วนผักที่กินต่อวันเพื่อตรวจข้อนี้",
+  "{portions} vegetable portions a day. The guideline is 400 g of fruit and vegetables, about {target} portions — this app asks only about vegetables, so the check is a strict one.":
+    "กินผัก {portions} ส่วนต่อวัน เกณฑ์แนะนำคือผักและผลไม้ 400 กรัม ราว {target} ส่วน — แอปนี้ถามเฉพาะผัก การตรวจข้อนี้จึงเข้มกว่าความจริง",
+  "Well-being screening": "การคัดกรองสุขภาวะ",
+  "Answer the well-being questionnaire to check this.": "ตอบแบบสอบถามสุขภาวะเพื่อตรวจข้อนี้",
+  "WHO-5 well-being {score}/100, above the {cutoff} screening threshold.":
+    "สุขภาวะ WHO-5 {score}/100 สูงกว่าจุดตัดการคัดกรองที่ {cutoff}",
+  "WHO-5 well-being {score}/100, at or below the {cutoff} screening threshold. That is a prompt to talk to someone, not a diagnosis or a ranking.":
+    "สุขภาวะ WHO-5 {score}/100 อยู่ที่หรือต่ำกว่าจุดตัดการคัดกรองที่ {cutoff} นี่คือสัญญาณให้ลองปรึกษาใครบางคน ไม่ใช่การวินิจฉัยและไม่ใช่การจัดอันดับ",
+
+  // Methodology page: the guideline-checks card and its table
+  "Guideline checks, and why they are separate": "การตรวจตามเกณฑ์แนะนำ และเหตุผลที่แยกออกมา",
+  "Check": "รายการตรวจ",
+  "Guideline": "เกณฑ์แนะนำ",
+  "Source": "แหล่งอ้างอิง",
+  "150 min moderate or 75 min vigorous per week, or an equivalent mix":
+    "ปานกลาง 150 นาที หรือหนัก 75 นาทีต่อสัปดาห์ หรือผสมกันในสัดส่วนเทียบเท่า",
+  "2 or more days per week": "2 วันขึ้นไปต่อสัปดาห์",
+  "Under 23.0 — the Asia-Pacific overweight line, not the global 25":
+    "ต่ำกว่า 23.0 — เส้นน้ำหนักเกินของเอเชีย-แปซิฟิก ไม่ใช่เส้นสากล 25",
+  "7-9 hours a night, or 7-8 from age 65": "คืนละ 7-9 ชั่วโมง หรือ 7-8 ชั่วโมงเมื่ออายุ 65 ปีขึ้นไป",
+  "400 g a day, about 5 portions": "400 กรัมต่อวัน ราว 5 ส่วน",
+  "Above 50 of 100 on the WHO-5 — a screening threshold, not a rank":
+    "สูงกว่า 50 จาก 100 ของ WHO-5 — เป็นจุดตัดการคัดกรอง ไม่ใช่อันดับ",
+  "Because no representative Thai norm exists for these questionnaires, some aspects also carry a second kind of comparison that needs no sample at all: a published guideline. A norm describes what people do; a guideline states what a body needs. That difference is why a WHO recommendation can be applied to a Thai user without the cross-country problems above — and why these checks are readable side by side in a way eight percentiles against six different populations never were.":
+    "เพราะยังไม่มีเกณฑ์ประชากรไทยที่เป็นตัวแทนสำหรับแบบสอบถามเหล่านี้ บางด้านจึงมีการเทียบอีกแบบหนึ่งที่ไม่ต้องใช้กลุ่มตัวอย่างเลย นั่นคือเกณฑ์แนะนำที่มีการเผยแพร่ เกณฑ์ประชากรบอกว่าคนทั่วไปทำอย่างไร ส่วนเกณฑ์แนะนำบอกว่าร่างกายต้องการอะไร ความต่างข้อนี้คือเหตุผลที่ข้อแนะนำของ WHO ใช้กับผู้ใช้ชาวไทยได้โดยไม่ติดปัญหาการเทียบข้ามประเทศที่กล่าวไว้ข้างต้น — และเป็นเหตุผลที่การตรวจเหล่านี้อ่านเทียบกันได้ ต่างจากเปอร์เซ็นไทล์แปดค่าที่เทียบกับประชากรหกกลุ่มซึ่งไม่เคยเทียบกันได้",
+  "They are kept strictly separate from your scores. A guideline check never changes an aspect score, a letter grade, or the Balance Index. A grade is a rank; a guideline check is a yes or no against a published recommendation, and mixing the two would make a grade mean different things on different aspects.":
+    "ส่วนนี้แยกออกจากคะแนนของคุณอย่างเด็ดขาด การตรวจตามเกณฑ์แนะนำไม่เคยเปลี่ยนคะแนนด้านใด เกรด หรือดัชนีสมดุล เกรดคืออันดับ ส่วนการตรวจตามเกณฑ์แนะนำคือผ่านหรือไม่ผ่านเทียบกับข้อแนะนำที่เผยแพร่ไว้ หากผสมสองอย่างนี้เข้าด้วยกัน เกรดจะมีความหมายไม่เหมือนกันในแต่ละด้าน",
+  "A check reads “Not measured” when the app has never asked for the input it needs — strength-training days, for instance, are not yet part of the weekly review. That is shown as missing rather than as a failure, because not being asked is not the same as falling short.":
+    "การตรวจจะแสดงว่า “ยังไม่ได้วัด” เมื่อแอปยังไม่เคยถามข้อมูลที่จำเป็น เช่น จำนวนวันฝึกความแข็งแรงที่ยังไม่อยู่ในแบบทบทวนรายสัปดาห์ กรณีนี้จะแสดงว่าข้อมูลขาด ไม่ใช่ว่าไม่ผ่าน เพราะการไม่ถูกถามไม่เหมือนกับการทำไม่ถึงเกณฑ์",
+  "Two things deliberately have no guideline check. Drinking water: the often-quoted 2 litres a day comes from EFSA's adequate intake, which counts total water including the moisture in food, while this app asks only what you drink — so citing it here would compare two different quantities. The 2 litre pledge is a useful convention, not a guideline. Sitting time: WHO says only to limit it, without naming a number, so there is nothing to pass or fail.":
+    "มีสองเรื่องที่ตั้งใจไม่ทำการตรวจตามเกณฑ์แนะนำ เรื่องน้ำดื่ม: ตัวเลข 2 ลิตรต่อวันที่มักถูกอ้างถึงมาจากค่าปริมาณที่เพียงพอของ EFSA ซึ่งนับน้ำทั้งหมดรวมความชื้นในอาหาร ขณะที่แอปนี้ถามเฉพาะน้ำที่คุณดื่ม การอ้างอิงตัวเลขนั้นที่นี่จึงเป็นการเทียบสองปริมาณที่ไม่ใช่สิ่งเดียวกัน คำมั่น 2 ลิตรจึงเป็นข้อตกลงที่ใช้ได้จริง ไม่ใช่เกณฑ์แนะนำ เรื่องเวลานั่ง: WHO บอกเพียงให้ลดลง โดยไม่ระบุตัวเลข จึงไม่มีอะไรให้ตัดสินว่าผ่านหรือไม่ผ่าน",
+  "Finance, social contribution, environment and humanity's future have no guideline checks either, for a simpler reason: no institution publishes a per-person threshold for them. What counts as enough income or enough giving depends on where you live and what things cost, so those aspects stay compared with Thai figures rather than a global rule.":
+    "ด้านการเงิน การมีส่วนร่วมทางสังคม สิ่งแวดล้อม และอนาคตของมนุษยชาติ ก็ไม่มีการตรวจตามเกณฑ์แนะนำ ด้วยเหตุผลที่ง่ายกว่า คือไม่มีองค์กรใดเผยแพร่เกณฑ์ระดับรายบุคคลสำหรับด้านเหล่านี้ รายได้เท่าไรจึงพอ หรือให้เท่าไรจึงพอ ขึ้นอยู่กับว่าคุณอยู่ที่ไหนและค่าครองชีพเท่าไร ด้านเหล่านี้จึงยังเทียบกับข้อมูลของไทย ไม่ใช่กฎเกณฑ์ระดับโลก",
+  "One limitation worth naming: the fruit-and-vegetable guideline covers both, while the weekly review asks only about vegetables. The check is therefore stricter than WHO intends — if you also eat fruit, you are closer to the guideline than it shows.":
+    "มีข้อจำกัดหนึ่งที่ควรบอกไว้: เกณฑ์แนะนำครอบคลุมทั้งผักและผลไม้ ขณะที่แบบทบทวนรายสัปดาห์ถามเฉพาะผัก การตรวจข้อนี้จึงเข้มกว่าที่ WHO ตั้งใจไว้ — หากคุณกินผลไม้ด้วย คุณใกล้เกณฑ์มากกว่าที่แสดง",
 
   // --- Suggestions (suggestions.js) ---
   "Grow your savings rate": "เพิ่มอัตราการออม",

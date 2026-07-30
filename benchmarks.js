@@ -10,7 +10,10 @@
 
 import { t, tp } from "./i18n.js";
 
-const SOURCES = {
+// Exported so criteria.js can cite from the SAME registry. Two registries
+// would let the same study drift into two labels, which is exactly the kind of
+// divergence the BMI note below already suffered from.
+export const SOURCES = {
   nsoIncome: {
     label: "NSO Thailand, Household Socio-Economic Survey 2023 (avg. household income ~29,000 THB/mo national, ~39,100 Bangkok)",
     url: "https://www.nso.go.th/nsoweb/index?set_lang=en"
@@ -62,6 +65,34 @@ const SOURCES = {
   thaiRetirement: {
     label: "ILO / OECD Pensions at a Glance Asia-Pacific 2024: most Thai workers lack adequate retirement savings; ~2 in 3 over-60s ineligible for a social-security annuity",
     url: "https://www.oecd.org/en/publications/pensions-at-a-glance-asia-pacific-2024_d4146d12-en/full-report/thailand_eaeb7aea.html"
+  },
+
+  // --- CRITERION sources (used by criteria.js) ---
+  //
+  // These differ in kind from everything above: they are published GUIDELINES
+  // and validated CUT-OFFS, not population samples. A guideline needs no
+  // norming sample, which is why it can be applied to a Thai user without the
+  // cross-cultural problems that block a pooled questionnaire norm. All five
+  // verified verbatim at these URLs on 2026-07-30.
+  whoActivity2020: {
+    label: "WHO Guidelines on physical activity and sedentary behaviour 2020: adults 150-300 min/week moderate OR 75-150 min/week vigorous aerobic activity, plus muscle-strengthening on 2+ days/week",
+    url: "https://www.ncbi.nlm.nih.gov/books/NBK566046/"
+  },
+  whoWproBmi: {
+    label: "WHO Western Pacific Region / Asia-Pacific BMI classification: overweight >= 23.0, obesity >= 25.0 - lower than the global 25/30 lines because Asian populations develop cardiometabolic disease at lower BMI",
+    url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC4217157/"
+  },
+  nsfSleep: {
+    label: "National Sleep Foundation sleep duration recommendations (Hirshkowitz et al. 2015, Sleep Health 1(1):40-43, doi:10.1016/j.sleh.2014.12.010): 7-9 hours for adults, 7-8 hours for older adults",
+    url: "https://pubmed.ncbi.nlm.nih.gov/29073412/"
+  },
+  whoDiet: {
+    label: "WHO healthy diet fact sheet: at least 400 g of fruits and vegetables per day (~5 portions of 80 g)",
+    url: "https://www.who.int/news-room/fact-sheets/detail/healthy-diet"
+  },
+  who5Cutoff: {
+    label: "WHO-5 screening cut-off (Topp et al. 2015, Psychother Psychosom 84(3):167-176, doi:10.1159/000376585): a score below 50/100 indicates likely depression, sensitivity 79-88%, specificity 76-88%. A CLINICAL SCREENING threshold, not a population rank; the optimal cut-off shifts by population.",
+    url: "https://pubmed.ncbi.nlm.nih.gov/25831962/"
   }
 };
 
@@ -233,10 +264,21 @@ function physicalBenchmark(profile) {
   const h = parseFloat(profile.height || 0) / 100;
   if (w > 0 && h > 0) {
     const bmi = w / (h * h);
+    // The line reported here is the WHO WESTERN PACIFIC one (overweight >= 23),
+    // not the global 25. Asian populations develop cardiometabolic disease at a
+    // lower BMI, so 23 is the threshold that applies to this app's users — and
+    // averages.js:45 was already reasoning on the Asian band while this note
+    // told users about the 25 line, so the two files disagreed. A Thai user at
+    // BMI 24 was being told they were below the line.
+    //
+    // The Thai NHES share stays pinned to the >= 25 figure it actually
+    // measures, on a separate clause, because no verified Thai share at >= 23
+    // is in hand and interpolating one would be inventing data. Two true
+    // statements beat one convenient number.
     const overweightShare = profile.gender === "male" ? 32.9 : profile.gender === "female" ? 41.8 : 37.5;
-    notes.push(tp(bmi < 25
-      ? "BMI {bmi} — below the BMI-25 line that {share}% of Thai adults are over."
-      : "BMI {bmi} — in the {share}% of Thai adults at BMI 25+.", { bmi: bmi.toFixed(1), share: overweightShare }));
+    notes.push(tp(bmi < 23
+      ? "BMI {bmi} — below the WHO Asia-Pacific overweight line of 23.0. For reference, {share}% of Thai adults are at BMI 25 or above."
+      : "BMI {bmi} — at or above the WHO Asia-Pacific overweight line of 23.0, which is lower than the global 25 because risk rises earlier in Asian populations. For reference, {share}% of Thai adults are at BMI 25 or above.", { bmi: bmi.toFixed(1), share: overweightShare }));
   }
 
   return {
@@ -245,7 +287,9 @@ function physicalBenchmark(profile) {
     population: t("Thai adults"),
     summary: tp("{met} MET-min/week vs Thai adults (WHO guideline = 600)", { met: Math.round(met) }),
     notes,
-    sources: [SOURCES.thaiSpa, SOURCES.nhesBmi]
+    // whoWproBmi is cited because the BMI note above now reports the
+    // Asia-Pacific line; nhesBmi still backs the Thai >= 25 share beside it.
+    sources: [SOURCES.thaiSpa, SOURCES.nhesBmi, SOURCES.whoWproBmi]
   };
 }
 

@@ -19,8 +19,11 @@ import { GRADE_BANDS, BALANCE_BANDS } from "../grades.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
+// NOTE: this list is hand-maintained, so a NEW root module carrying t()/tp()
+// literals escapes the scan until it is added here. criteria.js proved that —
+// its strings went unflagged on its first run. Add new user-facing root modules.
 const FILES = [
-  "ui.js", "app.js", "aspects.js", "benchmarks.js",
+  "ui.js", "app.js", "aspects.js", "benchmarks.js", "criteria.js",
   "suggestions.js", "state.js", "defaults.js", "sanitize.js", "scoring.js",
   "comparison-code.js", "chart.js", "validation.js", "goals.js",
   // ui.js is now a barrel — the actual t()/tp() literals live in views/.

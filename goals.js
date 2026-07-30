@@ -26,11 +26,15 @@ export const GOAL_TEMPLATES = {
     title: "Sleep pledge",
     desc: "Average at least {target} hours of sleep per night."
   },
+  // Default is 5, not 3: WHO recommends at least 400 g of fruit and vegetables
+  // a day, and a WHO portion is 80 g. A default of 3 quietly set the bar below
+  // the guideline the app cites elsewhere. The target stays user-set within
+  // min/max — this only moves the prefill.
   veg: {
     field: "vegetablePortions", cmp: "gte", unit: "portions/day",
-    def: 3, min: 1, max: 10, step: 0.5, aspect: "physical", xp: 25,
+    def: 5, min: 1, max: 10, step: 0.5, aspect: "physical", xp: 25,
     title: "Vegetables pledge",
-    desc: "Average at least {target} vegetable portions per day."
+    desc: "Average at least {target} vegetable portions per day (WHO: 400 g of fruit and vegetables, about 5 portions)."
   },
   exerciseDays: {
     field: "@exerciseDays", cmp: "gte", unit: "days/week",

@@ -867,6 +867,85 @@ header {
   word-break: break-word;
 }
 
+/* Guideline checks (criterion-referenced card on aspect pages).
+   Visually quieter than the grade badge on purpose: a guideline check is
+   secondary to the cited population comparison, never a competing verdict. */
+.criteria-caption {
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.criteria-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.criterion-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-card-border);
+}
+
+.criterion-row:first-child {
+  border-top: none;
+}
+
+.criterion-chip {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.criterion-chip-met {
+  background: rgba(31, 122, 90, 0.14);
+  color: #1f7a5a;
+}
+
+.criterion-chip-unmet {
+  background: rgba(176, 106, 22, 0.14);
+  color: #8a5312;
+}
+
+.criterion-chip-unmeasured {
+  background: rgba(32, 50, 76, 0.09);
+  color: var(--color-text-secondary);
+}
+
+.criterion-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.criterion-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.criterion-detail {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+/* Narrow screens: the chip drops above the text rather than squeezing it. */
+@media (max-width: 420px) {
+  .criterion-row {
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+
 /* Suggestions (dashboard + aspect pages) */
 .suggestion-link {
   text-decoration: none;

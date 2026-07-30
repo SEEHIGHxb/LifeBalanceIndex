@@ -83,6 +83,36 @@ const WHERE_LABELS = () => ({
   wrongAge: t("Wrong age band for this app's users")
 });
 
+// GUIDELINE CHECKS — the criterion-referenced table.
+//
+// Same rules as COMPARISON_SAMPLES above: `source` names a published document
+// and stays in English, while every translatable cell is a LITERAL t() call so
+// tests/i18n-coverage.test.mjs can see it. Built as a function (not a const)
+// because t() must run at render time, after the language is known.
+//
+// The thresholds here MUST match the constants in criteria.js. They are
+// restated rather than imported because this table also documents the
+// exclusions and the "not measured" cases, which are prose, not constants —
+// tests/criteria.test.mjs pins the numeric side.
+const CRITERION_ROWS = () => [
+  { aspect: t("Physical"), check: t("Aerobic activity"), rule: t("150 min moderate or 75 min vigorous per week, or an equivalent mix"), source: "WHO Guidelines on physical activity and sedentary behaviour, 2020" },
+  { aspect: t("Physical"), check: t("Muscle strengthening"), rule: t("2 or more days per week"), source: "WHO Guidelines on physical activity and sedentary behaviour, 2020" },
+  { aspect: t("Physical"), check: t("Body mass index"), rule: t("Under 23.0 — the Asia-Pacific overweight line, not the global 25"), source: "WHO Western Pacific / Asia-Pacific BMI classification" },
+  { aspect: t("Physical"), check: t("Sleep duration"), rule: t("7-9 hours a night, or 7-8 from age 65"), source: "National Sleep Foundation (Hirshkowitz et al. 2015, Sleep Health)" },
+  { aspect: t("Physical"), check: t("Fruit and vegetables"), rule: t("400 g a day, about 5 portions"), source: "WHO healthy diet fact sheet" },
+  { aspect: t("Mental"), check: t("Well-being screening"), rule: t("Above 50 of 100 on the WHO-5 — a screening threshold, not a rank"), source: "Topp et al. 2015, Psychother Psychosom 84(3):167-176" }
+];
+
+function criterionRows() {
+  return CRITERION_ROWS().map(row => `
+    <tr>
+      <th scope="row">${escapeHtml(row.aspect)}</th>
+      <td>${escapeHtml(row.check)}</td>
+      <td>${escapeHtml(row.rule)}</td>
+      <td>${escapeHtml(row.source)}</td>
+    </tr>`).join("");
+}
+
 function comparisonRows() {
   const ranks = RANK_LABELS();
   const wheres = WHERE_LABELS();
@@ -196,6 +226,29 @@ export function renderMethodology(containerId, state) {
       </div>
       <p class="aspect-blurb">${t("Relationships is the one aspect with no rank at all. Its two questionnaires are normed on people a generation older — UCLA-3 on US adults aged 57-85, LSNS-6 on European over-65s — and loneliness does not move in one direction with age, so the size and even the direction of the error are unknown. Your scores and the social-isolation cutoff are still shown, because those are real measurements; the rank is withheld, because it would be a guess wearing a number's clothes.")}</p>
       <p class="aspect-blurb">${t("Where a comparison is foreign but the age range fits — the German WHO-5 sample, the 25-country self-efficacy norms — the rank is shown and the sample is named next to it, on the aspect page as well as here. Read those as indicative rather than as your standing among Thai adults.")}</p>
+    </div>
+
+    <div class="card">
+      <h4 class="card-header">${t("Guideline checks, and why they are separate")}</h4>
+      <p class="aspect-blurb">${t("Because no representative Thai norm exists for these questionnaires, some aspects also carry a second kind of comparison that needs no sample at all: a published guideline. A norm describes what people do; a guideline states what a body needs. That difference is why a WHO recommendation can be applied to a Thai user without the cross-country problems above — and why these checks are readable side by side in a way eight percentiles against six different populations never were.")}</p>
+      <p class="aspect-blurb">${t("They are kept strictly separate from your scores. A guideline check never changes an aspect score, a letter grade, or the Balance Index. A grade is a rank; a guideline check is a yes or no against a published recommendation, and mixing the two would make a grade mean different things on different aspects.")}</p>
+      <div class="provenance-scroll">
+        <table class="provenance-table">
+          <thead>
+            <tr>
+              <th scope="col">${t("Aspect")}</th>
+              <th scope="col">${t("Check")}</th>
+              <th scope="col">${t("Guideline")}</th>
+              <th scope="col">${t("Source")}</th>
+            </tr>
+          </thead>
+          <tbody>${criterionRows()}</tbody>
+        </table>
+      </div>
+      <p class="aspect-blurb">${t("A check reads “Not measured” when the app has never asked for the input it needs — strength-training days, for instance, are not yet part of the weekly review. That is shown as missing rather than as a failure, because not being asked is not the same as falling short.")}</p>
+      <p class="aspect-blurb">${t("Two things deliberately have no guideline check. Drinking water: the often-quoted 2 litres a day comes from EFSA's adequate intake, which counts total water including the moisture in food, while this app asks only what you drink — so citing it here would compare two different quantities. The 2 litre pledge is a useful convention, not a guideline. Sitting time: WHO says only to limit it, without naming a number, so there is nothing to pass or fail.")}</p>
+      <p class="aspect-blurb">${t("Finance, social contribution, environment and humanity's future have no guideline checks either, for a simpler reason: no institution publishes a per-person threshold for them. What counts as enough income or enough giving depends on where you live and what things cost, so those aspects stay compared with Thai figures rather than a global rule.")}</p>
+      <p class="aspect-blurb">${t("One limitation worth naming: the fruit-and-vegetable guideline covers both, while the weekly review asks only about vegetables. The check is therefore stricter than WHO intends — if you also eat fruit, you are closer to the guideline than it shows.")}</p>
     </div>
 
     <div class="card">

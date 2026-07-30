@@ -7,9 +7,10 @@ import { getAspectDetail } from "../aspects.js";
 import { getAspectSuggestions, getMentalHealthNotice } from "../suggestions.js";
 import { t, tp } from "../i18n.js";
 import { gradeForBenchmark } from "../grades.js";
+import { criteriaForAspect } from "../criteria.js";
 import {
   escapeHtml, confidenceBadge, componentConfidenceChip, gradeBadge,
-  benchmarkStanding, methodTag, mentalHealthNotice, CHECKIN_ASPECTS
+  benchmarkStanding, methodTag, mentalHealthNotice, criteriaCard, CHECKIN_ASPECTS
 } from "./helpers.js";
 
 // The weekly-review inputs that re-measure each aspect. Mental and
@@ -39,6 +40,9 @@ export function renderAspectPage(containerId, state, aspectKey) {
   // questionnaires were never answered.
   const unranked = b && !grade ? b.unranked || null : null;
   const suggestions = getAspectSuggestions(state, aspectKey);
+  // Published-guideline checks for this aspect. Empty for the five aspects with
+  // no institutional criterion, and criteriaCard() renders "" for those.
+  const criteria = criteriaForAspect(state.profile, state.baseline, aspectKey);
 
   container.innerHTML = `
     <a href="#/dashboard" class="aspect-back">&larr; ${t("Overview")}</a>
@@ -78,6 +82,8 @@ export function renderAspectPage(containerId, state, aspectKey) {
             : ""
         }</p>
       </div>`}
+
+    ${criteriaCard(criteria)}
 
     ${detail.confidence && detail.confidence.tier === "estimated" ? `
       <div class="quickstart-note completeness-note">

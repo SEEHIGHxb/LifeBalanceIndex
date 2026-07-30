@@ -232,3 +232,37 @@ test("aspectLabel escapes an unknown aspect key rather than echoing it", async (
   assert.ok(!out.includes("<img"), "aspectLabel echoed raw markup");
   assert.ok(out.includes("&lt;"), "aspectLabel should escape an unknown key");
 });
+
+test("the guideline-checks card holds both defences against a hostile profile", async () => {
+  // Belt AND suspenders, and here the two layers are visible separately:
+  //   COERCION — every value criteria.js interpolates passes through its num()
+  //     helper first, so a payload becomes 0 and never reaches a string;
+  //   ESCAPING — criteriaCard() still escapes at the sink, so if a future
+  //     criterion interpolated a raw string the markup would stay inert.
+  const { criteriaForAspect } = await import("../criteria.js");
+  const { criteriaCard } = await import("../views/helpers.js");
+  const hostile = {
+    age: PAYLOAD, weight: PAYLOAD, height: BREAKOUT, sleepHours: PAYLOAD,
+    vegetablePortions: BREAKOUT, weeklyModerateDays: PAYLOAD,
+    weeklyModerateMins: BREAKOUT, weeklyStrengthDays: PAYLOAD
+  };
+  const html = criteriaCard(criteriaForAspect(hostile, { who5: PAYLOAD }, "physical"));
+  assert.ok(html.length > 0, "the physical card should render");
+  assert.ok(!html.includes(PAYLOAD), "raw payload reached innerHTML verbatim");
+  assert.ok(!html.includes(BREAKOUT), "raw breakout reached innerHTML verbatim");
+  assert.ok(!/<(img|script|svg|iframe)\b/i.test(html), "an unescaped tag opener reached innerHTML");
+  // Coercion means the payload is absent entirely rather than present-escaped,
+  // so this card is deliberately NOT checked with assertEscaped(), which
+  // requires "&lt;" to prove the value was rendered rather than dropped.
+  assert.ok(!html.includes("onerror"), "payload text survived into the card");
+});
+
+test("the guideline-checks card is empty for an aspect with no criteria", async () => {
+  // Callers drop it in unconditionally, so "" must be the answer for the six
+  // uncovered aspects — never a stray empty card carrying just a heading.
+  const { criteriaForAspect } = await import("../criteria.js");
+  const { criteriaCard } = await import("../views/helpers.js");
+  assert.equal(criteriaCard(criteriaForAspect({ age: 35 }, null, "finance")), "");
+  assert.equal(criteriaCard([]), "");
+  assert.equal(criteriaCard(null), "");
+});

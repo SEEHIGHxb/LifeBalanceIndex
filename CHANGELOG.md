@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `39`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `40`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,127 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.8.0] — 2026-07-30 (APP_VERSION 40)
+
+### Guideline checks — comparison that needs no norming sample
+
+v39 established that no representative Thai general-adult norm is published for
+any of the twelve instruments here, and said so on every surface. That left a
+real question unanswered: if a percentile can't be trusted for some aspects,
+what *can* be compared?
+
+This release answers it with a second, independent kind of comparison. A **norm**
+describes what people do and needs a sampled population. A **criterion** — a
+published guideline — states what a body needs and needs no sample at all. That
+is why a WHO recommendation applies to a Thai user without the cross-cultural
+problems that make pooled questionnaire norms invalid rather than merely
+unavailable (reference-group effect, response-style differences, no measurement
+invariance — more data cannot fix any of those).
+
+The pattern was already here in miniature: `relationshipsBenchmark` has used the
+LSNS-6 `< 12` cutoff since v39 precisely because it is the instrument's own
+published threshold rather than something derived from a sample. This
+generalizes it.
+
+**Six checks**, each verified verbatim at its primary source on 2026-07-30:
+
+| Check | Guideline | Source |
+|---|---|---|
+| Aerobic activity | 150 min moderate or 75 min vigorous per week, or a 2:1 mix | WHO 2020 |
+| Muscle strengthening | 2+ days/week | WHO 2020 |
+| BMI | under 23.0 — the Asia-Pacific line | WHO WPRO |
+| Sleep | 7–9 h, or 7–8 h from 65 | NSF (Hirshkowitz et al. 2015) |
+| Fruit and vegetables | 400 g/day ≈ 5 portions | WHO healthy diet |
+| Well-being | above 50/100 on WHO-5 | Topp et al. 2015 |
+
+### The additive contract
+
+Criteria feed **nothing**. Not scores, not percentiles, not grades, not the
+Balance Index. `grades.js` derives every grade from a percentile and documents
+why mixing bases is refused — *"falling back to the raw score would grade three
+aspects on a different basis from the other five."* "Meets the WHO activity
+guideline" and "top 30% of Thai earners" are not the same kind of claim, so a
+criterion must never become a grade.
+
+Consequently this release needs **no schema change, no migration and no
+recalibrated bands**. `tests/criteria.test.mjs` pins `AVERAGE_ASPECT_SCORES` and
+a fixed-profile Balance Index to their v39 values, so any future coupling to
+scoring fails loudly instead of silently moving every user's grade.
+
+`unmeasured` is a first-class status alongside met/unmet, following the same rule
+as the v39 UNRANKED state: the app never having asked is different information
+from the user falling short, and collapsing the two would invent a verdict.
+Strength-training days are `unmeasured` today — the weekly review has no field
+for it yet, and the criterion reads `profile.weeklyStrengthDays` defensively so
+adding one needs no change in `criteria.js`.
+
+### Two defects this surfaced and fixed
+
+- **The BMI note showed the wrong line to Thai users.** `benchmarks.js` reported
+  whether BMI was under **25** while `averages.js:45` was already reasoning on
+  the *Asian* band — the codebase knew the right cutoff in one file and
+  displayed the wrong one in another. A user at BMI 24 was told they were below
+  the line; the WHO Western Pacific classification puts overweight at **23.0**
+  because cardiometabolic risk rises earlier in Asian populations. The note now
+  states the 23.0 line, and keeps the Thai NHES share pinned to the `>= 25`
+  figure it actually measures as a separate clause — no verified Thai share at
+  `>= 23` exists, and interpolating one would be inventing data. Note text only;
+  no percentile changed.
+- **The vegetable pledge default undershot the guideline it cites** — 3
+  portions/day against WHO's 400 g ≈ 5. Now 5. Prefill only: `veg` is not in
+  `createDefaultPledges()`, `min` still admits every previously-valid target, and
+  pledge XP is fixed, so no stored pledge is invalidated.
+
+### Deliberately excluded, and said so on the methodology page
+
+- **Water.** EFSA's 2.0 L / 2.5 L adequate intake is *total* water including
+  moisture from food, while the app measures drinking water. Citing it would
+  repeat the plastics per-day/per-week unit error this project already fixed
+  once. The 2 L pledge is labelled a convention, not a guideline.
+- **Sedentary time.** WHO says only "limit" it, with no number — nothing to pass
+  or fail.
+- **Finance, social contribution, environment, humanity's future.** No
+  institution publishes a per-person threshold. What counts as enough income or
+  enough giving is local, so these keep their Thai norms and two-stage bands.
+- **Fruit.** The guideline covers fruit *and* vegetables; the review asks only
+  about vegetables, so the check is stricter than WHO intends. Disclosed in the
+  detail line and on the methodology page rather than papered over.
+
+### Two test-guard gaps found while doing this
+
+Both are pre-existing and now closed or documented:
+
+- `tests/i18n-coverage.test.mjs` scans a **hand-maintained** file list, so a new
+  root module carrying `t()` literals escapes it silently. `criteria.js` proved
+  it — none of its ~20 strings were flagged on the first run. Added to the list,
+  with a comment saying to do the same for future modules.
+- The literal scanner's regex only matches a string sitting *directly* after
+  `t(`/`tp(`, so `tp(bmi < 23 ? "…" : "…")` in `benchmarks.js` is **invisible**
+  to it. Those two BMI strings are maintained by hand in `th.js` and carry a
+  comment saying so — if the English changes without the Thai, Thai mode falls
+  back to English with no test failure.
+
+### Files
+
+- **New** `criteria.js` (~300 lines, pure: no DOM, no storage) — six criteria,
+  `CRITERION_STATUS`, `evaluateCriteria`, `criteriaForAspect`, `criteriaTally`.
+- **New** `tests/criteria.test.mjs` — every threshold at its boundary
+  (149/150 moderate, 74/75 vigorous, the 2:1 mix, BMI 22.98/23.01, sleep
+  6.9/7/9/9.1 and the 65+ band, veg 4.9/5, WHO-5 raw 12/13), the `unmeasured`
+  states, source resolution, hostile-value coercion, both defect guards, and the
+  additive contract.
+- `benchmarks.js`: `SOURCES` exported so criteria cite from one registry; five
+  new citation entries; BMI note rewritten; `whoWproBmi` added to the physical
+  source list.
+- `views/helpers.js`: new `criteriaCard()`. `views/aspect.js`: renders it after
+  the grade explainer. `views/methodology.js`: new card, `CRITERION_ROWS` table
+  and the exclusions.
+- `goals.js`: `veg.def` 3 → 5. `index.css`: `.criteri*` selectors, no existing
+  selector touched. `sw.js`: `+ ./criteria.js`. `th.js`: ~49 keys added, 3
+  orphans replaced.
+
+329 tests, lint clean, EN/TH verified.
 
 ## [2.7.0] — 2026-07-29 (APP_VERSION 39)
 

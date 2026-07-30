@@ -3,6 +3,7 @@
 // and the accessible dialog scaffold.
 
 import { percentileBand } from "../benchmarks.js";
+import { CRITERION_STATUS_LABELS } from "../criteria.js";
 import { getAspectConfidence, ASPECT_KEYS } from "../aspects.js";
 import { t, tp, percentileLabel, dateLocale } from "../i18n.js";
 
@@ -199,6 +200,53 @@ export function benchmarkStanding(b, { compact = false } = {}) {
     <p class="benchmark-plain-lead">${percentilePhrase(b.percentile, b.population)} ${chip}</p>
     <p class="benchmark-detail">${detail}${b.verified ? ` · <span class="benchmark-verified">${t("in-depth verified")}</span>` : ""}</p>
     <p class="gauge-note percentile-definition">${t("“Percentile” = the share of people you're ahead of, so higher is better. The range shows how precise this estimate is, not a statistical confidence interval.")}</p>`;
+}
+
+// --- GUIDELINE CHECKS (criterion-referenced) ---
+//
+// The card for one aspect's published-guideline checks. This is a DIFFERENT
+// KIND of statement from everything above it: a percentile says where you rank
+// among a sampled population, a criterion says whether you meet a published
+// recommendation. The card says so in its own caption, because putting the two
+// side by side without distinguishing them would invite reading "below
+// guideline" as "below average" — and those are not the same claim.
+//
+// Returns "" for aspects with no criteria, so callers can drop it in
+// unconditionally. Nothing here feeds a grade; see the additive contract at the
+// top of criteria.js.
+export function criteriaCard(criteria) {
+  if (!criteria || criteria.length === 0) return "";
+  const labels = CRITERION_STATUS_LABELS();
+  const rows = criteria.map(c => `
+    <li class="criterion-row criterion-${escapeHtml(c.status)}">
+      <span class="criterion-chip criterion-chip-${escapeHtml(c.status)}">${escapeHtml(labels[c.status] || c.status)}</span>
+      <span class="criterion-body">
+        <span class="criterion-name">${escapeHtml(c.summary)}</span>
+        <span class="criterion-detail">${escapeHtml(c.detail)}</span>
+      </span>
+    </li>`).join("");
+
+  // Unique sources, in first-appearance order — several criteria share the WHO
+  // 2020 activity guideline and listing it three times would read as padding.
+  const seen = new Set();
+  const sources = criteria
+    .map(c => c.source)
+    .filter(src => src && !seen.has(src.url) && seen.add(src.url));
+
+  return `
+    <div class="card criteria-card">
+      <h4 class="card-header">${t("Guideline checks")}</h4>
+      <p class="criteria-caption">${t("These compare you with published health guidelines, not with a population. A guideline states what a body needs, so it applies regardless of country — which is why these checks exist for aspects where no representative Thai norm does. They do not affect your score, grade or Balance Index.")}</p>
+      <ul class="criteria-list">${rows}</ul>
+      <div class="benchmark-sources">
+        <details>
+          <summary>${t("Guideline sources")}</summary>
+          <ul>
+            ${sources.map(src => `<li><a href="${escapeHtml(src.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(src.label)}</a></li>`).join("")}
+          </ul>
+        </details>
+      </div>
+    </div>`;
 }
 
 // Localized method tag for a benchmark ("vs published norms", …). Was a

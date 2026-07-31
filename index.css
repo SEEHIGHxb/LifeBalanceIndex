@@ -383,6 +383,20 @@ header {
   }
 }
 
+/* Header action buttons. These values are exactly what used to sit in inline
+   `style` attributes on #btn-lang / #btn-profile; they moved here only so the
+   mobile layer can override them, which inline styles would have prevented. */
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-compact {
+  font-size: 0.8rem;
+  padding: 4px 10px;
+}
+
 .radio-group {
   display: flex;
   gap: 14px;
@@ -1114,6 +1128,21 @@ header {
   line-height: 1.45;
 }
 
+/* Normalised prompt parts. These replace what used to be ad-hoc inline styles
+   on each banner's text and action elements; the rendered desktop result is
+   the same. The mobile layer relies on these hooks to demote every prompt
+   after the first one to a compact row. */
+.prompt-text {
+  min-width: 0;
+}
+
+.prompt-actions {
+  display: flex;
+  gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 /* Duty-of-care mental-health support banner (finding #4) */
 .care-banner {
   border: 1px solid #cdd9e4;
@@ -1842,4 +1871,295 @@ header {
   font-size: 0.72rem;
   text-align: center;
   color: var(--color-text-secondary);
+}
+
+/* ==========================================================================
+   MOBILE LAYER — phones (max-width: 640px)
+   ==========================================================================
+   Everything below is scoped to small screens on purpose: the desktop layout
+   is deliberately unchanged by the v45 mobile redesign, so no rule here may
+   leak upward. 640px is the consolidated phone breakpoint; the 768px tablet
+   grid collapse above still stands.
+
+   Written against measurements taken at 375x812 with real data in both
+   languages. The defects it answers:
+     - banner prose squeezed into a 98px column by justify-content: space-between
+     - 917px of prompts before any content; the radar 1800px down
+     - static navigation on a 5.6-screen page
+     - every form field at 15.2px, which makes iOS Safari zoom on focus
+     - tap targets at 19-37px against a 44px standard
+     - text down to 9.6px
+   ========================================================================== */
+@media (max-width: 640px) {
+
+  /* --- Density -----------------------------------------------------------
+     Container and card padding each charged 24px a side, so 26% of a 375px
+     screen was padding and the content column came to 277px. Halving both
+     buys back 32px without disturbing the desktop rhythm.
+     The bottom padding clears the fixed tab bar AND the floating assistant
+     that now sits above it; see the assistant rule below. */
+  .app-container {
+    padding: 14px 16px calc(176px + env(safe-area-inset-bottom));
+  }
+
+  .card {
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .card-header {
+    font-size: 1.05rem;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+
+  /* --- Header ------------------------------------------------------------
+     124px of an 812px screen was masthead. The subtitle repeats what the page
+     title already says, so it goes on phones; the wordmark stays. */
+  header {
+    padding: 2px 0 12px;
+    margin-bottom: 14px;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 10px;
+  }
+
+  .brand h1 { font-size: 1.15rem; }
+  .brand p { display: none; }
+
+  .header-actions { gap: 6px; flex-shrink: 0; }
+
+  /* Overriding what were inline styles until this release. */
+  .btn-compact {
+    font-size: 0.85rem;
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+
+  /* --- Bottom tab bar ----------------------------------------------------
+     The tabs were position: static, so on a five-screen page the only way to
+     change section was to scroll back to the top. Fixed to the bottom they
+     are always within thumb reach, and the top of the screen is freed.
+     .d-none carries !important, so onboarding still hides this correctly. */
+  .nav-tabs {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 200;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin: 0;
+    background: var(--color-card-bg);
+    border-top: 1px solid var(--color-card-border);
+    border-bottom: none;
+    /* env() resolves only because index.html sets viewport-fit=cover. */
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -2px 10px rgba(31, 39, 51, 0.06);
+  }
+
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    /* Four labels share 375px and none fits on one line at a readable size, so
+       they wrap. `overflow-wrap: anywhere` is what makes Thai work: "ทบทวนราย-
+       สัปดาห์" (Weekly Review) is a single 92px token with no spaces to break
+       on, which overflowed a 94px column at 375px and an 80px one at 320px.
+       Thai breaks legitimately at any character, so allowing it costs nothing
+       and keeps the label at the 12px floor instead of shrinking to fit.
+       Verified clipping-free in EN and TH at both 375px and 320px. */
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+    line-height: 1.15;
+    padding: 6px 2px;
+    min-height: 54px;
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+
+  /* A bottom border would sit on the screen edge where it cannot be seen. */
+  .tab-btn.active {
+    border-bottom-color: transparent;
+    box-shadow: inset 0 2px 0 var(--color-gold);
+  }
+
+  /* --- Floating assistant ------------------------------------------------
+     It was fixed at bottom:24px right:24px and 348px wide, which is exactly
+     where the tab bar now lives. Lift it clear and let it span the width. */
+  .assistant-wrapper {
+    left: 12px;
+    right: 12px;
+    bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+
+  .speech-bubble { max-width: none; font-size: 0.85rem; }
+
+  /* --- Forms -------------------------------------------------------------
+     THE iOS ZOOM FIX. Safari zooms the viewport whenever a focused field is
+     under 16px, and every one of the app's 30 fields was 15.2px — so each tap
+     zoomed the page and the reader had to pinch back out. 16px is a hard
+     threshold, not a preference: 15.9px still zooms. */
+  .form-control,
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="file"],
+  select,
+  textarea {
+    font-size: 16px;
+    padding: 11px 12px;
+    min-height: 44px;
+  }
+
+  .form-group label { font-size: 0.875rem; }
+  .form-group { margin-bottom: 14px; }
+
+  /* --- Tap targets -------------------------------------------------------
+     Measured before this release: header buttons 25px, inline links 19px,
+     tabs 37px. */
+  /* inline-flex is load-bearing, not cosmetic: `.btn` sets no display, so an
+     <a class="btn"> computes to `display: inline` — and min-height does not
+     apply to a non-replaced inline box. The anchor buttons stayed 40px while
+     the <button>s obeyed, until this line. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 11px 18px;
+  }
+
+  .share-open {
+    min-height: 44px;
+    padding: 6px 10px;
+  }
+
+  .radio-option {
+    min-height: 44px;
+    font-size: 0.95rem;
+  }
+
+  .radio-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* --- Type floor --------------------------------------------------------
+     Nothing below 12px on a phone. These are the classes that measured
+     9.6-11.5px; the mobile e2e flow guards against new ones appearing. */
+  .percentile-band,
+  .balance-band,
+  .grade-badge,
+  .radar-legend-caption,
+  .benchmark-detail,
+  .benchmark-disclaimer,
+  .suggestion-meta,
+  .deep-progress,
+  .level-badge,
+  .radar-legend-item,
+  .radar-legend,
+  .balance-index-caption,
+  .balance-index-weakest,
+  .component-detail,
+  .criterion-chip,
+  .gauge-note,
+  .percentile-definition,
+  .share-open {
+    font-size: 0.78rem;
+  }
+
+  /* The provenance tables already scroll inside their card, so making their
+     text legible costs width that was never on screen anyway. `thead th` is
+     spelled out because the base rule for it carries specificity (0,1,2) and
+     would otherwise keep its 0.68rem. */
+  .provenance-table th,
+  .provenance-table td,
+  .provenance-table thead th {
+    font-size: 0.75rem;
+  }
+
+  .app-footer { font-size: 0.8rem; }
+
+  /* --- Prompt stack ------------------------------------------------------
+     Two separate fixes.
+
+     First: these banners were display:flex with justify-content:space-between
+     and no mobile rule, so the button took its natural width and the prose was
+     left a 98px column — about twelve characters a line, which is what turned
+     short sentences into 345px-tall blocks. Stacking ends that.
+
+     Second: only the FIRST prompt is the next step. The rest demote to a
+     compact title-and-action row. Done in CSS rather than JS so that rotating
+     the phone cannot leave a stale layout behind. */
+  .checkin-banner,
+  .deep-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  .checkin-banner .btn,
+  .deep-banner .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .prompt-stack .prompt:not(:first-child) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+  }
+
+  .prompt-stack .prompt:not(:first-child) .prompt-body {
+    display: none;
+  }
+
+  .prompt-stack .prompt:not(:first-child) .prompt-title {
+    font-size: 0.85rem;
+  }
+
+  .prompt-stack .prompt:not(:first-child) .btn {
+    width: auto;
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+
+  .prompt-stack .prompt:not(:first-child) .prompt-actions {
+    flex-shrink: 0;
+  }
+
+  /* --- Dashboard order ---------------------------------------------------
+     The radar is the point of the app and it started 1800px down, behind the
+     identity card and the prompts. display:contents dissolves the two desktop
+     columns so every card becomes an orderable sibling; the order values are
+     inert on desktop, where the grid still has exactly two children. */
+  .dashboard-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .dashboard-grid > div { display: contents; }
+
+  /* Default first, so a card added later without an order class lands at the
+     end of the page rather than jumping to the very top — which is what an
+     unset `order: 0` would otherwise do. (Caught exactly that way: the Recent
+     Reviews card had no class and sorted above the radar.) */
+  .dashboard-grid .card { order: 90; }
+
+  .dash-radar    { order: 1; }
+  .dash-index    { order: 2; }
+  .dash-scores   { order: 3; }
+  .dash-suggest  { order: 4; }
+  .dash-activity { order: 5; }
+  .dash-identity { order: 6; }
 }

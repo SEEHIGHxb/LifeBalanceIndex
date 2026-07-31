@@ -29,6 +29,80 @@ function suggestionItem(s, showAspect) {
     </a>`;
 }
 
+// One action prompt. Every prompt shares this shape so the mobile layer can
+// demote all but the first to a compact row with pure CSS — no viewport
+// branching in JS, which would go stale the moment the phone is rotated.
+//
+// `.prompt-title` / `.prompt-body` are the hooks that let the demoted rows keep
+// the headline and drop the explanation.
+function promptCard({ variant = "checkin-banner", title, body, extra = "", actions }) {
+  return `
+    <div class="${variant} prompt">
+      <div class="prompt-text">
+        <p><strong class="prompt-title">${title}</strong> <span class="prompt-body">${body}</span></p>
+        ${extra}
+      </div>
+      <span class="prompt-actions">${actions}</span>
+    </div>`;
+}
+
+// The prompts a user can act on, most urgent first. Ordering lives here rather
+// than in the template so that "what is the next step" is one readable list:
+// the weekly review is the app's actual loop, a due re-assessment is stale
+// scores, and an un-backed-up browser is the only one that can lose data.
+function actionPrompts({ reviewDue, checkinDue, needsBackup, askBirthday, deepDone, deepTotal, daysSinceExport }) {
+  const prompts = [];
+
+  if (reviewDue) {
+    prompts.push(promptCard({
+      title: t("Weekly review open."),
+      body: t("Two minutes of rough weekly numbers keep every score measured — no daily logging."),
+      actions: `<a href="#/review" class="btn btn-primary">${t("Start Weekly Review")}</a>`
+    }));
+  }
+
+  if (checkinDue) {
+    prompts.push(promptCard({
+      title: t("Monthly re-assessment due."),
+      body: t("Re-run the short well-being instruments so your scores track your real standing, not last month's."),
+      actions: `<a href="#/checkin" class="btn btn-primary">${t("Start Re-assessment")}</a>`
+    }));
+  }
+
+  if (needsBackup) {
+    prompts.push(promptCard({
+      title: t("Back up your data."),
+      body: daysSinceExport === null
+        ? t("Everything here is stored only in this browser. Clearing site data, or the browser reclaiming space, would erase it with no way back.")
+        : tp("Your last backup was {days} days ago. Everything here is stored only in this browser, so a cleared cache would erase it.", { days: daysSinceExport }),
+      actions: `<button type="button" id="backup-nudge-export" class="btn btn-primary">${t("Export")}</button>`
+    }));
+  }
+
+  if (askBirthday) {
+    prompts.push(promptCard({
+      title: t("When does your year turn?"),
+      body: t("Your level is your age. Tell the app the day and it can close each year and open the next — month and day only, never the year you were born."),
+      actions: `<a href="#/year" class="btn btn-primary">${t("Answer")}</a>
+                <button type="button" id="birthday-prompt-dismiss" class="btn">${t("Not now")}</button>`
+    }));
+  }
+
+  if (deepDone < deepTotal) {
+    prompts.push(promptCard({
+      variant: "deep-banner",
+      title: t("Go deeper for more accurate scores."),
+      body: t("An optional in-depth assessment uses the full-length validated questionnaires to sharpen your estimates and tighten each percentile band."),
+      extra: deepDone > 0
+        ? `<p class="deep-progress">${tp("In-depth sections completed: {done}/{total}", { done: deepDone, total: deepTotal })}</p>`
+        : "",
+      actions: `<a href="#/deep" class="btn btn-primary">${deepDone > 0 ? t("Continue in-depth") : t("Start in-depth assessment")}</a>`
+    }));
+  }
+
+  return prompts.length ? `<div class="prompt-stack">${prompts.join("")}</div>` : "";
+}
+
 // 2. RENDER THE MAIN DASHBOARD
 export function renderDashboard(containerId, state, onExportBackup) {
   const container = document.getElementById(containerId);
@@ -55,31 +129,11 @@ export function renderDashboard(containerId, state, onExportBackup) {
 
   container.innerHTML = `
     ${mentalHealthNotice(getMentalHealthNotice(state))}
-    ${reviewDue ? `
-      <div class="checkin-banner">
-        <p><strong>${t("Weekly review open.")}</strong> ${t("Two minutes of rough weekly numbers keep every score measured — no daily logging.")}</p>
-        <a href="#/review" class="btn btn-primary" style="white-space: nowrap;">${t("Start Weekly Review")}</a>
-      </div>` : ""}
-    ${askBirthday ? `
-      <div class="checkin-banner">
-        <p><strong>${t("When does your year turn?")}</strong> ${t("Your level is your age. Tell the app the day and it can close each year and open the next — month and day only, never the year you were born.")}</p>
-        <span style="display: flex; gap: 8px; white-space: nowrap;">
-          <a href="#/year" class="btn btn-primary">${t("Answer")}</a>
-          <button type="button" id="birthday-prompt-dismiss" class="btn">${t("Not now")}</button>
-        </span>
-      </div>` : ""}
-    ${checkinDue ? `
-      <div class="checkin-banner">
-        <p><strong>${t("Monthly re-assessment due.")}</strong> ${t("Re-run the short well-being instruments so your scores track your real standing, not last month's.")}</p>
-        <a href="#/checkin" class="btn btn-primary" style="white-space: nowrap;">${t("Start Re-assessment")}</a>
-      </div>` : ""}
-    ${needsBackup ? `
-      <div class="checkin-banner">
-        <p><strong>${t("Back up your data.")}</strong> ${daysSinceExport === null
-          ? t("Everything here is stored only in this browser. Clearing site data, or the browser reclaiming space, would erase it with no way back.")
-          : tp("Your last backup was {days} days ago. Everything here is stored only in this browser, so a cleared cache would erase it.", { days: daysSinceExport })}</p>
-        <button type="button" id="backup-nudge-export" class="btn btn-primary" style="white-space: nowrap;">${t("Export")}</button>
-      </div>` : ""}
+    ${actionPrompts({
+      reviewDue, checkinDue, needsBackup, askBirthday, daysSinceExport,
+      deepDone: ASPECT_KEYS.filter(k => isAspectDeepVerified(state, k)).length,
+      deepTotal: ASPECT_KEYS.length
+    })}
     ${state.profile.assessmentComplete === false ? `
       <div class="quickstart-note">
         <p><strong>${t("Quick-start results.")}</strong> ${t("Aspects beyond your first sections use baseline estimates. Submit a Weekly Review to shape them, and monthly re-assessments refine your survey scores over time.")}</p>
@@ -93,22 +147,10 @@ export function renderDashboard(containerId, state, onExportBackup) {
         <p><strong>${t("Some scores are estimates.")}</strong> ${tp("These are scored from default answers: {aspects}. Re-run your assessment or submit a Weekly Review to confirm them.", { aspects: estimated.map(aspectLabel).join(", ") })}${canDeepen ? ` <a href="#/checkin">${t("Deepen my survey scores")}</a>` : ""}</p>
       </div>`;
     })()}
-    ${(() => {
-      const done = ASPECT_KEYS.filter(k => isAspectDeepVerified(state, k)).length;
-      if (done >= ASPECT_KEYS.length) return "";
-      return `
-      <div class="deep-banner">
-        <div>
-          <p><strong>${t("Go deeper for more accurate scores.")}</strong> ${t("An optional in-depth assessment uses the full-length validated questionnaires to sharpen your estimates and tighten each percentile band.")}</p>
-          ${done > 0 ? `<p class="deep-progress">${tp("In-depth sections completed: {done}/{total}", { done, total: ASPECT_KEYS.length })}</p>` : ""}
-        </div>
-        <a href="#/deep" class="btn btn-primary" style="white-space: nowrap;">${done > 0 ? t("Continue in-depth") : t("Start in-depth assessment")}</a>
-      </div>`;
-    })()}
     <div class="dashboard-grid">
       <!-- LEFT COLUMN: STATUS & RADAR CHART -->
       <div>
-        <div class="card" style="display: flex; gap: 20px; align-items: center; padding: 18px 24px;">
+        <div class="card dash-identity" style="display: flex; gap: 20px; align-items: center; padding: 18px 24px;">
           <div style="position: relative;">
             <div class="seal">✦</div>
             <div style="position: absolute; bottom: -5px; right: -5px;" class="level-badge">${t("Lv.")}${escapeHtml(p.level)}</div>
@@ -131,11 +173,11 @@ export function renderDashboard(containerId, state, onExportBackup) {
           </div>
         </div>
 
-        <div class="card">
+        <div class="card dash-index">
           ${balanceIndexBlock(index, indexBand, weakest, standing)}
         </div>
 
-        <div class="card">
+        <div class="card dash-radar">
           <h4 class="card-header">${t("Aspect Radar")}
             <button type="button" id="btn-share-radar" class="share-open">${t("Share")}</button>
           </h4>
@@ -143,7 +185,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
         </div>
 
         ${suggestions.length > 0 ? `
-        <div class="card">
+        <div class="card dash-suggest">
           <h4 class="card-header">${t("Recommendations")}</h4>
           <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 10px;">
             ${t("Targeting your weakest measured components — tap one to open that aspect.")}
@@ -154,7 +196,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
 
       <!-- RIGHT COLUMN: RATINGS LIST & TERMINAL -->
       <div>
-        <div class="card">
+        <div class="card dash-scores">
           <h4 class="card-header">${t("Aspect Scores")}</h4>
           <div style="display: flex; flex-direction: column; gap: 12px;">
             ${Object.entries(state.aspects).map(([key, val]) => {
@@ -191,7 +233,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
           </div>
         </div>
 
-        <div class="card">
+        <div class="card dash-activity">
           <h4 class="card-header">${t("Recent Reviews")}</h4>
           <div class="terminal" id="dashboard-terminal">
             ${state.reviews.length === 0 ?

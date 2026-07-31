@@ -159,10 +159,21 @@ export function renderRadarChart(containerId, aspects, options = {}) {
   const average = options.average || null;
 
   const width = container.clientWidth || 360;
-  const height = 360;
+  // The axis labels sit on a ring outside the plot, and `svg.style.overflow` is
+  // "visible", so anything that does not fit does not get clipped by the SVG —
+  // it escapes and gets cut off by the screen edge instead. Measured on a
+  // 375px phone, "Environment" started at x = -10 and "Social Contribution" at
+  // x = -8: the first letters were simply missing.
+  //
+  // The binding constraint is the HORIZONTAL axis rather than the longest
+  // label, because a horizontal axis reaches the full label ring while a
+  // diagonal one reaches only 0.707 of it. A flat 50px allowance is right at
+  // desktop width and nowhere near enough at ~311px, so it scales with width.
+  const narrow = width < 420;
+  const height = narrow ? 320 : 360;
   const cx = width / 2;
   const cy = height / 2;
-  const radius = Math.min(cx, cy) - 50;
+  const radius = Math.min(cx, cy) - (narrow ? 96 : 50);
 
   // Create SVG element
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");

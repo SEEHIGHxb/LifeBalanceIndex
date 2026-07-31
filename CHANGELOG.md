@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `44`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `45`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,89 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.12.0] — 2026-07-31 (APP_VERSION 45)
+
+### A mobile layout, instead of desktop density on a phone
+
+The app had five ad-hoc breakpoints (768/540/600/420/480) patching individual
+components, and no mobile layout. Everything below was **measured** at 375×812
+with real data in both languages before anything was changed.
+
+**What was wrong**
+
+| Defect | Measured |
+|---|---|
+| `.checkin-banner` / `.deep-banner` were `display:flex; justify-content:space-between` with no mobile rule, so the button took its natural width and the prose got the remainder | a **98px** text column — about twelve characters a line — turning short sentences into 177–345px blocks |
+| Up to six prompt blocks stacked before any content | **917px**, more than a full screen |
+| The radar — the point of the app | started **1800px** down, 2.2 screens |
+| `.nav-tabs` was `position: static` | on a 5.6-screen page, changing section meant scrolling back to the top |
+| Header 124px + a 2×2 tab grid 75px | **30%** of the first screen was chrome |
+| Every one of the 30 form fields was 15.2px | **iOS Safari zooms any field under 16px on focus** — every tap, then pinch back out |
+| Tap targets | header buttons 25px, inline links 19px, tabs 37px, against a 44px standard |
+| Type floor | down to **9.6px** for percentile bands and grade badges |
+| Nested container + card padding | **98px of 375 (26%)** spent on padding, leaving a 277px column |
+
+**What changed** — all of it inside a single `max-width: 640px` layer, so the
+desktop layout is untouched (verified property-by-property after the fact).
+
+- **Bottom tab bar.** The four tabs are fixed to the bottom of the screen, in
+  thumb reach at any scroll position, with `env(safe-area-inset-bottom)` to
+  clear the iPhone home indicator (`viewport-fit=cover` added for it to
+  resolve). The active tab is marked with an inset top rule, because a bottom
+  border would sit on the screen edge where it cannot be seen.
+- **One next step.** The action prompts became a priority-ordered list — weekly
+  review, monthly re-assessment, backup, birthday, in-depth — and on a phone
+  only the first renders in full; the rest demote to a compact title-and-action
+  row. Done in CSS, not JS, so rotating the phone cannot leave a stale layout.
+  Prompt total: 917px → ~300px.
+- **The radar comes first.** `display: contents` dissolves the two desktop
+  columns on mobile so every card is individually orderable: radar → Balance
+  Index → Aspect Scores → Recommendations → Recent Reviews → identity. The
+  radar now starts ~630px down instead of 1800px. The order values are inert on
+  desktop, where the grid still has exactly two children.
+- **Density and type.** Container and card padding halved (content column 277px
+  → 311px); nothing below 12px; a 44px minimum on every tap target.
+- **The assistant** moved above the new tab bar (it was fixed at `bottom:24px`,
+  348px wide — exactly where the bar now lives).
+
+### Fixed
+
+- **Radar axis labels were rendering off the left edge of the screen.** A
+  pre-existing bug, not a consequence of this redesign: `svg.style.overflow` is
+  `"visible"`, so a label that does not fit is not clipped by the SVG — it
+  escapes and the screen edge cuts it off. Measured on a 375px phone,
+  "Environment" began at x = **-10**, "Social Contribution" at **-8** and
+  "Humanity's Future" at **-3**, so their first letters were simply missing.
+  The label allowance was a flat 50px, which is right at desktop width and
+  nowhere near enough at ~311px; it now scales with the container. As with the
+  v44 story card, the binding constraint is the **horizontal** axis rather than
+  the longest label, because a horizontal axis reaches the full label ring while
+  a diagonal one reaches only 0.707 of it. Worst-case slack after the fix: 9px
+  (EN) and 28px (TH) at 375px, 10px at 320px. Desktop geometry is unchanged.
+- **iOS zoom on every form field**, per the table above.
+
+### Changed
+
+- `views/dashboard.js`: the five prompt blocks were five near-identical literal
+  templates; they are now one `promptCard()` renderer plus an ordered
+  `actionPrompts()` list. Fewer places for them to drift apart.
+- The two header buttons carried inline `style` attributes. Inline styles beat
+  media queries, so they could never have grown to a 44px target while they
+  stayed there; the values moved verbatim into `.btn-compact`.
+
+### Tests
+
+- New **e2e flow 5**: at 375×812, asserts no sideways pan, that the tab bar is
+  still on screen after scrolling to the page bottom, that no field is under
+  16px, that no tap target is under 44px, that no radar label escapes its card,
+  and that the radar is near the top. Every one of those is a defect that was
+  actually measured before this release, so it is a regression test rather than
+  a wish list.
+
+Not touched: `scoring.js`, `grades.js`, `benchmarks.js`, `averages.js`,
+`criteria.js`, `state.js`, `schemaVersion`. **No score, percentile, grade,
+Balance Index or comparison code changes** — this release is layout only.
 
 ## [2.11.0] — 2026-07-31 (APP_VERSION 44)
 

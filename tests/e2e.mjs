@@ -12,6 +12,10 @@
 //                             actually change it. Flow 4 runs in Thai, because
 //                             flow 3 leaves the app there, so it asserts on
 //                             pixels and storage and never on English strings.
+//   5. phone layout        -> at 375x812: no sideways pan, the tab bar stays
+//                             put, no field small enough to make iOS zoom, no
+//                             tap target under 44px, no radar label off the
+//                             card, and the radar near the top of the page.
 //
 // Usage: node tests/e2e.mjs <base-url>
 import { chromium } from "playwright";
@@ -206,10 +210,100 @@ try {
   problems.push(`flow4 (share sheet): ${err.message}`);
 }
 
+// --- FLOW 5: the phone layout holds up ---
+// Guards the v45 mobile redesign. Every assertion here is a defect that was
+// actually measured on a 375x812 screen before the redesign, so this is a
+// regression test in the strict sense rather than a wish list:
+//   - inputs at 15.2px, which makes iOS Safari zoom the page on every focus
+//   - tap targets at 19-37px against a 44px standard
+//   - navigation that scrolled away on a 5.6-screen page
+//   - radar axis labels rendering past the left edge of the screen
+try {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.click("#tab-dashboard");
+  await page.waitForSelector("#radar-chart-container svg", { timeout: 10000 });
+
+  // Nothing may force the page to pan sideways.
+  const pans = await page.evaluate(() =>
+    document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+  if (pans) problems.push("flow5: the page scrolls horizontally at 375px");
+
+  // The tab bar is fixed, so it must still be on screen at the very bottom of
+  // a long page — that is the whole point of moving it there.
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(300);
+  const nav = await page.evaluate(() => {
+    const el = document.querySelector(".nav-tabs");
+    const r = el.getBoundingClientRect();
+    return { position: getComputedStyle(el).position, top: r.top, bottom: r.bottom,
+      onScreen: r.top < window.innerHeight && r.bottom > 0 };
+  });
+  if (nav.position !== "fixed") problems.push(`flow5: nav is ${nav.position}, expected fixed`);
+  if (!nav.onScreen) problems.push("flow5: the tab bar scrolled off screen");
+
+  // 16px is a hard iOS threshold, not a preference: 15.9px still zooms.
+  // Radios and checkboxes are exempt — they open no keyboard.
+  const smallFields = await page.evaluate(() => {
+    const out = [];
+    document.querySelectorAll("input, select, textarea").forEach(el => {
+      if (el.type === "radio" || el.type === "checkbox" || el.type === "hidden") return;
+      if (!el.getBoundingClientRect().height) return;
+      const fs = parseFloat(getComputedStyle(el).fontSize);
+      if (fs < 16) out.push(`${el.id || el.type}:${fs}px`);
+    });
+    return out;
+  });
+  if (smallFields.length) {
+    problems.push(`flow5: fields under 16px will make iOS zoom: ${smallFields.join(", ")}`);
+  }
+
+  // Tap targets. A radio's own box is small by design; the label wrapping it is
+  // the thing a thumb actually hits, so measure that instead.
+  const smallTargets = await page.evaluate(() => {
+    const out = [];
+    document.querySelectorAll("button, a.btn, .tab-btn, .radio-option").forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      if (r.height < 44) out.push(`${el.className || el.tagName}:${Math.round(r.height)}px`);
+    });
+    return out;
+  });
+  if (smallTargets.length) {
+    problems.push(`flow5: tap targets under 44px: ${smallTargets.slice(0, 5).join(", ")}`);
+  }
+
+  // The radar sets svg.style.overflow = "visible", so a label that does not fit
+  // is not clipped by the SVG — it escapes and the screen edge cuts it off.
+  // Three labels shipped that way before v45; assert on the drawn extent, not
+  // the anchor, because the anchor was comfortably inside the whole time.
+  const escaping = await page.evaluate(() => {
+    const svg = document.querySelector("#radar-chart-container svg");
+    const card = svg.closest(".card").getBoundingClientRect();
+    return Array.from(svg.querySelectorAll("text")).map(t => {
+      const r = t.getBoundingClientRect();
+      return { txt: t.textContent, slack: Math.min(r.left - card.left, card.right - r.right) };
+    }).filter(o => o.slack < 0).map(o => `${o.txt} (${Math.round(o.slack)}px)`);
+  });
+  if (escaping.length) {
+    problems.push(`flow5: radar labels run outside the card: ${escaping.join(", ")}`);
+  }
+
+  // The redesign's purpose: your own data on the first screen, not behind a
+  // wall of prompts. Before v45 the radar started 1800px down.
+  const radarTop = await page.evaluate(() =>
+    document.querySelector("#radar-chart-container").getBoundingClientRect().top + window.scrollY);
+  if (radarTop > 1000) {
+    problems.push(`flow5: the radar starts ${Math.round(radarTop)}px down; it should be near the top`);
+  }
+} catch (err) {
+  problems.push(`flow5 (mobile layout): ${err.message}`);
+}
+
 await browser.close();
 
 if (problems.length) {
   console.error("E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("e2e passed: onboarding, the weekly review, TH persistence, and the share card all work");
+console.log("e2e passed: onboarding, the weekly review, TH persistence, the share card, and the phone layout all work");

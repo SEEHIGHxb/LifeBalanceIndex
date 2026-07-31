@@ -96,6 +96,13 @@ set in Sarabun.
   whole population scores low on (like social contribution) no longer anchors
   your balance down. The *Add a Pledge* catalog leads with pledges for your
   lowest-graded aspects
+- **Built for a phone, not shrunk onto one**: below 640px the app switches to a
+  mobile layout — a fixed bottom tab bar within thumb reach at any scroll
+  position, the radar and Balance Index first, and the action prompts reduced to
+  a single "next step" with the rest demoted to compact rows. Form fields are
+  16px because iOS Safari zooms anything smaller on focus, every tap target
+  clears 44px, and nothing is set below 12px. The desktop layout is deliberately
+  unchanged by it
 - **PWA**: installable with offline support — a network-first service worker
   always serves fresh files online and the cached shell offline
 - **Bilingual (EN / ไทย)**: a header toggle re-renders the whole app in

@@ -260,7 +260,7 @@ export const TH = {
   "Three or four": "3-4 คน",
   "Five to eight": "5-8 คน",
   "Nine or more": "9 คนขึ้นไป",
-  "Hardly ever": "แทบไม่เคย",
+  "Hardly ever or never": "แทบไม่เคยหรือไม่เคยเลย",
   "Very poorly": "แย่มาก",
   "Poorly": "ค่อนข้างแย่",
   "Average": "ปานกลาง",
@@ -1211,8 +1211,18 @@ export const TH = {
     "ความเหงา (UCLA-3) และเครือข่ายทางสังคม (LSNS-6) — วัดผลได้ แต่ไม่จัดอันดับ",
   "Loneliness (UCLA-3) {ucla}/9 — lower is better. Social network (LSNS-6) {lsns}/30 — higher is better.":
     "ความเหงา (UCLA-3) {ucla}/9 — ยิ่งต่ำยิ่งดี เครือข่ายทางสังคม (LSNS-6) {lsns}/30 — ยิ่งสูงยิ่งดี",
-  "Both scales are normed on older adults — UCLA-3 on US adults aged 57-85, LSNS-6 on European over-65s. No Thai working-age norm is published for either, so this app will not pretend to rank you on it. Your scores and the isolation cutoff below are still real measurements.":
-    "แบบวัดทั้งสองชุดสร้างเกณฑ์อ้างอิงจากผู้สูงอายุ — UCLA-3 จากผู้ใหญ่ชาวอเมริกันอายุ 57-85 ปี และ LSNS-6 จากชาวยุโรปอายุเกิน 65 ปี ยังไม่มีเกณฑ์อ้างอิงของคนไทยวัยทำงานที่ตีพิมพ์สำหรับทั้งสองชุด แอปนี้จึงจะไม่แสร้งจัดอันดับให้คุณ ส่วนคะแนนของคุณและเกณฑ์ความโดดเดี่ยวด้านล่างยังเป็นการวัดผลจริง",
+  "Both scales are normed on older adults — UCLA-3 on US adults aged 57-85, LSNS-6 on European over-65s. No Thai working-age norm is published for either, so this app will not pretend to rank you on it. The closest all-ages reference, a national survey in England, publishes only three broad bands — enough to place your loneliness score, not to rank it. Your scores, that band and the isolation cutoff below are all real measurements.":
+    "แบบวัดทั้งสองชุดสร้างเกณฑ์อ้างอิงจากผู้สูงอายุ — UCLA-3 จากผู้ใหญ่ชาวอเมริกันอายุ 57-85 ปี และ LSNS-6 จากชาวยุโรปอายุเกิน 65 ปี ยังไม่มีเกณฑ์อ้างอิงของคนไทยวัยทำงานที่ตีพิมพ์สำหรับทั้งสองชุด แอปนี้จึงจะไม่แสร้งจัดอันดับให้คุณ แหล่งอ้างอิงที่ครอบคลุมทุกช่วงอายุและใกล้เคียงที่สุดคือการสำรวจระดับชาติในประเทศอังกฤษ ซึ่งตีพิมพ์เพียงสามช่วงกว้าง ๆ — พอจะบอกได้ว่าคะแนนความเหงาของคุณอยู่ช่วงใด แต่ไม่พอจะจัดอันดับ ทั้งคะแนนของคุณ ช่วงดังกล่าว และเกณฑ์ความโดดเดี่ยวด้านล่างล้วนเป็นการวัดผลจริง",
+  "A national survey of 160,755 adults in England publishes this same 3-9 score in three bands. Yours, {n}, is in the least-lonely band, where 58% of them sit; 42% score higher.":
+    "การสำรวจระดับชาติของผู้ใหญ่ 160,755 คนในประเทศอังกฤษ ตีพิมพ์คะแนน 3-9 ชุดเดียวกันนี้เป็นสามช่วง คะแนนของคุณคือ {n} อยู่ในช่วงที่เหงาน้อยที่สุด ซึ่งมีคนอยู่ 58% และอีก 42% ได้คะแนนสูงกว่าช่วงนี้",
+  "A national survey of 160,755 adults in England publishes this same 3-9 score in three bands. Yours, {n}, is in the middle band, where 33% of them sit; 58% score lower and 9% score higher.":
+    "การสำรวจระดับชาติของผู้ใหญ่ 160,755 คนในประเทศอังกฤษ ตีพิมพ์คะแนน 3-9 ชุดเดียวกันนี้เป็นสามช่วง คะแนนของคุณคือ {n} อยู่ในช่วงกลาง ซึ่งมีคนอยู่ 33% โดย 58% ได้คะแนนต่ำกว่า และ 9% ได้คะแนนสูงกว่า",
+  "A national survey of 160,755 adults in England publishes this same 3-9 score in three bands. Yours, {n}, is in the loneliest band, where 9% of them sit; 91% score lower.":
+    "การสำรวจระดับชาติของผู้ใหญ่ 160,755 คนในประเทศอังกฤษ ตีพิมพ์คะแนน 3-9 ชุดเดียวกันนี้เป็นสามช่วง คะแนนของคุณคือ {n} อยู่ในช่วงที่เหงาที่สุด ซึ่งมีคนอยู่ 9% และอีก 91% ได้คะแนนต่ำกว่า",
+  "In that survey {pct}% of adults aged {band} scored in this band.":
+    "ในการสำรวจนั้น ผู้ใหญ่อายุ {band} ปี จำนวน {pct}% ได้คะแนนอยู่ในช่วงนี้",
+  "Three bands can say which band you are in. They cannot say where you rank, because that would mean guessing your position inside a band.":
+    "สามช่วงบอกได้ว่าคุณอยู่ช่วงใด แต่บอกไม่ได้ว่าคุณอยู่อันดับใด เพราะการบอกอันดับต้องเดาตำแหน่งของคุณภายในช่วงนั้น",
   "A grade is a rank against a population. Where the published norms come from the wrong population, this app shows your measurements and withholds the rank rather than printing one it cannot stand behind.":
     "เกรดคือการจัดอันดับเทียบกับประชากรกลุ่มหนึ่ง เมื่อเกณฑ์อ้างอิงที่ตีพิมพ์มาจากประชากรผิดกลุ่ม แอปนี้จะแสดงผลการวัดของคุณและงดแสดงอันดับ แทนที่จะแสดงตัวเลขที่ยืนยันไม่ได้",
 
@@ -1230,11 +1240,16 @@ export const TH = {
   "Germany · adults": "เยอรมนี · ผู้ใหญ่",
   "Germany · adults, by age band": "เยอรมนี · ผู้ใหญ่ แยกตามช่วงอายุ",
   "25 countries · adults": "25 ประเทศ · ผู้ใหญ่",
-  "Wrong age band for this app's users": "ช่วงอายุไม่ตรงกับผู้ใช้แอปนี้",
+  "Not ranked — band placement only": "ไม่จัดอันดับ — บอกได้เพียงช่วงคะแนน",
+  "Norms: wrong age band. Band placement: England · adults 16+": "เกณฑ์อ้างอิง: ช่วงอายุไม่ตรง · การจัดช่วง: อังกฤษ · ผู้ใหญ่ 16 ปีขึ้นไป",
   "A percentile is a claim about where you sit among a group of people — so the group matters as much as the number. A literature search in July 2026 found no representative Thai general-adult norm published for any of the questionnaires here. Every reference sample is therefore either foreign or non-representative, and this table says which is which instead of leaving you to assume the comparison is with Thai people your age.":
     "เปอร์เซ็นไทล์คือการบอกว่าคุณอยู่ตรงไหนในกลุ่มคนกลุ่มหนึ่ง — กลุ่มที่ใช้เทียบจึงสำคัญพอ ๆ กับตัวเลข การค้นคว้าเอกสารวิชาการเมื่อกรกฎาคม 2569 ไม่พบเกณฑ์อ้างอิงของผู้ใหญ่ไทยทั่วไปที่เป็นตัวแทนประชากรสำหรับแบบสอบถามชุดใดเลยที่ใช้ในแอปนี้ กลุ่มอ้างอิงทุกกลุ่มจึงเป็นชาวต่างชาติหรือไม่ได้เป็นตัวแทนประชากร ตารางนี้จึงระบุให้ชัดว่าอันไหนเป็นอย่างไร แทนที่จะปล่อยให้คุณเข้าใจเองว่ากำลังถูกเทียบกับคนไทยวัยเดียวกัน",
-  "Relationships is the one aspect with no rank at all. Its two questionnaires are normed on people a generation older — UCLA-3 on US adults aged 57-85, LSNS-6 on European over-65s — and loneliness does not move in one direction with age, so the size and even the direction of the error are unknown. Your scores and the social-isolation cutoff are still shown, because those are real measurements; the rank is withheld, because it would be a guess wearing a number's clothes.":
-    "ความสัมพันธ์เป็นด้านเดียวที่ไม่มีการจัดอันดับเลย แบบสอบถามทั้งสองชุดสร้างเกณฑ์อ้างอิงจากคนที่อายุมากกว่าหนึ่งรุ่น — UCLA-3 จากผู้ใหญ่ชาวอเมริกันอายุ 57-85 ปี และ LSNS-6 จากชาวยุโรปอายุเกิน 65 ปี — และความเหงาไม่ได้เปลี่ยนไปในทิศทางเดียวตามอายุ ขนาดและแม้แต่ทิศทางของความคลาดเคลื่อนจึงไม่อาจทราบได้ คะแนนของคุณและเกณฑ์ความโดดเดี่ยวยังแสดงอยู่ เพราะนั่นคือการวัดผลจริง ส่วนอันดับถูกงดไว้ เพราะมันจะเป็นเพียงการเดาที่สวมเสื้อคลุมเป็นตัวเลข",
+  "Relationships is the one aspect with no rank at all. Its two questionnaires are normed on people a generation older — UCLA-3 on US adults aged 57-85, LSNS-6 on European over-65s — and the size of that error is unknown and differs between the two scales. Your scores and the social-isolation cutoff are still shown, because those are real measurements; the rank is withheld, because it would be a guess wearing a number's clothes.":
+    "ความสัมพันธ์เป็นด้านเดียวที่ไม่มีการจัดอันดับเลย แบบสอบถามทั้งสองชุดสร้างเกณฑ์อ้างอิงจากคนที่อายุมากกว่าหนึ่งรุ่น — UCLA-3 จากผู้ใหญ่ชาวอเมริกันอายุ 57-85 ปี และ LSNS-6 จากชาวยุโรปอายุเกิน 65 ปี — และขนาดของความคลาดเคลื่อนนั้นไม่อาจทราบได้ ทั้งยังต่างกันระหว่างแบบวัดทั้งสองชุด คะแนนของคุณและเกณฑ์ความโดดเดี่ยวยังแสดงอยู่ เพราะนั่นคือการวัดผลจริง ส่วนอันดับถูกงดไว้ เพราะมันจะเป็นเพียงการเดาที่สวมเสื้อคลุมเป็นตัวเลข",
+  "It does now carry one real population reference. A national survey in England asks the same three loneliness questions on the same three-point scale and publishes the combined 3-9 score in three bands — 58% of adults score 3 or 4, 33% score 5 to 7, and 9% score 8 or 9, out of 160,755 people of every adult age. Your score is shown against those bands. It stops there deliberately: three bands are two dividing lines, and turning two lines into a percentile would mean guessing where inside a band you sit. That guess is the thing this aspect refuses to make.":
+    "อย่างไรก็ตาม ตอนนี้ด้านนี้มีแหล่งอ้างอิงประชากรจริงอยู่หนึ่งแหล่ง การสำรวจระดับชาติในประเทศอังกฤษถามคำถามความเหงาสามข้อเดียวกันบนมาตรวัดสามระดับเดียวกัน และตีพิมพ์คะแนนรวม 3-9 เป็นสามช่วง — ผู้ใหญ่ 58% ได้ 3 หรือ 4, 33% ได้ 5 ถึง 7 และ 9% ได้ 8 หรือ 9 จากผู้ตอบ 160,755 คนทุกช่วงวัยผู้ใหญ่ คะแนนของคุณจะถูกแสดงเทียบกับช่วงเหล่านี้ และหยุดอยู่เพียงเท่านั้นโดยตั้งใจ สามช่วงคือเส้นแบ่งสองเส้น การเปลี่ยนเส้นแบ่งสองเส้นให้เป็นเปอร์เซ็นไทล์ต้องเดาว่าคุณอยู่ตรงไหนภายในช่วง และการเดานั้นคือสิ่งที่ด้านนี้ปฏิเสธที่จะทำ",
+  "That survey is also the clearest evidence that withholding the rank is right rather than merely cautious. It reports the loneliest band by age: 12% of 16-24s score 8 or 9, falling to 5% of 65-74s before ticking back up to 7% at 75 and over. Younger adults are the lonelier group across almost the whole range. So a norm built on 57-to-85-year-olds is not just the wrong sample for a working-age user — it leans the wrong way, and ranking against it would quietly flatter you.":
+    "การสำรวจนั้นยังเป็นหลักฐานที่ชัดที่สุดว่าการงดแสดงอันดับเป็นสิ่งที่ถูกต้อง ไม่ใช่แค่ระมัดระวังเกินไป รายงานระบุช่วงที่เหงาที่สุดแยกตามอายุไว้ว่า ผู้มีอายุ 16-24 ปี 12% ได้ 8 หรือ 9 ลดลงเหลือ 5% ในกลุ่มอายุ 65-74 ปี ก่อนจะขยับขึ้นเป็น 7% ในกลุ่มอายุ 75 ปีขึ้นไป คนอายุน้อยกว่าเป็นกลุ่มที่เหงากว่าเกือบตลอดทั้งช่วง ดังนั้นเกณฑ์ที่สร้างจากคนอายุ 57-85 ปี ไม่เพียงเป็นกลุ่มตัวอย่างที่ผิดสำหรับผู้ใช้วัยทำงาน แต่ยังเอียงไปผิดทาง และการจัดอันดับเทียบกับเกณฑ์นั้นจะทำให้ผลของคุณดูดีเกินจริงอย่างเงียบ ๆ",
   "Where a comparison is foreign but the age range fits — the German WHO-5 sample, the 25-country self-efficacy norms — the rank is shown and the sample is named next to it, on the aspect page as well as here. Read those as indicative rather than as your standing among Thai adults.":
     "กรณีที่กลุ่มเทียบเป็นชาวต่างชาติแต่ช่วงอายุตรงกัน — กลุ่มตัวอย่าง WHO-5 ชาวเยอรมัน และเกณฑ์การรับรู้ความสามารถของตนเองจาก 25 ประเทศ — จะแสดงอันดับพร้อมระบุกลุ่มตัวอย่างกำกับไว้ ทั้งในหน้าด้านนั้นและที่นี่ ให้อ่านผลเหล่านั้นเป็นเพียงตัวชี้บอกคร่าว ๆ ไม่ใช่สถานะของคุณเมื่อเทียบกับผู้ใหญ่ชาวไทย"
 };

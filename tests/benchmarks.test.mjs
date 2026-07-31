@@ -1,7 +1,7 @@
 // Tests for population benchmark percentiles (node --test)
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { normalCdf, ordinal, getAllBenchmarks, collectSources, percentileRange, percentileBand, incomePercentile } from "../benchmarks.js";
+import { normalCdf, ordinal, getAllBenchmarks, collectSources, percentileRange, percentileBand, incomePercentile, clsAgeRow } from "../benchmarks.js";
 import { gradeForBenchmark } from "../grades.js";
 import { GameStateManager } from "../state.js";
 
@@ -122,6 +122,90 @@ test("relationships still reports both raw readings and the LSNS isolation cutof
   // The user's own numbers survive the loss of the rank — that is the whole
   // point of "measured, not ranked".
   assert.ok(isolated.notes.some(n => n.includes("9/9") && n.includes("8/30")));
+});
+
+// --- CLS BAND PLACEMENT (v43) ---
+//
+// The Community Life Survey publishes the same 3-9 composite in three bands, so
+// the app places a score in one. The tests below exist to keep that a PLACEMENT:
+// the moment a percentile appears here, the aspect has started guessing.
+
+const rel = (ucla, extra = {}, profile = {}) =>
+  getAllBenchmarks(makeState(profile, { ...BASELINE, ucla, ...extra })).relationships;
+
+test("CLS band placement follows the published boundaries at 4/5 and 7/8", () => {
+  for (const n of [3, 4]) {
+    assert.ok(rel(n).notes.some(x => x.includes("least-lonely band") && x.includes("58%")), `ucla ${n} -> 3-4 band`);
+  }
+  for (const n of [5, 6, 7]) {
+    assert.ok(rel(n).notes.some(x => x.includes("middle band") && x.includes("33%")), `ucla ${n} -> 5-7 band`);
+  }
+  for (const n of [8, 9]) {
+    assert.ok(rel(n).notes.some(x => x.includes("loneliest band") && x.includes("9%")), `ucla ${n} -> 8-9 band`);
+  }
+});
+
+test("band placement never becomes a rank", () => {
+  for (const n of [3, 4, 5, 6, 7, 8, 9]) {
+    const b = rel(n);
+    assert.equal(b.percentile, null, `ucla ${n} must stay unranked`);
+    assert.equal(b.population, null, `ucla ${n} must claim no population`);
+    assert.equal(gradeForBenchmark(b), null, `ucla ${n} must stay ungraded`);
+  }
+  assert.ok(rel(6).notes.some(x => x.includes("cannot say where you rank")),
+    "the placement says out loud that it is not a rank");
+});
+
+test("the CLS source is cited whenever its bands are shown, and not when they are not", () => {
+  const shown = rel(6);
+  assert.ok(shown.sources.some(s => /Community Life Survey/.test(s.label)), "cited when placed");
+  shown.sources.forEach(s => assert.match(s.url, /^https:\/\//));
+  const hidden = rel(6, { answered: { ucla: false } });
+  assert.ok(!hidden.sources.some(s => /Community Life Survey/.test(s.label)), "not cited when withheld");
+});
+
+// Table A3b publishes the age breakdown for the 8-9 band ONLY, so the age line
+// appears only for users in that band. Showing it to someone scoring 4 would
+// invite them to read a population fact as their own standing.
+test("the age line appears only in the 8-9 band, and only when age is known", () => {
+  const ageLine = notes => notes.some(x => x.includes("adults aged"));
+  assert.ok(ageLine(rel(9, {}, { age: 28 }).notes), "8-9 band with a known age");
+  assert.ok(!ageLine(rel(4, {}, { age: 28 }).notes), "least-lonely band gets no age line");
+  assert.ok(!ageLine(rel(7, {}, { age: 28 }).notes), "middle band gets no age line");
+  assert.ok(!ageLine(rel(9).notes), "no age on the profile, no age line");
+  assert.ok(!ageLine(rel(9, {}, { age: 14 }).notes), "below the survey's own 16+ floor, no row to quote");
+});
+
+test("clsAgeRow returns the published rows at their boundaries", () => {
+  assert.equal(clsAgeRow(16).share, 12);
+  assert.equal(clsAgeRow(24).share, 12);
+  assert.equal(clsAgeRow(25).share, 11);
+  assert.equal(clsAgeRow(34).share, 11);
+  assert.equal(clsAgeRow(35).share, 10);
+  assert.equal(clsAgeRow(49).share, 10);
+  assert.equal(clsAgeRow(50).share, 8);
+  assert.equal(clsAgeRow(64).share, 8);
+  assert.equal(clsAgeRow(65).share, 5);
+  assert.equal(clsAgeRow(74).share, 5);
+  assert.equal(clsAgeRow(75).share, 7);
+  assert.equal(clsAgeRow(120).share, 7);
+  assert.equal(clsAgeRow(15), null, "below the survey's floor");
+  assert.equal(clsAgeRow(undefined), null);
+  assert.equal(clsAgeRow("nonsense"), null);
+});
+
+// A UCLA left at its midpoint default is demoted to answered=false by state.js.
+// Placing that invented 6 in a published band would dress a default as a
+// measurement. Absent flags mean "unknown" on older saves, not "false".
+test("band placement is withheld for a UCLA known not to have been answered", () => {
+  const banded = notes => notes.some(x => x.includes("three bands"));
+  assert.ok(!banded(rel(6, { answered: { ucla: false } }).notes), "known unanswered: withheld");
+  assert.ok(banded(rel(6, { answered: { ucla: true } }).notes), "answered: placed");
+  assert.ok(banded(rel(6, { answered: { who5: true } }).notes), "flag absent for ucla: unknown, still placed");
+  assert.ok(banded(rel(6).notes), "no coverage flags at all: unknown, still placed");
+  // The raw reading survives either way — withholding the band must not
+  // withhold the measurement.
+  assert.ok(rel(6, { answered: { ucla: false } }).notes.some(x => x.includes("6/9")));
 });
 
 test("survey-based aspects return null without a stored baseline (pre-benchmark saves)", () => {

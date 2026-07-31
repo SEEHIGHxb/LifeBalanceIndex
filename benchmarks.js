@@ -48,6 +48,10 @@ export const SOURCES = {
     label: "LSNS-6 in three European community samples of OLDER ADULTS (means 16.1-17.9, SD ~5.5). The < 12 isolation cutoff is the instrument's own validated threshold and does not depend on the age of the norming sample.",
     url: "https://www.researchgate.net/publication/6867225_Performance_of_an_Abbreviated_Version_of_the_Lubben_Social_Network_Scale_Among_Three_European_Community-Dwelling_Older_Adult_Populations"
   },
+  clsLoneliness: {
+    label: "Community Life Survey 2024/25, DCMS - England, adults 16+, Oct 2024-Mar 2025, unweighted base 160,755. Annual data tables A3a (indirect loneliness composite, 3-9, in three bands: 58% / 33% / 9%) and A3b (the 8-9 band by age).",
+    url: "https://www.gov.uk/government/statistics/community-life-survey-202425-annual-publication"
+  },
   gseScholz: {
     label: "General Self-Efficacy Scale, 25-country norms, N=19,120 (mean 29.55/40, SD 5.32; ~2.96 per item)",
     url: "https://userpage.fu-berlin.de/~health/faq_gse.pdf"
@@ -344,7 +348,32 @@ function physicalBenchmark(profile) {
 //      but no published national mean/SD, so it informs a note, never a rank.
 //
 // Revisit when a representative Thai general-adult dataset is published; the
-// open research brief lives in docs/research/.
+// research briefs live in docs/research/.
+//
+// For `relationships` specifically, that revisit has now been searched and
+// closed once: docs/research/round-4-social-connection-norms.md asked whether
+// ANY general-population score DISTRIBUTION exists for UCLA-3 or LSNS-6 (or for
+// a swappable instrument with a validated Thai adult version), and every one of
+// its four questions came back NOT FOUND — no PERCENTILE is available. ONS
+// publishes item-level responses and associations but no combined-score
+// distribution, and advises using the UCLA module alongside the direct question
+// rather than as a composite.
+//
+// A follow-up search did find the closest thing that exists, and as of v43 the
+// app uses it: DCMS's Community Life Survey (England, adults 16+, Oct 2024-Mar
+// 2025, unweighted base 160,755) publishes the 3-9 composite in THREE BANDS —
+// 3-4: 58%, 5-7: 33%, 8-9: 9% (Table A3a), with the 8-9 band broken out by age
+// (Table A3b). Same three items, same 3-9 coding as surveys.js. That is enough
+// for a banded comparison against a correctly-aged population; it is NOT enough
+// for a percentile, because getting one would mean interpolating inside a band.
+// So `relationships` gains a BAND PLACEMENT note and keeps `percentile: null`.
+// See CLS_BANDS below; figures and caveats:
+// docs/research/round-4-social-connection-norms.md.
+//
+// Note the age gradient in A3b: 12% of 16-24s score 8-9, falling to 5% of
+// 65-74s. Younger adults are lonelier, so an older-adult norm is not merely the
+// wrong sample for a 28-year-old — it slopes the wrong way. That is the
+// empirical case for this aspect staying unranked.
 //
 // --- Why only WHO-5 is age-banded (researched 2026-07-30) ---
 //
@@ -354,7 +383,10 @@ function physicalBenchmark(profile) {
 //   - PHYSICAL: Thai activity by age IS published (Katewongsa 2021, 5 survey
 //     waves), but the 2019 spread across bands is 70.8-76.0% — a 5-point
 //     gradient. Not worth a mechanism. WHO-5's spread is ~40 points.
-//   - RELATIONSHIPS: cannot be age-banded, and still cannot be ranked at all.
+//   - RELATIONSHIPS: cannot be age-banded FOR A RANK, and still cannot be
+//     ranked at all. (v43 does quote one age-stratified row — CLS Table A3b,
+//     the 8-9 band by age — but as a population fact beside a band placement,
+//     never as a percentile. The paragraph below is about ranking.)
 //     The only age-stratified loneliness prevalence found (Meta-Gallup 2023,
 //     142 countries) is a SINGLE ITEM, not UCLA-3, with unpublished question
 //     wording, and no Thailand break-out. The 2022 seven-country pilot does use
@@ -554,7 +586,71 @@ function mentalBenchmark(profile, baseline) {
 // So the aspect still says something true and useful; it just stops claiming a
 // rank it cannot support. `unranked` carries the reason, and every consumer
 // surface renders it as an explicit disclosure, never as missing data.
-function relationshipsBenchmark(baseline) {
+// --- The one correctly-aged reference that exists: CLS band placement ---
+//
+// DCMS Community Life Survey 2024/25 annual data tables, Table A3a. England,
+// adults 16+, Oct 2024-Mar 2025, unweighted base 160,755 — a general-population
+// sample, not an older-adult one, which is the whole reason it is usable here.
+//
+// It asks THIS APP'S three UCLA items on THIS APP'S three-point coding
+// (surveys.js UCLA_FREQ, 1-3) and sums them to the same 3-9 composite, so a
+// user's raw score lands in a published band with no conversion. `below` is the
+// cumulative share scoring strictly lower, obtained by adding the bands below
+// it — addition only, never interpolation inside one.
+//
+// Three bands are exactly two cumulative points. That places a score; it cannot
+// rank one. Turning this into a percentile would mean guessing where inside a
+// band the user sits, which is the fabrication this whole aspect exists to
+// refuse. `percentile` therefore stays null.
+const CLS_BANDS = [
+  { max: 4, share: 58, below: 0 },
+  { max: 7, share: 33, below: 58 },
+  { max: 9, share: 9, below: 91 }
+];
+
+// Table A3b, published for the 8-9 band ONLY. There is no age breakdown of the
+// other two bands to be had, so the app shows this line only to users who are
+// in the 8-9 band, where it answers "is that unusual for someone my age?" with
+// a printed number. Showing "11% of 25-34s score 8-9" to someone scoring 4
+// would invite them to read a population fact as their own rank.
+//
+// The gradient is also the empirical case for this aspect staying unranked:
+// 12% at 16-24 down to 5% at 65-74, then back up to 7% at 75+. Not monotonic,
+// but younger adults are the lonelier group across almost the whole range, so
+// the older-adult UCLA norm does not merely use the wrong sample — it slopes
+// the wrong way. Note this does NOT resurrect the U-shape claim removed in v41
+// (see below): one 7-vs-5 uptick in the oldest band of one country's survey is
+// not loneliness rising again in old age, and it is not enough to rank on.
+const CLS_LONELIEST_BY_AGE = [
+  { max: 24, label: "16-24", share: 12 },
+  { max: 34, label: "25-34", share: 11 },
+  { max: 49, label: "35-49", share: 10 },
+  { max: 64, label: "50-64", share: 8 },
+  { max: 74, label: "65-74", share: 5 },
+  { max: Infinity, label: "75 and over", share: 7 }
+];
+
+// Below the survey's own floor there is no row to quote, so nothing is quoted.
+export function clsAgeRow(age) {
+  const n = Number(age);
+  if (!Number.isFinite(n) || n < 16) return null;
+  return CLS_LONELIEST_BY_AGE.find(row => n <= row.max) || null;
+}
+
+// Each branch passes a LITERAL to tp() rather than a ternary, so
+// tests/i18n-coverage.test.mjs can see all three strings.
+function clsBandNote(ucla) {
+  if (ucla <= CLS_BANDS[0].max) {
+    return tp("A national survey of 160,755 adults in England publishes this same 3-9 score in three bands. Yours, {n}, is in the least-lonely band, where 58% of them sit; 42% score higher.", { n: ucla });
+  }
+  if (ucla <= CLS_BANDS[1].max) {
+    return tp("A national survey of 160,755 adults in England publishes this same 3-9 score in three bands. Yours, {n}, is in the middle band, where 33% of them sit; 58% score lower and 9% score higher.", { n: ucla });
+  }
+  return tp("A national survey of 160,755 adults in England publishes this same 3-9 score in three bands. Yours, {n}, is in the loneliest band, where 9% of them sit; 91% score lower.", { n: ucla });
+}
+
+// `profile` is taken for the age row, mirroring mentalBenchmark above.
+function relationshipsBenchmark(profile, baseline) {
   if (!baseline || !Number.isFinite(baseline.ucla) || !Number.isFinite(baseline.lsns)) return null;
   const notes = [
     tp("Loneliness (UCLA-3) {ucla}/9 — lower is better. Social network (LSNS-6) {lsns}/30 — higher is better.",
@@ -563,14 +659,31 @@ function relationshipsBenchmark(baseline) {
       ? "LSNS-6 score {n}/30 is under the social-isolation cutoff of 12."
       : "LSNS-6 score {n}/30 is above the social-isolation cutoff of 12.", { n: baseline.lsns })
   ];
+
+  // Shown unless the instrument is KNOWN not to have been answered — a
+  // straight-lined or untouched UCLA is demoted to answered=false by
+  // state.js, and a band built on the midpoint default would be invented.
+  // Absent coverage flags mean "unknown" on pre-v25 saves, not "false"; those
+  // saves already print the raw score in the note above, so placing that same
+  // number in its published band claims nothing further.
+  const uclaAnswered = !baseline.answered || baseline.answered.ucla !== false;
+  if (uclaAnswered) {
+    notes.push(clsBandNote(baseline.ucla));
+    const ageRow = baseline.ucla > CLS_BANDS[1].max ? clsAgeRow((profile || {}).age) : null;
+    if (ageRow) {
+      notes.push(tp("In that survey {pct}% of adults aged {band} scored in this band.", { pct: ageRow.share, band: ageRow.label }));
+    }
+    notes.push(t("Three bands can say which band you are in. They cannot say where you rank, because that would mean guessing your position inside a band."));
+  }
+
   return {
     percentile: null,
-    unranked: t("Both scales are normed on older adults — UCLA-3 on US adults aged 57-85, LSNS-6 on European over-65s. No Thai working-age norm is published for either, so this app will not pretend to rank you on it. Your scores and the isolation cutoff below are still real measurements."),
+    unranked: t("Both scales are normed on older adults — UCLA-3 on US adults aged 57-85, LSNS-6 on European over-65s. No Thai working-age norm is published for either, so this app will not pretend to rank you on it. The closest all-ages reference, a national survey in England, publishes only three broad bands — enough to place your loneliness score, not to rank it. Your scores, that band and the isolation cutoff below are all real measurements."),
     method: "estimate",
     population: null,
     summary: t("Loneliness (UCLA-3) and social network (LSNS-6) — measured, not ranked"),
     notes,
-    sources: [SOURCES.ucla3, SOURCES.lsns6]
+    sources: uclaAnswered ? [SOURCES.ucla3, SOURCES.lsns6, SOURCES.clsLoneliness] : [SOURCES.ucla3, SOURCES.lsns6]
   };
 }
 
@@ -757,7 +870,9 @@ export function getAllBenchmarks(state) {
     // Takes `profile` for the age band its published percentile table is
     // stratified by, mirroring socialContributionBenchmark below.
     mental: mentalBenchmark(profile, baseline),
-    relationships: relationshipsBenchmark(baseline),
+    // Takes `profile` for the same reason mental does: the one age-stratified
+    // row its cited source publishes (CLS Table A3b).
+    relationships: relationshipsBenchmark(profile, baseline),
     personalGoals: personalGoalsBenchmark(baseline),
     // These three take `baseline` too: their cited sources publish
     // participation rates, not distributions, so the instrument sums are what

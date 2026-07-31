@@ -102,6 +102,26 @@ test("the methodology page names the reference sample behind every comparison", 
   assert.match(html, /ages 57-85/, "the wrong-population problem is stated with the actual age band");
 });
 
+// v43. The relationships row gained a second reference — an all-ages English
+// survey whose bands the aspect is now placed against. The risk this test pins
+// is that "we found a real population" quietly slides into "so we can rank you
+// after all". The row must keep saying it does not rank, and the page must keep
+// explaining why three bands cannot become a percentile.
+test("the relationships row adds the banded reference without claiming a rank", () => {
+  renderMethodology("main-view", { checkins: [] });
+  const html = captured.html;
+  assert.match(html, /Community Life Survey 2024\/25/, "the banded reference is named");
+  assert.match(html, /160,755/, "with the sample size that makes it worth citing");
+  assert.match(html, /Tables A3a and A3b/, "and the actual tables, so it can be checked");
+  assert.match(html, /Not ranked — band placement only/, "the claim column still says no rank");
+  assert.match(html, /provenance-unranked/, "the row stays visually marked as unranked");
+  assert.match(html, /guessing where inside a band you sit/, "why a band cannot become a percentile");
+  // The age gradient is the empirical case for withholding the rank, not
+  // decoration — losing it would leave the refusal looking merely cautious.
+  assert.match(html, /12% of 16-24s/, "the age gradient is stated");
+  assert.match(html, /5% of 65-74s/, "in both directions");
+});
+
 // v41. The mental row is now the only one read out of a published percentile
 // table, and the only one stratified by the user's age — but the sample is
 // still German. The honest-labelling constraint on this release is that better

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `42`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `43`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,84 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.10.0] — 2026-07-31 (APP_VERSION 43)
+
+### Relationships gets a real population — and still refuses to rank you
+
+Since v39 the relationships aspect has been the one spoke with no percentile at
+all. Both of its instruments are normed on people a generation older (UCLA-3 on
+US adults aged 57-85, LSNS-6 on European over-65s), so a rank against either
+would have been a category error rather than an approximation.
+
+A deep-research pass in July 2026 asked whether *any* general-population score
+distribution exists for those two instruments and came back NOT FOUND on all
+four of its questions. A follow-up search found something it had cited but never
+opened: **DCMS's Community Life Survey 2024/25** (England, adults 16+, October
+2024 – March 2025, unweighted base **160,755**). It fields this app's three UCLA
+items on this app's three-point coding and publishes the combined 3-9 score in
+three bands — **3-4: 58%, 5-7: 33%, 8-9: 9%** (Table A3a).
+
+So the aspect now places your loneliness score in its published band. It still
+returns `percentile: null`, still shows "Not ranked", still produces no letter
+grade, and still contributes to the Balance Index exactly as before.
+
+**Why a band and not a percentile.** Three bands are two dividing lines. Getting
+a rank out of two lines means interpolating inside a band — inventing a
+distribution the source did not publish. That is the fabrication this aspect
+exists to refuse, and finding a better population does not make it acceptable.
+
+**The age gradient is the point.** Table A3b breaks out the loneliest band by
+age: 12% of 16-24s score 8 or 9, falling to 5% of 65-74s. Younger adults are
+lonelier. An older-adult norm is therefore not merely the wrong sample for a
+working-age user — it slopes the wrong way, and ranking against it would have
+quietly flattered them. Withholding the rank was correct, and is now correct for
+a demonstrated reason rather than a cautious one. That age line is shown only to
+users in the 8-9 band, because that is the only band A3b publishes it for.
+
+**Withheld when the instrument was not answered.** A UCLA left at its midpoint
+default is demoted to `answered: false` by `state.js`; placing that invented 6
+in a published band would dress a default as a measurement, so the band and its
+citation are both dropped. Absent coverage flags on older saves mean *unknown*,
+not *false*, and those saves keep the placement — they already print the raw
+score.
+
+**Instrument fidelity.** `surveys.js` now labels the lowest UCLA option "Hardly
+ever or never", the wording the scale is actually fielded with in the survey we
+compare against. Label only; the value stays 1 and no score moves.
+
+For the record, ONS really is a dead end: its 2018 loneliness compendium
+publishes item-level responses and chi-square associations but no combined-score
+distribution, and its guidance recommends using the UCLA module alongside the
+direct question rather than as a composite. Thai sources have nothing — NHES-7
+(n=22,822) carries no loneliness or social-network module at all. Full search
+record, including the figures that did **not** survive verification:
+`docs/research/round-4-social-connection-norms.md`.
+
+### Changed
+
+- `benchmarks.js`: `SOURCES.clsLoneliness`; `CLS_BANDS`, `CLS_LONELIEST_BY_AGE`,
+  exported `clsAgeRow()`; `relationshipsBenchmark` now takes `profile` (as
+  `mentalBenchmark` does) for the age row, and its `unranked` text says why the
+  new band is not a rank.
+- `views/methodology.js`: the relationships row names the survey, its base and
+  its two tables; new claim label **"Not ranked — band placement only"**, kept
+  distinct from the `band` label used where an aspect *is* ranked inside a band;
+  two paragraphs on why bands cannot become percentiles and what the age
+  gradient shows. The older paragraph claimed the *direction* of the error was
+  unknown; A3b partly answers that, so it now claims only that the **size** is
+  unknown and differs between the two scales. The gradient is quoted with its
+  75+ uptick (5% at 65-74, 7% at 75 and over) rather than trimmed to look
+  monotonic — one uptick in the oldest band of one country's survey is not the
+  U-shape claim removed in v41, and both files say so.
+- `surveys.js`, `th.js`: the UCLA option label and every new string, EN + TH.
+- `tests/benchmarks.test.mjs` +5 tests (band boundaries at 4/5 and 7/8, the
+  never-a-rank guard, source citation, the age line's 8-9-only rule and its 16+
+  floor, the unanswered gate); `tests/methodology.test.mjs` +1. **356 tests**,
+  lint clean.
+
+**Not touched:** `scoring.js`, `grades.js`, `averages.js`, `criteria.js`, schema
+version. Nothing is persisted, so there is no migration and no data change.
 
 ## [2.9.1] — 2026-07-31 (APP_VERSION 42)
 

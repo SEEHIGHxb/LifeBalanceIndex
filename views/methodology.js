@@ -63,7 +63,10 @@ const COMPARISON_SAMPLES = [
   // The one row read straight out of a published percentile table rather than
   // approximated from a mean/SD — and the one stratified by the user's own age.
   { aspect: "Mental", sample: "WHO-5 community norms, representative German sample (Kliem et al. 2025, Table 2 — cumulative percentiles by age band)", where: "deAdultsAge", rank: "table" },
-  { aspect: "Relationships", sample: "UCLA-3: US Health and Retirement Study, ages 57-85. LSNS-6: European over-65s.", where: "wrongAge", rank: "none" },
+  // Two references in one row on purpose: the norms that CANNOT be ranked
+  // against, and the all-ages survey that supports a band placement but still
+  // no rank.
+  { aspect: "Relationships", sample: "UCLA-3: US Health and Retirement Study, ages 57-85. LSNS-6: European over-65s. Band placement only: Community Life Survey 2024/25 (DCMS), England, adults 16+, base 160,755 — Tables A3a and A3b.", where: "wrongAgePlusEngland", rank: "noneBanded" },
   { aspect: "Personal Goals", sample: "General Self-Efficacy Scale, 25-country pooled norms (N=19,120)", where: "multi", rank: "ranked" },
   { aspect: "Social Contribution", sample: "CAF World Giving Index — Thai donating and volunteering rates", where: "thAdults", rank: "band" },
   { aspect: "Environment", sample: "Thai single-use plastic use per person per day", where: "thAdults", rank: "band" },
@@ -74,7 +77,10 @@ const RANK_LABELS = () => ({
   ranked: t("Ranked"),
   table: t("Ranked from a published table"),
   band: t("Band placement"),
-  none: t("Not ranked")
+  none: t("Not ranked"),
+  // Distinct from `band`: those aspects place you in a band AND rank you inside
+  // it. This one places you and stops.
+  noneBanded: t("Not ranked — band placement only")
 });
 
 const WHERE_LABELS = () => ({
@@ -84,7 +90,7 @@ const WHERE_LABELS = () => ({
   deAdults: t("Germany · adults"),
   deAdultsAge: t("Germany · adults, by age band"),
   multi: t("25 countries · adults"),
-  wrongAge: t("Wrong age band for this app's users")
+  wrongAgePlusEngland: t("Norms: wrong age band. Band placement: England · adults 16+")
 });
 
 // GUIDELINE CHECKS — the criterion-referenced table.
@@ -121,7 +127,7 @@ function comparisonRows() {
   const ranks = RANK_LABELS();
   const wheres = WHERE_LABELS();
   return COMPARISON_SAMPLES.map(row => `
-    <tr${row.rank === "none" ? ' class="provenance-unranked"' : ""}>
+    <tr${row.rank.startsWith("none") ? ' class="provenance-unranked"' : ""}>
       <th scope="row">${escapeHtml(t(row.aspect))}</th>
       <td>${escapeHtml(row.sample)}</td>
       <td>${escapeHtml(wheres[row.where])}</td>
@@ -228,7 +234,9 @@ export function renderMethodology(containerId, state) {
           <tbody>${comparisonRows()}</tbody>
         </table>
       </div>
-      <p class="aspect-blurb">${t("Relationships is the one aspect with no rank at all. Its two questionnaires are normed on people a generation older — UCLA-3 on US adults aged 57-85, LSNS-6 on European over-65s — and loneliness does not move in one direction with age, so the size and even the direction of the error are unknown. Your scores and the social-isolation cutoff are still shown, because those are real measurements; the rank is withheld, because it would be a guess wearing a number's clothes.")}</p>
+      <p class="aspect-blurb">${t("Relationships is the one aspect with no rank at all. Its two questionnaires are normed on people a generation older — UCLA-3 on US adults aged 57-85, LSNS-6 on European over-65s — and the size of that error is unknown and differs between the two scales. Your scores and the social-isolation cutoff are still shown, because those are real measurements; the rank is withheld, because it would be a guess wearing a number's clothes.")}</p>
+      <p class="aspect-blurb">${t("It does now carry one real population reference. A national survey in England asks the same three loneliness questions on the same three-point scale and publishes the combined 3-9 score in three bands — 58% of adults score 3 or 4, 33% score 5 to 7, and 9% score 8 or 9, out of 160,755 people of every adult age. Your score is shown against those bands. It stops there deliberately: three bands are two dividing lines, and turning two lines into a percentile would mean guessing where inside a band you sit. That guess is the thing this aspect refuses to make.")}</p>
+      <p class="aspect-blurb">${t("That survey is also the clearest evidence that withholding the rank is right rather than merely cautious. It reports the loneliest band by age: 12% of 16-24s score 8 or 9, falling to 5% of 65-74s before ticking back up to 7% at 75 and over. Younger adults are the lonelier group across almost the whole range. So a norm built on 57-to-85-year-olds is not just the wrong sample for a working-age user — it leans the wrong way, and ranking against it would quietly flatter you.")}</p>
       <p class="aspect-blurb">${t("Where a comparison is foreign but the age range fits — the German WHO-5 sample, the 25-country self-efficacy norms — the rank is shown and the sample is named next to it, on the aspect page as well as here. Read those as indicative rather than as your standing among Thai adults.")}</p>
     </div>
 

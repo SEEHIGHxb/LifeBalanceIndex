@@ -68,7 +68,10 @@ const LSNS_COUNT = [
 ];
 
 const UCLA_FREQ = [
-  { v: 1, l: "Hardly ever" },
+  // "or never" restored in v43 to match the wording the UCLA-3 is fielded with
+  // in the Community Life Survey, whose bands benchmarks.js now places this
+  // score against. Label only — the value stays 1, so no score moves.
+  { v: 1, l: "Hardly ever or never" },
   { v: 2, l: "Some of the time" },
   { v: 3, l: "Often" }
 ];

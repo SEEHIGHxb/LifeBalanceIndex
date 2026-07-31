@@ -60,7 +60,9 @@ export function scoreStability(state) {
 const COMPARISON_SAMPLES = [
   { aspect: "Finance", sample: "Thai worker wages (Labour Force Survey via Bank of Thailand)", where: "thWorking", rank: "ranked" },
   { aspect: "Physical", sample: "Thai adults meeting the WHO activity guideline; Thai NHES for BMI", where: "thAdults", rank: "ranked" },
-  { aspect: "Mental", sample: "WHO-5 community norms, representative German sample", where: "deAdults", rank: "ranked" },
+  // The one row read straight out of a published percentile table rather than
+  // approximated from a mean/SD — and the one stratified by the user's own age.
+  { aspect: "Mental", sample: "WHO-5 community norms, representative German sample (Kliem et al. 2025, Table 2 — cumulative percentiles by age band)", where: "deAdultsAge", rank: "table" },
   { aspect: "Relationships", sample: "UCLA-3: US Health and Retirement Study, ages 57-85. LSNS-6: European over-65s.", where: "wrongAge", rank: "none" },
   { aspect: "Personal Goals", sample: "General Self-Efficacy Scale, 25-country pooled norms (N=19,120)", where: "multi", rank: "ranked" },
   { aspect: "Social Contribution", sample: "CAF World Giving Index — Thai donating and volunteering rates", where: "thAdults", rank: "band" },
@@ -70,6 +72,7 @@ const COMPARISON_SAMPLES = [
 
 const RANK_LABELS = () => ({
   ranked: t("Ranked"),
+  table: t("Ranked from a published table"),
   band: t("Band placement"),
   none: t("Not ranked")
 });
@@ -79,6 +82,7 @@ const WHERE_LABELS = () => ({
   thAdults: t("Thailand · adults"),
   thWorkers: t("Thailand · workers"),
   deAdults: t("Germany · adults"),
+  deAdultsAge: t("Germany · adults, by age band"),
   multi: t("25 countries · adults"),
   wrongAge: t("Wrong age band for this app's users")
 });
@@ -255,6 +259,7 @@ export function renderMethodology(containerId, state) {
       <h4 class="card-header">${t("Confidence, benchmarks, and answer quality")}</h4>
       <p class="aspect-blurb">${t("Every score carries a confidence tier: High (you answered everything), Partial, Estimated (defaults stood in), or Verified (you completed the full-length in-depth instruments).")}</p>
       <p class="aspect-blurb">${t("Society percentiles are honest approximations against cited published statistics — each benchmark names its method and sources, and the band around it is an indicative range, not a statistical confidence interval.")}</p>
+      <p class="aspect-blurb">${t("Mental well-being is ranked differently from the rest, and better. Its study publishes a full percentile table broken down by age band, so your standing is looked up in that table directly rather than estimated from an average and a spread — and it is read from the row for people your own age, because the same well-being score is common at 70 and uncommon at 30. Nothing is interpolated: every score this app can produce is a printed row. The sample is still German, and being compared with Germans your age is more precise but no more relevant to life in Thailand — that limitation has not gone away.")}</p>
       <p class="aspect-blurb">${t("Three aspects — social contribution, environment and humanity's future — have no published distribution to sit on, because the sources publish participation rates and averages (“52% of Thais donated money”) rather than a curve. Their percentile is therefore built in two stages: the cited rate decides which band you are in, and your own answers decide where inside that band you sit. The second stage can never move you across a boundary the first stage set — the strongest possible non-donor still ranks below the weakest donor. This is what lets those standings respond to everything you answered instead of to a single yes/no field, while leaving the published claim exactly as published. Where an aspect's questionnaire has not been answered, the percentile falls back to the plain participation placement.")}</p>
       <p class="aspect-blurb">${t("The dashed outline on the dashboard radar is a derived population average: a reference person assembled from the same cited statistics (median income, typical activity levels, published questionnaire means) is scored through the exact formulas that score you.")}</p>
       <p class="aspect-blurb">${t("Behavior-driven aspects are re-measured by the weekly review: the quantities you report replace last week's values inside the same formulas, so a score moves exactly as much as the measured change implies — never by flat per-log bonuses.")}</p>

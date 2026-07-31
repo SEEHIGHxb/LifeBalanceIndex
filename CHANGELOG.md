@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `40`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `41`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,123 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.9.0] — 2026-07-30 (APP_VERSION 41)
+
+### The mental percentile is now read from a table, and read by age band
+
+The WHO-5 study this app has cited since v26 — **Kliem et al. 2025, *Frontiers
+in Psychology* 16:1592614, doi:10.3389/fpsyg.2025.1592614**, N=2,515,
+representative German sample fielded June–October 2021 — publishes more than the
+mean and SD the app was using. Its **Table 2 gives the full cumulative percentile
+distribution, broken down by age band** (16-24, 25-34, 35-44, 45-54, 55-64,
+65-74, 75+). This release reads that table instead of approximating it.
+
+**Why that matters: the old number was wrong, not merely imprecise.**
+`normalCdf(score, 67.56, 22.96)` assumed the WHO-5 is normally distributed. It is
+not — the same paper reports **Skew = −0.90**. At a score of 68/100 the normal
+approximation returned about the **51st** percentile; the study's own pooled
+column says **42.4**. That is an ~8-point error sitting in the middle of the
+range, where most people are.
+
+**And the age effect is large.** A score of 60/100 is the **20.3rd** percentile
+among 25-34 year olds and the **59.7th** among the over-75s — a ~40-point swing
+that the pooled figure erased. Mental well-being was being compared against the
+wrong people in a way that had a measurable size.
+
+**Nothing is interpolated, fitted, or inferred.** A WHO-5 sum is an integer 0–25
+and the app's 0–100 score is that × 4, so *every* score the app can produce —
+0, 4, 8 … 100 — is a printed row of Table 2. This is the first benchmark in the
+file that reads a published number straight out and does no arithmetic on it at
+all. It is also why the new method is called `norms` rather than reusing
+`distribution`: there is no longer any distributional assumption to name.
+
+**Its uncertainty band was deliberately not narrowed** (still ±6, ±3 when
+verified). Sampling error is no longer the dominant error term — the
+German-versus-Thai population mismatch is, and no margin captures that. A tighter
+band would be precision theater about the wrong quantity.
+
+### Grades can move without anyone answering anything
+
+`benchmarks.js` states a principle: *"A grade must only move when the person's
+own answers move it."* **This release deliberately breaks it for one aspect.**
+The mental percentile changes for every user, so the mental grade can change, and
+grade-driven pledge ordering can reorder with it.
+
+That principle exists to stop grades drifting when band geometry is adjusted for
+convenience. This is the other case: the old rank was **measurably wrong by ~8
+points at the mode**, and the replacement is read from the same study's own
+table. Correcting a wrong rank is the one legitimate reason to move a grade, and
+it is stated here rather than buried. Concretely, the pinned test fixture at
+WHO-5 68/100 with no age recorded moves from the **50th percentile to the 42nd**.
+
+**Nothing else moves.** Proved by test, not asserted: the eight 0–100 scores,
+`AVERAGE_ASPECT_SCORES`, the Balance Index, the at-or-above-average tally and
+comparison codes are all byte-identical to v40 — one test holds the scores fixed,
+varies only age, and checks each of them. **v2 comparison codes stay valid. No
+migration, no schema bump.**
+
+### Three published cells were repaired, and it is documented
+
+Because Table 2's values are unsmoothed empirical distributions, its pooled
+column must equal the count-weighted mix of the paper's own supplementary male
+and female tables — an exact identity for this kind of data. It holds on **179 of
+182 cells** to within 0.30. Three cells fail it badly, and each is an exact
+duplicate of the cell above it in its own column: a cell-duplication error in
+production. The worst, at score 80 in the 55-64 band, is off by **18.7 percentile
+points** at the single most-populated cell in the table — large enough to be a
+grade error on its own.
+
+The reconciled values are stored, with the printed value, the corrected value and
+the evidence recorded inline beside each one and pinned by test so nobody
+"corrects" them back. No erratum has been published by the journal.
+
+### A factually wrong comment, corrected
+
+The relationships benchmark argued the direction of its UCLA-3 bias from a claim
+that loneliness is U-shaped across the lifespan. Two Meta-Gallup datasets
+contradict it: the 2022 seven-country pilot found *no* notable age relationship in
+four countries and found the over-65s **less** lonely in the other three, and the
+2023 global release (142 countries) reports 27% lonely at 19-29 against 17% at
+65+. The direction of the error is **unknown**, not U-shaped. Relationships stays
+unranked — the objection that actually holds is the population and response-scale
+mismatch, which never needed the U-shape.
+
+### Honest labelling
+
+Age-banding a German norm makes the claim *"the average German your age"*, not
+*"the average human"*. That is strictly better and it removes a real error, but it
+does not make the reference population any more relevant to life in Thailand. The
+methodology page and the aspect page both say so in as many words. The
+improvement is in precision, not in relevance, and the copy is not allowed to
+blur the two.
+
+### Changed
+
+- `benchmarks.js`: `WHO5_PERCENTILE_TABLE` (26 × 8, frozen, with the citation,
+  the verbatim caption and note, the fieldwork dates and the errata record);
+  `who5AgeBand()`; `mentalBenchmark(profile, baseline)`; new `norms` method in
+  both margin tables; `WHO5_POPULATION_LABELS` as a literal-keyed map so the
+  age-band names are visible to the i18n scanner.
+- `benchmarks.js`: **a shared float bug**, found by the new tests. `toPercentile`
+  did `Math.round(p01 * 100)`, so a value of 28.5 round-tripped through `/100` to
+  28.4999… and rounded **down**. Split out `clampPercentile()` for values already
+  on 0–100. No other benchmark changes value.
+- `benchmarks.js`: the raw WHO-5 is snapped to 0–25 before the lookup. A lookup
+  can miss where a formula could not — a hand-edited import carrying `17.5` would
+  have indexed a non-existent row and taken the whole dashboard down.
+- `views/methodology.js`: the mental provenance row names the table and the age
+  band, with a new "Ranked from a published table" claim distinct from a fitted
+  rank, plus a paragraph on what the age band does and does not buy.
+- `views/helpers.js`: `methodTag()` gains `norms`, kept distinct from
+  `distribution`.
+- `th.js`: the age-band population labels, the reworded note, and the new
+  methodology copy; the retired pooled-norm string pruned.
+- `tests/who5-norms.test.mjs` (new, 18 tests) — table integrity and transcription
+  guards, the three errata pinned, age routing at all 14 boundaries, the
+  normality defect documented so reinstating `normalCdf` fails, and the
+  blast-radius proof. `tests/benchmarks.test.mjs` and
+  `tests/methodology.test.mjs` amended. **348 tests.**
 
 ## [2.8.0] — 2026-07-30 (APP_VERSION 40)
 

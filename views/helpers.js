@@ -253,6 +253,10 @@ export function criteriaCard(criteria) {
 // METHOD_TAGS object duplicated in the dashboard and aspect views.
 export function methodTag(method) {
   const tags = {
+    // `norms` is not a synonym for `distribution`: it reads a percentile
+    // straight out of a published table, with no distributional assumption.
+    // Keep the two tags distinct so the user can tell which one they got.
+    norms: t("vs a published percentile table"),
     distribution: t("vs published norms"),
     threshold: t("vs participation rates"),
     estimate: t("estimate")

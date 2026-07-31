@@ -2,6 +2,8 @@
 //
 // Every figure below comes from a published source (verified 2026-07).
 // Percentiles are honest approximations, never precision theater:
+//   method "norms"        - direct lookup in a published percentile table,
+//                           no distributional assumption at all
 //   method "distribution" - normal approximation of a published mean/SD
 //   method "threshold"    - placement against published participation rates
 //   method "estimate"     - calibrated curve anchored to published figures
@@ -31,7 +33,7 @@ export const SOURCES = {
     url: "https://pubmed.ncbi.nlm.nih.gov/32493314/"
   },
   who5Norms: {
-    label: "WHO-5 community norms, representative German sample 2025 (mean 67.6, SD 23.0 on 0-100)",
+    label: "WHO-5 community norms, representative German sample (Kliem et al. 2025, Front Psychol 16:1592614, doi:10.3389/fpsyg.2025.1592614, N=2,515). Table 2 publishes cumulative percentiles by age band, which is what this app looks up; the pooled mean 67.6 / SD 23.0 on 0-100 comes from the same paper.",
     url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC12341540/"
   },
   st5Dmh: {
@@ -106,20 +108,33 @@ export function normalCdf(x, mean, sd) {
   return 0.5 * (1 + erf);
 }
 
+function clampPercentile(p) {
+  return Math.min(99, Math.max(1, Math.round(p)));
+}
+
 function toPercentile(p01) {
-  return Math.min(99, Math.max(1, Math.round(p01 * 100)));
+  return clampPercentile(p01 * 100);
 }
 
 // Indicative percentile range — a margin reflecting each method's precision,
 // NOT a statistical confidence interval (we lack per-norm sample sizes, and a
 // fake CI would be the precision theater this module avoids). Widths:
+//   norms        = published percentile table -> same as distribution, see below
 //   distribution = real published mean/SD  -> tightest
 //   estimate     = calibrated curve        -> medium
 //   threshold    = participation-band placement -> coarsest
 // A completed deep (long-form) section raises reliability, so its band is
 // roughly half as wide as the short-form one.
-const PERCENTILE_MARGIN = { distribution: 6, estimate: 10, threshold: 12 };
-const PERCENTILE_MARGIN_VERIFIED = { distribution: 3, estimate: 5, threshold: 8 };
+//
+// `norms` gets the SAME widths as `distribution` even though it is strictly
+// more accurate (it removes the normal-approximation error entirely, ~8
+// percentile points at the mode for WHO-5). Narrowing it would be precision
+// theater about the wrong quantity: once the distributional assumption is gone,
+// the dominant error is that the norming sample is German and the user is Thai,
+// and no margin captures a population mismatch. The band must not shrink just
+// because the arithmetic improved.
+const PERCENTILE_MARGIN = { norms: 6, distribution: 6, estimate: 10, threshold: 12 };
+const PERCENTILE_MARGIN_VERIFIED = { norms: 3, distribution: 3, estimate: 5, threshold: 8 };
 
 export function percentileRange(percentile, method, verified = false) {
   const table = verified ? PERCENTILE_MARGIN_VERIFIED : PERCENTILE_MARGIN;
@@ -307,7 +322,9 @@ function physicalBenchmark(profile) {
 //
 //   1. FOREIGN NORM, COMPARABLE AGE — a rank is defensible; the UI must name
 //      the sample rather than imply it is Thai or "people like you".
-//        - WHO-5: representative German adults (mean 67.6/100, SD 23.0).
+//        - WHO-5: representative German adults, ranked against the SOURCE'S OWN
+//          published percentile table BY AGE BAND (Kliem et al. 2025, Table 2),
+//          not against a pooled mean/SD. See WHO5_PERCENTILE_TABLE below.
 //          The Thai alternative is primary-care outpatients at Ramathibodi
 //          (mean 14.32/25, SD 5.26, N=274, mean age 44.6; Saipanish 2009,
 //          doi:10.1111/j.1440-1819.2009.01933.x — verified at source). That
@@ -328,21 +345,169 @@ function physicalBenchmark(profile) {
 //
 // Revisit when a representative Thai general-adult dataset is published; the
 // open research brief lives in docs/research/.
+//
+// --- Why only WHO-5 is age-banded (researched 2026-07-30) ---
+//
+// Age stratification must come from the SOURCE, never from this project. Only
+// one aspect has an age-banded table published with the norm it already cites,
+// so only one is age-banded. Recorded so the research is not re-run:
+//   - PHYSICAL: Thai activity by age IS published (Katewongsa 2021, 5 survey
+//     waves), but the 2019 spread across bands is 70.8-76.0% — a 5-point
+//     gradient. Not worth a mechanism. WHO-5's spread is ~40 points.
+//   - RELATIONSHIPS: cannot be age-banded, and still cannot be ranked at all.
+//     The only age-stratified loneliness prevalence found (Meta-Gallup 2023,
+//     142 countries) is a SINGLE ITEM, not UCLA-3, with unpublished question
+//     wording, and no Thailand break-out. The 2022 seven-country pilot does use
+//     this app's three UCLA items verbatim but on a 4-point scale where the app
+//     uses 3 (scoring.js:82), and reports country means as a chart, not a
+//     distribution. Banding a UCLA-3 score against either is the cross-measure
+//     conversion the research brief prohibits.
+//   - FINANCE / BMI / FRUIT-VEG: no Thai age-stratified data exists. Thai
+//     income by age was searched for specifically: NSO SES is household-level
+//     and the LFS age tables carry participation, not earnings.
+
+// --- WHO-5 population norms, by age band ---
+//
+// Kliem et al. 2025, "Psychometric evaluation and updated community norms of
+// the WHO-5 well-being index, based on a representative German sample",
+// Frontiers in Psychology 16:1592614, doi:10.3389/fpsyg.2025.1592614.
+// N=2,515, ADM random-route representative sample, fielded June-October 2021.
+//
+// Table 2 verbatim. Caption: "Population based norms (cumulative percentiles)
+// of the WHO-5 scores (total sample)." Table note: "All raw scores were
+// multiplied by 4 in order to transform the original WHO-5 score range from 0
+// to 25 to a standardized scale of 0-100, as recommended in the scoring
+// guidelines; Values in square brackets indicate the 95% confidence interval
+// based on 1,000 bootstrap samples." The published CIs are not stored: this
+// module shows an indicative range by method, not per-cell statistics.
+//
+// These are RAW EMPIRICAL cumulative percentiles. No smoothing, shape-
+// constrained or monotone model is claimed anywhere in the paper — so a tie
+// between adjacent rows means literally zero respondents at that score, which
+// is what made the errata below detectable.
+//
+// Rows are the score on the 0-100 scale, in steps of 4. `baseline.who5` is an
+// integer 0-25 and score100 = who5 * 4, so EVERY reachable user score is an
+// exact row. No interpolation, no curve fitting, no inference of any kind:
+// this is the only benchmark in the file that reads a published number
+// straight out and does no math on it.
+//
+// Printed bounds "<0.1" and ">99.9" are stored as 0.1 and 99.9 (toPercentile
+// clamps to [1,99] regardless).
+//
+// TABLE_2_ERRATA — three cells are wrong in the published table and are stored
+// REPAIRED. Because the values are unsmoothed, Table 2's columns must equal the
+// n-weighted mix of Supplementary Table S11 (male) and S12 (female) using the
+// age x gender counts in Table 1 — an exact identity for ECDFs. All 182 cells
+// were checked: 179 reconcile to within 0.30 (mean 0.041). Three do not, and
+// all three are exact duplicates of the cell directly above them in their own
+// column, i.e. a cell-duplication error in production, at 7x/29x/62x the worst
+// legitimate residual:
+//     score 80, band 55-64: printed 63.2 -> reconciled 81.9  (off by 18.7)
+//     score 76, band 65-74: printed 56.9 -> reconciled 65.7  (off by  8.8)
+//     score 32, band 65-74: printed 10.4 -> reconciled 12.5  (off by  2.1)
+// Score 80 (raw 20) is the modal score at 20.2% of the sample, so "zero of 487
+// people aged 55-64" is arithmetically impossible. No erratum or corrigendum
+// has been published. Storing the printed values would misreport the single
+// most-populated cell in the table by 18.7 percentile points — a grade error.
+// This is not modelling: it is the paper's own supplementary tables recombined
+// by the paper's own Table 1 counts. Do NOT "correct" these three back to the
+// printed values; tests/who5-norms.test.mjs pins them.
+export const WHO5_PERCENTILE_TABLE = Object.freeze({
+  0: { total: 0.3, a16: 0.1, a25: 0.1, a35: 0.3, a45: 0.2, a55: 0.6, a65: 0.1, a75: 0.8 },
+  4: { total: 0.7, a16: 0.1, a25: 0.1, a35: 1.1, a45: 0.5, a55: 0.8, a65: 0.3, a75: 2.5 },
+  8: { total: 1.4, a16: 0.1, a25: 0.5, a35: 1.6, a45: 0.5, a55: 1.6, a65: 1.3, a75: 4.6 },
+  12: { total: 2.7, a16: 1.8, a25: 1.5, a35: 1.9, a45: 2.1, a55: 2.5, a65: 2.7, a75: 8.4 },
+  16: { total: 3.9, a16: 1.8, a25: 2.8, a35: 2.7, a45: 3.2, a55: 3.5, a65: 4.3, a75: 10.5 },
+  20: { total: 6.8, a16: 3.6, a25: 4.4, a35: 6.3, a45: 5.3, a55: 5.7, a65: 9.3, a75: 16.0 },
+  24: { total: 8.0, a16: 3.6, a25: 5.1, a35: 7.4, a45: 6.7, a55: 7.0, a65: 10.1, a75: 18.9 },
+  28: { total: 9.5, a16: 4.0, a25: 6.2, a35: 7.9, a45: 7.6, a55: 10.5, a65: 10.4, a75: 22.7 },
+  32: { total: 11.3, a16: 5.8, a25: 7.7, a35: 9.5, a45: 9.0, a55: 11.3, a65: 12.5, a75: 27.7 }, // a65 repaired: see TABLE_2_ERRATA
+  36: { total: 12.9, a16: 6.7, a25: 8.5, a35: 10.9, a45: 9.5, a55: 12.7, a65: 16.0, a75: 31.1 },
+  40: { total: 15.7, a16: 9.3, a25: 9.8, a35: 12.5, a45: 12.0, a55: 15.6, a65: 20.2, a75: 36.1 },
+  44: { total: 18.4, a16: 12.0, a25: 11.3, a35: 14.7, a45: 14.8, a55: 18.7, a65: 23.1, a75: 40.3 },
+  48: { total: 21.3, a16: 15.6, a25: 14.1, a35: 18.0, a45: 17.3, a55: 20.7, a65: 27.4, a75: 42.4 },
+  52: { total: 24.0, a16: 17.3, a25: 15.4, a35: 21.5, a45: 19.6, a55: 23.4, a65: 29.3, a75: 48.7 },
+  56: { total: 27.2, a16: 22.2, a25: 17.5, a35: 24.0, a45: 24.0, a55: 26.7, a65: 31.4, a75: 52.5 },
+  60: { total: 32.4, a16: 28.0, a25: 20.3, a35: 28.6, a45: 29.8, a55: 32.4, a65: 37.0, a75: 59.7 },
+  64: { total: 36.0, a16: 30.2, a25: 22.9, a35: 33.0, a45: 32.6, a55: 36.6, a65: 41.0, a75: 64.7 },
+  68: { total: 42.4, a16: 34.2, a25: 28.5, a35: 38.4, a45: 39.3, a55: 44.4, a65: 48.4, a75: 71.4 },
+  72: { total: 49.5, a16: 40.4, a25: 33.9, a35: 46.3, a45: 46.0, a55: 53.0, a65: 56.9, a75: 75.6 },
+  76: { total: 57.5, a16: 47.1, a25: 41.6, a35: 52.3, a45: 56.1, a55: 63.2, a65: 65.7, a75: 78.6 }, // a65 repaired: see TABLE_2_ERRATA
+  80: { total: 77.7, a16: 63.1, a25: 68.1, a35: 76.3, a45: 79.7, a55: 81.9, a65: 81.6, a75: 91.2 }, // a55 repaired: see TABLE_2_ERRATA
+  84: { total: 82.1, a16: 71.6, a25: 73.5, a35: 80.9, a45: 83.1, a55: 86.4, a65: 85.6, a75: 91.6 },
+  88: { total: 86.9, a16: 81.8, a25: 79.2, a35: 84.7, a45: 87.5, a55: 90.8, a65: 89.4, a75: 94.5 },
+  92: { total: 90.5, a16: 86.2, a25: 86.6, a35: 88.6, a45: 91.5, a55: 93.4, a65: 91.5, a75: 95.0 },
+  96: { total: 92.0, a16: 87.1, a25: 87.4, a35: 90.5, a45: 93.3, a55: 95.1, a65: 93.6, a75: 95.8 },
+  100: { total: 99.9, a16: 99.9, a25: 99.9, a35: 99.9, a45: 99.9, a55: 99.9, a65: 99.9, a75: 99.9 }
+});
+
+// Maps an age onto the SOURCE'S OWN band keys. `total` is the paper's own
+// pooled column and is a first-class honest fallback, not a blank — same rule
+// as the `unmeasured` status in criteria.js. Under-16 cannot occur (the app's
+// minimum age is 18) but is handled rather than assumed away.
+export function who5AgeBand(age) {
+  const n = Number(age);
+  if (!Number.isFinite(n) || n < 16) return "total";
+  if (n < 25) return "a16";
+  if (n < 35) return "a25";
+  if (n < 45) return "a35";
+  if (n < 55) return "a45";
+  if (n < 65) return "a55";
+  if (n < 75) return "a65";
+  return "a75";
+}
+
+// Population labels as a map of LITERAL t() calls. A t(variable) is invisible
+// to tests/i18n-coverage.test.mjs and would ship untranslated — the same rule
+// views/methodology.js:60-69 follows.
+const WHO5_POPULATION_LABELS = () => ({
+  total: t("adults in a German community sample"),
+  a16: t("German adults aged 16-24"),
+  a25: t("German adults aged 25-34"),
+  a35: t("German adults aged 35-44"),
+  a45: t("German adults aged 45-54"),
+  a55: t("German adults aged 55-64"),
+  a65: t("German adults aged 65-74"),
+  a75: t("German adults aged 75 and over")
+});
 
 // --- MENTAL: WHO-5 vs community norms ---
-function mentalBenchmark(baseline) {
+//
+// Takes `profile` for the user's age. Until v41 this ranked the score with
+// normalCdf(score100, 67.56, 22.96), which assumed a normal distribution the
+// WHO-5 does not have (the same paper reports Skew = -0.90). At score 68 that
+// returned the ~51st percentile where the source's own pooled column says 42.4
+// — an ~8-point error in the middle of the range, where most users sit. The
+// table lookup removes that error and adds the age band on top of it.
+function mentalBenchmark(profile, baseline) {
   if (!baseline || !Number.isFinite(baseline.who5)) return null;
-  const score100 = baseline.who5 * 4; // raw 0-25 -> 0-100
+  // Snap to the instrument's own range before indexing. A WHO-5 sum is an
+  // integer 0-25 by construction, so this is a no-op for every score the app
+  // can produce — but a hand-edited import carrying 17.5 or 99 would otherwise
+  // miss the table and throw, taking the whole dashboard down with it. A
+  // formula degraded quietly here; a lookup does not, so it is guarded.
+  const raw = Math.min(25, Math.max(0, Math.round(baseline.who5)));
+  const score100 = raw * 4; // 0-25 -> 0-100, an exact table row
+  const band = who5AgeBand((profile || {}).age);
+  const row = WHO5_PERCENTILE_TABLE[score100];
   const notes = [];
   if (Number.isFinite(baseline.st5)) {
-    const band = baseline.st5 <= 4 ? "no stress problem" : baseline.st5 <= 6 ? "possible stress problem" : "stress problem";
-    notes.push(tp('ST-5 stress score {n}/15 — "{band}" band on the Thai DMH scale.', { n: baseline.st5, band: t(band) }));
+    const stress = baseline.st5 <= 4 ? "no stress problem" : baseline.st5 <= 6 ? "possible stress problem" : "stress problem";
+    notes.push(tp('ST-5 stress score {n}/15 — "{band}" band on the Thai DMH scale.', { n: baseline.st5, band: t(stress) }));
   }
-  notes.push(t("Percentile is against a German WHO-5 community sample — no representative Thai WHO-5 norm is published, so read it as indicative."));
+  notes.push(band === "total"
+    ? t("Percentile is read straight from a published WHO-5 percentile table for a German community sample — no representative Thai WHO-5 norm is published, so read it as indicative.")
+    : t("Percentile is read straight from a published WHO-5 percentile table for German adults in your own age band — no representative Thai WHO-5 norm is published, so read it as indicative."));
   return {
-    percentile: toPercentile(normalCdf(score100, 67.56, 22.96)),
-    method: "distribution",
-    population: t("adults in a German community sample"),
+    // Take the cell verbatim. Do not convert it to a mid-percentile rank, do
+    // not average adjacent rows, do not adjust for the cumulative-vs-rank
+    // convention: any such adjustment would make this project the source.
+    // clampPercentile, not toPercentile: the cell is already on 0-100, and a
+    // /100 * 100 round-trip loses the half (28.5 -> 28.4999… -> 28).
+    percentile: clampPercentile(row[band]),
+    method: "norms",
+    population: WHO5_POPULATION_LABELS()[band],
     summary: tp("WHO-5 well-being {score}/100 vs general-population norms", { score: score100 }),
     notes,
     sources: [SOURCES.who5Norms, SOURCES.st5Dmh]
@@ -355,11 +520,22 @@ function mentalBenchmark(baseline) {
 // are normed on people a generation older than this app's users: UCLA-3 on the
 // US Health and Retirement Study (ages 57-85) and LSNS-6 on European older
 // adults. Ranking a working-age Thai adult against either is not a rough
-// approximation — the direction of the error is not even known. Loneliness is
-// U-shaped across the lifespan, so the UCLA norm probably makes users look
-// LONELIER than they are, while working-age people carry workplace ties the
-// LSNS norm never counted, which probably makes them look BETTER connected.
-// Two unquantified biases pointing opposite ways is not a percentile.
+// approximation — the population and the response scale are both wrong, and
+// that objection stands on its own.
+//
+// An earlier version of this comment argued the DIRECTION of the UCLA bias from
+// loneliness being "U-shaped across the lifespan". That claim is false and was
+// removed in v41. Two independent Meta-Gallup datasets contradict it: the 2022
+// seven-country pilot (Brazil, Egypt, France, India, Indonesia, Mexico, US;
+// UCLA-3 on a 4-point scale) found NO notable age relationship in Egypt,
+// France, India or Mexico, and where an effect existed — Brazil, Indonesia, US
+// — the 65+ group was LESS lonely; the 2023 global release (142 countries,
+// single item) reports very/fairly lonely at 27% for ages 19-29 against 17% for
+// 65+. Nothing shows loneliness rising again in old age. The honest statement
+// is that the UCLA norm's direction of error is UNKNOWN, not U-shaped — while
+// working-age people carry workplace ties the LSNS norm never counted, which
+// probably makes them look BETTER connected. An unquantified bias plus an
+// unknown-direction one is not a percentile.
 //
 // What survives is everything that does not depend on a norming sample:
 //   - the raw instrument readings, which the user answered and can act on;
@@ -566,7 +742,9 @@ export function getAllBenchmarks(state) {
   const set = {
     finance: financeBenchmark(profile),
     physical: physicalBenchmark(profile),
-    mental: mentalBenchmark(baseline),
+    // Takes `profile` for the age band its published percentile table is
+    // stratified by, mirroring socialContributionBenchmark below.
+    mental: mentalBenchmark(profile, baseline),
     relationships: relationshipsBenchmark(baseline),
     personalGoals: personalGoalsBenchmark(baseline),
     // These three take `baseline` too: their cited sources publish

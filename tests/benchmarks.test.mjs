@@ -91,7 +91,7 @@ test("getAllBenchmarks returns an entry per aspect with percentile, method, sour
   for (const key of ALL_ASPECTS) {
     const b = all[key];
     assert.ok(b, `${key} should be computable with a full baseline`);
-    assert.ok(["distribution", "threshold", "estimate"].includes(b.method));
+    assert.ok(["norms", "distribution", "threshold", "estimate"].includes(b.method));
     assert.ok(Array.isArray(b.sources) && b.sources.length > 0, `${key} must cite sources`);
     b.sources.forEach(src => assert.match(src.url, /^https:\/\//));
   }
@@ -180,7 +180,11 @@ test("physical benchmark includes a gender-specific BMI note", () => {
 
 test("mental percentile tracks WHO-5 and flags the ST-5 stress band", () => {
   const atMean = getAllBenchmarks(makeState({}, { ...BASELINE, who5: 17 })).mental;
-  assert.ok(Math.abs(atMean.percentile - 50) <= 2, "WHO-5 68/100 is right at the norm mean");
+  // v41: was ~50, from normalCdf(68, 67.56, 22.96). The WHO-5 distribution is
+  // left-skewed (Skew = -0.90 in the same paper), so the normal approximation
+  // was ~8 points high here. 42.4 is the source's own pooled cell at score 68.
+  // PROFILE carries no age, so this is the `total` column by design.
+  assert.equal(atMean.percentile, 42, "WHO-5 68/100 reads straight off the published table");
   const flourishing = getAllBenchmarks(makeState({}, { ...BASELINE, who5: 25 })).mental;
   const struggling = getAllBenchmarks(makeState({}, { ...BASELINE, who5: 5 })).mental;
   assert.ok(flourishing.percentile > atMean.percentile && struggling.percentile < atMean.percentile);

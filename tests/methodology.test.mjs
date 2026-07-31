@@ -23,6 +23,24 @@ globalThis.document = {
 };
 
 const { scoreStability, renderMethodology } = await import("../views/methodology.js");
+const { methodTag } = await import("../views/helpers.js");
+
+// methodTag falls back to `return tags[method] || method`, so a benchmark
+// method with no entry does not render blank — it renders its own raw key.
+// That is a quieter failure than a blank, not a safer one: v41's `norms` would
+// have printed the untranslated word "norms" to Thai users. Every method
+// benchmarks.js can emit must resolve to a real label.
+test("every benchmark method has a label, and norms is not just distribution", () => {
+  // `estimate` is excluded from the raw-key check because its English label IS
+  // the word "estimate" — it is mapped, it just maps to itself in this
+  // language. Its Thai coverage is enforced by tests/i18n-coverage.test.mjs.
+  for (const m of ["norms", "distribution", "threshold"]) {
+    assert.notEqual(methodTag(m), m, `method "${m}" renders its raw key instead of a label`);
+  }
+  assert.equal(methodTag("estimate"), "estimate", "still mapped, just to itself in English");
+  assert.notEqual(methodTag("norms"), methodTag("distribution"),
+    "a table lookup and a normal approximation must not claim to be the same thing");
+});
 
 test("scoreStability is null without check-ins and averages absolute shifts with them", () => {
   assert.equal(scoreStability(null), null);
@@ -82,6 +100,23 @@ test("the methodology page names the reference sample behind every comparison", 
   // The unranked row is visually and semantically distinct.
   assert.match(html, /provenance-unranked/, "the unranked row is marked, not styled like the rest");
   assert.match(html, /ages 57-85/, "the wrong-population problem is stated with the actual age band");
+});
+
+// v41. The mental row is now the only one read out of a published percentile
+// table, and the only one stratified by the user's age — but the sample is
+// still German. The honest-labelling constraint on this release is that better
+// precision must not be allowed to read as better relevance, so both halves are
+// pinned: the table/age-band claim AND the admission that it changes nothing
+// about the population mismatch.
+test("the mental row names the age-banded table without overselling it", () => {
+  renderMethodology("main-view", { checkins: [] });
+  const html = captured.html;
+  assert.match(html, /Kliem et al\. 2025, Table 2/, "the table the percentile is read from is named");
+  assert.match(html, /Germany · adults, by age band/, "the row says the comparison is age-stratified");
+  assert.match(html, /Ranked from a published table/, "the claim is distinguished from a fitted rank");
+  assert.match(html, /no more relevant to life in Thailand/,
+    "precision is not allowed to pass for relevance");
+  assert.match(html, /Nothing is interpolated/, "the exact-row property is stated");
 });
 
 test("the methodology page states that no representative Thai norm exists", () => {

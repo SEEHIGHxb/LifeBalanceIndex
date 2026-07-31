@@ -405,6 +405,7 @@ export const TH = {
   "Aspect Scores": "คะแนนรายด้าน",
   "Open {aspect} details": "เปิดรายละเอียดด้าน{aspect}",
   "vs published norms": "เทียบเกณฑ์ที่ตีพิมพ์",
+  "vs a published percentile table": "เทียบตารางเปอร์เซ็นไทล์ที่ตีพิมพ์",
   "vs participation rates": "เทียบอัตราการมีส่วนร่วม",
   "estimate": "ค่าประมาณ",
   "Benchmark sources & methodology": "แหล่งอ้างอิงและวิธีการเทียบ",
@@ -656,8 +657,10 @@ export const TH = {
   "possible stress problem": "อาจมีปัญหาความเครียด",
   "stress problem": "มีปัญหาความเครียด",
   "WHO-5 well-being {score}/100 vs general-population norms": "สุขภาวะ WHO-5 {score}/100 เทียบเกณฑ์ประชากรทั่วไป",
-  "Percentile is against a German WHO-5 community sample — no representative Thai WHO-5 norm is published, so read it as indicative.":
-    "เปอร์เซ็นไทล์เทียบกับกลุ่มตัวอย่างชุมชนเยอรมัน WHO-5 — ยังไม่มีเกณฑ์ WHO-5 ของไทยที่เป็นตัวแทน จึงควรถือเป็นค่าชี้แนวโน้มเท่านั้น",
+  "Percentile is read straight from a published WHO-5 percentile table for a German community sample — no representative Thai WHO-5 norm is published, so read it as indicative.":
+    "เปอร์เซ็นไทล์อ่านตรงจากตารางเปอร์เซ็นไทล์ WHO-5 ที่ตีพิมพ์ของกลุ่มตัวอย่างชุมชนชาวเยอรมัน — ยังไม่มีเกณฑ์ WHO-5 ของไทยที่เป็นตัวแทน จึงควรถือเป็นค่าชี้แนวโน้มเท่านั้น",
+  "Percentile is read straight from a published WHO-5 percentile table for German adults in your own age band — no representative Thai WHO-5 norm is published, so read it as indicative.":
+    "เปอร์เซ็นไทล์อ่านตรงจากตารางเปอร์เซ็นไทล์ WHO-5 ที่ตีพิมพ์ ของผู้ใหญ่ชาวเยอรมันในช่วงอายุเดียวกับคุณ — ยังไม่มีเกณฑ์ WHO-5 ของไทยที่เป็นตัวแทน จึงควรถือเป็นค่าชี้แนวโน้มเท่านั้น",
   "Deepen my survey scores": "เพิ่มความแม่นยำของคะแนนแบบสอบถาม",
   "LSNS-6 score {n}/30 is under the social-isolation cutoff of 12.": "คะแนน LSNS-6 {n}/30 ต่ำกว่าจุดตัดภาวะโดดเดี่ยวทางสังคมที่ 12",
   "LSNS-6 score {n}/30 is above the social-isolation cutoff of 12.": "คะแนน LSNS-6 {n}/30 สูงกว่าจุดตัดภาวะโดดเดี่ยวทางสังคมที่ 12",
@@ -669,6 +672,8 @@ export const TH = {
   "volunteers — inside the 19% of Thais who volunteer": "ทำงานอาสา — อยู่ในกลุ่ม 19% ของคนไทยที่ทำงานอาสา",
   "donates — inside the 52% of Thais who gave money": "บริจาค — อยู่ในกลุ่ม 52% ของคนไทยที่บริจาคเงิน",
   "no regular giving yet — 52% of Thais donated last year": "ยังไม่มีการให้เป็นประจำ — ปีที่แล้ว 52% ของคนไทยบริจาค",
+  "Mental well-being is ranked differently from the rest, and better. Its study publishes a full percentile table broken down by age band, so your standing is looked up in that table directly rather than estimated from an average and a spread — and it is read from the row for people your own age, because the same well-being score is common at 70 and uncommon at 30. Nothing is interpolated: every score this app can produce is a printed row. The sample is still German, and being compared with Germans your age is more precise but no more relevant to life in Thailand — that limitation has not gone away.":
+    "ด้านสุขภาพจิตจัดอันดับด้วยวิธีที่ต่างจากด้านอื่น และดีกว่า งานวิจัยที่ใช้อ้างอิงเผยแพร่ตารางเปอร์เซ็นไทล์ฉบับเต็มที่แยกตามช่วงอายุ อันดับของคุณจึงมาจากการเปิดดูในตารางนั้นโดยตรง แทนที่จะประมาณจากค่าเฉลี่ยและค่าการกระจาย และอ่านจากแถวของคนที่อายุเท่ากับคุณ เพราะคะแนนความอยู่ดีมีสุขระดับเดียวกันเป็นเรื่องปกติเมื่ออายุ 70 แต่พบไม่บ่อยเมื่ออายุ 30 ไม่มีการประมาณค่าระหว่างช่วงใด ๆ ทั้งสิ้น เพราะทุกคะแนนที่แอปนี้คำนวณได้ตรงกับแถวที่พิมพ์ไว้พอดี อย่างไรก็ตามกลุ่มตัวอย่างยังเป็นชาวเยอรมัน การถูกเทียบกับชาวเยอรมันวัยเดียวกันแม่นยำขึ้นก็จริง แต่ไม่ได้เกี่ยวข้องกับชีวิตในประเทศไทยมากขึ้นแต่อย่างใด — ข้อจำกัดนั้นยังคงอยู่",
   "Three aspects — social contribution, environment and humanity's future — have no published distribution to sit on, because the sources publish participation rates and averages (“52% of Thais donated money”) rather than a curve. Their percentile is therefore built in two stages: the cited rate decides which band you are in, and your own answers decide where inside that band you sit. The second stage can never move you across a boundary the first stage set — the strongest possible non-donor still ranks below the weakest donor. This is what lets those standings respond to everything you answered instead of to a single yes/no field, while leaving the published claim exactly as published. Where an aspect's questionnaire has not been answered, the percentile falls back to the plain participation placement.":
     "สามด้าน — การมีส่วนร่วมทางสังคม สิ่งแวดล้อม และอนาคตของมนุษยชาติ — ไม่มีการกระจายตัวของประชากรที่เผยแพร่ให้อ้างอิง เพราะแหล่งข้อมูลเผยแพร่เป็นอัตราการมีส่วนร่วมและค่าเฉลี่ย (“คนไทย 52% บริจาคเงิน”) ไม่ใช่เส้นการกระจายตัว เปอร์เซ็นไทล์ของสามด้านนี้จึงคำนวณเป็นสองขั้น: อัตราที่มีการอ้างอิงเป็นตัวกำหนดว่าคุณอยู่ในช่วงใด และคำตอบของคุณเองเป็นตัวกำหนดตำแหน่งภายในช่วงนั้น ขั้นที่สองไม่มีทางทำให้คุณข้ามเส้นแบ่งที่ขั้นแรกกำหนดไว้ — คนที่ไม่บริจาคแม้จะทำได้ดีที่สุดก็ยังอยู่ต่ำกว่าคนที่บริจาคน้อยที่สุด นี่คือสิ่งที่ทำให้อันดับของสามด้านนี้ตอบสนองต่อทุกคำตอบของคุณ แทนที่จะขึ้นกับช่องใช่/ไม่ใช่เพียงช่องเดียว โดยที่ข้อมูลที่มีการเผยแพร่ยังคงเดิมทุกประการ หากยังไม่ได้ตอบแบบสอบถามของด้านนั้น เปอร์เซ็นไทล์จะย้อนกลับไปใช้การจัดตำแหน่งตามอัตราการมีส่วนร่วมเพียงอย่างเดียว",
   "The band comes from published participation data; where you sit inside it is this app's own composite of your answers, and can never move you into a different band.":
@@ -1186,6 +1191,13 @@ export const TH = {
   "Bangkok workers": "แรงงานในกรุงเทพฯ",
   "Thai adults": "ผู้ใหญ่ชาวไทย",
   "adults in a German community sample": "ผู้ใหญ่ในกลุ่มตัวอย่างชุมชนชาวเยอรมัน",
+  "German adults aged 16-24": "ผู้ใหญ่ชาวเยอรมันอายุ 16-24 ปี",
+  "German adults aged 25-34": "ผู้ใหญ่ชาวเยอรมันอายุ 25-34 ปี",
+  "German adults aged 35-44": "ผู้ใหญ่ชาวเยอรมันอายุ 35-44 ปี",
+  "German adults aged 45-54": "ผู้ใหญ่ชาวเยอรมันอายุ 45-54 ปี",
+  "German adults aged 55-64": "ผู้ใหญ่ชาวเยอรมันอายุ 55-64 ปี",
+  "German adults aged 65-74": "ผู้ใหญ่ชาวเยอรมันอายุ 65-74 ปี",
+  "German adults aged 75 and over": "ผู้ใหญ่ชาวเยอรมันอายุ 75 ปีขึ้นไป",
   "adults in the 25-country GSE norms": "ผู้ใหญ่ในเกณฑ์อ้างอิง GSE จาก 25 ประเทศ",
   "people like you": "คนที่คล้ายคุณ",
   "Ahead of about {pct}% of {population}": "นำหน้าประมาณ {pct}% ของ{population}",
@@ -1211,11 +1223,13 @@ export const TH = {
   "Sample": "กลุ่มตัวอย่าง",
   "What is claimed": "สิ่งที่แอปอ้าง",
   "Ranked": "จัดอันดับ",
+  "Ranked from a published table": "จัดอันดับจากตารางที่ตีพิมพ์",
   "Band placement": "จัดช่วงตามอัตราการมีส่วนร่วม",
   "Thailand · working age": "ไทย · วัยทำงาน",
   "Thailand · adults": "ไทย · ผู้ใหญ่",
   "Thailand · workers": "ไทย · แรงงาน",
   "Germany · adults": "เยอรมนี · ผู้ใหญ่",
+  "Germany · adults, by age band": "เยอรมนี · ผู้ใหญ่ แยกตามช่วงอายุ",
   "25 countries · adults": "25 ประเทศ · ผู้ใหญ่",
   "Wrong age band for this app's users": "ช่วงอายุไม่ตรงกับผู้ใช้แอปนี้",
   "A percentile is a claim about where you sit among a group of people — so the group matters as much as the number. A literature search in July 2026 found no representative Thai general-adult norm published for any of the questionnaires here. Every reference sample is therefore either foreign or non-representative, and this table says which is which instead of leaving you to assume the comparison is with Thai people your age.":

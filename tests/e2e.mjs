@@ -8,6 +8,10 @@
 //   1. express onboarding  -> dashboard renders with a real baseline + radar average
 //   2. weekly review       -> measured quantities land, pledges grade, points pay
 //   3. EN -> TH toggle     -> persists across a full reload
+//   4. share sheet         -> a real 1080x1920 PNG comes out and the controls
+//                             actually change it. Flow 4 runs in Thai, because
+//                             flow 3 leaves the app there, so it asserts on
+//                             pixels and storage and never on English strings.
 //
 // Usage: node tests/e2e.mjs <base-url>
 import { chromium } from "playwright";
@@ -139,10 +143,73 @@ try {
   problems.push(`flow3 (language persistence): ${err.message}`);
 }
 
+// --- FLOW 4: the share sheet produces a real story image ---
+// Asserts on the exported pixels rather than on any string, both because the
+// app is in Thai by this point and because "the PNG is real and responds to
+// the controls" is the thing that would actually break.
+try {
+  const dataUrl = () => page.evaluate(() =>
+    document.getElementById("share-preview").toDataURL("image/png"));
+
+  // Earlier flows leave the app on another route, and flow 3's reload preserves
+  // the hash — so come back to the dashboard before looking for its controls.
+  await page.click("#tab-dashboard");
+  await page.waitForSelector("#btn-share-radar", { timeout: 10000 });
+  await page.click("#btn-share-radar");
+  await page.waitForSelector("#share-preview", { timeout: 10000 });
+
+  const dims = await page.evaluate(() => {
+    const c = document.getElementById("share-preview");
+    return { w: c.width, h: c.height };
+  });
+  if (dims.w !== 1080 || dims.h !== 1920) {
+    problems.push(`flow4: preview is ${dims.w}x${dims.h}, expected 1080x1920`);
+  }
+
+  // A blank canvas still encodes to a valid PNG, so size is the cheap proof
+  // that something was actually painted onto it.
+  const bytes = await page.evaluate(async () => {
+    const c = document.getElementById("share-preview");
+    const blob = await new Promise(r => c.toBlob(r, "image/png"));
+    return blob ? blob.size : 0;
+  });
+  if (bytes < 5000) problems.push(`flow4: exported PNG is only ${bytes} bytes — likely blank`);
+
+  // Each control must visibly change the image. waitForFunction doubles as the
+  // wait and the assertion, so a control that silently does nothing times out.
+  const beforeDetail = await dataUrl();
+  await page.click('.share-toggle[data-value="full"]');
+  await page.waitForFunction(
+    prev => document.getElementById("share-preview").toDataURL("image/png") !== prev,
+    beforeDetail, { timeout: 5000 }
+  );
+
+  const beforeTheme = await dataUrl();
+  await page.click('.share-toggle[data-value="navy"]');
+  await page.waitForFunction(
+    prev => document.getElementById("share-preview").toDataURL("image/png") !== prev,
+    beforeTheme, { timeout: 5000 }
+  );
+
+  // Preferences live outside the app's own save, so an erase cannot clear them
+  // and no schema migration was needed to add them.
+  const prefs = await page.evaluate(() => localStorage.getItem("lifequest_share_prefs"));
+  const parsed = JSON.parse(prefs || "{}");
+  if (parsed.detail !== "full" || parsed.theme !== "navy") {
+    problems.push(`flow4: share prefs stored ${prefs}, expected detail=full theme=navy`);
+  }
+
+  await page.click("#share-close");
+  const stillOpen = await page.evaluate(() => !!document.getElementById("share-preview"));
+  if (stillOpen) problems.push("flow4: the share sheet did not close");
+} catch (err) {
+  problems.push(`flow4 (share sheet): ${err.message}`);
+}
+
 await browser.close();
 
 if (problems.length) {
   console.error("E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("e2e passed: express onboarding, the weekly review, and TH persistence all work");
+console.log("e2e passed: onboarding, the weekly review, TH persistence, and the share card all work");

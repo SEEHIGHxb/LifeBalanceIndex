@@ -2,7 +2,7 @@
 
 import { t, tp } from "./i18n.js";
 
-const ASPECT_LABELS = {
+export const ASPECT_LABELS = {
   finance: "Finance",
   physical: "Physical",
   mental: "Mental",
@@ -13,7 +13,12 @@ const ASPECT_LABELS = {
   humanityFuture: "Humanity's Future"
 };
 
-const ASPECT_KEYS = [
+// The axis ORDER of the radar, clockwise from the top. Exported as RADAR_KEYS
+// (aliased locally to ASPECT_KEYS, which the drawing code below already used)
+// so story-card.js draws its eight axes in provably the same order as the
+// on-screen chart — two independent copies of this list could silently drift
+// and produce a shared card whose shape did not match the dashboard.
+export const RADAR_KEYS = [
   "finance",
   "physical",
   "mental",
@@ -23,6 +28,30 @@ const ASPECT_KEYS = [
   "environment",
   "humanityFuture"
 ];
+
+const ASPECT_KEYS = RADAR_KEYS;
+
+// Vertex coordinates for one radar polygon: eight points, clockwise from the
+// top, each pulled in from the rim in proportion to its 0-100 value.
+//
+// Pure and rendering-agnostic on purpose. The SVG chart below and the canvas
+// story card consume the identical numbers, so the two renderings cannot
+// disagree about where a score sits. Values outside 0-100 are clamped rather
+// than allowed to escape the rim, and a missing value reads as 0.
+export function radarPoints(values, keys, cx, cy, radius) {
+  return keys.map((key, i) => {
+    const angle = (i * Math.PI) / 4 - Math.PI / 2;
+    const raw = Number((values || {})[key]);
+    const value = Math.max(0, Math.min(100, Number.isFinite(raw) ? raw : 0));
+    return {
+      key,
+      value,
+      angle,
+      x: cx + Math.cos(angle) * radius * (value / 100),
+      y: cy + Math.sin(angle) * radius * (value / 100)
+    };
+  });
+}
 
 // Line chart of one aspect's weekly snapshots (0-100 scale).
 export function renderTrendChart(containerId, trend) {
@@ -219,14 +248,8 @@ export function renderRadarChart(containerId, aspects, options = {}) {
   // 3. Draw the population-average reference polygon FIRST (dashed, unfilled,
   // no vertex dots) so the user's polygon layers on top of it.
   if (average) {
-    const avgPoints = [];
-    ASPECT_KEYS.forEach((key, i) => {
-      const angle = (i * Math.PI) / 4 - Math.PI / 2;
-      const value = average[key] || 0;
-      const x = cx + Math.cos(angle) * radius * (value / 100);
-      const y = cy + Math.sin(angle) * radius * (value / 100);
-      avgPoints.push(`${x},${y}`);
-    });
+    const avgPoints = radarPoints(average, ASPECT_KEYS, cx, cy, radius)
+      .map(pt => `${pt.x},${pt.y}`);
     const avgPolygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
     avgPolygon.setAttribute("points", avgPoints.join(" "));
     avgPolygon.setAttribute("fill", "none");
@@ -237,14 +260,8 @@ export function renderRadarChart(containerId, aspects, options = {}) {
   }
 
   // 4. Draw User Score Polygon
-  const scorePoints = [];
-  ASPECT_KEYS.forEach((key, i) => {
-    const angle = (i * Math.PI) / 4 - Math.PI / 2;
-    const score = aspects[key] || 0;
-    const x = cx + Math.cos(angle) * radius * (score / 100);
-    const y = cy + Math.sin(angle) * radius * (score / 100);
-    scorePoints.push(`${x},${y}`);
-  });
+  const vertices = radarPoints(aspects, ASPECT_KEYS, cx, cy, radius);
+  const scorePoints = vertices.map(pt => `${pt.x},${pt.y}`);
 
   const scorePolygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
   scorePolygon.setAttribute("points", scorePoints.join(" "));
@@ -254,12 +271,7 @@ export function renderRadarChart(containerId, aspects, options = {}) {
   svg.appendChild(scorePolygon);
 
   // 5. Draw Score Points (dots at vertices)
-  ASPECT_KEYS.forEach((key, i) => {
-    const angle = (i * Math.PI) / 4 - Math.PI / 2;
-    const score = aspects[key] || 0;
-    const x = cx + Math.cos(angle) * radius * (score / 100);
-    const y = cy + Math.sin(angle) * radius * (score / 100);
-
+  vertices.forEach(({ value: score, x, y }) => {
     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     circle.setAttribute("cx", x);
     circle.setAttribute("cy", y);

@@ -663,6 +663,114 @@ header {
   color: var(--color-navy);
 }
 
+/* Share sheet. `.card-header` is already a space-between flex row, so the
+   trigger needs no wrapper of its own. */
+.share-open {
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--color-gold);
+  background: none;
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius);
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+.share-open:hover {
+  background: var(--color-gold-glow);
+}
+
+/* The sheet is taller than the other popups (preview + two control rows), so
+   it scrolls internally rather than pushing its buttons off a short screen. */
+.share-card {
+  max-width: 420px;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+/* The canvas carries a 1080x1920 backing store; these bounds only scale how it
+   is displayed, and width/height auto keeps the 9:16 ratio intact. */
+.share-preview {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 42vh;
+  margin: 0 auto 16px;
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius);
+}
+
+.share-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.share-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.share-option-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.share-toggle-set {
+  display: flex;
+  gap: 4px;
+}
+
+.share-toggle {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  padding: 5px 10px;
+  border: 1px solid var(--color-card-border);
+  background: #ffffff;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.share-toggle[aria-pressed="true"] {
+  background: var(--color-navy);
+  border-color: var(--color-navy);
+  color: #ffffff;
+}
+
+.share-note,
+.share-care {
+  font-size: 0.76rem;
+  line-height: 1.5;
+  text-align: left;
+  margin-bottom: 12px;
+}
+
+.share-note {
+  color: var(--color-text-secondary);
+}
+
+.share-care {
+  color: var(--color-text-primary);
+  background: var(--color-gold-glow);
+  border-left: 3px solid var(--color-gold);
+  padding: 8px 10px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.share-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 /* Dashboard aspect rows (links to aspect pages) */
 .aspect-row {
   display: block;

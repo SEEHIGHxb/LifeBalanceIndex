@@ -266,3 +266,32 @@ test("the guideline-checks card is empty for an aspect with no criteria", async 
   assert.equal(criteriaCard([]), "");
   assert.equal(criteriaCard(null), "");
 });
+
+test("the share sheet routes user data to the canvas, never into its markup", async () => {
+  // The profile name is the only free text the share flow touches, and it is
+  // drawn with canvas fillText — which cannot execute markup, so there is no
+  // sink to escape. That safety holds only while the name stays OUT of the
+  // sheet's HTML template, so the invariant is pinned here rather than left to
+  // chance: no `card.`/`data.` value may be interpolated into the string handed
+  // to openDialog. Adding a "Sharing as {name}" line later would fail this
+  // test, which is exactly the warning intended.
+  const { readFileSync } = await import("node:fs");
+  const { fileURLToPath } = await import("node:url");
+  const { dirname, join } = await import("node:path");
+  const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+  const src = readFileSync(join(root, "views/share.js"), "utf8");
+
+  const start = src.indexOf("html: `");
+  const end = src.indexOf("</div>`");
+  assert.ok(start > -1 && end > start, "could not locate the share sheet template");
+  const template = src.slice(start, end);
+
+  const interpolations = template.match(/\$\{[^}]*\}/g) || [];
+  assert.ok(interpolations.length > 0, "expected the template to interpolate something");
+  for (const expr of interpolations) {
+    assert.ok(
+      !/\b(card|data)\s*[.[]/.test(expr),
+      `share sheet markup interpolates user data: ${expr}`
+    );
+  }
+});

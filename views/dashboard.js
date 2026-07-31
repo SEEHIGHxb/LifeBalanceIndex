@@ -8,8 +8,9 @@ import { AVERAGE_ASPECT_SCORES } from "../averages.js";
 import { getAllBenchmarks, collectSources } from "../benchmarks.js";
 import { getAspectConfidence, ASPECT_KEYS, isAspectDeepVerified } from "../aspects.js";
 import { getTopSuggestions, getMentalHealthNotice } from "../suggestions.js";
-import { balanceIndex, balanceBand, weakestAspect, gradeAllAspects, aspectsAtOrAboveAverage } from "../grades.js";
+import { balanceIndex, balanceBand, weakestAspect, gradeAllAspects, aspectsAtOrAboveAverage, isBottomGrade } from "../grades.js";
 import { seasonPace } from "../season.js";
+import { openShareSheet } from "./share.js";
 import { t, tp, dateLocale } from "../i18n.js";
 import {
   escapeHtml, aspectLabel, confidenceBadge, benchmarkStanding,
@@ -135,7 +136,9 @@ export function renderDashboard(containerId, state, onExportBackup) {
         </div>
 
         <div class="card">
-          <h4 class="card-header">${t("Aspect Radar")}</h4>
+          <h4 class="card-header">${t("Aspect Radar")}
+            <button type="button" id="btn-share-radar" class="share-open">${t("Share")}</button>
+          </h4>
           <div id="radar-chart-container"></div>
         </div>
 
@@ -225,4 +228,21 @@ export function renderDashboard(containerId, state, onExportBackup) {
     document.getElementById("backup-nudge-export")
       ?.addEventListener("click", onExportBackup);
   }
+
+  // The share card is handed the readings this render already computed, so it
+  // cannot disagree with the page behind it. A bottom-decile mental grade adds
+  // one informational line to the sheet — it never blocks the share and never
+  // drops the axis, matching how the app treats that grade elsewhere.
+  document.getElementById("btn-share-radar")?.addEventListener("click", () => {
+    openShareSheet({
+      name: p.name,
+      date: new Date(),
+      aspects: state.aspects,
+      average: AVERAGE_ASPECT_SCORES,
+      index,
+      bandLabel: indexBand.label,
+      standing,
+      grades
+    }, { showMentalNote: isBottomGrade(grades.mental) });
+  });
 }

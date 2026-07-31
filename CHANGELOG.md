@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `43`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `44`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,108 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.11.0] — 2026-07-31 (APP_VERSION 44)
+
+### A story card for the radar — and an honest account of what a website can post
+
+The radar can now be exported as a 1080×1920 image and handed to the system
+share sheet, where Instagram appears alongside everything else.
+
+**What could not be built, and why it is not a shortcoming of the code.** There
+is no one-tap "post to my story" button because no web page can have one. Meta
+requires a native iOS/Android app with a registered Facebook App ID for the
+Stories intent — `instagram-stories://share?source_application=<AppID>` on iOS,
+`com.instagram.share.ADD_TO_STORY` on Android — and its documentation states
+that mobile websites and web apps cannot use it. The sheet therefore says so in
+one line rather than implying otherwise and failing silently on the phone.
+Browsers without file sharing get **Save image** instead of **Share**, detected
+by probing `navigator.canShare({files:[…]})` with a real `File` rather than by
+sniffing for `navigator.share`, which exists in browsers that then reject files.
+
+**Why this is a canvas and not a screenshot of the existing radar.** `chart.js`
+paints SVG whose colors are the `--color-*` custom properties and whose text
+depends on the self-hosted `@font-face` families. Rasterising that SVG through
+an `<img>` strips both — custom properties have no cascade to resolve against
+inside an SVG image document, and the fonts never load there — so the card would
+have come out unstyled and in a fallback face. New `story-card.js` draws on a
+canvas with literal hex transcribed from `index.css`; canvas `fillText` uses
+fonts the page has already loaded, which is what makes Thai render in Sarabun.
+A test greps the module for a CSS custom property and fails if it finds one.
+
+**Composition: the shape, not the number.** The radar is the hero; the Balance
+Index is a caption beneath it. Sharing a *shape against the population average*
+is a different act from broadcasting a rank, and the layout says which one this
+is. Content is confined to y ∈ [250, 1670] — the conservative end of published
+guidance for the story chrome Instagram overlays top and bottom — and a test
+walks every drawn coordinate to enforce it, at both themes and all three detail
+levels.
+
+**The user decides how much is legible.** A three-step control:
+
+| Level | On the card |
+|---|---|
+| Shape only | The outline and the Balance Index. No aspect can be read off it. |
+| Aspect names | Axis labels on; still no numbers. |
+| Everything | Labels, letter grades and 0-100 scores, matching the dashboard. |
+
+Plus a light/dark toggle. Both choices persist in their own localStorage key,
+`lifequest_share_prefs`, kept outside the app's schema for the same reason
+`lifequest_lang` is — a display preference should not force a migration, and
+should survive an erase.
+
+**Duty of care.** When mental sits in the bottom decile (`isBottomGrade`, the
+existing trigger), the sheet adds one line noting the card includes it and
+pointing at "Shape only". It never blocks the share and never drops the axis:
+hiding one spoke would change the shape while still calling it eight aspects.
+
+**Relationships stays honest here too.** In the full detail level an aspect with
+no grade prints no letter — no dash, no "N/A". Relationships is unranked by
+design (v39, v43), and a placeholder would imply a grade exists and was merely
+hidden. A test pins it.
+
+### Changed
+
+- `chart.js`: `radarPoints(values, keys, cx, cy, radius)` extracted as a pure
+  export and now feeds both radar polygons and the vertex dots, replacing three
+  copies of the same angle math. `RADAR_KEYS` and `ASPECT_LABELS` exported so
+  the card draws its axes in provably the same order as the on-screen chart.
+  Out-of-range and non-numeric scores are clamped rather than escaping the rim.
+- `story-card.js`, `views/share.js`: new. `views/dashboard.js`: a Share button
+  in the Aspect Radar header — `.card-header` was already a space-between flex
+  row, so no new layout was needed. `index.css`: a `.share-*` block; no existing
+  selector touched. `sw.js`: `+ ./story-card.js`, `+ ./views/share.js`.
+- `th.js`: 14 keys. The card itself reuses `"Balance Index"`, `"Your scores"`,
+  `"Population average"` and the at-or-above sentence already in the dictionary,
+  so only the sheet's own controls needed new entries.
+- Tests: new `tests/story-card.test.mjs` (13) drives the renderer through a
+  **recording stub context** — no canvas, no browser, no pixel snapshots — so
+  safe-band containment, detail gating, clamping and Thai wrapping are all
+  ordinary assertions. `tests/views-xss.test.mjs` +1 pinning that the sheet's
+  markup interpolates no user data (the name reaches only the canvas, which has
+  no markup sink). `tests/e2e.mjs` gains flow 4, asserting on exported pixels
+  rather than strings because it runs after the suite has switched to Thai.
+
+### Caught during verification (nothing shipped with these)
+
+- **Axis labels ran off the canvas.** At the `full` detail level "Social
+  Contribution  D", "Humanity's Future  C" and "Environment  C" were anchored
+  inside the frame but *drew* past its left edge, so the exported PNG lost their
+  first letters. The unit test had checked each label's anchor point and not the
+  extent of the text drawn from it — the stub now records the drawn extent, and
+  a test walks every string at both themes and all three detail levels. The
+  geometry was retuned against measured widths: the binding constraint turned
+  out to be "Environment  C" on the horizontal axis, not the longer diagonal
+  label, because a horizontal axis reaches the full label ring while a diagonal
+  reaches only 0.707 of it. `fitText` now clamps every label to the room
+  actually available on its side, so no translation can reintroduce this.
+- **`wrapText` dropped text silently.** It now ellipsises the last line whenever
+  it discards content, even when that line happens to fit; otherwise a truncated
+  sentence reads as a complete one.
+
+**Not touched:** `scoring.js`, `grades.js`, `benchmarks.js`, `averages.js`,
+`criteria.js`, `state.js`, schema version. No score, percentile, grade, Balance
+Index or comparison code moves; no migration.
 
 ## [2.10.0] — 2026-07-31 (APP_VERSION 43)
 

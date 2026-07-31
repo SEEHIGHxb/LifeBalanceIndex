@@ -1251,5 +1251,26 @@ export const TH = {
   "That survey is also the clearest evidence that withholding the rank is right rather than merely cautious. It reports the loneliest band by age: 12% of 16-24s score 8 or 9, falling to 5% of 65-74s before ticking back up to 7% at 75 and over. Younger adults are the lonelier group across almost the whole range. So a norm built on 57-to-85-year-olds is not just the wrong sample for a working-age user — it leans the wrong way, and ranking against it would quietly flatter you.":
     "การสำรวจนั้นยังเป็นหลักฐานที่ชัดที่สุดว่าการงดแสดงอันดับเป็นสิ่งที่ถูกต้อง ไม่ใช่แค่ระมัดระวังเกินไป รายงานระบุช่วงที่เหงาที่สุดแยกตามอายุไว้ว่า ผู้มีอายุ 16-24 ปี 12% ได้ 8 หรือ 9 ลดลงเหลือ 5% ในกลุ่มอายุ 65-74 ปี ก่อนจะขยับขึ้นเป็น 7% ในกลุ่มอายุ 75 ปีขึ้นไป คนอายุน้อยกว่าเป็นกลุ่มที่เหงากว่าเกือบตลอดทั้งช่วง ดังนั้นเกณฑ์ที่สร้างจากคนอายุ 57-85 ปี ไม่เพียงเป็นกลุ่มตัวอย่างที่ผิดสำหรับผู้ใช้วัยทำงาน แต่ยังเอียงไปผิดทาง และการจัดอันดับเทียบกับเกณฑ์นั้นจะทำให้ผลของคุณดูดีเกินจริงอย่างเงียบ ๆ",
   "Where a comparison is foreign but the age range fits — the German WHO-5 sample, the 25-country self-efficacy norms — the rank is shown and the sample is named next to it, on the aspect page as well as here. Read those as indicative rather than as your standing among Thai adults.":
-    "กรณีที่กลุ่มเทียบเป็นชาวต่างชาติแต่ช่วงอายุตรงกัน — กลุ่มตัวอย่าง WHO-5 ชาวเยอรมัน และเกณฑ์การรับรู้ความสามารถของตนเองจาก 25 ประเทศ — จะแสดงอันดับพร้อมระบุกลุ่มตัวอย่างกำกับไว้ ทั้งในหน้าด้านนั้นและที่นี่ ให้อ่านผลเหล่านั้นเป็นเพียงตัวชี้บอกคร่าว ๆ ไม่ใช่สถานะของคุณเมื่อเทียบกับผู้ใหญ่ชาวไทย"
+    "กรณีที่กลุ่มเทียบเป็นชาวต่างชาติแต่ช่วงอายุตรงกัน — กลุ่มตัวอย่าง WHO-5 ชาวเยอรมัน และเกณฑ์การรับรู้ความสามารถของตนเองจาก 25 ประเทศ — จะแสดงอันดับพร้อมระบุกลุ่มตัวอย่างกำกับไว้ ทั้งในหน้าด้านนั้นและที่นี่ ให้อ่านผลเหล่านั้นเป็นเพียงตัวชี้บอกคร่าว ๆ ไม่ใช่สถานะของคุณเมื่อเทียบกับผู้ใหญ่ชาวไทย",
+
+  // --- Share sheet (the Instagram-story card) ---
+  // The card itself reuses "Balance Index", "Your scores", "Population
+  // average" and the at-or-above sentence already defined above, so only the
+  // sheet's own controls need new entries here.
+  "Share": "แชร์",
+  "Share your radar": "แชร์เรดาร์ของคุณ",
+  "Preview of your shareable card": "ตัวอย่างการ์ดที่จะแชร์",
+  "Card style": "รูปแบบการ์ด",
+  "Light": "พื้นสว่าง",
+  "Dark": "พื้นเข้ม",
+  "What to show": "แสดงรายละเอียดแค่ไหน",
+  "Shape only": "เฉพาะรูปทรง",
+  "Aspect names": "ใส่ชื่อด้าน",
+  "Everything": "ทั้งหมด",
+  "Save image": "บันทึกรูปภาพ",
+  "Close": "ปิด",
+  "This card shows your mental wellbeing alongside the other seven aspects. Choosing “Shape only” keeps the numbers off it.":
+    "การ์ดนี้แสดงด้านจิตใจของคุณรวมอยู่กับอีกเจ็ดด้าน หากเลือก “เฉพาะรูปทรง” ตัวเลขจะไม่ปรากฏบนการ์ด",
+  "Instagram cannot accept a post directly from a website. Pick Instagram in the share sheet, or save the image and post it from the app.":
+    "อินสตาแกรมไม่รับโพสต์โดยตรงจากเว็บไซต์ กรุณาเลือกอินสตาแกรมในหน้าต่างแชร์ของเครื่อง หรือบันทึกรูปภาพแล้วโพสต์จากแอปโดยตรง"
 };

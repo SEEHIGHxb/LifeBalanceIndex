@@ -69,6 +69,13 @@ set in Sarabun.
 - **Backup**: one-click JSON export / import, on the Profile & Data page
 - **Hash routing** (`#/dashboard`, `#/review`, `#/aspect/<key>`, `#/checkin`, ...) — browser back/forward work
 - **Radar chart**: dependency-free SVG rendering of the 8 aspects
+- **Shareable story card**: exports the radar as a 1080×1920 PNG for Instagram
+  Stories and the like, drawn on a canvas (an SVG rasterised through an `<img>`
+  loses both the CSS custom properties and the self-hosted fonts). You choose
+  light or dark and how much is legible — shape only, shape plus aspect names,
+  or everything including scores and grades — and the sheet is candid that
+  Instagram cannot accept a post directly from a website, so the image goes out
+  through the system share sheet or a download
 - **Side by Side (comparison codes)**: share your `LQ1-...` code with others
   and paste theirs to lay your eight aspects out beside theirs — a code carries
   only a name and the eight aspect scores (no age, no points); no backend, no
@@ -150,5 +157,6 @@ Headings are set in **Source Serif 4**, body text in **Inter**, and Thai in
 | `sw.js` / `manifest.webmanifest` | PWA: offline service worker and install manifest |
 | `surveys.js` | Survey instrument question banks and option scales |
 | `ui.js` | View rendering: onboarding, dashboard, weekly review, pledges, peer comparison |
-| `chart.js` | SVG radar chart renderer |
+| `chart.js` | SVG radar chart renderer, and the shared `radarPoints` geometry |
+| `story-card.js` | Canvas renderer for the 1080×1920 shareable story card |
 | `tests/` | Node test suite for assessment/scoring logic |

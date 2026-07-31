@@ -461,15 +461,25 @@ export function who5AgeBand(age) {
 // Population labels as a map of LITERAL t() calls. A t(variable) is invisible
 // to tests/i18n-coverage.test.mjs and would ship untranslated — the same rule
 // views/methodology.js:60-69 follows.
+//
+// These say "the reference sample", not "German adults" (v42). Naming Germany
+// at the point of the claim was noise: a Thai reader cannot act on it, and it
+// was the loudest word on the card. It is NOT replaced with "general adults" —
+// that would assert a universality this sample does not have, a stronger claim
+// than the one being removed. "The reference sample" is true, neutral, and
+// points at the methodology page, which still names Kliem et al., the German
+// sample and the 25-country GSE pool exactly, under test. Thai-sourced
+// populations stay named ("Thai adults", "Thai workers"): naming Thailand is
+// informative to this app's reader in a way naming Germany is not.
 const WHO5_POPULATION_LABELS = () => ({
-  total: t("adults in a German community sample"),
-  a16: t("German adults aged 16-24"),
-  a25: t("German adults aged 25-34"),
-  a35: t("German adults aged 35-44"),
-  a45: t("German adults aged 45-54"),
-  a55: t("German adults aged 55-64"),
-  a65: t("German adults aged 65-74"),
-  a75: t("German adults aged 75 and over")
+  total: t("adults in the reference sample"),
+  a16: t("adults aged 16-24 in the reference sample"),
+  a25: t("adults aged 25-34 in the reference sample"),
+  a35: t("adults aged 35-44 in the reference sample"),
+  a45: t("adults aged 45-54 in the reference sample"),
+  a55: t("adults aged 55-64 in the reference sample"),
+  a65: t("adults aged 65-74 in the reference sample"),
+  a75: t("adults aged 75 and over in the reference sample")
 });
 
 // --- MENTAL: WHO-5 vs community norms ---
@@ -497,8 +507,8 @@ function mentalBenchmark(profile, baseline) {
     notes.push(tp('ST-5 stress score {n}/15 — "{band}" band on the Thai DMH scale.', { n: baseline.st5, band: t(stress) }));
   }
   notes.push(band === "total"
-    ? t("Percentile is read straight from a published WHO-5 percentile table for a German community sample — no representative Thai WHO-5 norm is published, so read it as indicative.")
-    : t("Percentile is read straight from a published WHO-5 percentile table for German adults in your own age band — no representative Thai WHO-5 norm is published, so read it as indicative."));
+    ? t("Percentile is read straight from a published WHO-5 percentile table — no representative Thai WHO-5 norm is published, so read it as indicative. The methodology page names the sample.")
+    : t("Percentile is read straight from a published WHO-5 percentile table, from the row for your own age band — no representative Thai WHO-5 norm is published, so read it as indicative. The methodology page names the sample."));
   return {
     // Take the cell verbatim. Do not convert it to a mid-percentile rank, do
     // not average adjacent rows, do not adjust for the cumulative-vs-rank
@@ -579,7 +589,7 @@ function personalGoalsBenchmark(baseline) {
       : tp("Grit {g}/5 — the onboarding measure is the perseverance facet only (4 of the 8 Grit-S items), so this is indicative, not an exact match to the ~3.4 reference.", { g: (baseline.grit / 4).toFixed(1) }));
   }
   notes.push(deepGse
-    ? t("Scored from your full 10-item GSE — a direct match to the 25-country norm, no short-form approximation.")
+    ? t("Scored from your full 10-item GSE — a direct match to the published norm, no short-form approximation.")
     : t("Your 6-item GSE is compared per-item against 10-item GSE norms — a short-form approximation, not an exact match."));
   return {
     // Per-item comparison against the GSE-10 norm (29.55/10 items = 2.96,
@@ -587,8 +597,10 @@ function personalGoalsBenchmark(baseline) {
     // form is an approximation.
     percentile: toPercentile(normalCdf(perItem, 2.955, 0.532)),
     method: deepGse ? "distribution" : "estimate",
-    population: t("adults in the 25-country GSE norms"),
-    summary: t("Self-efficacy (GSE) vs 25-country norms, N=19,120"),
+    // See the v42 note on WHO5_POPULATION_LABELS: the board says "the reference
+    // sample", the methodology page still names the 25-country pool and N.
+    population: t("adults in the reference sample"),
+    summary: t("Self-efficacy (GSE) vs published adult norms, N=19,120"),
     notes,
     sources: [SOURCES.gseScholz, SOURCES.gritDuckworth]
   };

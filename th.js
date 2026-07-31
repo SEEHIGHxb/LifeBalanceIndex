@@ -657,14 +657,14 @@ export const TH = {
   "possible stress problem": "อาจมีปัญหาความเครียด",
   "stress problem": "มีปัญหาความเครียด",
   "WHO-5 well-being {score}/100 vs general-population norms": "สุขภาวะ WHO-5 {score}/100 เทียบเกณฑ์ประชากรทั่วไป",
-  "Percentile is read straight from a published WHO-5 percentile table for a German community sample — no representative Thai WHO-5 norm is published, so read it as indicative.":
-    "เปอร์เซ็นไทล์อ่านตรงจากตารางเปอร์เซ็นไทล์ WHO-5 ที่ตีพิมพ์ของกลุ่มตัวอย่างชุมชนชาวเยอรมัน — ยังไม่มีเกณฑ์ WHO-5 ของไทยที่เป็นตัวแทน จึงควรถือเป็นค่าชี้แนวโน้มเท่านั้น",
-  "Percentile is read straight from a published WHO-5 percentile table for German adults in your own age band — no representative Thai WHO-5 norm is published, so read it as indicative.":
-    "เปอร์เซ็นไทล์อ่านตรงจากตารางเปอร์เซ็นไทล์ WHO-5 ที่ตีพิมพ์ ของผู้ใหญ่ชาวเยอรมันในช่วงอายุเดียวกับคุณ — ยังไม่มีเกณฑ์ WHO-5 ของไทยที่เป็นตัวแทน จึงควรถือเป็นค่าชี้แนวโน้มเท่านั้น",
+  "Percentile is read straight from a published WHO-5 percentile table — no representative Thai WHO-5 norm is published, so read it as indicative. The methodology page names the sample.":
+    "เปอร์เซ็นไทล์อ่านตรงจากตารางเปอร์เซ็นไทล์ WHO-5 ที่ตีพิมพ์ — ยังไม่มีเกณฑ์ WHO-5 ของไทยที่เป็นตัวแทน จึงควรถือเป็นค่าชี้แนวโน้มเท่านั้น ดูชื่อกลุ่มตัวอย่างได้ที่หน้าระเบียบวิธี",
+  "Percentile is read straight from a published WHO-5 percentile table, from the row for your own age band — no representative Thai WHO-5 norm is published, so read it as indicative. The methodology page names the sample.":
+    "เปอร์เซ็นไทล์อ่านตรงจากตารางเปอร์เซ็นไทล์ WHO-5 ที่ตีพิมพ์ โดยใช้แถวของช่วงอายุเดียวกับคุณ — ยังไม่มีเกณฑ์ WHO-5 ของไทยที่เป็นตัวแทน จึงควรถือเป็นค่าชี้แนวโน้มเท่านั้น ดูชื่อกลุ่มตัวอย่างได้ที่หน้าระเบียบวิธี",
   "Deepen my survey scores": "เพิ่มความแม่นยำของคะแนนแบบสอบถาม",
   "LSNS-6 score {n}/30 is under the social-isolation cutoff of 12.": "คะแนน LSNS-6 {n}/30 ต่ำกว่าจุดตัดภาวะโดดเดี่ยวทางสังคมที่ 12",
   "LSNS-6 score {n}/30 is above the social-isolation cutoff of 12.": "คะแนน LSNS-6 {n}/30 สูงกว่าจุดตัดภาวะโดดเดี่ยวทางสังคมที่ 12",
-  "Self-efficacy (GSE) vs 25-country norms, N=19,120": "การรับรู้ความสามารถของตนเอง (GSE) เทียบเกณฑ์ 25 ประเทศ N=19,120",
+  "Self-efficacy (GSE) vs published adult norms, N=19,120": "การรับรู้ความสามารถของตนเอง (GSE) เทียบเกณฑ์ผู้ใหญ่ที่ตีพิมพ์ N=19,120",
   "Your 6-item GSE is compared per-item against 10-item GSE norms — a short-form approximation, not an exact match.":
     "GSE แบบ 6 ข้อของคุณถูกเทียบรายข้อกับเกณฑ์ GSE แบบ 10 ข้อ — เป็นการประมาณจากแบบสั้น ไม่ใช่การเทียบที่ตรงกันพอดี",
   "Giving participation: {band}": "การมีส่วนร่วมในการให้: {band}",
@@ -988,8 +988,8 @@ export const TH = {
   "Full 12-item scale — raw {n}/60": "แบบเต็ม 12 ข้อ — คะแนนดิบ {n}/60",
   "Rosenberg scale — raw {n}/30": "แบบ Rosenberg — คะแนนดิบ {n}/30",
   "Additional habits — raw {n}/16": "นิสัยเพิ่มเติม — คะแนนดิบ {n}/16",
-  "Scored from your full 10-item GSE — a direct match to the 25-country norm, no short-form approximation.":
-    "คิดจาก GSE ฉบับเต็ม 10 ข้อของคุณ — ตรงกับเกณฑ์ 25 ประเทศพอดี ไม่ต้องประมาณจากแบบสั้น",
+  "Scored from your full 10-item GSE — a direct match to the published norm, no short-form approximation.":
+    "คิดจาก GSE ฉบับเต็ม 10 ข้อของคุณ — ตรงกับเกณฑ์ที่ตีพิมพ์พอดี ไม่ต้องประมาณจากแบบสั้น",
 
   // New answer-option labels used by the deep instruments
   "Almost never": "แทบไม่เคย",
@@ -1190,15 +1190,14 @@ export const TH = {
   "Thai workers": "แรงงานไทย",
   "Bangkok workers": "แรงงานในกรุงเทพฯ",
   "Thai adults": "ผู้ใหญ่ชาวไทย",
-  "adults in a German community sample": "ผู้ใหญ่ในกลุ่มตัวอย่างชุมชนชาวเยอรมัน",
-  "German adults aged 16-24": "ผู้ใหญ่ชาวเยอรมันอายุ 16-24 ปี",
-  "German adults aged 25-34": "ผู้ใหญ่ชาวเยอรมันอายุ 25-34 ปี",
-  "German adults aged 35-44": "ผู้ใหญ่ชาวเยอรมันอายุ 35-44 ปี",
-  "German adults aged 45-54": "ผู้ใหญ่ชาวเยอรมันอายุ 45-54 ปี",
-  "German adults aged 55-64": "ผู้ใหญ่ชาวเยอรมันอายุ 55-64 ปี",
-  "German adults aged 65-74": "ผู้ใหญ่ชาวเยอรมันอายุ 65-74 ปี",
-  "German adults aged 75 and over": "ผู้ใหญ่ชาวเยอรมันอายุ 75 ปีขึ้นไป",
-  "adults in the 25-country GSE norms": "ผู้ใหญ่ในเกณฑ์อ้างอิง GSE จาก 25 ประเทศ",
+  "adults in the reference sample": "ผู้ใหญ่ในกลุ่มตัวอย่างอ้างอิง",
+  "adults aged 16-24 in the reference sample": "ผู้ใหญ่อายุ 16-24 ปีในกลุ่มตัวอย่างอ้างอิง",
+  "adults aged 25-34 in the reference sample": "ผู้ใหญ่อายุ 25-34 ปีในกลุ่มตัวอย่างอ้างอิง",
+  "adults aged 35-44 in the reference sample": "ผู้ใหญ่อายุ 35-44 ปีในกลุ่มตัวอย่างอ้างอิง",
+  "adults aged 45-54 in the reference sample": "ผู้ใหญ่อายุ 45-54 ปีในกลุ่มตัวอย่างอ้างอิง",
+  "adults aged 55-64 in the reference sample": "ผู้ใหญ่อายุ 55-64 ปีในกลุ่มตัวอย่างอ้างอิง",
+  "adults aged 65-74 in the reference sample": "ผู้ใหญ่อายุ 65-74 ปีในกลุ่มตัวอย่างอ้างอิง",
+  "adults aged 75 and over in the reference sample": "ผู้ใหญ่อายุ 75 ปีขึ้นไปในกลุ่มตัวอย่างอ้างอิง",
   "people like you": "คนที่คล้ายคุณ",
   "Ahead of about {pct}% of {population}": "นำหน้าประมาณ {pct}% ของ{population}",
   "{band} of {population}, from the population comparison below.":

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `41`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `42`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,46 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.9.1] — 2026-07-31 (APP_VERSION 42)
+
+### The aspect board stops naming the norming country
+
+Two aspects are ranked against foreign samples, and since v39 they said so on
+the aspect card itself: mental read *"German adults aged 35-44"*, personal goals
+read *"adults in the 25-country GSE norms"*. Those labels are accurate, and they
+are staying accurate — but on the card they were the loudest words present, and
+a Thai reader cannot do anything with them. Naming Germany at the point of the
+claim was noise, not disclosure.
+
+The board now says **"adults in the reference sample"**, or **"adults aged 35-44
+in the reference sample"** where the age band applies.
+
+**Deliberately not "general adults".** The obvious neutral word would assert
+that the comparison group is the general population — a *stronger* claim than
+the one being removed, and a false one. "The reference sample" says exactly what
+is true: there is a specific sample, it is named elsewhere, and this is not a
+claim about people in general.
+
+**Nothing was hidden.** The methodology page still names Kliem et al. 2025, the
+representative German sample, the by-age-band table, the 25-country GSE pool and
+its N=19,120, and still says in full that being compared with Germans your own
+age is more precise but no more relevant to life in Thailand. Three assertions
+in `tests/methodology.test.mjs` pin those strings and were untouched. A new test
+in `tests/who5-norms.test.mjs` asserts the inverse — that no board-facing
+population, summary or note names the norming country — so the split cannot be
+undone by accident.
+
+**Thai-sourced populations stay named** ("Thai adults", "Thai workers", "Thai
+employees"). The asymmetry is deliberate: naming Thailand tells this app's
+reader something they can use, and naming Germany does not.
+
+### Not changed
+
+No score, percentile, grade, Balance Index value or comparison code moves. This
+is a string release: `benchmarks.js` labels, their Thai counterparts, one
+relaxed and one added test assertion, and the version sites. No schema change,
+no migration.
 
 ## [2.9.0] — 2026-07-30 (APP_VERSION 41)
 

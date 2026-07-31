@@ -155,7 +155,21 @@ test("mental uses the norms method and it resolves in both margin tables", () =>
 test("population names the age band, and the pooled sample when age is absent", () => {
   assert.match(mental({ age: 50 }).population, /45-54/);
   assert.match(mental({ age: 80 }).population, /75/);
-  assert.match(mental({}).population, /German community sample/);
+  assert.match(mental({}).population, /reference sample/);
+});
+
+// v42. The board says "the reference sample"; the methodology page still names
+// Kliem et al., the German sample and the 25-country GSE pool, and
+// tests/methodology.test.mjs pins those. This asserts the split holds in the
+// direction that is easy to undo by accident — someone "helpfully" putting the
+// country back on the aspect card.
+test("no benchmark label names the norming country on the aspect board", () => {
+  for (const b of [mental({}), mental({ age: 40 })]) {
+    for (const s of [b.population, b.summary, ...b.notes]) {
+      assert.doesNotMatch(String(s), /German|Germany|25-country/,
+        `board string names the norming sample: ${s}`);
+    }
+  }
 });
 
 test("every reachable WHO-5 score is an exact row — no interpolation anywhere", () => {

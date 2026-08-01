@@ -10,6 +10,7 @@ import { validateProfile, FIELD_CONSTRAINTS } from "../validation.js";
 import { t, tp, dateLocale } from "../i18n.js";
 import { numberField } from "./instrument-forms.js";
 import { aspectLabel } from "./helpers.js";
+import { savingsAmountFrom, savingsRateFrom } from "../scoring.js";
 
 // Form ids are "rev-<profileField>" so errors from validateProfile (keyed by
 // field name) map straight onto the numberField error spans.
@@ -25,7 +26,7 @@ const FIELD_IDS = {
   vegetablePortions: "rev-vegetablePortions",
   weeklyLearningHours: "rev-weeklyLearningHours",
   singleUsePlastics: "rev-singleUsePlastics",
-  savingsRate: "rev-savingsRate",
+  monthlySavings: "rev-monthlySavings",
   monthlyDonations: "rev-monthlyDonations",
   volunteeringHours: "rev-volunteeringHours"
 };
@@ -44,7 +45,7 @@ const FIELD_LABELS = {
   vegetablePortions: "Vegetable/Fruit Portions per Day",
   weeklyLearningHours: "Weekly Learning / Study Hours",
   singleUsePlastics: "Single-Use Plastic Items per Day",
-  savingsRate: "Monthly Savings Rate (% of Income)",
+  monthlySavings: "Monthly Savings (THB)",
   monthlyDonations: "Monthly Donations (THB)",
   volunteeringHours: "Volunteering Hours per Month"
 };
@@ -54,7 +55,13 @@ const FIELD_STEPS = { sleepHours: 0.5, waterLiters: 0.1, weeklyLearningHours: 0.
 function reviewField(field, profile) {
   const c = FIELD_CONSTRAINTS[field];
   const step = FIELD_STEPS[field] ? ` step="${FIELD_STEPS[field]}"` : "";
-  const value = profile[field] ?? 0;
+  // Savings is the one field asked in different units from the one stored: the
+  // box holds baht, the state holds a rate. Deriving the pre-fill (rather than
+  // reading a stored amount) is what guarantees the box always agrees with the
+  // score, including for saves written before v46.
+  const value = field === "monthlySavings"
+    ? savingsAmountFrom(profile.savingsRate, profile.income)
+    : profile[field] ?? 0;
   return numberField(FIELD_IDS[field], t(FIELD_LABELS[field]), value, `min="${c.min}" max="${c.max}"${step}`);
 }
 
@@ -147,7 +154,7 @@ export function renderReview(containerId, state, onComplete) {
         </div>
         <div class="grid-2">
           ${reviewField("weeklyLearningHours", state.profile)}
-          ${reviewField("savingsRate", state.profile)}
+          ${reviewField("monthlySavings", state.profile)}
         </div>
 
         <details style="margin: 10px 0;">
@@ -174,6 +181,11 @@ export function renderReview(containerId, state, onComplete) {
     for (const [field, id] of Object.entries(FIELD_IDS)) {
       inputs[field] = document.getElementById(id)?.value;
     }
+    // Convert the baht box back to the stored rate BEFORE validation, so
+    // validateProfile and submitWeeklyReview see the same savingsRate they
+    // always have. Income is not a weekly-review field, so it comes from the
+    // saved profile.
+    inputs.savingsRate = savingsRateFrom(inputs.monthlySavings, stateManager.state.profile.income);
 
     // Same inline-error pattern as onboarding: per-field messages + a banner.
     const { ok, errors } = validateProfile(inputs);

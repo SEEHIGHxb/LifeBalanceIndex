@@ -24,6 +24,10 @@ export const SOURCES = {
     label: "NSO Labour Force Survey via Bank of Thailand (avg. monthly wage ~15,972 THB, Q3 2025)",
     url: "https://app.bot.or.th/BTWS_STAT/statistics/BOTWEBSTAT.aspx?reportID=667&language=ENG"
   },
+  rdTaxBands: {
+    label: "Thai Revenue Department, personal income tax rates (top 35% band begins at 4,000,000 THB/yr — 333,333 THB/mo)",
+    url: "https://www.rd.go.th/english/6045.html"
+  },
   thaiSpa: {
     label: "Thailand Surveillance on Physical Activity 2012-2019 (66.6-75.6% of adults meet the WHO activity guideline)",
     url: "https://bmcpublichealth.biomedcentral.com/articles/10.1186/s12889-021-10736-6"
@@ -225,15 +229,56 @@ const INCOME_MEDIAN_NATIONAL = 12900;
 const INCOME_MEDIAN_BANGKOK = 17400;
 const INCOME_LOG_SIGMA = 0.65;
 
-// Single source of truth for income -> population percentile (finding #9).
-// The finance SCORE (state.js) and this benchmark card both read this one
-// cited lognormal model, so a given income can no longer read two different
-// ways on the same screen.
+// RANK. "How many earners are below me" — and a rank is SUPPOSED to saturate
+// in a long right tail, because almost everyone really is below a top earner.
+// This drives the benchmark card and the finance grade, and nothing else.
 export function incomePercentile(income, region) {
   const inc = parseFloat(income || 0);
   if (!(inc > 0)) return 1;
   const median = region === "Bangkok" ? INCOME_MEDIAN_BANGKOK : INCOME_MEDIAN_NATIONAL;
   return toPercentile(normalCdf(Math.log(inc), Math.log(median), INCOME_LOG_SIGMA));
+}
+
+// MAGNITUDE. A different question from the rank above: "how far along the
+// achievable income range am I". Finance used to SCORE by rank, which made it
+// the only aspect in the app scored that way (every other aspect scores a
+// magnitude and ranks it separately), and it inherited the rank's saturation:
+// 50,000 and 300,000 both landed on 99, so every income above ~70,000 read
+// identically. This scale replaces the rank in the SCORE only — the card and
+// the grade still rank, and the two are meant to differ.
+//
+// Two anchors, both published, so the score carries NO assumed dispersion —
+// INCOME_LOG_SIGMA is deliberately absent here:
+//   * centre  — the LFS average wage, 15,972 THB/mo (SOURCES.botWage), scaled
+//               for Bangkok by the SES household income ratio 39,100/29,000.
+//   * ceiling — 333,333 THB/mo, where the Revenue Department's top 35% band
+//               begins (4,000,000 THB/yr). Thailand's own official definition
+//               of a top income, rather than a round guess.
+// The ceiling does NOT scale by region: the tax band is national law, so a
+// Bangkok earner reaches the top at the same baht figure while starting from a
+// higher centre — which correctly makes a given salary worth slightly less
+// there.
+//
+// Log-linear because income is multiplicative: 16k -> 32k is the same stride
+// as 100k -> 200k. On a linear scale everyone under 100,000 would be crushed
+// into the bottom few points — the saturation defect turned upside down.
+const INCOME_MEAN_NATIONAL = 15972;
+const INCOME_BANGKOK_RATIO = 39100 / 29000;
+const INCOME_TOP_ANCHOR = 333333;
+
+export function incomeStandingScore(income, region) {
+  const inc = parseFloat(income || 0);
+  if (!(inc > 0)) return 0;
+  const centre = region === "Bangkok"
+    ? INCOME_MEAN_NATIONAL * INCOME_BANGKOK_RATIO
+    : INCOME_MEAN_NATIONAL;
+  // Clamped to 0-100 HERE, not left to the caller. The top band has to be a
+  // real ceiling: unclamped, an income of 1,000,000 returns 118, and since
+  // this term carries 0.6 of the finance score that surplus would keep buying
+  // points above the anchor — which is exactly what the anchor exists to stop.
+  // The separate app-wide 99 cap still applies to the finished score.
+  const raw = 50 + 50 * (Math.log(inc / centre) / Math.log(INCOME_TOP_ANCHOR / centre));
+  return Math.max(0, Math.min(100, raw));
 }
 
 function financeBenchmark(profile) {

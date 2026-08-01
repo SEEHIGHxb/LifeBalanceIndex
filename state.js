@@ -26,7 +26,7 @@ import {
   calculateRelationshipsScore, calculatePersonalGoalsScore,
   calculateSocialContributionScore, calculateEnvironmentScore,
   calculateHumanityFutureScore, deepAspectScore, weeklyAspectShifts,
-  ageBandShifts, profileEditShifts, clamp100
+  ageBandShifts, profileEditShifts, clampScore
 } from "./scoring.js";
 import { INSTRUMENTS, DEEP_INSTRUMENTS, DEEP_CARRY, deepAskIndices } from "./surveys.js";
 import { isStraightLined } from "./validation.js";
@@ -202,7 +202,7 @@ export class GameStateManager {
     // check-in/deep/weekly adjustments. Empty when nothing score-affecting moved.
     const shifts = this.state.baseline ? profileEditShifts(p, newProfile, this.state.baseline) : {};
     for (const [aspect, shift] of Object.entries(shifts)) {
-      this.state.aspects[aspect] = Math.max(0, Math.min(100, this.state.aspects[aspect] + shift));
+      this.state.aspects[aspect] = clampScore(this.state.aspects[aspect] + shift);
     }
 
     // Commit the edited fields onto the live profile.
@@ -270,7 +270,7 @@ export class GameStateManager {
     // so the user's accumulated check-in and deep adjustments survive.
     const shifts = ageBandShifts(p, oldAge, p.age, this.state.baseline);
     for (const [aspect, delta] of Object.entries(shifts)) {
-      this.state.aspects[aspect] = clamp100(this.state.aspects[aspect] + delta);
+      this.state.aspects[aspect] = clampScore(this.state.aspects[aspect] + delta);
     }
 
     dispatchAppEvent("lifequest_levelup", {
@@ -589,7 +589,7 @@ export class GameStateManager {
     // delta needs old vs new). Deltas preserve check-in/deep adjustments.
     const shifts = weeklyAspectShifts(p, newProfile, this.state.baseline);
     for (const [aspect, shift] of Object.entries(shifts)) {
-      this.state.aspects[aspect] = Math.max(0, Math.min(100, this.state.aspects[aspect] + shift));
+      this.state.aspects[aspect] = clampScore(this.state.aspects[aspect] + shift);
     }
 
     // Write the measured values and mark them provided — a weekly-measured
@@ -745,7 +745,7 @@ export class GameStateManager {
       const current = this.state.aspects[aspect];
       const shift = Math.max(-CHECKIN_MAX_SHIFT, Math.min(CHECKIN_MAX_SHIFT, Math.round(target + activityBonus - current)));
       shifts[aspect] = shift;
-      this.state.aspects[aspect] = Math.max(0, Math.min(100, current + shift));
+      this.state.aspects[aspect] = clampScore(current + shift);
     }
 
     // Refresh the stored raw sums so benchmarks track the latest reading, and

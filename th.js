@@ -135,7 +135,8 @@ export const TH = {
   "Relationship Status": "สถานะความสัมพันธ์",
   "In a Relationship / Married": "มีแฟน / แต่งงานแล้ว",
   "Monthly Individual Income (Net THB)": "รายได้ส่วนตัวต่อเดือน (บาทสุทธิ)",
-  "Monthly Savings Rate (% of Income)": "อัตราการออมต่อเดือน (% ของรายได้)",
+  "Monthly Savings (THB)": "เงินออมต่อเดือน (บาท)",
+  "e.g. 3,000": "เช่น 3,000",
   "Step 2: Physical Baseline": "ขั้นที่ 2: พื้นฐานร่างกาย",
   "Height (cm)": "ส่วนสูง (ซม.)",
   "Weight (kg)": "น้ำหนัก (กก.)",
@@ -196,8 +197,10 @@ export const TH = {
   "One thing this app does not measure: your worth as a person. Every number here is built from behavior you reported and circumstances you were handed — what you earn, how you slept, who is near you, how much time you have — and all of those move. Read a low score as a description of a situation, never as a judgment on the person living in it.":
     "มีสิ่งหนึ่งที่แอปนี้ไม่ได้วัด นั่นคือคุณค่าความเป็นมนุษย์ของคุณ ทุกตัวเลขที่นี่สร้างขึ้นจากพฤติกรรมที่คุณรายงานและสภาพแวดล้อมที่คุณได้รับมา — รายได้ การนอน ผู้คนรอบตัว เวลาที่คุณมี — และทั้งหมดนั้นเปลี่ยนแปลงได้ โปรดอ่านคะแนนที่ต่ำในฐานะคำอธิบายของสถานการณ์ ไม่ใช่คำตัดสินคุณค่าของคนที่กำลังอยู่ในสถานการณ์นั้น",
   "The eight aspects": "แปดด้านของชีวิต",
-  "60% income percentile (lognormal model calibrated to Thai Labour Force Survey wages) + 40% CFPB Financial Well-Being score (official age-banded table) + a savings-rate bonus of up to 10 points.":
-    "60% เปอร์เซ็นไทล์รายได้ (แบบจำลอง lognormal เทียบค่าจ้างจากการสำรวจภาวะการทำงานของไทย) + 40% คะแนนสุขภาวะทางการเงิน CFPB (ตารางทางการแยกช่วงอายุ) + โบนัสอัตราการออมสูงสุด 10 คะแนน",
+  "60% income standing + 40% CFPB Financial Well-Being score (official age-banded table) + a savings bonus of up to 10 points. Income standing is a magnitude, not a rank: the published average wage (15,972 THB/mo) scores 50 and the Revenue Department's top tax band (333,333 THB/mo) scores full marks, on a log scale so each doubling of income is worth the same. It is deliberately NOT the income percentile shown on the Finance card — a percentile has to flatten out at the top, because almost everyone really is below a top earner, which used to make every income above about 70,000 score identically. Savings is entered as an amount in baht and converted to a rate for you.":
+    "60% ระดับรายได้ + 40% คะแนนสุขภาวะทางการเงิน CFPB (ตารางทางการแยกช่วงอายุ) + โบนัสการออมสูงสุด 10 คะแนน — ระดับรายได้เป็นค่าเชิงขนาด ไม่ใช่อันดับ: ค่าจ้างเฉลี่ยที่เผยแพร่ (15,972 บาท/เดือน) ได้ 50 คะแนน และขั้นภาษีสูงสุดของกรมสรรพากร (333,333 บาท/เดือน) ได้เต็ม โดยใช้มาตราส่วนลอการิทึม รายได้ที่เพิ่มเป็นเท่าตัวจึงมีค่าเท่ากันทุกช่วง ค่านี้จงใจไม่ใช่เปอร์เซ็นไทล์รายได้ที่แสดงบนการ์ดการเงิน เพราะเปอร์เซ็นไทล์ย่อมตันที่ปลายบน — แทบทุกคนอยู่ต่ำกว่าผู้มีรายได้สูงสุดจริง ๆ ซึ่งเคยทำให้ทุกรายได้เกินราว 70,000 ได้คะแนนเท่ากันหมด ส่วนการออมกรอกเป็นจำนวนเงินบาท แล้วแอปแปลงเป็นอัตราให้เอง",
+  "No score in this app reaches 100 — not an aspect, not the Balance Index. The arithmetic is allowed to, and then the displayed figure stops at 99. That is a stance rather than a rounding rule: a perfect score would read as “nothing left to do” on an instrument whose whole purpose is to point at the next step.":
+    "ไม่มีคะแนนใดในแอปนี้ที่ถึง 100 ไม่ว่าจะเป็นด้านใดหรือดัชนีสมดุล การคำนวณไปถึง 100 ได้ แต่ตัวเลขที่แสดงจะหยุดที่ 99 นี่เป็นจุดยืน ไม่ใช่กฎการปัดเศษ เพราะคะแนนเต็มย่อมสื่อว่า “ไม่เหลืออะไรให้ทำอีกแล้ว” บนเครื่องมือที่มีขึ้นเพื่อชี้ก้าวต่อไป",
   "Objective standing is weighted above sentiment; the savings bonus rewards a habit you fully control.":
     "ให้น้ำหนักสถานะที่วัดได้จริงมากกว่าความรู้สึก และโบนัสการออมให้รางวัลกับนิสัยที่คุณควบคุมได้เอง",
   "40% activity (IPAQ MET-minutes vs the WHO 600 guideline) + 20% Asian-BMI band + 20% sleep (Jenkins Sleep Scale + reported duration) + 20% nutrition (vegetables + water). Missing measurements are omitted and the weights renormalized — never faked.":
@@ -594,7 +597,7 @@ export const TH = {
   "Financial well-being (CFPB)": "สุขภาวะทางการเงิน (CFPB)",
   "Raw {n}/20 at baseline": "คะแนนดิบ {n}/20 ณ จุดเริ่มต้น",
   "Savings habit": "นิสัยการออม",
-  "Saving {rate}% of income (20%+ maxes this)": "ออม {rate}% ของรายได้ (20% ขึ้นไปได้เต็ม)",
+  "Saving {thb} THB/mo = {rate}% of income (20%+ maxes this)": "ออม {thb} บาท/เดือน = {rate}% ของรายได้ (20% ขึ้นไปได้เต็ม)",
   "Activity": "การเคลื่อนไหว",
   "{met} MET-min/week (WHO guideline 600)": "{met} MET-นาที/สัปดาห์ (เกณฑ์ WHO 600)",
   "Body composition": "องค์ประกอบร่างกาย",

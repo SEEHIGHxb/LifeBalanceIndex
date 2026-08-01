@@ -266,9 +266,12 @@ test("the vegetable pledge default matches the WHO guideline it cites", () => {
 // must not perturb the norm-referenced stack. These values are the v39 numbers;
 // a diff here means a criterion leaked into scoring.
 
-test("AVERAGE_ASPECT_SCORES is unchanged from v39", () => {
+test("AVERAGE_ASPECT_SCORES moved only where v46 intended (finance)", () => {
+  // v46 replaced the finance income percentile with a magnitude scale, so the
+  // reference profile's finance average moved 55 -> 53. Asserting the whole
+  // object is what proves the other seven aspects did NOT drift with it.
   assert.deepEqual({ ...AVERAGE_ASPECT_SCORES }, {
-    finance: 55, physical: 62, mental: 69, relationships: 70,
+    finance: 53, physical: 62, mental: 69, relationships: 70,
     personalGoals: 59, socialContribution: 32, environment: 50, humanityFuture: 44
   });
 });

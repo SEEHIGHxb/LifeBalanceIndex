@@ -119,9 +119,10 @@ test("physical omits BMI (no fabricated 50) and renormalizes when weight/height 
     sleepHours: 8, // duration 100
     vegetablePortions: 5, waterLiters: 2.5 // nutrition 100
   };
-  // Renormalized over the surviving parts (all 100) -> 100. The old code blended
-  // a fake S_bmi = 50 and returned 90.
-  assert.equal(calculatePhysicalScore(perfectNoBody, [0, 0, 0, 0]), 100);
+  // Renormalized over the surviving parts (all 100) -> 100, then capped to
+  // SCORE_MAX by clampScore: from v46 the app never awards a perfect score.
+  // The old code blended a fake S_bmi = 50 and returned 90.
+  assert.equal(calculatePhysicalScore(perfectNoBody, [0, 0, 0, 0]), 99);
 });
 
 test("physical still includes body composition when weight/height are present (#7)", () => {

@@ -70,9 +70,15 @@ const REFERENCE_ANSWERS = {
 const R = REFERENCE_PROFILE;
 const A = REFERENCE_ANSWERS;
 
-// Expected values (pinned within ±15 by tests/averages.test.mjs): finance 55,
+// Expected values (pinned within ±15 by tests/averages.test.mjs): finance 53,
 // physical 62, mental 69, relationships 70, personalGoals 59,
 // socialContribution 32, environment 50, humanityFuture 44.
+//
+// finance moved 55 -> 53 in v46, when the income term stopped being a
+// percentile and became a magnitude. REFERENCE_PROFILE.income stays at the
+// national MEDIAN (12,900): this profile is meant to be the typical person,
+// and the typical person earns the median, not the mean. On the new scale that
+// sits a little under the mean-anchored 50, which is exactly right.
 export const AVERAGE_ASPECT_SCORES = Object.freeze({
   finance: calculateFinanceScore(R, A.cfpb),
   physical: calculatePhysicalScore(R, A.jss),

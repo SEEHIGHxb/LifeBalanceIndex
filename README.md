@@ -22,7 +22,9 @@ set in Sarabun.
   starts blank with a required `*` and must be answered (no pre-filled defaults),
   so each aspect reflects answers you actually gave; the monthly re-assessment and
   in-depth assessment are blank-first too:
-  - Finance: CFPB Financial Well-Being (5 items) + NSO Thailand income percentiles (Bangkok/Provinces) + savings rate
+  - Finance: CFPB Financial Well-Being (5 items) + income standing on a log scale
+    anchored at the published LFS average wage and the Revenue Department's top
+    tax band (Bangkok/Provinces) + savings, entered in baht
   - Physical: IPAQ MET-minutes, Asian BMI bands, sleep quality + duration, nutrition
   - Mental: ST-5 (Thai DMH stress index) + WHO-5 Well-Being Index
   - Relationships: LSNS-6, UCLA Loneliness (3-item), RAS (couples only)

@@ -46,6 +46,10 @@ export const DEFAULT_STATE = {
     employment: "Office Worker", // Office Worker, Freelancer, Business Owner, Unemployed, Student
     relationshipStatus: "Single", // Single, Coupled
     income: 15000,
+    // The forms ASK for a baht amount but only the RATE is stored, so there is
+    // exactly one savings number in the state and an income edit can never put
+    // two of them in disagreement. The amount is re-derived for display by
+    // savingsAmountFrom (scoring.js). This is why v46 needed no schema bump.
     savingsRate: 10,
     digitalLiteracy: 50,
     weeklyLearningHours: 2,

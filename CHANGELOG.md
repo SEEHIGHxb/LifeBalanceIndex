@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `45`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `46`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,105 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.13.0] — 2026-08-01 (APP_VERSION 46)
+
+### Finance stopped scoring by rank
+
+**The report.** A 30,000 THB/mo income scored suspiciously high. It did — but
+not for the reason it looked like. Measuring the actual curve moved the fault:
+
+| THB/mo | old income term | new |
+|---|---|---|
+| 30,000 | 90 | 60 |
+| 50,000 | 98 | 68 |
+| 100,000 | 99 | 80 |
+| 300,000 | 99 | 98 |
+
+**Every income above roughly 70,000 scored identically.** The percentile was
+not wrong — a rank *must* saturate in a long right tail, because almost
+everyone genuinely is below a top earner. The defect was using a rank as a
+score, and finance was the **only** aspect in the app that did: every other
+aspect scores a magnitude and ranks it separately. So this removes an
+inconsistency rather than introducing one.
+
+**What replaced it.** A log-linear magnitude between two published anchors:
+
+```
+S_income = 50 + 50 × ln(income / centre) / ln(333,333 / centre)
+```
+
+- **centre** — the LFS average wage, 15,972 THB/mo (NSO via Bank of Thailand),
+  scaled for Bangkok by the SES regional income ratio 39,100/29,000.
+- **ceiling** — 333,333 THB/mo, where the Revenue Department's top 35% band
+  begins (4,000,000 THB/yr). Thailand's own definition of a top income.
+
+Log-linear because income is multiplicative: 16k→32k is the same stride as
+100k→200k. On a linear scale everyone under 100,000 would be crushed into the
+bottom few points — the same defect upside down.
+
+The ceiling does **not** scale by region (the tax band is national law), so a
+Bangkok earner starts from a higher centre and reaches the top at the same baht
+figure — correctly making a given salary worth slightly less there.
+
+**The assumption that left.** The old score inherited `INCOME_LOG_SIGMA = 0.65`,
+an *assumed* wage dispersion the code already disclosed as "not published
+decile data". The new scale uses two published figures and **no** assumed
+spread. Sigma still exists, still drives the percentile on the Finance card and
+the letter grade, and is still honestly labelled there.
+
+**Score and rank now differ on purpose.** The card says "90th percentile of
+Thai wage earners"; the score says 60. Both are true and they answer different
+questions. The methodology page and the aspect page say so.
+
+### No score reaches 100 — anywhere
+
+`clampScore` (ceiling `SCORE_MAX = 99`) now terminates all eight aspect
+calculators, the deep-verification recalibrations, every stored-score write in
+`state.js`, and the Balance Index. A stance, not a rounding rule: a perfect
+score reads as "nothing left to do" on an instrument built to point at the next
+step.
+
+`clamp100` deliberately stays at 100 — it normalizes sub-components that are
+*inputs* to the weighted formulas, and shaving those would change the
+arithmetic rather than the presentation.
+
+### Savings is entered in baht
+
+The form asked for a percentage, which made the user do the division — and
+people who don't know their rate offhand guess it, quietly making the one
+objective figure in the aspect the least reliable one.
+
+Now: enter an amount, the app derives the rate. **No schema change** — the rate
+remains the only stored value, so an income edit can never leave two savings
+numbers disagreeing; the amount is re-derived for display. Onboarding and the
+weekly review both changed; the aspect row shows both figures.
+
+### Consequences
+
+- Population average for finance re-pinned **55 → 53** (`averages.js`). The
+  other seven aspects are unmoved, and `tests/criteria.test.mjs` asserts the
+  whole object to prove it.
+- Balance Index absorbs part of the change through the existing
+  population-relative rescale.
+- Breaking for existing scores, covered by the pre-publish licence.
+
+### Known gap, deliberately not closed here
+
+Zero income scores zero on this scale. Someone retired on savings is a real
+case it cannot see, and `savingsRateFrom` returns 0 rather than dividing by
+zero. The answer is a **runway** measure (liquid savings ÷ monthly expenses),
+which needs a monthly-expenses field the app does not yet collect — its own
+release, not a fudge to the income term.
+
+### Tests
+
+`tests/finance-scale.test.mjs` (16 new): anchors asserted against their
+*published* values so a silent retune fails rather than moving everyone's
+score; the saturation regression pinned from both sides (rank spread ≤ 2 while
+score spread > 25 across 50k–300k); equal multiples give equal score steps; a
+structural guard that all eight calculators return through `clampScore` and
+none returns a bare `Math.round`. 387 tests, lint clean.
 
 ## [2.12.0] — 2026-07-31 (APP_VERSION 45)
 

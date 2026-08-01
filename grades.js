@@ -21,6 +21,7 @@
 
 import { ASPECT_KEYS } from "./aspects.js";
 import { AVERAGE_ASPECT_SCORES } from "./averages.js";
+import { clampScore } from "./scoring.js";
 
 // Cutoffs are percentile floors, so a grade always has a plain-language
 // reading: A = top decile, F = bottom decile. The wide C band (30-69) is
@@ -116,7 +117,10 @@ export function balanceIndex(aspects) {
     return Math.max(MIN_SCORE, Math.min(100, rel));
   });
   const reciprocalSum = scores.reduce((sum, v) => sum + 1 / v, 0);
-  return Math.round(scores.length / reciprocalSum);
+  // The per-aspect standings above stay clamped at 100 on purpose — they are
+  // TERMS of the harmonic mean, and shaving them would change the arithmetic.
+  // The cap belongs on the published figure, which is this one.
+  return clampScore(scores.length / reciprocalSum);
 }
 
 // THE HEADLINE QUESTION: "am I at least the average of the population?"

@@ -16,6 +16,11 @@ import { tp } from "./i18n.js";
 // in ui.js doSubmit, so validateProfile reads the payload directly.
 export const FIELD_CONSTRAINTS = {
   income: { min: 0, max: 10000000 },
+  // What the forms ASK for (baht). savingsRate below is what gets STORED, and
+  // is derived from this — see savingsRateFrom in scoring.js. Both are
+  // validated: the amount because the user types it, the rate because a
+  // hand-edited import can still carry one.
+  monthlySavings: { min: 0, max: 10000000 },
   savingsRate: { min: 0, max: 100 },
   digitalLiteracy: { min: 0, max: 100 },
   weeklyLearningHours: { min: 0, max: 168 },

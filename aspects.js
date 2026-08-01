@@ -24,6 +24,7 @@ import {
   plasticScore,
   learningScore,
   futureStudyScore,
+  savingsAmountFrom,
   DEEP_NORM
 } from "./scoring.js";
 import { DEEP_SECTIONS } from "./surveys.js";
@@ -56,7 +57,9 @@ export const COMPONENT_COVERAGE = {
   finance: {
     income: { fields: ["income"] },
     cfpb: { instruments: ["cfpb"] },
-    savings: { fields: ["savingsRate"] }
+    // The user types an amount; savingsRate is derived from it (scoring.js
+    // savingsRateFrom). Coverage has to follow the field they actually touch.
+    savings: { fields: ["monthlySavings"] }
   },
   physical: {
     activity: { fields: ["weeklyVigorousDays", "weeklyVigorousMins", "weeklyModerateDays", "weeklyModerateMins", "weeklyWalkingDays", "weeklyWalkingMins"] },
@@ -211,7 +214,11 @@ function financeComponents(p, b, benchmark) {
     key: "savings",
     label: t("Savings habit"),
     value: clamp100((parseFloat(p.savingsRate || 0) / 20) * 100),
-    detail: tp("Saving {rate}% of income (20%+ maxes this)", { rate: p.savingsRate || 0 })
+    // Both figures: the baht is what they entered, the rate is what is scored.
+    detail: tp("Saving {thb} THB/mo = {rate}% of income (20%+ maxes this)", {
+      thb: savingsAmountFrom(p.savingsRate, p.income).toLocaleString(),
+      rate: Math.round(parseFloat(p.savingsRate || 0) * 10) / 10
+    })
   });
   return items;
 }

@@ -8,7 +8,7 @@
 // behind it. Everything here is a pure function of (profile, answers): no
 // storage, no DOM, no i18n.
 
-import { incomePercentile } from "./benchmarks.js";
+import { incomeStandingScore } from "./benchmarks.js";
 
 // Sum of an instrument's raw answer values ("" and null count as 0).
 export function rawSum(answers) {
@@ -17,6 +17,21 @@ export function rawSum(answers) {
 
 export function clamp100(v) {
   return Math.round(Math.max(0, Math.min(100, v)));
+}
+
+// The app never awards a perfect score. Not a rounding detail — a stance: a
+// finished person is not a thing this app believes in, and 100 would read as
+// "nothing left to do" on an instrument that exists to point at the next step.
+// The math is allowed to reach 100; the display is not.
+//
+// This is the SCORE ceiling. clamp100 above stays at 100 on purpose, because
+// it normalizes sub-components that are INPUTS to the weighted formulas —
+// shaving those to 99 would quietly change the arithmetic rather than the
+// presentation, which is not what the cap is for.
+export const SCORE_MAX = 99;
+
+export function clampScore(v) {
+  return Math.round(Math.max(0, Math.min(SCORE_MAX, v)));
 }
 
 // --- SHORT-INSTRUMENT NORMALIZERS (raw sum -> 0-100, higher = healthier) ---
@@ -161,6 +176,33 @@ export function savingsBonus(profile) {
   return Math.min(10, (parseFloat(profile.savingsRate || 0) / 20) * 10);
 }
 
+// The forms ASK for a baht amount and store a RATE. Asking for a percentage
+// made the user do the division, and people who do not know their rate off the
+// top of their head guess it — which quietly made the one objective figure in
+// this aspect the least reliable one. The amount is a number they can look up.
+//
+// The rate stays the stored field, so this is a UI-and-derivation change with
+// no schema bump: savingsRate keeps its sanitizer range, its pledge template
+// and its component row.
+export function savingsRateFrom(amount, income) {
+  const amt = parseFloat(amount || 0);
+  const inc = parseFloat(income || 0);
+  // No income means no rate to compute — NOT a rate of zero. The forms guard
+  // this before calling, so reaching here means hand-edited or hostile input.
+  // Saving with no salary is a real situation and it is what the runway
+  // measure is for; until then it is honestly out of this scale's range.
+  if (!(inc > 0) || !(amt > 0)) return 0;
+  return Math.min(100, (amt / inc) * 100);
+}
+
+// The inverse, for pre-filling the amount box from a stored rate.
+export function savingsAmountFrom(rate, income) {
+  const r = parseFloat(rate || 0);
+  const inc = parseFloat(income || 0);
+  if (!(inc > 0) || !(r > 0)) return 0;
+  return Math.round((r / 100) * inc);
+}
+
 // Donation volume vs income, 0-100: 2% of income or 500 THB/mo maxes it.
 export function donationVolumeFactor(profile) {
   const donRate = parseFloat(profile.monthlyDonations || 0);
@@ -204,13 +246,17 @@ export function calculateFinanceScore(profile, cfpbAnswers) {
   //    converted with the official age-banded table.
   const S_wellbeing = cfpbScore(rawSum(cfpbAnswers), profile.age);
 
-  // 2. Objective income standing — the SAME cited lognormal model as the
-  //    finance benchmark card (single source of truth, finding #9), so the
-  //    score and the on-page income percentile can no longer disagree.
-  const S_income = incomePercentile(profile.income, profile.region);
+  // 2. Objective income standing, as a MAGNITUDE on the published wage-to-top-
+  //    tax-band range — deliberately NOT the percentile the benchmark card
+  //    shows. A percentile has to saturate in a long right tail, so scoring by
+  //    rank made every income above ~70,000 read as 99; and finance was the
+  //    only aspect in the app scored by rank at all. The card still ranks.
+  //    Score and rank now answer different questions, and the aspect page says
+  //    so rather than leaving the reader to reconcile them.
+  const S_income = incomeStandingScore(profile.income, profile.region);
 
   // Savings rate modifier (max 10 bonus points)
-  return Math.round(Math.min(100, (0.6 * S_income) + (0.4 * S_wellbeing) + savingsBonus(profile)));
+  return clampScore((0.6 * S_income) + (0.4 * S_wellbeing) + savingsBonus(profile));
 }
 
 export function calculatePhysicalScore(profile, jssAnswers) {
@@ -254,28 +300,28 @@ export function calculatePhysicalScore(profile, jssAnswers) {
   ].filter(([, value]) => value !== null);
   const totalWeight = parts.reduce((sum, [weight]) => sum + weight, 0);
   const weighted = parts.reduce((sum, [weight, value]) => sum + (weight * value), 0);
-  return Math.round(weighted / totalWeight);
+  return clampScore(weighted / totalWeight);
 }
 
 export function calculateMentalScore(profile, st5Answers, who5Answers) {
-  return Math.round(mentalComposite(rawSum(who5Answers), rawSum(st5Answers)));
+  return clampScore(mentalComposite(rawSum(who5Answers), rawSum(st5Answers)));
 }
 
 export function calculateRelationshipsScore(profile, lsnsAnswers, uclaAnswers, rasAnswers) {
   const lsnsRaw = rawSum(lsnsAnswers);
   const uclaRaw = rawSum(uclaAnswers);
   if (profile.relationshipStatus === "Single") {
-    return Math.round(relationshipsComposite(lsnsRaw, uclaRaw, null));
+    return clampScore(relationshipsComposite(lsnsRaw, uclaRaw, null));
   }
   // Coupled without RAS answers keeps the coupled weights with a zero romantic
   // term (raw 3 is the RAS scale floor, normalizing to 0) — the onboarding UI
   // always supplies RAS defaults for coupled users, so this path only guards
   // hostile or hand-edited input.
-  return Math.round(relationshipsComposite(lsnsRaw, uclaRaw, rasAnswers ? rawSum(rasAnswers) : 3));
+  return clampScore(relationshipsComposite(lsnsRaw, uclaRaw, rasAnswers ? rawSum(rasAnswers) : 3));
 }
 
 export function calculatePersonalGoalsScore(profile, gseAnswers, gritAnswers) {
-  return Math.round(personalGoalsComposite(profile, rawSum(gseAnswers), rawSum(gritAnswers)));
+  return clampScore(personalGoalsComposite(profile, rawSum(gseAnswers), rawSum(gritAnswers)));
 }
 
 export function calculateSocialContributionScore(profile, ptmAnswers) {
@@ -295,7 +341,7 @@ export function calculateSocialContributionScore(profile, ptmAnswers) {
   // Civic & Local (Q4 & Q5)
   const S_civic = ((qValues[3] + qValues[4]) / 8) * 100;
 
-  return Math.round((0.4 * S_donation) + (0.4 * S_action) + (0.2 * S_civic));
+  return clampScore((0.4 * S_donation) + (0.4 * S_action) + (0.2 * S_civic));
 }
 
 export function calculateEnvironmentScore(profile, gebAnswers) {
@@ -313,7 +359,7 @@ export function calculateEnvironmentScore(profile, gebAnswers) {
   // previously collected but never scored.
   const S_conservation = ((qValues[3] + qValues[4] + qValues[5]) / 12) * 100;
 
-  return Math.round((0.4 * S_waste) + (0.4 * S_transit) + (0.2 * S_conservation));
+  return clampScore((0.4 * S_waste) + (0.4 * S_transit) + (0.2 * S_conservation));
 }
 
 export function calculateHumanityFutureScore(profile, lfisAnswers) {
@@ -335,7 +381,7 @@ export function calculateHumanityFutureScore(profile, lfisAnswers) {
   const Q4_val = qValues[3] * 25;
   const S_security = (0.5 * pensionVal) + (0.5 * Q4_val);
 
-  return Math.round((0.25 * S_skills) + (0.25 * S_legacy) + (0.25 * S_philanthropy) + (0.25 * S_security));
+  return clampScore((0.25 * S_skills) + (0.25 * S_legacy) + (0.25 * S_philanthropy) + (0.25 * S_security));
 }
 
 // --- WEEKLY REVIEW (measured re-scoring) ---
@@ -477,17 +523,17 @@ export function deepAspectScore(aspectKey, profile, baseline, currentScore) {
       // Swap CFPB-5 for CFPB-10 in the 0.4-weighted well-being term. Both
       // sides use the official tables so the delta is metric-coherent.
       if (!has("cfpb10")) return null;
-      return clamp100(currentScore + 0.4 * (DEEP_NORM.cfpb10(d.cfpb10, profile.age) - cfpbScore(num(baseline.cfpb), profile.age)));
+      return clampScore(currentScore + 0.4 * (DEEP_NORM.cfpb10(d.cfpb10, profile.age) - cfpbScore(num(baseline.cfpb), profile.age)));
     }
     case "physical": {
       // Blend in sedentary/sleep-hygiene self-report at 15%.
       if (!has("sedentary")) return null;
-      return clamp100(0.85 * currentScore + 0.15 * DEEP_NORM.sedentary(d.sedentary));
+      return clampScore(0.85 * currentScore + 0.15 * DEEP_NORM.sedentary(d.sedentary));
     }
     case "mental": {
       // Average the PSS-10 stress reading into the ST-5 stress half.
       if (!has("pss10")) return null;
-      return clamp100(currentScore + 0.25 * (DEEP_NORM.pss10(d.pss10) - st5Resilience(num(baseline.st5))));
+      return clampScore(currentScore + 0.25 * (DEEP_NORM.pss10(d.pss10) - st5Resilience(num(baseline.st5))));
     }
     case "relationships": {
       // Swap LSNS-6 for LSNS-R, and (coupled) RAS-3 for RAS-7.
@@ -499,7 +545,7 @@ export function deepAspectScore(aspectKey, profile, baseline, currentScore) {
       if (has("ras7") && profile.relationshipStatus !== "Single" && Number.isFinite(baseline.ras)) {
         score += 0.3 * (DEEP_NORM.ras7(d.ras7) - rasScore(num(baseline.ras)));
       }
-      return clamp100(score);
+      return clampScore(score);
     }
     case "personalGoals": {
       // Swap GSE-6->GSE-10 (w=0.4) and Grit-S->Grit-12 (w=0.3), then blend in
@@ -508,20 +554,20 @@ export function deepAspectScore(aspectKey, profile, baseline, currentScore) {
       if (has("gse10")) score += 0.4 * (DEEP_NORM.gse10(d.gse10) - gseScore(num(baseline.gse)));
       if (has("grit12")) score += 0.3 * (DEEP_NORM.grit12(d.grit12) - gritScore(num(baseline.grit)));
       if (has("rses")) score = 0.85 * score + 0.15 * DEEP_NORM.rses(d.rses);
-      return clamp100(score);
+      return clampScore(score);
     }
     case "socialContribution": {
       if (!has("civicplus")) return null;
-      return clamp100(0.8 * currentScore + 0.2 * DEEP_NORM.civicplus(d.civicplus));
+      return clampScore(0.8 * currentScore + 0.2 * DEEP_NORM.civicplus(d.civicplus));
     }
     case "environment": {
       if (!has("greenplus")) return null;
-      return clamp100(0.8 * currentScore + 0.2 * DEEP_NORM.greenplus(d.greenplus));
+      return clampScore(0.8 * currentScore + 0.2 * DEEP_NORM.greenplus(d.greenplus));
     }
     case "humanityFuture": {
       // Blend in Consideration of Future Consequences at 20%.
       if (!has("cfc12")) return null;
-      return clamp100(0.8 * currentScore + 0.2 * DEEP_NORM.cfc12(d.cfc12));
+      return clampScore(0.8 * currentScore + 0.2 * DEEP_NORM.cfc12(d.cfc12));
     }
     default:
       return null;

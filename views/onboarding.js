@@ -12,13 +12,14 @@ import {
   numberField, instrumentBlock, collectInstrument, validateScope
 } from "./instrument-forms.js";
 import { birthdayFields } from "./helpers.js";
+import { savingsRateFrom } from "../scoring.js";
 import { t, tp } from "../i18n.js";
 
 // Maps each validated numeric field (validation.js FIELD_CONSTRAINTS keys) to
 // its onboarding input id — used for reading and coverage tracking. The inputs
 // also carry data-field so validateScope range-checks them per step.
 const ONB_NUMERIC_IDS = {
-  income: "onb-income", savingsRate: "onb-savings", digitalLiteracy: "onb-digital",
+  income: "onb-income", monthlySavings: "onb-savings", digitalLiteracy: "onb-digital",
   weeklyLearningHours: "onb-learning", weeklyVigorousDays: "onb-vig-days",
   weeklyVigorousMins: "onb-vig-mins", weeklyModerateDays: "onb-mod-days",
   weeklyModerateMins: "onb-mod-mins", weeklyWalkingDays: "onb-walk-days",
@@ -88,7 +89,7 @@ export function renderOnboarding(containerId, onComplete) {
           { v: "Coupled", l: "In a Relationship / Married" }
         ])}
         ${numberField("onb-income", t("Monthly Individual Income (Net THB)"), "", 'min="0"', { required: true, field: "income" })}
-        ${numberField("onb-savings", t("Monthly Savings Rate (% of Income)"), "", 'min="0" max="100"', { required: true, field: "savingsRate", placeholder: "0–100" })}
+        ${numberField("onb-savings", t("Monthly Savings (THB)"), "", 'min="0"', { required: true, field: "monthlySavings", placeholder: t("e.g. 3,000") })}
         ${instrumentBlock("cfpb")}`
     },
     {
@@ -305,7 +306,11 @@ export function renderOnboarding(containerId, onComplete) {
         employment: val("onb-employment"),
         relationshipStatus: val("onb-relationship"),
         income: val("onb-income"),
-        savingsRate: val("onb-savings"),
+        // Asked in baht, stored as a rate — the user does no arithmetic and
+        // the stored shape (and therefore the schema) does not move. The
+        // amount itself is deliberately NOT stored: one savings number in the
+        // state means an income edit cannot leave two of them disagreeing.
+        savingsRate: savingsRateFrom(val("onb-savings"), val("onb-income")),
         height: val("onb-height"),
         weight: val("onb-weight"),
         sleepHours: val("onb-sleep"),

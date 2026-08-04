@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `46`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `47`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,145 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.0] — 2026-08-03 (APP_VERSION 47)
+
+### Connected sources — Midori and Runaway can fill in the weekly review
+
+The ask was "less manually insert, more up-to-date information". Two facts found
+by reading the sibling repos decided the whole shape of the answer.
+
+**Supabase cannot supply the ledger.** `midori-finance-app/supabase/schema.sql`
+stores the entire ledger as one AES-GCM blob encrypted client-side; the server
+holds ciphertext it can never read. Reading that from here would mean copying
+Midori's sync key — the one secret its whole threat model is built around — into
+a third app.
+
+**And no network is needed anyway.** All three apps are on one origin
+(`seehighxb.github.io`), and origin is scheme + host + port, *not* path — so they
+already share `localStorage` today. Midori's *local* state is plain JSON; only the
+cloud copy is encrypted.
+
+So each source app **writes aggregate facts to a same-origin key** and this app
+only ever reads:
+
+```
+Midori  ──writes──▶ localStorage["lbi_bridge_midori"]  ──reads──▶ LBI
+Runaway ──writes──▶ localStorage["lbi_bridge_runaway"] ──reads──▶ LBI
+```
+
+What that buys is not convenience, it is that **nothing about this app changed**:
+`default-src 'self'` untouched, no account, no OAuth, no callback page, and
+`tests/smoke.mjs` still passing — and that passing test *is* the proof no
+off-origin request was introduced. `privacy.html` stays true as written (it now
+also documents the feature, in both languages).
+
+The rejected alternative was Supabase-direct. It works for Runaway and is
+impossible for Midori, so it buys freshness for half the data in exchange for
+auth, a relaxed CSP, a broken smoke guarantee and a rewritten privacy claim.
+
+#### Four rules the handoff obeys
+
+1. **Facts, not scores.** Scoring lives here and gets recalibrated — v46 moved
+   every finance score. A source app shipping a *score* would freeze an old
+   calibration into another codebase and the two would drift with nothing to
+   notice it.
+2. **Every payload carries its own window**, so a number can always be dated, and
+   one covering the wrong week can be refused.
+3. **A version field**, so the shape can change without a silent misread.
+4. **No free text and no PII.** Aggregates only. Any page on the origin can read
+   these keys, and rule 4 keeps the blast radius of that fact at zero.
+
+#### The payload is untrusted input
+
+Any page on the origin can *write* those keys too, so nothing is taken on faith:
+shape, version, source name, timestamp and every number are checked before a value
+can reach a score, with own-property lookup only so a poisoned prototype resolves
+to nothing. Two consequences are worth stating outright:
+
+- **No string from a payload is ever rendered.** Failures come back as fixed
+  reason codes the UI looks up in its own dictionary; dates come back as `Date`
+  objects the UI formats itself; the app names come from our own constant. The XSS
+  surface is not escaped — it does not exist. (`window.isoWeek` is the single
+  string that survives, and only after matching `/^\d{4}-W\d{1,2}$/`.)
+- **A validated number still goes through `FIELD_CONSTRAINTS`.** A bridge is not
+  a way around the ranges the forms enforce.
+
+#### Both ends must agree
+
+The toggle here controls *reading*. Each source app has its own toggle controlling
+*writing*. Exporting your finances to a shared key should be a deliberate choice at
+both ends, and this app cannot make that choice on Midori's behalf.
+
+#### Pre-fill, never auto-apply
+
+A connected source fills the matching weekly-review boxes with a small source chip
+and a caption naming the window; the user confirms or corrects, then submits
+through the **existing** `validateScope` gate, so the `provided` coverage flags stay
+honest — the submitted answer is still the user's answer.
+
+This is also what solves the swimmer problem: the running bridge pre-fills vigorous
+exercise, and someone who also swims *raises* the number instead of having their own
+answer clobbered. Moderate and walking are never touched at all.
+
+#### Staleness is reported, never absorbed
+
+A run log describes one specific week and cannot stand in for another, so a Runaway
+payload is used only when its ISO week equals the week being reviewed. Midori's
+rolling window is flagged beyond 35 days. A payload dated *ahead* of the device
+clock is surfaced rather than trusted — one of the two clocks is wrong and there is
+no way to tell which. Silently scoring a stale number is precisely the
+"out-of-date" failure this feature exists to remove.
+
+#### Traps that had to be found in the source
+
+- **`weeklyVigorousMins` is minutes PER ACTIVE DAY**, not per week. A 102-minute,
+  3-day week is **34**, not 102 — same class of defect as the old plastics
+  per-week/per-day mismatch, and it gets the same dedicated regression test. This
+  app recomputes the figure from total minutes and active days rather than reading
+  the exporter's, so the unit stays owned by the app that defines it.
+- **A run with no duration** (`duration_min` is nullable) counts as an active day
+  but no minutes, so `runsWithoutDuration` travels with the payload and the review
+  can say the minutes may be understated instead of quietly under-reporting.
+- **`monthlySavings` is a form unit, not a stored one.** The box holds baht, the
+  state holds a rate (v46). The pre-fill converts using Midori's *own* measured
+  income, so the amount shown is the surplus Midori actually measured — not one
+  rebased on a profile income that may be months out of date.
+- **Income drift is called out.** The review can set savings but not income, so if
+  Midori's measured income has moved more than 10% from the profile's, a correct
+  baht figure yields an incorrect rate and the user has no way to see why. The
+  review now says so and points at the page that can fix it.
+- **An absent flag is not a false one.** Midori omitting `hasLongTermInvestments`
+  must not clear a `true` the user set themselves.
+
+#### Scope
+
+Roughly 4 of ~15 weekly fields automate. Sleep, water, vegetables, plastics,
+learning hours, donations, volunteering and every survey instrument are not
+automatable and the review keeps asking for them. **The review gets shorter; it
+does not disappear.**
+
+### Changed
+
+- New `connections.js` — reader, validator, staleness rules and the two mappers.
+  Pure by intent: no DOM, no network, and the only thing it writes is the
+  preference key, so every rule is testable without a browser.
+- **Connections** section on the Profile & Data page, one row per source with a
+  toggle and an honest status line: off / waiting / connected / stale / dated in
+  the future / unreadable. A user on a different host — or the Android WebView, or
+  a future custom domain — sees an accurate empty state rather than a broken one.
+- Preference in its own key `lifequest_connections`, **outside the state schema**,
+  following the `lifequest_lang` and `lifequest_share_prefs` precedent. No
+  migration, and it survives an erase.
+- `monthlyExpenses` is now collected and stored. **Nothing consumes it yet** — it
+  is the denominator of the runway measure held back to v48 pending published
+  anchors. Additive with a safe default, so no schema bump.
+- 67 new tests (454 total): payload rejection across every malformed shape, the
+  staleness rules, the per-day unit, the field-range clamp, and a payload carrying
+  `<img onerror=…>` in every string position that must not reach the DOM.
+
+**This release changes no score.** A release that moves no number is far easier to
+trust, and it isolates any surprise to the data path.
 
 ## [2.13.0] — 2026-08-01 (APP_VERSION 46)
 

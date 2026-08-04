@@ -1365,6 +1365,100 @@ header {
   flex-wrap: wrap;
   gap: 8px;
 }
+/* Connected apps — one row per sibling app on this origin. */
+.conn-row {
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.conn-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.conn-id {
+  display: flex;
+  flex-direction: column;
+}
+.conn-name {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.conn-role,
+.conn-fills {
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  color: var(--color-text-secondary);
+}
+.conn-switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  /* 44px keeps the toggle a comfortable tap target on a phone, the same floor
+     the rest of the mobile layout was held to. */
+  min-height: 44px;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.conn-switch input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+.conn-status {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  margin: 6px 0 4px;
+}
+.conn-fills {
+  margin: 0;
+}
+
+/* Weekly Review: a box filled in by a connected app. The chip sits in the
+   label so the source is named before the number is read, and the caption
+   under the input says which dates it covers. */
+.prefill-chip {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-card-bg);
+  background: var(--color-navy);
+  border-radius: 999px;
+  padding: 2px 8px;
+  vertical-align: middle;
+}
+.field-note {
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+  margin: 4px 0 0;
+}
+.conn-banner {
+  border-left: 3px solid var(--color-navy);
+  padding: 4px 0 4px 12px;
+  margin-bottom: 14px;
+}
+.conn-banner p {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  margin: 0 0 6px;
+}
+.conn-banner p:last-child {
+  margin-bottom: 0;
+}
 .onb-optional {
   display: inline-block;
   font-family: var(--font-sans);

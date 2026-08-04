@@ -15,7 +15,7 @@
 // nothing changed, so the bandwidth is negligible and the version can never
 // tear. Do NOT "optimise" this back to a plain fetch(req).
 
-const CACHE_NAME = "lifequest-v46";
+const CACHE_NAME = "lifequest-v47";
 
 const APP_SHELL = [
   "./",
@@ -30,6 +30,7 @@ const APP_SHELL = [
   "./season.js",
   "./sanitize.js",
   "./scoring.js",
+  "./connections.js",
   "./ui.js",
   "./views/helpers.js",
   "./views/instrument-forms.js",
@@ -59,7 +60,7 @@ const APP_SHELL = [
   "./i18n.js",
   "./th.js",
   "./manifest.webmanifest",
-  "./assets/lumi.png?v=46",
+  "./assets/lumi.png?v=47",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
   // Self-hosted faces. Only the subsets the UI can actually render are

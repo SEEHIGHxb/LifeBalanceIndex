@@ -295,3 +295,69 @@ test("the share sheet routes user data to the canvas, never into its markup", as
     );
   }
 });
+
+// --- THE SAME-ORIGIN BRIDGE ---
+//
+// A different threat from a hostile backup: the bridge keys are writable by ANY
+// page on this origin, so a payload is attacker-controlled by design. The
+// defence is not escaping — it is that no string from a payload is ever carried
+// out of connections.js in the first place. These tests hold that line, because
+// a future "shared by {app name}" line would quietly re-open the surface.
+
+const CONNECTED_PROFILE = {
+  name: "Alex", age: 30, gender: "unspecified", region: "Provinces",
+  employment: "Office Worker", relationshipStatus: "Single",
+  income: 15000, weight: 60, height: 170, digitalLiteracy: 50,
+  longTermInvestments: false, birthMonth: null, birthDay: null
+};
+
+test("a VALID bridge payload with hostile strings renders none of them", async () => {
+  const { renderProfile } = await import("../views/profile.js");
+  const captured = installGlobals();
+
+  // Valid in every checked position, so parsing succeeds and the row reports
+  // "connected" — the deepest path, where a careless implementation would echo
+  // the currency or a label the payload chose.
+  localStorage.setItem("lbi_bridge_midori", JSON.stringify({
+    v: 1,
+    source: "midori",
+    writtenAt: new Date().toISOString(),
+    currency: PAYLOAD,
+    label: BREAKOUT,
+    window: { from: "2026-05-01", to: "2026-07-31", months: 3 },
+    facts: { monthlyIncome: 42000, monthlyExpenses: 28500 }
+  }));
+  localStorage.setItem("lifequest_connections", '{"midori":true,"runaway":true}');
+
+  renderProfile("main-view", { profile: CONNECTED_PROFILE });
+
+  assert.ok(!captured.html.includes(PAYLOAD), "a payload string reached innerHTML verbatim");
+  assert.ok(!captured.html.includes(BREAKOUT), "a payload string reached innerHTML verbatim");
+  assert.ok(!/onerror|<script/i.test(captured.html), "a payload string reached innerHTML at all");
+  // Present AND working, so this cannot pass because the card failed to render.
+  assert.ok(captured.html.includes("Connected"), "expected the connected status line");
+});
+
+test("an unreadable payload says so instead of rendering nothing", async () => {
+  const { renderProfile } = await import("../views/profile.js");
+  const captured = installGlobals();
+
+  // Hostile in every string position, including those parsed before the facts.
+  localStorage.setItem("lbi_bridge_runaway", JSON.stringify({
+    v: 1, source: "runaway", writtenAt: PAYLOAD,
+    window: { isoWeek: PAYLOAD, from: BREAKOUT, to: PAYLOAD },
+    facts: { activeDays: PAYLOAD, totalMinutes: BREAKOUT }
+  }));
+  localStorage.setItem("lifequest_connections", '{"runaway":true}');
+
+  renderProfile("main-view", { profile: CONNECTED_PROFILE });
+
+  assert.ok(!captured.html.includes(PAYLOAD), "a rejected payload's text still reached innerHTML");
+  assert.ok(!/onerror|<script/i.test(captured.html), "a rejected payload's text still reached innerHTML");
+  // Two apps disagreeing about the contract is a different story from "nothing
+  // shared yet", and the user is told which one it is.
+  assert.ok(
+    captured.html.includes("not in a form this version can read"),
+    "expected the unreadable status line"
+  );
+});

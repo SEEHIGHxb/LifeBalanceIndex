@@ -485,6 +485,19 @@ export const TH = {
   "Nothing to do here until {date} — live your week; the app can wait.": "ไม่มีอะไรต้องทำจนถึงวันที่ {date} — ใช้ชีวิตของคุณไปเลย แอปรอได้",
   "One thing while you're here: the monthly re-assessment is due.": "อีกหนึ่งอย่างระหว่างที่อยู่ตรงนี้: ถึงกำหนดการประเมินซ้ำประจำเดือนแล้ว",
   "Report a rough weekly average for each habit — no daily logging needed. Every value is prefilled with last week's answer, so only touch what changed. Takes about two minutes.": "รายงานค่าเฉลี่ยคร่าว ๆ ของแต่ละพฤติกรรมในสัปดาห์นี้ — ไม่ต้องบันทึกรายวัน ทุกช่องเติมคำตอบของสัปดาห์ก่อนไว้ให้แล้ว แก้เฉพาะที่เปลี่ยนไปก็พอ ใช้เวลาราวสองนาที",
+  // Weekly Review pre-fill from a connected app. {app} is always a proper noun
+  // ("Midori", "Runaway") supplied untranslated by connections.js.
+  "Some boxes are filled in from your connected apps. Check them, change whatever is wrong, then submit — the answer you send is still yours.":
+    "บางช่องถูกกรอกไว้จากแอปที่เชื่อมต่อ ตรวจสอบและแก้ไขส่วนที่ไม่ถูกต้อง แล้วจึงส่ง — คำตอบที่ส่งยังคงเป็นของคุณ",
+  "{app} has nothing current to share, so its boxes keep your last answer.":
+    "{app} ไม่มีข้อมูลล่าสุดให้แบ่งปัน ช่องของแอปนั้นจึงคงคำตอบครั้งก่อนของคุณไว้",
+  "From {app} — your runs for {from} – {to}. Add anything it couldn't see.":
+    "จาก {app} — การวิ่งของคุณระหว่าง {from} – {to} เพิ่มส่วนที่แอปมองไม่เห็นได้",
+  "From {app} — a typical month, measured over {from} – {to}.":
+    "จาก {app} — เดือนโดยทั่วไป วัดจากช่วง {from} – {to}",
+  "{app} measures your income at about {bridge} THB a month; your profile says {profile} THB, so the savings rate derived here will be off.":
+    "{app} วัดรายได้ของคุณได้ประมาณ {bridge} บาทต่อเดือน แต่โปรไฟล์ระบุ {profile} บาท อัตราการออมที่คำนวณตรงนี้จึงคลาดเคลื่อน",
+  "Update it on the Profile page": "แก้ไขได้ที่หน้าโปรไฟล์",
   "Activity this week": "กิจกรรมทางกายสัปดาห์นี้",
   "Daily habits (weekly average)": "พฤติกรรมประจำวัน (ค่าเฉลี่ยรายสัปดาห์)",
   "Monthly habits (update when they change)": "พฤติกรรมรายเดือน (แก้ไขเมื่อเปลี่ยนแปลง)",
@@ -1177,6 +1190,31 @@ export const TH = {
   "Data & Backup": "ข้อมูลและการสำรอง",
   "Your data lives only in this browser. Export a backup regularly — clearing site data erases it.":
     "ข้อมูลของคุณอยู่ในเบราว์เซอร์นี้เท่านั้น ควรส่งออกสำรองข้อมูลเป็นประจำ — การล้างข้อมูลเว็บไซต์จะลบข้อมูลทิ้ง",
+  // Connected apps — the sibling apps on this origin that can pre-fill the
+  // Weekly Review. App names ("Midori", "Runaway") are proper nouns and are
+  // deliberately not translated.
+  "Connected apps": "แอปที่เชื่อมต่อ",
+  "If you use these apps on this device, they can hand their numbers to your Weekly Review so you type less. Everything stays in this browser — nothing is uploaded, and no account is involved.":
+    "ถ้าคุณใช้แอปเหล่านี้บนอุปกรณ์นี้ แอปเหล่านั้นสามารถส่งตัวเลขให้แบบทบทวนประจำสัปดาห์ของคุณได้ คุณจะได้พิมพ์น้อยลง ทุกอย่างอยู่ในเบราว์เซอร์นี้ — ไม่มีการอัปโหลด และไม่ต้องใช้บัญชีใด ๆ",
+  "Each app has its own sharing switch too. Turning one on here only means this app may read what that app chose to share.":
+    "แต่ละแอปมีสวิตช์แบ่งปันข้อมูลของตัวเองด้วย การเปิดที่นี่หมายความเพียงว่าแอปนี้อ่านสิ่งที่แอปนั้นเลือกแบ่งปันได้เท่านั้น",
+  "Your ledger": "สมุดบัญชีของคุณ",
+  "Your run log": "บันทึกการวิ่งของคุณ",
+  "Monthly savings, in the Weekly Review": "เงินออมต่อเดือน ในการทบทวนรายสัปดาห์",
+  "Vigorous exercise days and minutes, in the Weekly Review":
+    "จำนวนวันและนาทีของการออกกำลังกายหนัก ในการทบทวนรายสัปดาห์",
+  "Use it": "ใช้งาน",
+  "Pre-fills: {fields}": "กรอกให้ล่วงหน้า: {fields}",
+  "Off — this app isn't reading anything from it.": "ปิดอยู่ — แอปนี้ไม่ได้อ่านข้อมูลใดจากแอปนั้น",
+  "Nothing shared yet. Open the app on this device and turn its sharing on.":
+    "ยังไม่มีข้อมูลที่แบ่งปัน เปิดแอปนั้นบนอุปกรณ์นี้แล้วเปิดการแบ่งปันข้อมูล",
+  "Something is stored, but not in a form this version can read.":
+    "มีข้อมูลบันทึกไว้ แต่อยู่ในรูปแบบที่เวอร์ชันนี้อ่านไม่ได้",
+  "The stored data is dated in the future — check this device's clock.":
+    "ข้อมูลที่บันทึกไว้ลงวันที่ในอนาคต — ตรวจสอบนาฬิกาของอุปกรณ์นี้",
+  "Last shared data covers up to {date}, which isn't the period being scored. Open the app to refresh it.":
+    "ข้อมูลที่แบ่งปันล่าสุดครอบคลุมถึง {date} ซึ่งไม่ใช่ช่วงเวลาที่กำลังคิดคะแนน เปิดแอปนั้นเพื่ออัปเดตข้อมูล",
+  "Connected — data through {date}.": "เชื่อมต่อแล้ว — ข้อมูลถึงวันที่ {date}",
   "Choose both a month and a day, or leave both blank.": "เลือกทั้งเดือนและวัน หรือเว้นว่างทั้งคู่",
   "That isn't a real date — check the day for that month.": "วันที่นี้ไม่ถูกต้อง — ตรวจสอบวันของเดือนนั้นอีกครั้ง",
   "Profile updated.": "อัปเดตโปรไฟล์แล้ว",

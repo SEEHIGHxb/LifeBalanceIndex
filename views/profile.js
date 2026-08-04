@@ -17,13 +17,24 @@
 // This page is also the home of the data controls (Export / Import / Reset),
 // relocated from the header. Those buttons keep the ids the existing app.js
 // handlers expect, and app.js binds them after this view renders.
+//
+// And it is where the sibling apps on this origin are switched on. The toggles
+// here control READING only, are off until asked for, and store their setting
+// outside the app's schema — see connections.js. A connection pre-fills the
+// Weekly Review; it never submits one, so the user still confirms every number
+// that reaches a score.
 
 import { stateManager } from "../state.js";
 import { numberField } from "./instrument-forms.js";
 import { birthdayFields, escapeHtml } from "./helpers.js";
 import { validateProfile } from "../validation.js";
 import { sanitizeBirthday } from "../sanitize.js";
-import { t, tp } from "../i18n.js";
+import {
+  CONNECTION_SOURCES, SOURCE_NAMES, readConnection, readConnectionPrefs,
+  setConnectionPref, connectionStatus
+} from "../connections.js";
+import { isoWeekKey } from "../season.js";
+import { t, tp, dateLocale } from "../i18n.js";
 
 const AGE_MIN = 15;
 const AGE_MAX = 100;
@@ -57,10 +68,90 @@ function textField(id, label, value, attrs = "") {
     </div>`;
 }
 
+// --- CONNECTED APPS ---
+
+// App names are proper nouns and stay untranslated. Everything else is a
+// literal inside t(), so the i18n coverage guard can see it — a call like
+// t(meta.role) would be invisible to the scanner and could ship English into
+// Thai mode unnoticed. Built per call because the language can change without
+// a reload.
+// `fills` names the boxes a source actually pre-fills TODAY, not everything it
+// reports. Midori also sends income and an investments flag, but nothing fills
+// those in yet, and a settings page that promises more than it does is worse
+// than one that promises less.
+const SOURCE_META = () => ({
+  midori: {
+    name: SOURCE_NAMES.midori,
+    role: t("Your ledger"),
+    fills: t("Monthly savings, in the Weekly Review")
+  },
+  runaway: {
+    name: SOURCE_NAMES.runaway,
+    role: t("Your run log"),
+    fills: t("Vigorous exercise days and minutes, in the Weekly Review")
+  }
+});
+
+function connectionDate(date) {
+  return date.toLocaleDateString(dateLocale(), { day: "numeric", month: "short", year: "numeric" });
+}
+
+// The status line for one source.
+//
+// Nothing from the payload is rendered here — only these fixed strings plus one
+// date formatted by Intl. That is rule 4 of the handoff contract holding in
+// practice: there is no attacker-controlled text on this page to escape,
+// because none was ever carried across.
+function connectionStatusText(status, read) {
+  if (status === "off") return t("Off — this app isn't reading anything from it.");
+  if (status === "waiting") {
+    return t("Nothing shared yet. Open the app on this device and turn its sharing on.");
+  }
+  if (status === "unreadable") {
+    return t("Something is stored, but not in a form this version can read.");
+  }
+  if (status === "future") {
+    return t("The stored data is dated in the future — check this device's clock.");
+  }
+  const through = connectionDate(read.payload.window.to);
+  if (status === "stale") {
+    return tp("Last shared data covers up to {date}, which isn't the period being scored. Open the app to refresh it.", { date: through });
+  }
+  return tp("Connected — data through {date}.", { date: through });
+}
+
+function connectionRow(source, meta, enabled, read) {
+  const status = connectionStatusText(connectionStatus(enabled, read), read);
+  return `
+    <div class="conn-row">
+      <div class="conn-head">
+        <span class="conn-id">
+          <span class="conn-name">${escapeHtml(meta.name)}</span>
+          <span class="conn-role">${meta.role}</span>
+        </span>
+        <label class="conn-switch">
+          <input type="checkbox" id="conn-${source}"${enabled ? " checked" : ""} aria-describedby="conn-${source}-status">
+          <span>${t("Use it")}</span>
+        </label>
+      </div>
+      <p class="conn-status" id="conn-${source}-status" aria-live="polite">${escapeHtml(status)}</p>
+      <p class="conn-fills">${tp("Pre-fills: {fields}", { fields: meta.fills })}</p>
+    </div>`;
+}
+
 export function renderProfile(containerId, state, onSaved) {
   const container = document.getElementById(containerId);
   if (!container) return;
   const p = state.profile;
+
+  // Read once for the initial paint. A run log describes one specific week, so
+  // the week being scored has to be passed in for it to be judged fresh.
+  const meta = SOURCE_META();
+  const prefs = readConnectionPrefs();
+  const reads = {};
+  for (const source of CONNECTION_SOURCES) {
+    reads[source] = readConnection(source, { isoWeek: isoWeekKey(new Date()) });
+  }
 
   const genderOpts = [
     { value: "unspecified", label: t("Prefer not to say") },
@@ -124,6 +215,13 @@ export function renderProfile(containerId, state, onSaved) {
       </div>
 
       <div class="card">
+        <h3 class="card-header">${t("Connected apps")}</h3>
+        <p class="onb-why">${t("If you use these apps on this device, they can hand their numbers to your Weekly Review so you type less. Everything stays in this browser — nothing is uploaded, and no account is involved.")}</p>
+        ${CONNECTION_SOURCES.map(s => connectionRow(s, meta[s], prefs[s], reads[s])).join("")}
+        <p class="profile-note">${t("Each app has its own sharing switch too. Turning one on here only means this app may read what that app chose to share.")}</p>
+      </div>
+
+      <div class="card">
         <h3 class="card-header">${t("Data & Backup")}</h3>
         <p class="onb-why">${t("Your data lives only in this browser. Export a backup regularly — clearing site data erases it.")}</p>
         <div class="profile-data-actions">
@@ -135,6 +233,21 @@ export function renderProfile(containerId, state, onSaved) {
       </div>
     </div>
   `;
+
+  // A toggle redraws its OWN status line and nothing else: the form above can
+  // be holding unsaved edits, and re-rendering the page would throw them away.
+  for (const source of CONNECTION_SOURCES) {
+    const box = document.getElementById(`conn-${source}`);
+    const line = document.getElementById(`conn-${source}-status`);
+    if (!box || !line) continue;
+    box.addEventListener("change", () => {
+      const next = setConnectionPref(source, box.checked);
+      // Re-read rather than reuse the initial read: switching a source on is
+      // exactly when the user wants to know whether anything is actually there.
+      const read = readConnection(source, { isoWeek: isoWeekKey(new Date()) });
+      line.textContent = connectionStatusText(connectionStatus(next[source], read), read);
+    });
+  }
 
   const clearErrors = () => {
     for (const id of Object.values(ERR_IDS)) {

@@ -10,7 +10,7 @@
   <meta name="description" content="Privacy and data statement for Life Balance Index: local-first, no accounts, no analytics — your assessment data never leaves your device unless you export it.">
   <meta name="theme-color" content="#24344d">
   <link rel="icon" type="image/png" href="./assets/icon-192.png">
-  <link rel="stylesheet" href="./index.css?v=46">
+  <link rel="stylesheet" href="./index.css?v=47">
 </head>
 <body>
   <div class="app-container">
@@ -63,6 +63,27 @@
       </div>
 
       <div class="card">
+        <h3 class="card-header">Connected apps</h3>
+        <p>Two other apps of ours — <strong>Midori</strong> (a ledger) and <strong>Runaway</strong>
+        (a run tracker) — are served from this same address. That means they can hand data to
+        this app through your browser's own storage, <strong>without any network request and
+        without an account</strong>. Nothing is sent anywhere; one page on your device reads
+        what another page on your device wrote.</p>
+        <ul style="padding-left: 20px;">
+          <li>It is <strong>off until you switch it on</strong>, per app, on the Profile &amp;
+            Data page — and separately in the source app, which has its own switch controlling
+            whether it shares at all. Both ends must agree.</li>
+          <li>Only <strong>aggregates</strong> cross over: monthly income and expenses from
+            Midori; days run and total minutes from Runaway. Never a transaction, never a
+            merchant, never a run note, never a name.</li>
+          <li>What arrives is <strong>pre-filled into the weekly review for you to confirm or
+            correct</strong>, never applied to a score behind your back.</li>
+          <li>Switching a connection off stops the reading immediately. It is a setting in this
+            app, so it survives an erase and is not part of any backup you export.</li>
+        </ul>
+      </div>
+
+      <div class="card">
         <h3 class="card-header">Third parties</h3>
         <p>None. All assets — including fonts — are served from the app's own origin.
         The app makes <strong>no third-party network requests at all</strong>.</p>
@@ -101,7 +122,12 @@
         อุปกรณ์ของคุณเท่านั้น ไม่มีเซิร์ฟเวอร์ ไม่มีการติดตาม และไม่มีการเก็บข้อมูลการใช้งาน
         แอปไม่เชื่อมต่อกับบริการภายนอกใด ๆ (ฟอนต์ทั้งหมดให้บริการจากโดเมนของแอปเอง)
         ข้อมูลจะออกจากอุปกรณ์ก็ต่อเมื่อคุณเลือก "ส่งออกข้อมูลสำรอง" หรือแชร์ "รหัสเปรียบเทียบ"
-        (ซึ่งมีเพียงชื่อ ระดับ คะแนน และคะแนน 8 ด้าน ไม่มีคำตอบดิบหรือข้อมูลสุขภาพ) การกด
+        (ซึ่งมีเพียงชื่อ ระดับ คะแนน และคะแนน 8 ด้าน ไม่มีคำตอบดิบหรือข้อมูลสุขภาพ)
+        แอป Midori และ Runaway ของเราอยู่บนโดเมนเดียวกัน จึงส่งข้อมูลให้แอปนี้ผ่านที่เก็บข้อมูล
+        ในเบราว์เซอร์ได้โดยไม่ต้องต่อเน็ตและไม่ต้องมีบัญชี ต้องเปิดสวิตช์ทั้งสองฝั่งก่อนจึงจะทำงาน
+        และส่งเฉพาะยอดรวม (รายรับ-รายจ่ายต่อเดือน จำนวนวันและนาทีที่วิ่ง) ไม่มีรายการ ชื่อ
+        หรือบันทึกใด ๆ ข้อมูลที่ได้จะถูกเติมในแบบทบทวนรายสัปดาห์ให้คุณยืนยันหรือแก้ไข
+        ไม่ถูกนำไปคิดคะแนนเองโดยอัตโนมัติ การกด
         "รีเซ็ตข้อมูล" หรือล้างข้อมูลเว็บไซต์จะลบข้อมูลทั้งหมดอย่างถาวร แอปนี้เป็นการประเมิน
         ตนเอง ไม่ใช่การวินิจฉัยทางการแพทย์ หากต้องการความช่วยเหลือ สายด่วนสุขภาพจิต
         กรมสุขภาพจิต โทร <strong>1323</strong> (ฟรี ตลอด 24 ชม.)</p>

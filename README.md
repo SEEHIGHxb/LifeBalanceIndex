@@ -68,6 +68,19 @@ set in Sarabun.
   Gender and employment move only benchmarks and recommendations; a
   relationship-status change refines the relationships score at the next monthly
   check-in. Day-to-day quantities stay in the Weekly Review, not here
+- **Connected sources**: two sibling apps of ours — **Midori** (a ledger) and
+  **Runaway** (a run tracker) — are served from the same origin, so they can hand
+  aggregate facts over through `localStorage` with **no network request, no
+  account, and no change to `default-src 'self'`**. Each source app writes; this
+  app only reads, and only when switched on at *both* ends. What arrives
+  pre-fills the matching weekly-review boxes with a source chip and the window it
+  covers, for you to confirm or correct — never applied to a score behind your
+  back, and never overwriting an answer you gave (someone who runs *and* swims
+  raises the number themselves). The payload is treated as untrusted input: shape,
+  version, timestamp and every number are validated, and no string it contains is
+  ever rendered, so the XSS surface does not exist rather than being escaped. A
+  run log covering the wrong week, or a ledger older than 35 days, is reported as
+  stale and never used
 - **Backup**: one-click JSON export / import, on the Profile & Data page
 - **Hash routing** (`#/dashboard`, `#/review`, `#/aspect/<key>`, `#/checkin`, ...) — browser back/forward work
 - **Radar chart**: dependency-free SVG rendering of the 8 aspects

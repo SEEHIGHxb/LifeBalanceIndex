@@ -16,6 +16,10 @@
 //                             put, no field small enough to make iOS zoom, no
 //                             tap target under 44px, no radar label off the
 //                             card, and the radar near the top of the page.
+//   6. connected pre-fill  -> a payload written by a sibling app on this origin
+//                             reaches the review, names its source, lands on the
+//                             per-day unit, and stops the moment it is switched
+//                             off
 //
 // Usage: node tests/e2e.mjs <base-url>
 import { chromium } from "playwright";
@@ -300,10 +304,112 @@ try {
   problems.push(`flow5 (mobile layout): ${err.message}`);
 }
 
+// --- FLOW 6: a connected app pre-fills the weekly review ---
+// The unit suite proves the rules; this proves the wiring — that a payload
+// written by another page on this origin actually reaches the form, carries its
+// source, and lands on the PER-DAY unit. 102 minutes over 3 days must appear as
+// 34, the defect this whole feature was most likely to ship with.
+//
+// Runs in Thai (flow 3 left it there) and at 375px (flow 5), so it asserts on
+// input values and the chip — "Runaway" is a proper noun, identical in both
+// languages and taken from our own constant, never from the payload.
+try {
+  await page.evaluate(() => {
+    // Unpadded, matching season.js isoWeekKey — "2026-W3", not "2026-W03". A
+    // padded key still matches the reader's regex and then compares unequal, so
+    // seeding one here would make this flow fail for nine weeks a year.
+    const now = new Date();
+    const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const week = Math.ceil(((d - new Date(Date.UTC(d.getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7);
+
+    // Local calendar dates: toISOString() would report yesterday for an evening
+    // east of Greenwich, and the window would not contain the day it describes.
+    const iso = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() || 7) - 1));
+
+    localStorage.setItem("lifequest_connections", JSON.stringify({ midori: false, runaway: true }));
+    localStorage.setItem("lbi_bridge_runaway", JSON.stringify({
+      v: 1,
+      source: "runaway",
+      writtenAt: now.toISOString(),
+      window: { isoWeek: `${d.getUTCFullYear()}-W${week}`, from: iso(monday), to: iso(now) },
+      facts: { activeDays: 3, totalMinutes: 102, minutesPerActiveDay: 34, runsWithoutDuration: 1 }
+    }));
+  });
+
+  // Flow 2 already submitted this week's review, so clear it and back-date the
+  // baseline the same way flow 2 did — otherwise the form is not due.
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem("lifequest_state"));
+    s.reviews = [];
+    s.baseline.date = new Date(Date.now() - 8 * 86400000).toISOString();
+    localStorage.setItem("lifequest_state", JSON.stringify(s));
+  });
+  await page.reload({ waitUntil: "networkidle" });
+  await page.click("#tab-review");
+  await page.waitForSelector("#weekly-review-form", { timeout: 10000 });
+
+  const days = await page.inputValue("#rev-weeklyVigorousDays");
+  const mins = await page.inputValue("#rev-weeklyVigorousMins");
+  if (days !== "3") problems.push(`flow6: vigorous days pre-filled "${days}", expected "3"`);
+  if (mins !== "34") {
+    problems.push(`flow6: vigorous minutes pre-filled "${mins}", expected "34" — 102 min over 3 days is PER DAY`);
+  }
+
+  // The source must be visible on the boxes it filled, and only on those.
+  const chips = await page.evaluate(() => Array.from(
+    document.querySelectorAll("#weekly-review-form .prefill-chip"),
+    el => `${el.closest("label")?.getAttribute("for") || "?"}:${el.textContent.trim()}`
+  ).sort());
+  const expected = ["rev-weeklyVigorousDays:Runaway", "rev-weeklyVigorousMins:Runaway"];
+  if (JSON.stringify(chips) !== JSON.stringify(expected)) {
+    problems.push(`flow6: source chips were ${JSON.stringify(chips)}, expected ${JSON.stringify(expected)}`);
+  }
+
+  // Running is vigorous by definition; a runner who also walks keeps their own
+  // answer rather than having it overwritten.
+  const walking = await page.inputValue("#rev-weeklyWalkingMins");
+  const walkingChip = await page.$("#weekly-review-form label[for='rev-weeklyWalkingMins'] .prefill-chip");
+  if (walkingChip) problems.push("flow6: the walking box must never be pre-filled from a run log");
+
+  // Submitting must still go through the ordinary gate: the answer is the
+  // user's, so it lands in the profile and the review exactly like a typed one.
+  await page.click('#weekly-review-form button[type="submit"]');
+  await page.waitForFunction(() => {
+    const s = JSON.parse(localStorage.getItem("lifequest_state") || "{}");
+    return s.reviews && s.reviews.length > 0;
+  }, { timeout: 5000 });
+  await page.keyboard.press("Escape");
+
+  const after = await readState();
+  if (after?.profile?.weeklyVigorousDays !== 3 || after?.profile?.weeklyVigorousMins !== 34) {
+    problems.push(`flow6: pre-filled values did not land in the profile (${after?.profile?.weeklyVigorousDays} days, ${after?.profile?.weeklyVigorousMins} min)`);
+  }
+  if (String(after?.profile?.weeklyWalkingMins ?? "") !== walking) {
+    problems.push("flow6: submitting a pre-filled review changed the walking answer");
+  }
+
+  // Switching the connection off must stop the pre-fill immediately.
+  await page.evaluate(() => {
+    localStorage.setItem("lifequest_connections", JSON.stringify({ midori: false, runaway: false }));
+    const s = JSON.parse(localStorage.getItem("lifequest_state"));
+    s.reviews = [];
+    localStorage.setItem("lifequest_state", JSON.stringify(s));
+  });
+  await page.reload({ waitUntil: "networkidle" });
+  await page.click("#tab-review");
+  await page.waitForSelector("#weekly-review-form", { timeout: 10000 });
+  const offChips = await page.$$("#weekly-review-form .prefill-chip");
+  if (offChips.length) problems.push(`flow6: ${offChips.length} chip(s) survived switching the connection off`);
+} catch (err) {
+  problems.push(`flow6 (connected pre-fill): ${err.message}`);
+}
+
 await browser.close();
 
 if (problems.length) {
   console.error("E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("e2e passed: onboarding, the weekly review, TH persistence, the share card, and the phone layout all work");
+console.log("e2e passed: onboarding, the weekly review, TH persistence, the share card, the phone layout, and the connected pre-fill all work");

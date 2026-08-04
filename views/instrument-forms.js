@@ -24,16 +24,22 @@ const REQ_MARK = `<span class="req" aria-hidden="true">*</span>`;
 //   placeholder -> a language-neutral hint (digits only, no translation)
 //   field       -> a validation.js FIELD_CONSTRAINTS key, so validateScope can
 //                  range-check the value on the same step it is entered
+//   note        -> a caption under the input, wired to it with aria-describedby
+//                  so it is heard rather than merely seen. Used by the weekly
+//                  review to say where a pre-filled number came from. The caller
+//                  owns escaping, exactly as it already does for `label`.
 export function numberField(id, label, value, attrs = "", opts = {}) {
-  const { required = false, placeholder = "", field = "" } = opts;
+  const { required = false, placeholder = "", field = "", note = "" } = opts;
   const req = required ? ` ${REQ_MARK}` : "";
   const ph = placeholder ? ` placeholder="${placeholder}"` : "";
   const dataField = field ? ` data-field="${field}"` : "";
   const dataReq = required ? ` data-required="1"` : "";
+  const describedBy = note ? ` aria-describedby="${id}-note"` : "";
+  const noteEl = note ? `\n      <p class="field-note" id="${id}-note">${note}</p>` : "";
   return `
     <div class="form-group">
       <label for="${id}">${label}${req}</label>
-      <input type="number" id="${id}" class="form-control" value="${value}"${ph}${dataField}${dataReq} ${attrs}>
+      <input type="number" id="${id}" class="form-control" value="${value}"${ph}${dataField}${dataReq}${describedBy} ${attrs}>${noteEl}
       <span class="field-error d-none" id="${id}-err" aria-live="polite"></span>
     </div>`;
 }

@@ -144,6 +144,32 @@ export function bmiScore(profile) {
   return Math.max(25, (bmi / 18.5) * 100); // Underweight
 }
 
+// Reported sleep duration -> 0-100 ladder. Returns null when no duration is on
+// file, so callers OMIT it rather than fabricate a floor of 50 (finding #7) —
+// the same contract bmiScore uses above.
+export function sleepDurationScore(profile) {
+  const duration = parseFloat(profile.sleepHours || 0);
+  if (!(duration > 0)) return null;
+  if (duration >= 7 && duration <= 9) return 100;
+  if (duration >= 6 && duration < 7) return 75;
+  return 50;
+}
+
+// The sleep component: an even blend of the duration ladder and measured
+// quality, falling back to quality alone when no duration was reported. A
+// genuinely short night (< 6h) still scores low; an ABSENT one does not.
+export function sleepScore(profile, qualityScore) {
+  const F_duration = sleepDurationScore(profile);
+  return F_duration === null ? qualityScore : (0.5 * F_duration) + (0.5 * qualityScore);
+}
+
+// Nutrition: vegetable portions (5/day maxes it) and water (2.5L/day), evenly.
+export function nutritionScore(profile) {
+  const F_veg = Math.min(100, (parseFloat(profile.vegetablePortions || 0) / 5) * 100);
+  const F_water = Math.min(100, (parseFloat(profile.waterLiters || 0) / 2.5) * 100);
+  return (0.5 * F_veg) + (0.5 * F_water);
+}
+
 // Single-use plastic pieces per DAY -> 0-100 (Thai average ~3/day post-ban).
 export function plasticScore(profile) {
   const pieces = parseInt(profile.singleUsePlastics || 0);
@@ -171,9 +197,16 @@ export function futureStudyScore(profile) {
   return Math.min(100, (parseFloat(profile.weeklyLearningHours || 0) / 4) * 100);
 }
 
-// Savings-rate bonus points on the finance score (a 20% rate maxes the +10).
+// Savings habit as a 0-100 component (a 20% rate maxes it). This is what the
+// aspect page's "Savings habit" bar shows.
+export function savingsHabitScore(profile) {
+  return Math.min(100, (parseFloat(profile.savingsRate || 0) / 20) * 100);
+}
+
+// The same curve scaled to its contribution on the finance score (max +10), so
+// the bar and the bonus cannot drift apart.
 export function savingsBonus(profile) {
-  return Math.min(10, (parseFloat(profile.savingsRate || 0) / 20) * 10);
+  return savingsHabitScore(profile) / 10;
 }
 
 // The forms ASK for a baht amount and store a RATE. Asking for a percentage
@@ -268,27 +301,12 @@ export function calculatePhysicalScore(profile, jssAnswers) {
   // instead its 0.2 weight is redistributed across the measured components.
   const S_bmi = bmiScore(profile);
 
-  // 3. Sleep quality (4 items, each 0-5, raw 0-20)
-  const F_quality = sleepQualityScore(rawSum(jssAnswers));
-
-  // Duration folds in only when reported. A genuinely short night (< 6h) still
-  // scores low, but an ABSENT duration no longer fabricates a floor of 50 —
-  // sleep then reflects the measured quality alone.
-  const duration = parseFloat(profile.sleepHours || 0);
-  let S_sleep;
-  if (duration > 0) {
-    const F_duration = duration >= 7 && duration <= 9 ? 100 : (duration >= 6 && duration < 7 ? 75 : 50);
-    S_sleep = (0.5 * F_duration) + (0.5 * F_quality);
-  } else {
-    S_sleep = F_quality;
-  }
+  // 3. Sleep: quality (4 items, each 0-5, raw 0-20) blended with duration,
+  // which folds in only when reported (see sleepScore).
+  const S_sleep = sleepScore(profile, sleepQualityScore(rawSum(jssAnswers)));
 
   // 4. Nutrition
-  const portions = parseFloat(profile.vegetablePortions || 0);
-  const F_veg = Math.min(100, (portions / 5) * 100);
-  const liters = parseFloat(profile.waterLiters || 0);
-  const F_water = Math.min(100, (liters / 2.5) * 100);
-  const S_nutrition = (0.5 * F_veg) + (0.5 * F_water);
+  const S_nutrition = nutritionScore(profile);
 
   // Weighted aggregate. A null component (BMI without measurements) drops out
   // and the surviving weights are renormalized, so nothing is ever imputed.

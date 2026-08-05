@@ -1,6 +1,6 @@
 // chart.js - LifeQuest Interactive SVG Radar Chart Renderer
 
-import { t, tp } from "./i18n.js";
+import { t, tp, dateLocale } from "./i18n.js";
 
 export const ASPECT_LABELS = {
   finance: "Finance",
@@ -121,7 +121,14 @@ export function renderTrendChart(containerId, trend) {
     svg.appendChild(path);
   }
 
-  // Points + first/last date labels
+  // Points + first/last date labels.
+  //
+  // Both go through dateLocale(), as every other date site in the app does.
+  // Bare toLocaleDateString() takes the BROWSER's locale, not the app's, so a
+  // Thai UI rendered en-US dates on the dashboard chart — the one date the user
+  // sees every session. The axis label takes the short day+month form the
+  // sibling views use: the full form does not fit in 9px at the chart edge.
+  const shortDate = iso => new Date(iso).toLocaleDateString(dateLocale(), { day: "numeric", month: "short" });
   trend.forEach((pt, i) => {
     const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     dot.setAttribute("cx", xFor(i));
@@ -131,7 +138,7 @@ export function renderTrendChart(containerId, trend) {
     dot.setAttribute("stroke", "#ffffff");
     dot.setAttribute("stroke-width", "1.5");
     const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
-    title.textContent = `${new Date(pt.date).toLocaleDateString()}: ${pt.value}`;
+    title.textContent = `${new Date(pt.date).toLocaleDateString(dateLocale(), { day: "numeric", month: "short", year: "numeric" })}: ${pt.value}`;
     dot.appendChild(title);
     svg.appendChild(dot);
 
@@ -144,7 +151,7 @@ export function renderTrendChart(containerId, trend) {
       label.setAttribute("fill", "var(--color-text-secondary)");
       label.style.fontFamily = "var(--font-mono)";
       label.style.fontSize = "9px";
-      label.textContent = new Date(pt.date).toLocaleDateString();
+      label.textContent = shortDate(pt.date);
       svg.appendChild(label);
     }
   });

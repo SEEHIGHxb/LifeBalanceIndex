@@ -5,6 +5,13 @@
 // save actually stores (profile fields + baseline raw instrument sums), so
 // they stay correct after re-loads. Components that need a survey baseline
 // are omitted for saves made before it existed.
+//
+// EVERY component value here must be a CALL into scoring.js, never arithmetic
+// written out again. The #13 dedup originally only caught formulas that already
+// had a name; five rows were inline object-literal expressions, invisible to it,
+// and two of those (giving, sleep) had silently drifted from the scorer by the
+// time they were found. tests/aspect-parity.test.mjs now pins each row to its
+// scoring.js counterpart, so a re-inlined formula fails the build.
 
 import { getAllBenchmarks } from "./benchmarks.js";
 import { t, tp } from "./i18n.js";
@@ -21,10 +28,17 @@ import {
   metMinutes,
   activityScore,
   bmiScore,
+  sleepQualityScore,
+  sleepDurationScore,
+  sleepScore,
+  nutritionScore,
   plasticScore,
   learningScore,
   futureStudyScore,
   savingsAmountFrom,
+  savingsHabitScore,
+  donationVolumeFactor,
+  volunteerFactor,
   DEEP_NORM
 } from "./scoring.js";
 import { DEEP_SECTIONS } from "./surveys.js";
@@ -213,7 +227,7 @@ function financeComponents(p, b, benchmark) {
   items.push({
     key: "savings",
     label: t("Savings habit"),
-    value: clamp100((parseFloat(p.savingsRate || 0) / 20) * 100),
+    value: clamp100(savingsHabitScore(p)),
     // Both figures: the baht is what they entered, the rate is what is scored.
     detail: tp("Saving {thb} THB/mo = {rate}% of income (20%+ maxes this)", {
       thb: savingsAmountFrom(p.savingsRate, p.income).toLocaleString(),
@@ -234,17 +248,21 @@ function physicalComponents(p, b) {
   if (bmi !== null) {
     items.push({ key: "body", label: t("Body composition"), value: clamp100(bmi), detail: t("Asian BMI bands (18.5-22.9 ideal)") });
   }
-  const duration = parseFloat(p.sleepHours || 0);
-  const durationScore = duration >= 7 && duration <= 9 ? 100 : duration >= 6 && duration < 7 ? 75 : 50;
+  // Sleep, on the same terms as calculatePhysicalScore: an unreported duration
+  // is omitted rather than floored at 50, so the label and the caption say
+  // which halves were actually measured. Neither half measured = no row.
+  const durationScore = sleepDurationScore(p);
   if (b && Number.isFinite(b.jss)) {
-    const quality = 100 - b.jss * 5;
-    items.push({ key: "sleep", label: t("Sleep"), value: clamp100(0.5 * durationScore + 0.5 * quality), detail: tp("{h}h/night + baseline quality {jss}/20 issues", { h: duration, jss: b.jss }) });
-  } else {
-    items.push({ key: "sleep", label: t("Sleep duration"), value: clamp100(durationScore), detail: tp("{h}h/night (7-9h ideal)", { h: duration }) });
+    const quality = sleepQualityScore(b.jss);
+    if (durationScore === null) {
+      items.push({ key: "sleep", label: t("Sleep quality"), value: clamp100(sleepScore(p, quality)), detail: tp("Baseline quality {jss}/20 issues — no sleep duration recorded", { jss: b.jss }) });
+    } else {
+      items.push({ key: "sleep", label: t("Sleep"), value: clamp100(sleepScore(p, quality)), detail: tp("{h}h/night + baseline quality {jss}/20 issues", { h: p.sleepHours, jss: b.jss }) });
+    }
+  } else if (durationScore !== null) {
+    items.push({ key: "sleep", label: t("Sleep duration"), value: clamp100(durationScore), detail: tp("{h}h/night (7-9h ideal)", { h: p.sleepHours }) });
   }
-  const veg = Math.min(100, (parseFloat(p.vegetablePortions || 0) / 5) * 100);
-  const water = Math.min(100, (parseFloat(p.waterLiters || 0) / 2.5) * 100);
-  items.push({ key: "nutrition", label: t("Nutrition"), value: clamp100(0.5 * veg + 0.5 * water), detail: tp("{veg} veg portions, {water}L water/day", { veg: p.vegetablePortions || 0, water: p.waterLiters || 0 }) });
+  items.push({ key: "nutrition", label: t("Nutrition"), value: clamp100(nutritionScore(p)), detail: tp("{veg} veg portions, {water}L water/day", { veg: p.vegetablePortions || 0, water: p.waterLiters || 0 }) });
   return items;
 }
 
@@ -291,8 +309,10 @@ function personalGoalsComponents(p, b) {
 function socialContributionComponents(p, b) {
   const don = parseFloat(p.monthlyDonations || 0);
   const items = [
-    { key: "giving", label: t("Giving"), value: clamp100(Math.min(100, (don / 500) * 100)), detail: tp("{thb} THB/month (500+ maxes this)", { thb: Math.round(don).toLocaleString() }) },
-    { key: "volunteering", label: t("Volunteering"), value: clamp100(Math.min(100, (parseFloat(p.volunteeringHours || 0) / 4) * 100)), detail: tp("{h}h/month (4h+ maxes this)", { h: p.volunteeringHours || 0 }) }
+    // Both caps are named, because the score honours both: 500 THB/mo is the
+    // flat one, 2% of income the proportional one, whichever comes first.
+    { key: "giving", label: t("Giving"), value: clamp100(donationVolumeFactor(p)), detail: tp("{thb} THB/month (500+/mo, or 2% of income, maxes this)", { thb: Math.round(don).toLocaleString() }) },
+    { key: "volunteering", label: t("Volunteering"), value: clamp100(volunteerFactor(p)), detail: tp("{h}h/month (4h+ maxes this)", { h: p.volunteeringHours || 0 }) }
   ];
   if (b && Number.isFinite(b.ptm)) {
     items.push({ key: "ptm", label: t("Prosocial habits (PTM)"), value: clamp100((b.ptm / 20) * 100), detail: tp("Raw {n}/20 at baseline", { n: b.ptm }) });

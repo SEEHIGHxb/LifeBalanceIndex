@@ -11,8 +11,8 @@ browsers can find the statement. Summary of the current policy:
 - No accounts, no backend, no analytics, no telemetry, no third-party requests
   (fonts are self-hosted).
 - Data leaves the device only via explicit user export (JSON backup) or
-  Comparison Codes (name, level, points, and the eight aspect scores — never
-  raw answers, income, or health details).
+  Comparison Codes (display name and the eight aspect scores — never raw
+  answers, income, health details, age, level, or points).
 - Thailand PDPA: the developer never receives assessment data and is not a
   data controller for it.
 - Not medical advice; Thai Dept. of Mental Health hotline: **1323**.

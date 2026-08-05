@@ -16,6 +16,79 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
 
+## [2.14.1] — 2026-08-05 (APP_VERSION 48)
+
+### The aspect page now shows the numbers the scorer actually computed
+
+Two component bars on the aspect pages disagreed with the score printed above
+them. Both had the same cause, and it is worth writing down because the cause
+outlived two attempts to fix it.
+
+**Giving was wrong from the day it was written.** `donationVolumeFactor` maxes
+out at 2% of income *or* 500 THB/month, whichever comes first. The bar only ever
+implemented the 500 branch. On 8,000 THB/month, donating 200 scored 100 and
+displayed 40 — and the caption underneath ("500+ maxes this") agreed with the
+wrong number, so nothing on screen contradicted it. It fires for every income
+under ~25,000 THB/month.
+
+**Sleep drifted later, during a fix aimed at exactly this.** v41's finding #7
+stopped an *absent* sleep duration from fabricating a floor of 50, and its note
+says the change brought the scorer in line with `aspects.js`. It didn't:
+`aspects.js` had no null path at all. The fabricated 50 the fix existed to
+remove stayed live on the page it was removed for.
+
+**Why the "single source of truth" refactor missed both.** Finding #13 deduped
+every formula in `aspects.js` that had a *name* — `cfpbScore`, `who5Score`,
+`activityScore`, and the rest. Five rows were inline arithmetic inside object
+literals, with no identifier to find them by, so they survived untouched while
+the file's header comment was upgraded to claim they hadn't. Three of the five
+happened to still agree with the scorer. That was luck, not safety.
+
+**The fix, therefore, is all five, not the two that broke.** `savingsHabitScore`,
+`sleepDurationScore`, `sleepScore`, and `nutritionScore` are now named exports;
+every component row in `aspects.js` is a call into `scoring.js`. `savingsBonus`
+is derived from `savingsHabitScore` rather than restating its curve.
+
+`tests/aspect-parity.test.mjs` pins each row to its counterpart across profiles
+chosen to separate the formulas that were confused — including an income below
+the 2% crossover and a missing sleep duration. It fails on a re-inlined formula.
+It would have failed on 2026-07-14, the day the sleep divergence shipped.
+
+**Visible changes.** A user with no sleep duration on file now sees a "Sleep
+quality" row scored on measured quality alone, instead of a "Sleep" row diluted
+toward 50 by a duration they never gave; if neither duration nor quality was
+measured, the row is omitted rather than invented, matching what body
+composition already did. The giving caption names both caps.
+
+### Also in this release
+
+**The dashboard chart speaks Thai now.** `chart.js` called `toLocaleDateString()`
+with no locale on the trend axis labels and the point tooltips — the only two
+date sites in the app that did. Bare, it takes the *browser's* locale rather
+than the app's, so a Thai UI rendered en-US dates on the one chart the user sees
+every session. Both now pass `dateLocale()` like every sibling view; the axis
+label uses the short day+month form, because the full one does not fit in 9px.
+
+**A methodology table had no row separators.** `index.css` used
+`var(--color-border)` once, and that token has never been declared anywhere —
+so `.provenance-table` rows fell back to no border at all. Now
+`--color-card-border`, the token the other 33 sites use. A repo-wide sweep
+confirms this was the only undefined custom property.
+
+**The privacy statement overstated what a Comparison Code carries.** Both
+`privacy.html` and its `docs/privacy.md` stub said codes encode "display name,
+level, points, and the eight aspect scores". Level and points were deliberately
+dropped in v2 — `comparison-code.js` explains that points measured tenure with
+the app rather than anything about the person. The payload is `{v, n, a[8]}`.
+The error was in the safe direction (claiming more leaves the device than does),
+and `README.md` already had it right, but the privacy statement is the one file
+that has to be exact. All three now say name and scores, and name age, level,
+and points among what is never included — three, because the first pass fixed
+the English card and the `docs/` stub and missed the Thai summary lower down the
+same file, which carried the identical sentence. An English-only correction to a
+bilingual privacy page is not a correction. The "Last updated" date moved with
+the content.
+
 ## [2.14.0] — 2026-08-03 (APP_VERSION 47)
 
 ### Connected sources — Midori and Runaway can fill in the weekly review

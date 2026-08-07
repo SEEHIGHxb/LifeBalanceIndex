@@ -66,6 +66,18 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Reserve the scrollbar's column whether or not a scrollbar is present.
+   Without this the centered .app-container shifts sideways by the scrollbar
+   width every time a route swaps a tall view for a short one — the dashboard
+   scrolls, the Weekly Review often does not — so the header, the tabs, and the
+   whole card grid visibly jump on navigation. `stable` keeps the gutter
+   allocated on the inline-end edge at all times. It belongs on <html>, the
+   scrolling element; body already carries overflow-x: hidden, which would
+   suppress the gutter rather than reserve it. */
+html {
+  scrollbar-gutter: stable;
+}
+
 /* Scrollbar — quiet neutral */
 ::-webkit-scrollbar {
   width: 8px;
@@ -510,6 +522,10 @@ header {
   font-size: 0.78rem;
   font-weight: 600;
   border: 1px solid var(--color-navy);
+  /* The badge carries a title explaining that level means age, not points.
+     cursor:help is the only thing that tells a mouse user the explanation is
+     there to be asked for. */
+  cursor: help;
 }
 
 .xp-bar-container {
@@ -564,7 +580,7 @@ header {
 /* Small tag pills (mission type, tier) */
 .holo-badge {
   font-family: var(--font-sans);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   background: #f2efe8;
@@ -942,7 +958,7 @@ header {
 }
 
 .component-detail {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
   margin-top: 3px;
 }
@@ -950,7 +966,7 @@ header {
 /* Benchmark percentiles (dashboard) */
 .benchmark-line {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
   margin-top: 4px;
 }
@@ -1108,7 +1124,7 @@ header {
 
 .suggestion-meta {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--color-gold);
   margin-top: 4px;
 }
@@ -1548,13 +1564,19 @@ header {
 .completeness-note strong { color: var(--color-gold); }
 .completeness-note a { color: var(--color-gold); font-weight: 600; }
 
-/* --- Confidence tiers (Phase 2a) --- */
+/* --- Confidence tiers (Phase 2a) ---
+   0.75rem (12px), not the 0.62rem this used to be. These badges are the
+   trust layer: "High" / "Partial" / "Estimated" is what tells a reader how
+   much to believe the number sitting next to it, and at 9.92px it was the
+   least legible text on a page whose entire pitch is cited honesty. Uppercase
+   with 0.03em tracking costs legibility on top of the size, so the floor
+   matters more here than for ordinary body copy. */
 .confidence-badge,
 .component-confidence {
   display: inline-block;
   vertical-align: middle;
   font-family: var(--font-sans);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -1611,13 +1633,15 @@ header {
 .benchmark-plain-lead .percentile-band {
   margin-left: 6px;
 }
-/* 0.72rem is the size .benchmark-line already sets for this whole block; the
-   0.75rem override was making the longest detail ("… (vs participation rates)")
-   overshoot the card by 6px and take a second line. Where a longer percentile
-   still forces a wrap, the nowrap below guarantees it breaks before the
-   parenthetical rather than inside it. */
+/* Matches .benchmark-line, which now sets 0.75rem for this whole block. This
+   was held at 0.72rem because 0.75rem made the longest detail
+   ("… (vs participation rates)") overshoot the card by 6px; the 12px floor is
+   worth more than the saved line, and overshoot is no longer the outcome —
+   the nowrap below keeps the parenthetical whole, so a long percentile now
+   wraps cleanly inside the card instead of spilling past its edge. Kept as a
+   rule rather than deleted because the color still differs from the parent. */
 .benchmark-detail {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
 }
 /* Keep the method tag whole: "(vs participation rates)" was breaking after
@@ -1630,20 +1654,23 @@ header {
 .benchmark-verified { color: var(--color-navy); font-weight: 700; }
 .percentile-definition {
   margin-top: 6px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
   line-height: 1.4;
 }
 .benchmark-method-line { margin-top: 4px; }
 
-/* Band chip: a coarse plain-language label next to the number. Sized to stay
-   on the sentence's line: nowrap so a two-word band ("Around average") can
-   never split, and trimmed slightly (0.62->0.6rem, 7->6px, tighter tracking)
-   because it is a label, not something to read word by word. */
+/* Band chip: a coarse plain-language label next to the number. nowrap so a
+   two-word band ("Around average") can never split, and tight tracking because
+   it is a label, not something to read word by word. The size was trimmed to
+   0.6rem to keep it on the sentence's line; at 9.6px it was the smallest text
+   in the app, and "Bottom 25%" is a verdict about the reader — too important
+   to be the hardest thing on the page to read. Back to the 12px floor; the
+   nowrap still stops it splitting, it just takes the line it needs. */
 .percentile-band {
   display: inline-block;
   font-family: var(--font-sans);
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -1671,7 +1698,7 @@ header {
   min-width: 1.55rem;
   text-align: center;
   font-family: var(--font-sans);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   padding: 1px 7px;
@@ -1700,7 +1727,7 @@ header {
    solid chip rather than the dashed "not filled in yet" one. */
 .grade-unranked {
   color: var(--color-text-secondary);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -1748,12 +1775,31 @@ header {
   color: var(--color-gold);
 }
 
-/* Keeps the grade chip and the score % on one baseline in a dashboard row. */
+/* Keeps the grade chip and the raw score on one baseline in a dashboard row. */
 .aspect-row-figures {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   white-space: nowrap;
+}
+
+/* The "/100" after the raw aspect score.
+ *
+ * This exists because the row used to render the score as "20%" directly
+ * beside a grade chip reading "B" — two numbers from two unrelated scales,
+ * same size, same weight, 8px apart. The letter comes from the percentile
+ * (Environment: 86th, hence B); the number is the raw 0-100 component score.
+ * A reader scanning left to right got a B and then a 20, and nothing on the
+ * row said which one was the verdict.
+ *
+ * The "%" was the active lie: a raw score out of 100 is not a percentage of
+ * anything, and "%" is exactly the suffix the neighbouring percentile would
+ * carry. Spelling the denominator out kills the ambiguity in three glyphs.
+ * Dimmed and lighter so "/100" reads as a unit on the number rather than as a
+ * second figure competing with it. */
+.aspect-row-score-max {
+  font-weight: 400;
+  opacity: 0.65;
 }
 
 .grade-explainer p {
@@ -1830,7 +1876,7 @@ header {
 .balance-band {
   display: inline-block;
   font-family: var(--font-sans);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -1995,7 +2041,7 @@ header {
 .radar-legend-caption {
   flex-basis: 100%;
   margin: 0.1rem 0 0;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   text-align: center;
   color: var(--color-text-secondary);
 }

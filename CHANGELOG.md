@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `47`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `50`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,88 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.3] — 2026-08-07 (APP_VERSION 50)
+
+### One row, two scales, no way to tell which was the verdict
+
+A design critique run against the live app rather than the stylesheet: the whole
+product driven in a real browser at 1280x800 and 375x812, with every text node's
+computed contrast measured against its resolved background. Contrast came back
+with **zero AA failures on every screen** — the palette is genuinely fine. Three
+things were not, plus one layout fix asked for alongside them.
+
+**The dashboard put a grade and a raw score side by side and let the reader
+guess.** `Environment  Ⓑ  20%` — the letter is derived from the percentile (86th,
+hence B), the number is the raw 0-100 component score, and they sat 8px apart in
+the same size and weight. `Humanity's Future  Ⓕ  0%` sat above "Ahead of about 8%
+of Thai workers". The `%` was the active lie: a raw score out of 100 is not a
+percentage of anything, and `%` is exactly the suffix the neighbouring percentile
+would carry. Now `20/100`, with the denominator dimmed so it reads as a unit
+rather than a second competing figure. Three glyphs, ambiguity gone. This is the
+concrete worst case of the grade-band/balance-band juxtaposition parked in the
+v2.14.0 review as "decide later".
+
+**`Lv.15` sat directly above a bar reading `0 points this year`.** A level next
+to a progress bar implies the bar fills the level. It does not — the level *is*
+the user's age, which the birthday prompt says plainly further down the same
+screen but nothing on the identity card did. The badge now carries a `title` and
+an `aria-label` saying so, and `cursor: help` to advertise that it explains
+itself. The visual design is untouched.
+
+**The trust layer was the least legible layer.** Confidence badges at 9.92px
+(`HIGH` / `PARTIAL` / `ESTIMATED`), percentile chips at 9.6px (`BOTTOM 25%`),
+grade badges, the balance band, the radar caption, and four detail lines between
+11.2 and 11.8px. These are the labels that tell a reader how much to believe the
+number beside them — in an app whose entire pitch is cited honesty, they were the
+hardest text on the page to read, and uppercase with positive tracking costs
+legibility on top of the size. All eleven now sit at a 0.75rem (12px) floor.
+
+Two of those had comments explaining why they were small, and both comments are
+now rewritten rather than left to rot. `.benchmark-detail` was held at 0.72rem
+because 0.75rem made the longest detail overshoot its card by 6px; the 12px floor
+is worth more than the saved line, and with `.benchmark-method` already
+`nowrap` the string wraps cleanly inside the card instead of spilling — verified,
+not assumed. `.percentile-band` was trimmed to 0.6rem to stay on its sentence's
+line; "Bottom 25%" is a verdict about the reader and too important to be the
+smallest text in the app.
+
+The 9px and 11px numerals on the radar are **deliberately left alone**. They are
+SVG inside a fixed-size chart where the constraint is collision with adjacent
+labels, not the CSS cascade; raising them is a chart-layout change, not a
+font-size change, and it is not in this release.
+
+**And the page shifted sideways on every navigation.** `scrollbar-gutter: stable`
+on `<html>`. The centered `.app-container` moved by the scrollbar's width each
+time a route swapped a tall view for a short one — the dashboard scrolls, the
+Weekly Review often does not — so the header, tabs, and card grid jumped. It goes
+on `<html>`, the scrolling element; `body` carries `overflow-x: hidden`, which
+would suppress the gutter rather than reserve it.
+
+Verified in the browser, not asserted: gutter computes to `stable`; the container's
+left edge is identical across dashboard → review → dashboard (76px each time); no
+HTML text under 12px remains on any of the five routes at either viewport; no
+resized element spills past its card; no card overflows horizontally; no sideways
+pan at 375px. The only sub-12px text left anywhere is the SVG chart numerals named
+above.
+
+- `index.css`: new `html { scrollbar-gutter: stable }` and
+  `.aspect-row-score-max`; `font-size` raised on `.confidence-badge`,
+  `.component-confidence`, `.percentile-band`, `.percentile-definition`,
+  `.benchmark-detail`, `.benchmark-line`, `.component-detail`,
+  `.suggestion-meta`, `.holo-badge`, `.grade-badge`, `.grade-unranked`,
+  `.balance-band`, `.radar-legend-caption`; `cursor: help` on `.level-badge`.
+  No selector renamed or removed.
+- `views/dashboard.js`: the aspect-row figure and the level badge.
+  `renderDashboard`'s signature is unchanged.
+- `th.js`: two keys for the level badge.
+
+**Not fixed, and named so it is not mistaken for done:** the duplicated
+"Personal Wellbeing Assessment" between the header and the onboarding card; the
+heading levels that skip (dashboard H1 → H3 → H4, review H1 → H3); Age's valid
+range living in a placeholder that vanishes on the first keystroke; and the
+desktop hit targets at 19-27px, which pass WCAG 2.1 (44px is AAA there) but would
+miss 2.2's 24x24 AA rule if the target ever moves.
 
 ## [2.14.2] — 2026-08-07 (APP_VERSION 49)
 

@@ -8,6 +8,11 @@
   --bg-primary: #f7f5f0;           /* warm paper */
   --color-card-bg: #ffffff;        /* cards */
   --color-card-border: #e3ded4;    /* muted borders */
+  /* Form-control boundaries, deliberately NOT --color-card-border.
+     WCAG 1.4.11 wants 3:1 for the visual boundary of an input, and #e3ded4 on
+     the field's own white fill is 1.34:1. Card edging is decorative and exempt,
+     so the two cases need two tokens; #767676 is 4.54:1 on #ffffff. */
+  --color-input-border: #767676;
 
   /* Restrained burgundy accent, mapped onto the legacy "gold" hooks */
   --color-gold: #6d2e3f;
@@ -300,7 +305,7 @@ header {
 .form-control {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid var(--color-card-border);
+  border: 1px solid var(--color-input-border);
   border-radius: var(--radius);
   background: #ffffff;
   color: var(--color-text-primary);
@@ -1288,10 +1293,18 @@ header {
 /* Keyboard focus ring.
  *
  * :focus-visible, not :focus — a mouse click should not leave a ring, but Tab
- * always must. Gold rather than navy because the ring has to stay visible on
- * BOTH the paper background and the navy filled buttons; a navy ring vanishes
- * on .btn-primary. .form-control is untouched: it already replaces the outline
- * with its own border + glow, and its class+pseudo specificity wins here. */
+ * always must.
+ *
+ * outline-offset is the load-bearing line, NOT the colour. This comment used to
+ * claim gold was chosen because "a navy ring vanishes on .btn-primary"; gold on
+ * navy is 1.26:1, so it would vanish just as completely. What saves it is the
+ * 2px offset, which draws the ring entirely outside the element on the paper
+ * background — 9.12:1 for gold, and navy would have been 12.55:1 there. Either
+ * colour works. Drop the offset to 0 and every filled navy control loses its
+ * focus indicator at once, so change that number only with a contrast check.
+ *
+ * .form-control is untouched: it already replaces the outline with its own
+ * border + glow, and its class+pseudo specificity wins here. */
 :focus-visible {
   outline: 3px solid var(--color-gold);
   outline-offset: 2px;
@@ -1299,6 +1312,26 @@ header {
 }
 
 .d-none { display: none !important; }
+
+/* Skip link (WCAG 2.4.1). Seven controls sit before <main> on every route, so
+ * a keyboard user re-tabs the whole header on each navigation without one.
+ * Parked off-screen with `top` rather than `.sr-only`, because it has to become
+ * a real, visible, hit-testable target the moment it takes focus. No transition
+ * on `top`: a skip link that slides is a skip link you can miss. */
+.skip-link {
+  position: absolute;
+  top: -60px;
+  left: 8px;
+  z-index: 1300;
+  padding: 10px 16px;
+  background: var(--color-navy);
+  color: #ffffff;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.skip-link:focus { top: 8px; }
 
 /* Visually hidden but available to screen readers (finding #12). */
 .sr-only {

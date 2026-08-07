@@ -47,6 +47,8 @@ export const TH = {
   "Privacy & Data": "ความเป็นส่วนตัวและข้อมูล",
   "Source code & license": "ซอร์สโค้ดและสัญญาอนุญาต",
   "Version {v}": "เวอร์ชัน {v}",
+  // --- Accessibility: skip link (WCAG 2.4.1) ---
+  "Skip to main content": "ข้ามไปยังเนื้อหาหลัก",
   // --- Accessibility route announcer (finding #12) ---
   "Re-assessment": "การประเมินซ้ำ",
   "In-depth assessment": "การประเมินเชิงลึก",

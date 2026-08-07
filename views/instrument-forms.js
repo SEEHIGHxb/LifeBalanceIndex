@@ -13,14 +13,20 @@ import { INSTRUMENTS, DEEP_INSTRUMENTS } from "../surveys.js";
 import { validateProfile } from "../validation.js";
 import { t, tp } from "../i18n.js";
 
-// A red required marker. aria-hidden so a screen reader hears "required" from
-// the control's own state, not a stray asterisk read out mid-label.
+// A red required marker. aria-hidden so the asterisk is not read out mid-label
+// as a stray "star"; requiredness reaches assistive tech through the control's
+// own aria-required instead. That second half used to be a claim rather than a
+// fact — the marker was hidden and no aria-required existed anywhere, so a
+// screen reader user got no signal at all and had to discover which fields
+// block Next by tripping the validator. Every builder below now emits it.
 const REQ_MARK = `<span class="req" aria-hidden="true">*</span>`;
 
 // A number/text input. Backward-compatible: called with (id, label, value,
 // attrs) it renders exactly as before (pre-filled, optional). The trailing
 // opts turn on the blank-first behavior:
-//   required    -> adds the "*" marker and data-required (validateScope gate)
+//   required    -> adds the "*" marker, aria-required, and data-required
+//                  (the last is the validateScope gate; aria-required is what
+//                  a screen reader actually announces, since data-* is inert)
 //   placeholder -> a language-neutral hint (digits only, no translation)
 //   field       -> a validation.js FIELD_CONSTRAINTS key, so validateScope can
 //                  range-check the value on the same step it is entered
@@ -33,7 +39,7 @@ export function numberField(id, label, value, attrs = "", opts = {}) {
   const req = required ? ` ${REQ_MARK}` : "";
   const ph = placeholder ? ` placeholder="${placeholder}"` : "";
   const dataField = field ? ` data-field="${field}"` : "";
-  const dataReq = required ? ` data-required="1"` : "";
+  const dataReq = required ? ` data-required="1" aria-required="true"` : "";
   const describedBy = note ? ` aria-describedby="${id}-note"` : "";
   const noteEl = note ? `\n      <p class="field-note" id="${id}-note">${note}</p>` : "";
   return `
@@ -48,18 +54,27 @@ export function numberField(id, label, value, attrs = "", opts = {}) {
 // group and must match the canonical scale). `displayIndex` is what the user
 // sees; it differs only when some items are skipped as carried-over, so the
 // numbering still reads 1, 2, 3 with no gaps.
+//
+// role="radiogroup" is deliberate, not decoration. aria-required is not a
+// global attribute: ARIA supports it on radiogroup but not on the plain `group`
+// role a bare <fieldset> maps to, so without the role the requiredness would be
+// invalid markup that assistive tech is free to ignore. Overriding the role
+// costs the legend-derived accessible name in some implementations, hence the
+// explicit aria-labelledby back to the legend.
 function radioQuestion(instrKey, itemIndex, item, displayIndex = itemIndex) {
+  const base = `${instrKey}-q${itemIndex}`;
   return `
-    <fieldset class="survey-question" data-required="1">
-      <legend>${displayIndex + 1}. ${t(item.text)} ${REQ_MARK}</legend>
+    <fieldset class="survey-question" data-required="1"
+      role="radiogroup" aria-required="true" aria-labelledby="${base}-legend">
+      <legend id="${base}-legend">${displayIndex + 1}. ${t(item.text)} ${REQ_MARK}</legend>
       <div class="radio-group">
         ${item.options.map(o => `
           <label class="radio-option">
-            <input type="radio" name="${instrKey}-q${itemIndex}" value="${o.v}">
+            <input type="radio" name="${base}" value="${o.v}">
             ${t(o.l)}
           </label>`).join("")}
       </div>
-      <span class="field-error d-none" aria-live="polite"></span>
+      <span class="field-error d-none" id="${base}-err" aria-live="polite"></span>
     </fieldset>`;
 }
 
@@ -128,10 +143,25 @@ function isConditionallyHidden(el) {
   return !!hidden && !hidden.classList.contains("survey-page");
 }
 
-function setError(errEl, message) {
+// Show the message AND wire it to the control it belongs to.
+//
+// The error span is aria-live, so it is spoken once at validation time. That is
+// not enough on its own: the callers only scrollIntoView, they never focus, so
+// a user who tabs back to the field afterwards hears the label alone and the
+// control sounds perfectly valid. aria-invalid plus an aria-describedby link
+// makes the state and the reason travel WITH the field on every later visit.
+// The link is appended, not assigned, so a field that already points at its
+// `-note` caption keeps it.
+function setError(errEl, message, ctrl) {
   if (!errEl) return;
   errEl.textContent = message;
   errEl.classList.remove("d-none");
+  if (!ctrl) return;
+  ctrl.setAttribute("aria-invalid", "true");
+  if (!errEl.id) return;
+  const ids = (ctrl.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean);
+  if (!ids.includes(errEl.id)) ids.push(errEl.id);
+  ctrl.setAttribute("aria-describedby", ids.join(" "));
 }
 
 export function clearScopeErrors(scopeEl) {
@@ -141,6 +171,15 @@ export function clearScopeErrors(scopeEl) {
   });
   scopeEl.querySelectorAll(".input-invalid").forEach(e => e.classList.remove("input-invalid"));
   scopeEl.querySelectorAll(".survey-question-invalid").forEach(e => e.classList.remove("survey-question-invalid"));
+  // Unwire what setError wired. Only the "-err" token is dropped, so a "-note"
+  // caption survives a failed-then-corrected round trip.
+  scopeEl.querySelectorAll("[aria-invalid]").forEach(el => {
+    el.removeAttribute("aria-invalid");
+    const kept = (el.getAttribute("aria-describedby") || "")
+      .split(/\s+/).filter(id => id && !id.endsWith("-err"));
+    if (kept.length) el.setAttribute("aria-describedby", kept.join(" "));
+    else el.removeAttribute("aria-describedby");
+  });
 }
 
 // Validate every visible required control in `scopeEl`. Marks each offender's
@@ -157,7 +196,7 @@ export function validateScope(scopeEl) {
     if (ctrl.tagName === "FIELDSET") return; // instruments handled in step 2
     if (isConditionallyHidden(ctrl)) return;
     if (String(ctrl.value).trim() === "") {
-      setError(ctrl.parentElement.querySelector(".field-error"), requiredMsg);
+      setError(ctrl.parentElement.querySelector(".field-error"), requiredMsg, ctrl);
       ctrl.classList.add("input-invalid");
       fail(ctrl);
     }
@@ -167,7 +206,7 @@ export function validateScope(scopeEl) {
   scopeEl.querySelectorAll("fieldset.survey-question[data-required]").forEach(fs => {
     if (isConditionallyHidden(fs)) return;
     if (!fs.querySelector('input[type="radio"]:checked')) {
-      setError(fs.querySelector(".field-error"), requiredMsg);
+      setError(fs.querySelector(".field-error"), requiredMsg, fs);
       fs.classList.add("survey-question-invalid");
       fail(fs);
     }
@@ -183,7 +222,7 @@ export function validateScope(scopeEl) {
   for (const [field, message] of Object.entries(errors)) {
     const inp = scopeEl.querySelector(`input[data-field="${field}"]`);
     if (!inp) continue;
-    setError(inp.parentElement.querySelector(".field-error"), message);
+    setError(inp.parentElement.querySelector(".field-error"), message, inp);
     inp.classList.add("input-invalid");
     fail(inp);
   }

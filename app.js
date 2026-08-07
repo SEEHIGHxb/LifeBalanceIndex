@@ -15,7 +15,7 @@ import {
   renderMethodology,
   getLumiTip,
   openDialog
-} from "./ui.js?v=48";
+} from "./ui.js?v=49";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -83,6 +83,7 @@ function applyChromeTranslations() {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
   };
+  setText("skip-link", t("Skip to main content"));
   setText("btn-profile", t("Profile"));
   setText("tab-dashboard", t("Overview"));
   setText("tab-review", t("Weekly Review"));
@@ -94,6 +95,23 @@ function applyChromeTranslations() {
   setText("footer-version", tp("Version {v}", { v: APP_VERSION }));
   // The toggle shows the language you would switch TO.
   setText("btn-lang", getLang() === "th" ? "EN" : "ไทย");
+}
+
+// The skip link moves FOCUS to <main>, it does not navigate. Following the
+// href would set location.hash = "#main-view", and routeFromHash resolves
+// anything it doesn't recognise to the dashboard — so the one control meant to
+// save a keyboard user time would silently throw them off their current tab.
+// #main-view already carries tabindex="-1" for exactly this.
+function setupSkipLink() {
+  const link = document.getElementById("skip-link");
+  if (!link) return;
+  const fresh = link.cloneNode(true);
+  link.parentNode.replaceChild(fresh, link);
+  fresh.addEventListener("click", (e) => {
+    e.preventDefault();
+    const main = document.getElementById("main-view");
+    if (main) main.focus();
+  });
 }
 
 function setupLanguageToggle() {
@@ -110,6 +128,7 @@ function setupLanguageToggle() {
 function initializeApp() {
   const state = stateManager.state;
   applyChromeTranslations();
+  setupSkipLink();
   setupLanguageToggle();
   maybeOfferRecovery();
 

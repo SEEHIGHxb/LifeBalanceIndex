@@ -16,6 +16,84 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
 
+## [2.14.2] — 2026-08-07 (APP_VERSION 49)
+
+### The forms tell a screen reader which fields are required
+
+A WCAG 2.1 AA pass over the whole app. Most of it came back clean — the tablist
+is a correct roving-tabindex implementation with Home/End, `openDialog` traps
+Tab both ways and restores focus on close, both charts carry `role="img"` with
+a computed label, and every text colour in the palette clears 4.5:1 with room
+to spare. Four things did not.
+
+**Requiredness reached nobody who couldn't see it.** The blank-first forms mark
+a required field three ways: a red `*`, `data-required="1"`, and a CSS class.
+All three are invisible to assistive technology — the asterisk is deliberately
+`aria-hidden`, and `data-*` carries no semantics. There was no `aria-required`
+anywhere in the app. So a screen reader user met ~20 identical-sounding fields
+per onboarding step, could not tell which ones block Next, and could only find
+out by tripping the validator.
+
+The comment above `REQ_MARK` said the opposite: *"aria-hidden so a screen
+reader hears 'required' from the control's own state."* There was no such
+state. The comment described the design that was intended and asserted it as
+the design that shipped, which is why nobody went looking. It has been rewritten
+to say what is actually true, and `numberField`, `selectField`, and every
+instrument question now emit `aria-required="true"`.
+
+The instrument questions needed a role change to carry it. `aria-required` is
+not global: ARIA supports it on `radiogroup` but not on the plain `group` role
+a bare `<fieldset>` maps to, so the attribute alone would have been markup an
+AT is free to ignore. Each question is now an explicit `role="radiogroup"`, with
+`aria-labelledby` pointing back at its own legend — overriding the role can cost
+the legend-derived accessible name, and losing the question text to gain the
+word "required" would not be a trade.
+
+**An invalid field stopped sounding invalid the moment you looked away.**
+`validateScope` set a visible message and a red border; the error span is
+`aria-live`, so it was announced once. But the callers only `scrollIntoView`,
+they never focus — so a user who tabbed back to the offending field heard the
+label alone, with nothing marking it wrong. `setError` now also sets
+`aria-invalid="true"` and appends the error's id to `aria-describedby`, so the
+state and the reason travel with the field on every later visit.
+`clearScopeErrors` unwires both, stripping only the `-err` token so a field
+that already points at its `-note` caption keeps it.
+
+**Input borders were 1.34:1.** `.form-control` drew its boundary in
+`--color-card-border` (`#e3ded4`) against the field's own white fill. WCAG
+1.4.11 wants 3:1 for the visual boundary of a control. Card edging is
+decorative and exempt, so the two cases needed two tokens rather than one
+darker shared one: `--color-input-border` is `#767676`, 4.54:1 on white.
+
+**No skip link.** Seven controls sit before `<main>` on every route. The link
+is the first tab stop, `href="#main-view"` for the semantics, but the click is
+intercepted — this is a hash-routed app, and letting the browser set
+`location.hash = "#main-view"` would fire the router, which resolves anything
+unrecognised to the dashboard. The one control meant to save a keyboard user
+time would have thrown them off whatever tab they were on.
+
+**Not fixed, and labelled honestly rather than inflated.** `prefers-reduced-motion`
+still misses the toast, the typewriter, and five smooth scrolls, and desktop tap
+targets are unconstrained — both are Level **AAA** in WCAG 2.1 (2.3.3 and
+2.5.5), not AA. `.friend-remove:hover` is 4.28:1 and is a real AA miss, just a
+one-state, one-selector one.
+
+**One comment corrected without a code change.** The `:focus-visible` rule
+justifies its gold ring with *"a navy ring vanishes on `.btn-primary`."* Gold on
+navy is 1.26:1 — it would vanish just as completely. What actually saves it is
+`outline-offset: 2px`, which puts the ring outside the button on the paper
+background at 9.12:1; navy would have scored 12.55:1 there. The colour is
+harmless, the offset is load-bearing, and the comment credited the wrong line —
+so anyone tightening the ring to `outline-offset: 0` would have destroyed the
+focus indicator on every primary button while being reassured it was fine.
+
+Verified in a real browser, not only by grep: the skip link is the first tab
+stop and moves focus without touching the hash; all 81 `data-required` controls
+and all 57 radiogroups carry the attribute and resolve their legend; a blank
+field gains `aria-invalid` plus a wired-up "Required."; correcting it clears
+both with no stray token left behind. Static review is still not a screen
+reader — none of this replaces an NVDA or VoiceOver session.
+
 ## [2.14.1] — 2026-08-05 (APP_VERSION 48)
 
 ### The aspect page now shows the numbers the scorer actually computed

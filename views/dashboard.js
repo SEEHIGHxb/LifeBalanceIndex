@@ -153,7 +153,18 @@ export function renderDashboard(containerId, state, onExportBackup) {
         <div class="card dash-identity" style="display: flex; gap: 20px; align-items: center; padding: 18px 24px;">
           <div style="position: relative;">
             <div class="seal">✦</div>
-            <div style="position: absolute; bottom: -5px; right: -5px;" class="level-badge">${t("Lv.")}${escapeHtml(p.level)}</div>
+            <!-- The badge says "Lv.15" directly above a points bar reading
+                 "0 points this year", which reads as a bug: a level next to a
+                 progress bar implies the bar fills the level. It does not —
+                 level IS the user's age (see the birthday prompt below), and
+                 the bar is this year's points, an unrelated clock. Nothing on
+                 the card said so. cursor:help plus the title advertise that
+                 the badge explains itself; the aria-label carries the same
+                 fact to a screen reader, which gets no hover. -->
+            <div style="position: absolute; bottom: -5px; right: -5px;" class="level-badge"
+              title="${t("Your level is your age, not points earned")}"
+              aria-label="${tp("Level {n} — your level is your age, not points earned", { n: escapeHtml(p.level) })}"
+            >${t("Lv.")}${escapeHtml(p.level)}</div>
           </div>
           <div style="flex-grow: 1;">
             <h3 style="font-family: var(--font-serif); font-size: 1.4rem; font-weight: bold; color: var(--color-navy);">${escapeHtml(p.name)}</h3>
@@ -205,7 +216,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
                 <a href="#/aspect/${key}" class="aspect-row" aria-label="${tp("Open {aspect} details", { aspect: aspectLabel(key) })}">
                   <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 500; margin-bottom: 2px;">
                     <span>${aspectLabel(key)} ${confidenceBadge(getAspectConfidence(state, key))} <span class="aspect-row-arrow">&rsaquo;</span></span>
-                    <span class="aspect-row-figures">${gradeBadge(grades[key], b && !grades[key] ? b.unranked : null)} <span class="text-gold" style="font-family: var(--font-mono); font-weight: bold;">${val}%</span></span>
+                    <span class="aspect-row-figures">${gradeBadge(grades[key], b && !grades[key] ? b.unranked : null)} <span class="text-gold" style="font-family: var(--font-mono); font-weight: bold;">${val}<span class="aspect-row-score-max">/100</span></span></span>
                   </div>
                   <div class="xp-bar-container" style="height: 5px; margin-top: 0;" role="progressbar" aria-label="${aspectLabel(key)}" aria-valuenow="${val}" aria-valuemin="0" aria-valuemax="100">
                     <div class="xp-bar-fill" style="width: ${val}%; background-color: var(--color-gold);"></div>

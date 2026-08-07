@@ -369,6 +369,11 @@ export const TH = {
   "This year's points": "คะแนนปีนี้",
   "{xp} points this year": "{xp} คะแนนในปีนี้",
   "Year just started": "ปีนี้เพิ่งเริ่ม",
+  // The level badge sits directly above this bar; these say the two are
+  // unrelated clocks — level is age, the bar is this year's points.
+  "Your level is your age, not points earned": "เลเวลของคุณคืออายุ ไม่ใช่คะแนนที่สะสมได้",
+  "Level {n} — your level is your age, not points earned":
+    "เลเวล {n} — เลเวลของคุณคืออายุ ไม่ใช่คะแนนที่สะสมได้",
   "Points: {xp} / {possible}": "คะแนน: {xp} / {possible}",
   "Progress: {pct}%": "ความคืบหน้า: {pct}%",
 

@@ -157,13 +157,14 @@ export function renderDashboard(containerId, state, onExportBackup) {
                  "0 points this year", which reads as a bug: a level next to a
                  progress bar implies the bar fills the level. It does not —
                  level IS the user's age (see the birthday prompt below), and
-                 the bar is this year's points, an unrelated clock. Nothing on
-                 the card said so. cursor:help plus the title advertise that
-                 the badge explains itself; the aria-label carries the same
-                 fact to a screen reader, which gets no hover. -->
+                 the bar is this year's points, an unrelated clock.
+                 The explanation is the visible .level-note under the bar, not a
+                 title attribute. A title needs hover; this app's primary surface
+                 is a phone, where hover does not exist, so the fact would simply
+                 never be delivered to most readers. Visible text also spares a
+                 screen reader the duplicate it would hear from an aria-label
+                 restating a caption already in the reading order. -->
             <div style="position: absolute; bottom: -5px; right: -5px;" class="level-badge"
-              title="${t("Your level is your age, not points earned")}"
-              aria-label="${tp("Level {n} — your level is your age, not points earned", { n: escapeHtml(p.level) })}"
             >${t("Lv.")}${escapeHtml(p.level)}</div>
           </div>
           <div style="flex-grow: 1;">
@@ -180,6 +181,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
                 : `<span>${tp("Points: {xp} / {possible}", { xp: escapeHtml(pace.earned), possible: pace.possible })}</span>
                    <span>${tp("Progress: {pct}%", { pct: pace.percent })}</span>`}
             </div>
+            <p class="level-note">${t("Your level is your age, not points earned")}</p>
             <a href="#/year" style="display: inline-block; margin-top: 6px; font-size: 0.75rem; font-weight: 600;">${t("Your year")} &rsaquo;</a>
           </div>
         </div>

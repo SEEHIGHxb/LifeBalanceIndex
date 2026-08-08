@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `50`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `51`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,56 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.4] — 2026-08-07 (APP_VERSION 51)
+
+### The explanation was behind a hover, on an app people use with a thumb
+
+v50 fixed the `Lv.15` / `0 points this year` confusion by attaching a `title` to
+the level badge, plus `cursor: help` to advertise it and an `aria-label` carrying
+the same fact to a screen reader. That covers a mouse user and a screen-reader
+user. It covers nobody on a phone: `title` is a hover affordance, touch has no
+hover, and this app's primary surface is a phone. The reader most likely to be
+confused was the one guaranteed never to see the sentence.
+
+- **The fact is now visible text.** `views/dashboard.js` renders a `.level-note`
+  caption under the points bar reading *"Your level is your age, not points
+  earned."* No interaction required, on any input device.
+- **`title`, `aria-label`, and `cursor: help` are gone from the badge.** Once the
+  sentence is in the reading order, an `aria-label` restating it makes a screen
+  reader say it twice, and `cursor: help` points at an explanation already on
+  screen.
+- **`th.js` loses `"Level {n} — your level is your age, not points earned"`.** It
+  existed only for the deleted `aria-label`; `tests/i18n-orphans.test.mjs` fails
+  the build on any key no longer reachable from code, so removing it was required
+  rather than tidy. The caption's own key stays and is translated.
+
+Browser-verified at 1280×800 and 375×812: caption present and visible on both,
+12px (the type floor set in v50), inside the same card as the badge, no spill past
+the card edge, badge `title`/`aria-label` both `null` and `cursor: auto`. Thai
+toggle renders *เลเวลของคุณคืออายุ ไม่ใช่คะแนนที่สะสมได้* with `documentElement.lang = "th"`.
+
+### Added: the first user-research plan in the repo
+
+`docs/research/usability-test-plan.md` — a 5-participant moderated usability test
+in Thai, scoped to one question: whether a first-time reader forms the belief the
+data supports.
+
+The five existing `round-*.md` files are desk research sourcing the population
+norms behind the percentiles. None of them is user research, and nobody outside
+the author has been observed using this app. The plan names why that matters here
+specifically — the product's output is numbers that must be *interpreted*, and
+interpretation is the one property no test in `npm test` can check. Both v50
+defects were comprehension failures caught by reading source, which is to say
+caught by luck.
+
+The plan also records what cannot be done: **retention is structurally
+unmeasurable**. No backend, no analytics, `tests/smoke.mjs` fails the build on any
+off-origin request, and `docs/privacy.md` promises nothing leaves the device. The
+most valuable unknown in the product is unavailable without breaking its central
+promise, and the plan says so rather than quietly substituting a weaker proxy.
+
+Not run yet. Marked `Status: READY TO RUN` so it is not mistaken for findings.
 
 ## [2.14.3] — 2026-08-07 (APP_VERSION 50)
 

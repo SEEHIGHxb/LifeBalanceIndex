@@ -522,10 +522,19 @@ header {
   font-size: 0.78rem;
   font-weight: 600;
   border: 1px solid var(--color-navy);
-  /* The badge carries a title explaining that level means age, not points.
-     cursor:help is the only thing that tells a mouse user the explanation is
-     there to be asked for. */
-  cursor: help;
+}
+
+/* Says, in plain sight, that the badge above is an age and the bar beside it is
+   this year's points — two unrelated clocks. This was a title attribute until it
+   was pointed out that a title is a hover affordance and the app is used mostly
+   on a phone, so the reader who most needs the sentence never saw it. 0.75rem is
+   the type floor the rest of the sheet holds to; the secondary colour keeps it a
+   footnote to the name rather than a third figure competing on the card. */
+.level-note {
+  font-family: var(--font-serif);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
 }
 
 .xp-bar-container {

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `53`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `54`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,78 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.7] — 2026-08-10 (APP_VERSION 54)
+
+### The 2.14.6 widening overshot: 400px of empty space per row
+
+Reported from the desktop app immediately after 2.14.6 shipped: the assessment
+now reads as mostly whitespace. It does. 2.14.6 set `.onboarding-container` to
+1184px so that `cfc12`, the widest scale in the app, would keep its five
+options on one line. But `cfc12` is in `DEEP_INSTRUMENTS`, and
+`.onboarding-container` does not govern the screen that renders it.
+
+`renderDeepAssessment` puts its questions in plain `.card.deep-section`
+elements, which carry no `max-width` and stretch to the shell's content box —
+1240 minus 2x24px of padding = **1192px**, already 8px more than `cfc12`'s
+1184. The shell width alone was serving the deep assessment. Capping
+`.onboarding-container` at 1184 did nothing for it and taxed the two screens
+that class *does* govern.
+
+Measured on the reported screen, at 1184px:
+
+| | width |
+|---|---|
+| Container rendered at | 1184 (its cap) |
+| Widest option row visible | 688 |
+| Widest element on the screen wanted | 753 |
+
+So roughly 430px of every row was dead space.
+
+**`.onboarding-container` is now 981px** — `who5` at 897px in English, plus the
+same 84px of card and fieldset chrome. Onboarding and the check-in render only
+`INSTRUMENTS`, so `who5`, not the wider deep scales, is the binding case. The
+deep assessment is untouched and keeps its 1192px.
+
+The intro card at the top of the deep assessment carried
+`.onboarding-container` too. Left alone it would now render 981px above a
+column of 1192px question cards, so it is a plain `.card`, matching the cards
+beneath it exactly.
+
+`.app-container` stays at 1240px, but its comment was wrong about why. It now
+records that `.deep-section` is the constraint, not `.onboarding-container`.
+
+### Known limits
+
+- `who5` fits with **zero pixels to spare**: 981 leaves the group exactly the
+  897 it needs. Deliberate — slack here is dead space on every other row — but
+  lengthening a `who5` label or changing the body font will wrap it.
+- Below roughly a 1080px viewport the shell cannot supply 981 and `who5` wraps
+  again. A limit of the layout, not a regression.
+- The `max-width: 75ch` cap on `.survey-question legend` from 2.14.6 is kept.
+  At 1192px the deep assessment's question prose would still run well past the
+  ~75 characters where the eye loses its place on the return sweep.
+
+### Verified
+
+Six onboarding steps walked in both languages, plus the deep assessment reached
+through a completed onboarding — the earlier probes never got to that screen,
+which is how 2.14.6 shipped a number aimed at it that it never used.
+
+| Screen | Container | Available | Widest needed | Wrapped |
+|---|---|---|---|---|
+| Onboarding steps 1–6, EN | 981 | 897 | 897 (`who5`, step 3) | 0 / 54 rows |
+| Onboarding steps 1–6, TH | 981 | 897 | 753 | 0 / 54 rows |
+| Deep assessment, EN | 1192 | 1108 | 1100 (`cfc12`) | 0 / 66 rows |
+| Deep assessment, TH | 1192 | 1108 | 672 | 0 / 66 rows |
+
+Zero console errors throughout. Biome clean, 461/461 tests pass.
+
+### Files
+
+`index.css` (`.app-container` comment, `.onboarding-container` 1184 → 981),
+`views/assessments.js` (deep intro card drops `.onboarding-container`), plus
+the `APP_VERSION` 53 → 54 mirrors.
 
 ## [2.14.6] — 2026-08-10 (APP_VERSION 53)
 

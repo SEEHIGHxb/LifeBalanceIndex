@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `52`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `53`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,46 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.6] — 2026-08-10 (APP_VERSION 53)
+
+### Answer options wrapped onto a second line
+
+Reported from the desktop app: the CFPB scale broke its five options across two
+rows, so a question that is one choice read as two groups.
+
+The cause was a container sized for prose, not for a Likert row.
+`.onboarding-container` was `660px`, and after 84px of card and fieldset padding
+the option row had 576px to work with. Measured across all 151 items in both
+languages, the requirement is much larger than the reported screen suggests:
+
+| Scale | Screen | Needs |
+|---|---|---|
+| `cfpb10` (the reported one) | deep assessment | 688px |
+| `lsnsR`, `grit12` | deep assessment | 730–739px |
+| `who5` TH | onboarding | 753px |
+| `who5` EN | onboarding | 897px |
+| `cfc12` EN | deep assessment | **1100px** |
+
+English sets the requirement, not Thai — the assumption going in was the
+reverse. `.onboarding-container` is now `1184px` (1100 + 84), and
+`.app-container` `1120px → 1240px` (1184 + its own 2×24px padding), because the
+form could not be wider than the shell holding it.
+
+**The measure is capped separately.** At 1184px the question text would run
+about 170 characters per line, well past the ~75 where the eye starts losing
+its place on the return sweep. `.survey-question legend` now carries
+`max-width: 75ch`: the option row gets the full width, the prose does not.
+
+**Known limit.** Below roughly a 1290px viewport the shell can no longer supply
+1184px and the widest scale wraps again. Verified: at 1440 and 1280 nothing
+wraps in either language; at 1100 only `cfc12` does (12 items). Everything
+else, including every onboarding scale, holds at all three widths.
+
+### Files
+
+`index.css`: `.app-container` max-width, `.onboarding-container` max-width, and
+a `max-width` on `.survey-question legend`. No selector removed, no JS touched.
 
 ## [2.14.5] — 2026-08-08 (APP_VERSION 52)
 

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `54`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `55`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,85 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.8] — 2026-08-10 (APP_VERSION 55)
+
+### The radar was the biggest thing on the phone screen and the least readable
+
+Found during a mobile design review at 375x812. The plot measured **117px across
+inside a 309px SVG — 38% of the box**, with the other 62% spent on the label
+ring, and the per-vertex score numbers rendered at **9px**. The chart occupied
+320px of vertical space on the longest screen in the app while being too small
+to read.
+
+The cause was a flat label allowance:
+`radius = min(cx, cy) - (narrow ? 96 : 50)`. A single constant has to cover the
+worst axis, so every axis paid for it. But the axes are not equivalent — a
+horizontal axis reaches the full label ring while a diagonal one reaches only
+0.707 of it, so a diagonal affords a much longer label at the same radius.
+Which axis binds also depends on the language.
+
+**The radius is now solved, not guessed.** Each label is measured in the font it
+will actually be painted in, each axis contributes one bound, and the radius is
+the smallest of them. The constants `96` and `50` are gone.
+
+| Screen | Plot before | Plot after | Share before | Share after |
+|---|---|---|---|---|
+| 375px, English | 117 | **140** | 38% | 45% |
+| 375px, Thai | 117 | **194** | 38% | 63% |
+| 320px, Thai | 62 | **116** | 24% | 46% |
+| 320px, English | 62 | 62 | 24% | 24% |
+| Desktop | 260 | **292** | — | 49% |
+
+Thai gains most because its labels are shorter — the old constant charged it the
+English worst case. That asymmetry is the whole point of solving per render.
+
+**The SVG height now follows the solved radius** instead of a fixed 320/360. The
+fixed heights were cut for the old geometry and left a dead band once the plot
+grew: 210px of content in a 320px box, split above and below the polygon so it
+read as a layout mistake rather than as breathing room. The dashboard is
+**118px shorter** on a phone.
+
+**Score numbers 9px → 11px.** They sit at the vertices and are bounded by
+nothing, so this cost no plot area.
+
+### Two things tried and reverted, recorded so they are not retried
+
+- **Axis labels 11px → 12px.** Reverted. The widest label is exactly what bounds
+  the radius, so a 9% font increase came straight off the plot: 375px English
+  fell from a 137px polygon to 111px, *below where it started*. Wider text that
+  shrinks the chart is not a readability win.
+- **Budgeting the label bleed to the viewport edge** rather than to the card.
+  `tests/e2e.mjs` flow5 caught it immediately — three Thai labels landed 4-10px
+  outside `.card`. The card is the visual boundary and the right one; a label
+  crossing it reads as broken long before it reaches the screen edge.
+
+### Known limit
+
+At **320px in English** the chart cannot grow. `Environment` is a single
+unwrappable word on the axis that reaches the full label ring, and
+`Social Contribution` is 107px on a diagonal; together they consume the budget.
+The plot stays at 62px there — unchanged, not regressed. What did change is that
+the old code overflowed the card by roughly 1.5px at that width; the solve now
+respects the boundary and shrinks instead. `MIN_RADIUS_PX` is deliberately set
+below any value a real viewport produces, because clamping *up* past the
+geometric bound is exactly what pushes a label out of the card.
+
+Getting past this needs the label ring reworked — wrapping multi-word labels to
+two lines *and* moving the two horizontal-axis labels above their vertex. Solved
+on paper that reaches about 66% share at 375px, but it is a visual redesign with
+label-collision risk, not a constant change. Not attempted here.
+
+### Verified
+
+Four viewports x two languages, through a completed onboarding. Every label's
+drawn extent stays inside `.card` (minimum slack 6px). Zero console errors.
+Biome clean, 461/461, smoke and e2e pass.
+
+### Files
+
+`chart.js` (radius solve, derived height, `measureLabelWidths`, gap and font
+constants), plus the `APP_VERSION` 54 → 55 mirrors.
 
 ## [2.14.7] — 2026-08-10 (APP_VERSION 54)
 

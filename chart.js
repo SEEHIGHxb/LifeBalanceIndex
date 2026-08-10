@@ -31,6 +31,72 @@ export const RADAR_KEYS = [
 
 const ASPECT_KEYS = RADAR_KEYS;
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+// Radar geometry. These are SVG user-space units: the chart's viewBox is set to
+// its own rendered pixel width, so one unit is one CSS pixel and a rem here
+// would NOT scale the way a rem does in CSS.
+// Rim-to-label distance. 22 is right when the plot is ~150px across, but on a
+// phone the plot is a third of that and a fixed 22 becomes ~38% of the radius —
+// gap the chart cannot afford, since every pixel of it comes straight off the
+// plot. Tightening it on narrow screens is the only lever left there: the
+// binding label is "Environment", one unwrappable word on the axis that reaches
+// the full label ring, so its width cannot be reduced.
+const LABEL_GAP_NARROW_PX = 14;
+const LABEL_GAP_WIDE_PX = 22;
+const NARROW_WIDTH_PX = 420;
+// Axis labels stay at 11. Going to 12 was tried and reverted: the widest label
+// is the thing the radius solve is bounded by, so a 9% font increase came
+// straight off the plot — 375px English went from a 137px polygon to 111px.
+// Wider text that leaves the chart smaller is not a readability win. The
+// per-vertex numbers had no such coupling and were the real problem at 9px.
+const LABEL_FONT_PX = 11;
+const SCORE_FONT_PX = 11; // was 9, well under the readable floor and unconstrained
+const EDGE_SAFETY_PX = 6; // slack for rounding and for a late webfont swap
+const VERT_MARGIN_PX = 6; // breathing room above the top / below the bottom label
+// Absolute floor, for a degenerate container only (zero width, NaN). It is set
+// below anything the solve produces at a real viewport on purpose: clamping UP
+// past the geometric bound is exactly what pushes a label out of the card. At
+// 320px in English the bound lands around 30 and must be allowed to win — a
+// 60px chart on a legacy phone is honest; a chart whose labels spill out of
+// the card is not.
+const MIN_RADIUS_PX = 20;
+// Ceiling, so a wide window does not blow the radar up. 146 keeps the derived
+// height at 372, within a dozen pixels of the 360 the desktop chart always had.
+const MAX_RADIUS_PX = 146;
+
+// Width of each axis label in the font it will actually be painted in.
+//
+// The radius solve below needs these BEFORE the chart is laid out, so measure
+// in a throwaway SVG rather than by rendering twice. Positioned off-screen
+// instead of visibility:hidden — a hidden subtree can report a zero text length
+// in some engines, and a zero would silently inflate the radius and push the
+// labels off the edge, which is the exact bug this is here to prevent.
+function measureLabelWidths(container, labels) {
+  const probe = document.createElementNS(SVG_NS, "svg");
+  probe.setAttribute("width", "10");
+  probe.setAttribute("height", "10");
+  probe.style.position = "absolute";
+  probe.style.left = "-99999px";
+  probe.style.top = "0";
+  container.appendChild(probe);
+
+  const widths = labels.map(label => {
+    const node = document.createElementNS(SVG_NS, "text");
+    node.style.fontFamily = "var(--font-serif)";
+    node.style.fontSize = `${LABEL_FONT_PX}px`;
+    node.style.fontWeight = "bold";
+    node.textContent = label;
+    probe.appendChild(node);
+    // getComputedTextLength is advance width, which is what the anchor uses.
+    const w = node.getComputedTextLength ? node.getComputedTextLength() : 0;
+    return w > 0 ? w : label.length * LABEL_FONT_PX * 0.6;
+  });
+
+  probe.remove();
+  return widths;
+}
+
 // Vertex coordinates for one radar polygon: eight points, clockwise from the
 // top, each pulled in from the rim in proportion to its 0-100 value.
 //
@@ -175,21 +241,73 @@ export function renderRadarChart(containerId, aspects, options = {}) {
   const average = options.average || null;
 
   const width = container.clientWidth || 360;
+  const cx = width / 2;
+  const labelGap = width < NARROW_WIDTH_PX ? LABEL_GAP_NARROW_PX : LABEL_GAP_WIDE_PX;
+
   // The axis labels sit on a ring outside the plot, and `svg.style.overflow` is
   // "visible", so anything that does not fit does not get clipped by the SVG —
   // it escapes and gets cut off by the screen edge instead. Measured on a
   // 375px phone, "Environment" started at x = -10 and "Social Contribution" at
   // x = -8: the first letters were simply missing.
   //
-  // The binding constraint is the HORIZONTAL axis rather than the longest
-  // label, because a horizontal axis reaches the full label ring while a
-  // diagonal one reaches only 0.707 of it. A flat 50px allowance is right at
-  // desktop width and nowhere near enough at ~311px, so it scales with width.
-  const narrow = width < 420;
-  const height = narrow ? 320 : 360;
-  const cx = width / 2;
+  // That used to be held off with a flat allowance — 96px at phone width, 50px
+  // above it — and the flatness was the problem. It charged every axis the
+  // worst case, so on a 375px phone the plot came out 117px across inside a
+  // 309px SVG: 38% of the box, 62% spent on the label ring. The chart was the
+  // largest thing on the screen and the least readable thing on it.
+  //
+  // Each axis implies its own bound, and they differ a lot. A horizontal axis
+  // reaches the full label ring; a diagonal one reaches only 0.707 of it, so
+  // it affords a much longer label at the same radius. Which axis binds also
+  // depends on the language. So solve the radius from the real measured labels
+  // on every render instead of hard-coding one number for English.
+  const labels = ASPECT_KEYS.map(key => t(ASPECT_LABELS[key]));
+  const labelWidths = measureLabelWidths(container, labels);
+
+  // A label may legitimately extend past the SVG box into the padding of the
+  // card around it — that is what overflow: visible buys, and the old layout
+  // already relied on it (labels reached 8px outside the container).
+  //
+  // The card, NOT the viewport, is the boundary. tests/e2e.mjs flow5 asserts
+  // every label's drawn extent stays inside `.card`, and it is right to: a
+  // label crossing the card edge reads as broken long before it reaches the
+  // screen edge. Budgeting to the viewport instead pushed three Thai labels
+  // 4-10px past the card and the suite caught it.
+  const rect = container.getBoundingClientRect();
+  const card = container.closest(".card");
+  const bounds = card ? card.getBoundingClientRect() : { left: rect.left, right: rect.right };
+  const bleedLeft = Math.max(0, rect.left - bounds.left - EDGE_SAFETY_PX);
+  const bleedRight = Math.max(0, bounds.right - rect.right - EDGE_SAFETY_PX);
+
+  let radius = Number.POSITIVE_INFINITY;
+  ASPECT_KEYS.forEach((_key, i) => {
+    const cos = Math.cos((i * Math.PI) / 4 - Math.PI / 2);
+    const w = labelWidths[i];
+    // Solve each axis for the largest radius that keeps its own label in
+    // bounds. Anchored "start" runs right from the label point, "end" runs
+    // left; the top and bottom labels are centred and sit at cos ~= 0, so they
+    // bound nothing horizontally however wide they get.
+    if (cos > 0.1) {
+      radius = Math.min(radius, (width + bleedRight - cx - w) / cos - labelGap);
+    } else if (cos < -0.1) {
+      radius = Math.min(radius, (cx + bleedLeft - w) / -cos - labelGap);
+    }
+  });
+  // Cap it so a wide desktop window does not turn the radar into a poster.
+  radius = Math.min(radius, MAX_RADIUS_PX);
+  // Never collapse if a translation turns out pathologically long — a cramped
+  // chart still beats an invisible one.
+  radius = Math.max(MIN_RADIUS_PX, Math.floor(radius));
+
+  // Height follows the solved radius rather than a fixed 320/360. The old fixed
+  // heights were cut for the old geometry, and once the plot stopped being
+  // 117px they left a dead band inside the SVG: on a phone the chart occupied
+  // 210px of a 320px box, so ~110px of empty card sat in the middle of the
+  // longest screen in the app. The plot is centred, so the band split above and
+  // below the polygon and read as a layout mistake rather than as breathing
+  // room. Deriving the height keeps the whitespace proportional at every width.
+  const height = 2 * (radius + labelGap + LABEL_FONT_PX + VERT_MARGIN_PX);
   const cy = height / 2;
-  const radius = Math.min(cx, cy) - (narrow ? 96 : 50);
 
   // Create SVG element
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -251,7 +369,10 @@ export function renderRadarChart(containerId, aspects, options = {}) {
     svg.appendChild(line);
 
     // Label positioning
-    const labelDistance = radius + 22;
+    // Same gap the radius solve above assumed. If these two ever diverge the
+    // labels move without the radius accounting for it, which is the failure
+    // the solve exists to prevent.
+    const labelDistance = radius + labelGap;
     const lx = cx + Math.cos(angle) * labelDistance;
     const ly = cy + Math.sin(angle) * labelDistance;
 
@@ -261,10 +382,10 @@ export function renderRadarChart(containerId, aspects, options = {}) {
     text.setAttribute("text-anchor", "middle");
     text.setAttribute("fill", "var(--color-text-chart)");
     text.style.fontFamily = "var(--font-serif)";
-    // SVG user-space unit — see the note at the first label size above.
-    text.style.fontSize = "11px";
+    // Must match what measureLabelWidths() used, or the solved radius is wrong.
+    text.style.fontSize = `${LABEL_FONT_PX}px`;
     text.style.fontWeight = "bold";
-    text.textContent = t(ASPECT_LABELS[key]);
+    text.textContent = labels[i];
 
     // Adjust text alignments slightly depending on quadrant
     if (Math.cos(angle) > 0.1) text.setAttribute("text-anchor", "start");
@@ -316,8 +437,7 @@ export function renderRadarChart(containerId, aspects, options = {}) {
     scoreText.setAttribute("text-anchor", "middle");
     scoreText.setAttribute("fill", "var(--color-slate-dark)");
     scoreText.style.fontFamily = "var(--font-mono)";
-    // SVG user-space unit — see the note at the first label size above.
-    scoreText.style.fontSize = "9px";
+    scoreText.style.fontSize = `${SCORE_FONT_PX}px`;
     scoreText.style.fontWeight = "bold";
     scoreText.textContent = score;
     svg.appendChild(scoreText);

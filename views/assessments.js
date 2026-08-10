@@ -100,7 +100,11 @@ export function renderDeepAssessment(containerId, state, onComplete) {
 
   container.innerHTML = `
     <a href="#/dashboard" class="aspect-back">&larr; ${t("Overview")}</a>
-    <div class="onboarding-container card" style="margin-bottom: 16px;">
+    <!-- Plain .card, not .onboarding-container: that class is capped at 981px
+         for the INSTRUMENTS scales, but the .deep-section cards below stretch
+         to the full 1192px shell for cfc12. Keeping the cap here would leave
+         this intro card visibly narrower than every card under it. -->
+    <div class="card" style="margin-bottom: 16px;">
       <div class="brand" style="text-align: center; margin-bottom: 18px;">
         <h1>${t("IN-DEPTH ASSESSMENT")}</h1>
         <p>${t("Optional • full-length validated questionnaires • one section at a time")}</p>

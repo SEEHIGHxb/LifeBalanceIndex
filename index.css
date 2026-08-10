@@ -131,10 +131,14 @@ html {
 }
 
 /* Layout Utilities */
-/* 1240px, not a round 1200: it is 1184 — the widest instrument scale, see
-   .onboarding-container below — plus this container's own 2x24px padding.
-   The shell is sized by the widest thing that has to fit inside it, so the
-   two numbers move together. Change one and check the other. */
+/* 1240px, not a round 1200: the deep assessment renders its questions in plain
+   .deep-section cards with no max-width of their own, so they stretch to this
+   container's content box — 1240 minus the 2x24px padding = 1192px. The widest
+   .radio-group in DEEP_INSTRUMENTS is cfc12 at 1100px, and 1100 + 84px of card
+   and fieldset chrome = 1184, which 1192 covers with 8px to spare.
+   The shell is sized by the widest thing that has to fit inside it. That thing
+   is .deep-section, NOT .onboarding-container — that container is capped at
+   981px for its own reasons and is never the constraint here. */
 .app-container {
   display: flex;
   flex-direction: column;
@@ -358,19 +362,29 @@ header {
 
 /* Onboarding & Forms */
 
-/* 1184px is measured, not chosen: it is the widest .radio-group any instrument
-   produces (1100px — cfc12's five long labels, in English) plus the 84px of
-   card and fieldset padding between this container's border box and the
-   group's content box. At the previous 660px the group had 576px, so every
-   scale above cfpb10 wrapped its options onto a second line.
-   Measured across all 151 items in both languages; the runners-up are who5 EN
-   at 897 and who5 TH at 753, so English, not Thai, sets the requirement.
-   Below roughly a 1290px viewport the shell can no longer supply 1184 and the
-   widest scales wrap again — that is a limit of the layout, not a regression.
+/* 981px is measured, not chosen: it is the widest .radio-group the INSTRUMENTS
+   set produces (897px — who5's five labels, in English) plus the 84px of card
+   and fieldset padding between this container's border box and the group's
+   content box. At the previous 660px the group had 576px, so every scale above
+   cfpb10 wrapped its options onto a second line.
+   This container governs onboarding and the check-in, and those two screens
+   only ever render INSTRUMENTS — so who5, not the wider DEEP_INSTRUMENTS
+   scales, sets the number. The deep assessment renders its questions in plain
+   .deep-section cards, which stretch to the shell instead; see .app-container.
+   Sizing this one for the deep worst case (1184px) is what left a 400px empty
+   gutter beside every option row on onboarding.
+   Measured across all 151 items in both languages; Thai's worst is who5 at
+   753, so English sets the requirement on both screens.
+   who5 fits with zero pixels to spare: 981 leaves the group exactly its 897.
+   That is deliberate — any slack here is dead space on every other row — but
+   it means lengthening a who5 label, or changing the body font, wraps it.
+   Re-measure if either changes.
+   Below roughly a 1080px viewport the shell can no longer supply 981 and who5
+   wraps again — that is a limit of the layout, not a regression.
    The legend rule below caps the question text so it does not inherit this
    width as its line length. */
 .onboarding-container {
-  max-width: 1184px;
+  max-width: 981px;
   margin: 24px auto;
 }
 

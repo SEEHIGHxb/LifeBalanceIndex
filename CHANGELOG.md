@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `51`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `52`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,98 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.5] — 2026-08-08 (APP_VERSION 52)
+
+A design-system audit turned up three things worth acting on. No visual
+redesign: the point was to make the values in the sheet say what they mean.
+
+### Sixteen font sizes inside a five-pixel range
+
+`index.css` carried 25 distinct font sizes and the JS inline styles carried 10
+more. Sixteen of them lived between `0.62rem` and `0.95rem` — roughly 10px to
+15px, sixteen steps inside five pixels. That is not a scale, it is per-site
+nudging, and it had no way to stop growing.
+
+- **A ten-step scale, chosen to fit the sheet rather than replace it.** The
+  three most-used values (`0.75`, `0.8`, `0.85`) keep their exact numbers, so
+  about two thirds of the 164 call sites render byte-identically. Only strays
+  moved, none by more than 0.8px. Ratios are ~1.06–1.11 through the UI text
+  range and ~1.3 for display figures — two tiers, because a paragraph and a
+  headline number are doing different jobs.
+- **164 sites converted:** 112 in `index.css`, 52 across `app.js`, `chart.js`
+  and nine `views/*.js`.
+- **Three sizes deliberately stay literal, each now carrying the reason.**
+  The mobile form-control `16px` is a behavioural guard — Safari zooms the
+  viewport on any focused field under 16px, and 15.9px still zooms, so it is
+  not a type choice. The birthday `3rem` sizes an emoji as artwork. The four
+  sizes in `chart.js` are SVG user-space units under a `viewBox`: a rem there
+  would be resolved against the root size and *then* multiplied by the
+  viewBox ratio, rendering differently on a phone than on a desktop.
+
+### Four colour tokens were named after a palette the app no longer has
+
+`--color-obsidian` — "obsidian" — held `#eceae4`, a near-white rail fill. The
+comment above it argued the names were kept because JS referenced them. The
+names lost that argument: a token whose name says black and whose value is
+off-white is a trap for whoever next reaches for black, and on a solo project
+that is the author.
+
+- `gold` → `accent` (`#6d2e3f`, burgundy; never was gold) · `astral` → `slate`
+  (navy-slate; never was neon) · `nectar` → `success` · `obsidian` → `track`.
+- **`--color-navy` and `--color-crimson` kept their names**, because `#24344d`
+  and `#a23b3b` are in fact navy and crimson.
+- Safe to do mechanically and safe to repeat: no call site builds a property
+  name dynamically — zero hits for `getPropertyValue` and for
+  `var(--…${…})` — so every one of the 24 JS references and the CSS uses is a
+  literal a find-replace can see.
+- `--font-accent` deleted: defined, byte-identical to `--font-serif`, never
+  referenced.
+
+### Motion that the sheet could not reach
+
+Two gaps, same root cause — CSS was asked to govern behaviour that lives in
+script.
+
+- **No pressed state on any button.** Every button had `:hover` and nothing
+  else, which is a desktop-shaped assumption: a finger produces no hover, so on
+  the app's primary surface the only confirmation a tap landed was whatever the
+  tap went on to do — and a slow render reads as a dead button, so people tap
+  again. This is the same failure as the v51 level tooltip. `.btn:active` and
+  `.tab-btn:active` now translate 1px. Deliberately *excluded* from the
+  reduced-motion block: 1px over 0ms is feedback, not decoration, and
+  withdrawing it would take tap confirmation away from the readers likeliest
+  to need it.
+- **`prefers-reduced-motion` covered 2 of 13 motion sites.** The media query
+  cannot see a WAAPI `element.animate()`, cannot see a `setInterval`
+  typewriter, and loses to the `behavior` option passed to `scrollIntoView`.
+  So the toast flew 60px, the Lumi tip typed itself out, and all five smooth
+  scrolls animated, no matter what the reader had asked their OS for.
+  `views/helpers.js` gains `prefersReducedMotion()` and
+  `scrollIntoViewGently()`; the toast keeps its fade and drops the travel
+  (opacity is not what the setting is about — it is vestibular), the tip
+  arrives complete, and the scrolls jump. The two halves now cross-reference
+  each other in comments, because changing one without the other is the
+  failure mode.
+
+### Files
+
+`index.css` (tokens, `:active`, reduced-motion note), `views/helpers.js` (two
+new exports), `ui.js` (re-export), `app.js`, `chart.js`, `views/assessments.js`,
+`views/onboarding.js`, and the type-scale sweep across `views/aspect.js`,
+`dashboard.js`, `leaderboard.js`, `profile.js`, `quests.js`, `review.js`,
+`yearreview.js`. No public function signature changed.
+
+### Not done, and why
+
+The audit's items 4+ — 12 genuinely dead CSS classes, 4 duplicated selector
+blocks, eight untokenised shadow alphas, and "this is a mirror" comments for
+`404.html` and `story-card.js` — are real but worth doing only when the file is
+already open. Note for whoever gets there: a naive dead-class scan flags ~30,
+and 18 of those are false positives. `.grade-*`, `.band-*`, `.confidence-*`
+and `.criterion-chip-*` are built by interpolation in `views/helpers.js`
+(`grade-${…}` at :113, `band-${…}` at :138 and :185). They are live. Do not let
+a linter delete them.
 
 ## [2.14.4] — 2026-08-07 (APP_VERSION 51)
 

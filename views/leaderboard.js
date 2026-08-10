@@ -73,13 +73,13 @@ export function renderLeaderboard(containerId, state, onRefresh) {
     <div style="max-width: 720px; margin: 0 auto;">
       <div class="card">
         <h3 class="card-header">${t("Comparison Codes")}</h3>
-        <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 12px;">
+        <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin-bottom: 12px;">
           ${t("Share your code with others over LINE or Discord, and paste theirs below. A code carries only a name and the eight aspect scores — no age, no points, nothing else. Re-paste a newer code any time to update someone.")}
         </p>
         <div class="form-group">
           <label for="my-comparison-code">${t("Your Comparison Code")}</label>
           <div style="display: flex; gap: 8px;">
-            <input type="text" id="my-comparison-code" class="form-control" value="${myCode}" readonly style="font-family: var(--font-mono); font-size: 0.75rem;">
+            <input type="text" id="my-comparison-code" class="form-control" value="${myCode}" readonly style="font-family: var(--font-mono); font-size: var(--text-xs);">
             <button type="button" id="btn-copy-code" class="btn btn-primary" style="white-space: nowrap;">${t("Copy")}</button>
           </div>
         </div>
@@ -87,12 +87,12 @@ export function renderLeaderboard(containerId, state, onRefresh) {
           <div class="form-group">
             <label for="friend-code">${t("Add someone's code")}</label>
             <div style="display: flex; gap: 8px;">
-              <input type="text" id="friend-code" class="form-control" placeholder="LQ1-..." style="font-family: var(--font-mono); font-size: 0.75rem;" required>
+              <input type="text" id="friend-code" class="form-control" placeholder="LQ1-..." style="font-family: var(--font-mono); font-size: var(--text-xs);" required>
               <button type="submit" class="btn btn-primary" style="white-space: nowrap;">${t("Add")}</button>
             </div>
           </div>
         </form>
-        <p id="friend-error" class="d-none" style="color: var(--color-crimson); font-size: 0.85rem; font-weight: 600;"></p>
+        <p id="friend-error" class="d-none" style="color: var(--color-crimson); font-size: var(--text-base); font-weight: 600;"></p>
       </div>
 
       <div class="card">

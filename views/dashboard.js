@@ -168,21 +168,21 @@ export function renderDashboard(containerId, state, onExportBackup) {
             >${t("Lv.")}${escapeHtml(p.level)}</div>
           </div>
           <div style="flex-grow: 1;">
-            <h3 style="font-family: var(--font-serif); font-size: 1.4rem; font-weight: bold; color: var(--color-navy);">${escapeHtml(p.name)}</h3>
-            <p style="font-family: var(--font-sans); font-size: 0.82rem; color: var(--color-gold); font-weight: 600;">
+            <h3 style="font-family: var(--font-serif); font-size: var(--text-2xl); font-weight: bold; color: var(--color-navy);">${escapeHtml(p.name)}</h3>
+            <p style="font-family: var(--font-sans); font-size: var(--text-sm); color: var(--color-accent); font-weight: 600;">
               ${escapeHtml(t(p.employment))} (${escapeHtml(t(p.region))})
             </p>
             <div class="xp-bar-container" role="progressbar" aria-label="${t("This year's points")}" aria-valuenow="${pace.percent}" aria-valuemin="0" aria-valuemax="100">
               <div class="xp-bar-fill" style="width: ${pace.percent}%;"></div>
             </div>
-            <div style="display: flex; justify-content: space-between; font-family: var(--font-serif); font-size: 0.75rem; margin-top: 4px; color: var(--color-text-secondary);">
+            <div style="display: flex; justify-content: space-between; font-family: var(--font-serif); font-size: var(--text-xs); margin-top: 4px; color: var(--color-text-secondary);">
               ${pace.ratio === null
                 ? `<span>${tp("{xp} points this year", { xp: escapeHtml(pace.earned) })}</span><span>${t("Year just started")}</span>`
                 : `<span>${tp("Points: {xp} / {possible}", { xp: escapeHtml(pace.earned), possible: pace.possible })}</span>
                    <span>${tp("Progress: {pct}%", { pct: pace.percent })}</span>`}
             </div>
             <p class="level-note">${t("Your level is your age, not points earned")}</p>
-            <a href="#/year" style="display: inline-block; margin-top: 6px; font-size: 0.75rem; font-weight: 600;">${t("Your year")} &rsaquo;</a>
+            <a href="#/year" style="display: inline-block; margin-top: 6px; font-size: var(--text-xs); font-weight: 600;">${t("Your year")} &rsaquo;</a>
           </div>
         </div>
 
@@ -200,7 +200,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
         ${suggestions.length > 0 ? `
         <div class="card dash-suggest">
           <h4 class="card-header">${t("Recommendations")}</h4>
-          <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 10px;">
+          <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: 10px;">
             ${t("Targeting your weakest measured components — tap one to open that aspect.")}
           </p>
           ${suggestions.map(s => suggestionItem(s, true)).join("")}
@@ -216,12 +216,12 @@ export function renderDashboard(containerId, state, onExportBackup) {
               const b = benchmarks[key];
               return `
                 <a href="#/aspect/${key}" class="aspect-row" aria-label="${tp("Open {aspect} details", { aspect: aspectLabel(key) })}">
-                  <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 500; margin-bottom: 2px;">
+                  <div style="display: flex; justify-content: space-between; font-size: var(--text-base); font-weight: 500; margin-bottom: 2px;">
                     <span>${aspectLabel(key)} ${confidenceBadge(getAspectConfidence(state, key))} <span class="aspect-row-arrow">&rsaquo;</span></span>
                     <span class="aspect-row-figures">${gradeBadge(grades[key], b && !grades[key] ? b.unranked : null)} <span class="text-gold" style="font-family: var(--font-mono); font-weight: bold;">${val}<span class="aspect-row-score-max">/100</span></span></span>
                   </div>
                   <div class="xp-bar-container" style="height: 5px; margin-top: 0;" role="progressbar" aria-label="${aspectLabel(key)}" aria-valuenow="${val}" aria-valuemin="0" aria-valuemax="100">
-                    <div class="xp-bar-fill" style="width: ${val}%; background-color: var(--color-gold);"></div>
+                    <div class="xp-bar-fill" style="width: ${val}%; background-color: var(--color-accent);"></div>
                   </div>
                   ${b ? `
                   <div class="benchmark-line" title="${escapeHtml(b.summary)}">

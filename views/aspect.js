@@ -124,7 +124,7 @@ export function renderAspectPage(containerId, state, aspectKey) {
               </details>
             </div>
           ` : `
-            <p style="font-size: 0.85rem; color: var(--color-text-secondary);">
+            <p style="font-size: var(--text-base); color: var(--color-text-secondary);">
               ${t("No baseline data for this comparison yet — re-run the onboarding sync to unlock it.")}
             </p>
           `}
@@ -133,7 +133,7 @@ export function renderAspectPage(containerId, state, aspectKey) {
         <div class="card">
           <h4 class="card-header">${t("Component Breakdown")}</h4>
           ${detail.components.length === 0 ? `
-            <p style="font-size: 0.85rem; color: var(--color-text-secondary);">${t("Baseline survey data needed for this breakdown.")}</p>
+            <p style="font-size: var(--text-base); color: var(--color-text-secondary);">${t("Baseline survey data needed for this breakdown.")}</p>
           ` : detail.components.map(c => `
             <div class="component-row">
               <div class="component-head">
@@ -165,17 +165,17 @@ export function renderAspectPage(containerId, state, aspectKey) {
         <div class="card">
           <h4 class="card-header">${t("Measured Weekly")}</h4>
           ${WEEKLY_MEASURED[aspectKey] ? `
-            <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 10px;">
+            <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin-bottom: 10px;">
               ${tp("Your weekly review re-measures this aspect from: {fields}.", { fields: t(WEEKLY_MEASURED[aspectKey]) })}
             </p>
             ${stateManager.isWeeklyReviewDue()
-              ? `<a href="#/review" class="btn btn-primary" style="font-size: 0.85rem;">${t("Start Weekly Review")}</a>`
-              : `<p style="font-size: 0.85rem; color: var(--color-text-secondary);">${t("Reviewed this week — the next review opens next week.")}</p>`}
+              ? `<a href="#/review" class="btn btn-primary" style="font-size: var(--text-base);">${t("Start Weekly Review")}</a>`
+              : `<p style="font-size: var(--text-base); color: var(--color-text-secondary);">${t("Reviewed this week — the next review opens next week.")}</p>`}
           ` : `
-            <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 10px;">
+            <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin-bottom: 10px;">
               ${t("This aspect is measured by its questionnaires rather than weekly quantities — update it at the monthly re-assessment.")}
             </p>
-            ${state.baseline ? `<a href="#/checkin" class="btn btn-primary" style="font-size: 0.85rem;">${t("Start Re-assessment")}</a>` : ""}
+            ${state.baseline ? `<a href="#/checkin" class="btn btn-primary" style="font-size: var(--text-base);">${t("Start Re-assessment")}</a>` : ""}
           `}
         </div>
 

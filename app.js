@@ -14,8 +14,9 @@ import {
   renderDeepAssessment,
   renderMethodology,
   getLumiTip,
-  openDialog
-} from "./ui.js?v=51";
+  openDialog,
+  prefersReducedMotion
+} from "./ui.js?v=52";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -188,8 +189,8 @@ function confirmReset() {
     html: `
     <div class="popup-card">
       <h2 class="popup-title" style="font-family: var(--font-serif); font-weight: bold;">${t("Erase all data?")}</h2>
-      <p style="font-size: 0.95rem; margin-bottom: 8px;">${t("This deletes every weekly review, your pledges, and your baseline assessment.")}</p>
-      <p style="font-size: 0.95rem; margin-bottom: 20px;"><strong>${t("It cannot be undone, and this browser holds the only copy.")}</strong></p>
+      <p style="font-size: var(--text-md); margin-bottom: 8px;">${t("This deletes every weekly review, your pledges, and your baseline assessment.")}</p>
+      <p style="font-size: var(--text-md); margin-bottom: 20px;"><strong>${t("It cannot be undone, and this browser holds the only copy.")}</strong></p>
       <div style="display: flex; flex-direction: column; gap: 8px;">
         <button class="btn btn-primary btn-reset-export">${t("Download a backup, then erase")}</button>
         <button class="btn btn-danger btn-reset-confirm">${t("Erase without a backup")}</button>
@@ -418,7 +419,7 @@ function maybeOfferRecovery() {
   const banner = document.createElement("div");
   banner.className = "recovery-banner";
   banner.setAttribute("role", "alert");
-  banner.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:1200;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;padding:12px 16px;background:var(--color-navy,#24344d);color:#fff;font-size:0.85rem;box-shadow:0 -2px 12px rgba(0,0,0,0.25);";
+  banner.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:1200;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;padding:12px 16px;background:var(--color-navy,#24344d);color:#fff;font-size:var(--text-base);box-shadow:0 -2px 12px rgba(0,0,0,0.25);";
 
   const msg = document.createElement("span");
   msg.textContent = t("We found earlier data we couldn't open after an update. Download it before it's replaced.");
@@ -427,7 +428,7 @@ function maybeOfferRecovery() {
   const download = document.createElement("button");
   download.type = "button";
   download.className = "btn btn-primary";
-  download.style.cssText = "font-size:0.8rem;padding:4px 12px;";
+  download.style.cssText = "font-size:var(--text-sm);padding:4px 12px;";
   download.textContent = t("Download old data");
   download.addEventListener("click", () => {
     const stamp = new Date().toISOString().slice(0, 10);
@@ -447,7 +448,7 @@ function maybeOfferRecovery() {
   const dismiss = document.createElement("button");
   dismiss.type = "button";
   dismiss.className = "btn";
-  dismiss.style.cssText = "font-size:0.8rem;padding:4px 12px;";
+  dismiss.style.cssText = "font-size:var(--text-sm);padding:4px 12px;";
   dismiss.textContent = t("Dismiss");
   // Dismiss only hides the banner for this session; the data is intentionally
   // kept (not cleared) so it can't be lost by an accidental click.
@@ -474,20 +475,31 @@ function showToast(text, variant = "success") {
   popup.style.padding = "8px 16px";
   popup.style.borderRadius = "20px";
   popup.style.fontFamily = "var(--font-mono)";
-  popup.style.fontSize = "0.85rem";
+  popup.style.fontSize = "var(--text-base)";
   popup.style.zIndex = "1100";
   popup.style.pointerEvents = "none";
   popup.style.boxShadow = "0 4px 10px rgba(31, 45, 68, 0.3)";
 
   document.body.appendChild(popup);
 
-  popup.animate([
-    { transform: "translateY(0) scale(0.9)", opacity: 1 },
-    { transform: "translateY(-60px) scale(1)", opacity: 0 }
-  ], {
-    duration: TOAST_DURATION_MS,
-    easing: "ease-out"
-  });
+  // The @media (prefers-reduced-motion) block in index.css cannot see this:
+  // WAAPI keyframes are built here, in script, and never pass through the
+  // sheet. So the toast flew 60px up the screen no matter what the reader had
+  // asked their OS for.
+  // Reduced motion keeps the fade and drops the travel. Opacity alone is not
+  // what the setting is about — it is vestibular, and a cross-fade provokes
+  // nothing — while the 60px rise plus the scale is exactly the kind of
+  // movement it exists to suppress. Fading still reads as "this is leaving",
+  // so the toast does not simply blink out of existence.
+  popup.animate(
+    prefersReducedMotion()
+      ? [{ opacity: 1 }, { opacity: 0 }]
+      : [
+        { transform: "translateY(0) scale(0.9)", opacity: 1 },
+        { transform: "translateY(-60px) scale(1)", opacity: 0 }
+      ],
+    { duration: TOAST_DURATION_MS, easing: "ease-out" }
+  );
 
   setTimeout(() => popup.remove(), TOAST_DURATION_MS);
 }
@@ -574,6 +586,16 @@ function triggerLumiMessage(message, { announce = false } = {}) {
   if (lumiTypewriterInterval) {
     clearInterval(lumiTypewriterInterval);
   }
+  // Typing the tip out one character at a time is animation too, and the
+  // sheet cannot reach a setInterval any more than it can reach WAAPI. It is
+  // also the one piece of motion here that withholds *content*: until the
+  // last character lands, the reader cannot finish the sentence. Reduced
+  // motion gets the whole tip at once — strictly more information, sooner.
+  if (prefersReducedMotion()) {
+    bubble.textContent = message;
+    return;
+  }
+
   bubble.textContent = "";
 
   let idx = 0;
@@ -602,16 +624,21 @@ window.addEventListener("lifequest_levelup", (e) => {
     label: t("Happy birthday"),
     html: `
     <div class="popup-card">
+      <!-- Not a --text-* token on purpose: this sizes an emoji glyph as
+           artwork, not text. The type scale exists to keep prose steps
+           consistent, and folding a decorative icon into it would drag the
+           scale's top end around for a reason that has nothing to do with
+           reading. -->
       <div style="font-size: 3rem; margin-bottom: 10px;">🎂</div>
       <h2 class="popup-title" style="font-family: var(--font-serif); font-weight: bold;">${t("Happy birthday")}</h2>
-      <p style="font-size: 1.1rem; margin-bottom: 15px;">${t("A new year starts today. Your points reset for the year ahead — last year is saved below, not lost.")}</p>
-      <div style="background: var(--color-astral-glow); border: 1.5px solid var(--color-astral-dark); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <span style="font-family: var(--font-mono); font-size: 1.4rem; font-weight: bold; color: var(--color-navy);">${tp("AGE {n}", { n: data.level })}</span>
+      <p style="font-size: var(--text-xl); margin-bottom: 15px;">${t("A new year starts today. Your points reset for the year ahead — last year is saved below, not lost.")}</p>
+      <div style="background: var(--color-slate-glow); border: 1.5px solid var(--color-slate-dark); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <span style="font-family: var(--font-mono); font-size: var(--text-2xl); font-weight: bold; color: var(--color-navy);">${tp("AGE {n}", { n: data.level })}</span>
         ${filed.map(y => `
           <br>
-          <span class="text-gold" style="font-family: var(--font-serif); font-weight: 600; font-size: 0.95rem;">${tp("Year {level} filed: {xp} points", { level: y.level, xp: y.xp })}</span>`).join("")}
+          <span class="text-gold" style="font-family: var(--font-serif); font-weight: 600; font-size: var(--text-md);">${tp("Year {level} filed: {xp} points", { level: y.level, xp: y.xp })}</span>`).join("")}
         ${data.shifts && data.shifts.finance
-          ? `<br><span style="font-family: var(--font-serif); font-size: 0.85rem; color: var(--color-text-secondary);">${t("Your age band changed, so the finance score was recalculated.")}</span>`
+          ? `<br><span style="font-family: var(--font-serif); font-size: var(--text-base); color: var(--color-text-secondary);">${t("Your age band changed, so the finance score was recalculated.")}</span>`
           : ""}
       </div>
       <button class="btn btn-primary btn-close-levelup" style="width: 120px;">${t("Continue")}</button>

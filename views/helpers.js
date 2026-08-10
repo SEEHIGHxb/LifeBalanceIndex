@@ -12,6 +12,34 @@ export const escapeHtml = (value) => String(value).replace(/[&<>"']/g, c => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[c]));
 
+// --- Reduced motion -------------------------------------------------------
+// This has to be asked in JS, not only in the sheet. index.css already carries
+// a @media (prefers-reduced-motion: reduce) block, but a media query cannot
+// reach either kind of motion this app drives from script:
+//   - element.animate() (WAAPI) runs off a keyframe list the sheet never sees;
+//   - scrollIntoView({behavior:"smooth"}) takes its behaviour from the option
+//     object, which beats the sheet's scroll-behavior outright.
+// So the sheet was covering 2 of 13 motion sites and silently missing the
+// toast and all five smooth scrolls.
+// Queried live rather than cached at module load: the OS setting can change
+// while the page is open, and this is a long-lived PWA. The typeof guards are
+// for `node --test`, which imports this module with no window at all — see the
+// preamble in tests/views-xss.test.mjs about installing globals first.
+export const prefersReducedMotion = () =>
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// scrollIntoView with the animation dropped when the reader asked for less
+// motion. Every call site wants the same outcome — put this element on screen,
+// in practice the first invalid field — and differs only in whether it may
+// animate getting there. Jumping is the right fallback, not staying put: the
+// field still has to be visible for the error message to mean anything.
+export function scrollIntoViewGently(el, options = {}) {
+  if (!el || typeof el.scrollIntoView !== "function") return;
+  el.scrollIntoView({ ...options, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+}
+
 export const ASPECT_LABELS = {
   finance: "Finance",
   physical: "Physical",

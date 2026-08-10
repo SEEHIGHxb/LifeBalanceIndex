@@ -20,7 +20,7 @@ function pledgeCard(goal) {
   const last = goal.lastResult;
   const resultLine = last
     ? (last.met
-        ? `<span style="color: var(--color-nectar); font-weight: 600;">✓ ${tp("Met last week ({value} {unit})", { value: escapeHtml(last.value), unit: t(tmpl.unit) })}</span>`
+        ? `<span style="color: var(--color-success); font-weight: 600;">✓ ${tp("Met last week ({value} {unit})", { value: escapeHtml(last.value), unit: t(tmpl.unit) })}</span>`
         : `<span style="color: var(--color-crimson); font-weight: 600;">✗ ${tp("Missed last week ({value} {unit})", { value: escapeHtml(last.value), unit: t(tmpl.unit) })}</span>`)
     : `<span style="color: var(--color-text-secondary);">${t("Graded at your next weekly review.")}</span>`;
   const streak = goal.streak >= 2
@@ -31,13 +31,13 @@ function pledgeCard(goal) {
       <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
           <span class="holo-badge">${aspectLabel(tmpl.aspect).toUpperCase()}</span>
-          <strong style="font-size: 1.05rem;">${t(tmpl.title)}</strong>${streak}
+          <strong style="font-size: var(--text-lg);">${t(tmpl.title)}</strong>${streak}
         </div>
-        <button type="button" class="btn pledge-remove" data-pledge-id="${escapeHtml(goal.id)}" style="font-size: 0.75rem; padding: 2px 10px;">${t("Remove")}</button>
+        <button type="button" class="btn pledge-remove" data-pledge-id="${escapeHtml(goal.id)}" style="font-size: var(--text-xs); padding: 2px 10px;">${t("Remove")}</button>
       </div>
-      <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin: 4px 0;">${tp(tmpl.desc, { target: escapeHtml(goal.target) })}</p>
-      <p style="font-size: 0.8rem; margin: 4px 0 0;">${resultLine}</p>
-      <span class="text-gold" style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: bold;">${tp("+{xp} points each week it's met", { xp: tmpl.xp })}</span>
+      <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin: 4px 0;">${tp(tmpl.desc, { target: escapeHtml(goal.target) })}</p>
+      <p style="font-size: var(--text-sm); margin: 4px 0 0;">${resultLine}</p>
+      <span class="text-gold" style="font-family: var(--font-mono); font-size: var(--text-sm); font-weight: bold;">${tp("+{xp} points each week it's met", { xp: tmpl.xp })}</span>
     </div>`;
 }
 
@@ -67,7 +67,7 @@ export function renderQuests(containerId, state, onChange) {
       <div>
         <div class="card">
           <h3 class="card-header">${t("Weekly Pledges")}</h3>
-          <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 15px;">
+          <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin-bottom: 15px;">
             ${t("A pledge is a weekly quantity target. Your weekly review grades every pledge automatically — nothing to log day to day.")}
           </p>
           <div style="display: flex; flex-direction: column; gap: 15px;">
@@ -83,7 +83,7 @@ export function renderQuests(containerId, state, onChange) {
         <div class="card">
           <h3 class="card-header">${t("Add a Pledge")}</h3>
           ${canAdd && hasPriorityPledge ? `
-            <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 12px;">
+            <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: 12px;">
               ${t("Pledges for the aspects you're graded lowest on are listed first.")}
             </p>` : ""}
           ${canAdd ? `
@@ -98,12 +98,12 @@ export function renderQuests(containerId, state, onChange) {
                 <label for="pledge-target">${t("Weekly target")} (<span id="pledge-unit"></span>)</label>
                 <input type="number" id="pledge-target" class="form-control" required>
               </div>
-              <p id="pledge-desc" style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 10px;"></p>
+              <p id="pledge-desc" style="font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: 10px;"></p>
               <button type="submit" class="btn btn-primary" style="width: 100%;">${t("Add Pledge")}</button>
               <p id="pledge-error" class="d-none" style="color: var(--color-crimson); margin-top: 10px; font-weight: 600;"></p>
             </form>
           ` : `
-            <p style="font-size: 0.85rem; color: var(--color-text-secondary);">
+            <p style="font-size: var(--text-base); color: var(--color-text-secondary);">
               ${pledges.length >= PLEDGE_LIMIT
                 ? tp("Pledge list is full (max {max}).", { max: PLEDGE_LIMIT })
                 : t("Every pledge type is already in use.")}

@@ -54,10 +54,10 @@ function askCard(profile) {
   return `
     <div class="card">
       <h3 class="card-header">${t("Your year")}</h3>
-      <p style="font-size: 0.9rem; margin-bottom: 8px;">
+      <p style="font-size: var(--text-md); margin-bottom: 8px;">
         ${t("Your level is simply your age — a fact about you, not a score you earned. Tell the app which day your year turns and it can close each year and open the next one for you.")}
       </p>
-      <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 14px;">
+      <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin-bottom: 14px;">
         ${t("Month and day only. Your birth year is never asked for and never stored.")}
       </p>
       ${birthdayForm(profile, t("Save"))}
@@ -72,7 +72,7 @@ function statusCard(profile, now) {
   return `
     <div class="card">
       <h3 class="card-header">${tp("Year {level}", { level: escapeHtml(profile.level) })}</h3>
-      <p style="font-size: 0.95rem; margin-bottom: 10px;">
+      <p style="font-size: var(--text-md); margin-bottom: 10px;">
         ${days === 0
           ? t("This year closes today.")
           : tp("Closes on {date} — {days} days from now.", { date: escapeHtml(shortDate(closes)), days })}
@@ -81,18 +81,18 @@ function statusCard(profile, now) {
         aria-valuenow="${pace.percent}" aria-valuemin="0" aria-valuemax="100">
         <div class="xp-bar-fill" style="width: ${pace.percent}%;"></div>
       </div>
-      <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-top: 8px;">
+      <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin-top: 8px;">
         ${pace.ratio === null
           ? t("This year has only just opened — there is nothing to measure yet.")
           : tp("{xp} points earned of the {possible} your pledges have offered so far.", {
               xp: escapeHtml(pace.earned), possible: escapeHtml(pace.possible)
             })}
       </p>
-      <p style="font-size: 0.85rem; color: var(--color-text-secondary);">
+      <p style="font-size: var(--text-base); color: var(--color-text-secondary);">
         ${tp("{weeks} weeks still to run.", { weeks })}
       </p>
       <details style="margin-top: 12px;">
-        <summary style="cursor: pointer; font-size: 0.85rem; font-weight: 600;">${t("Change the day your year turns")}</summary>
+        <summary style="cursor: pointer; font-size: var(--text-base); font-weight: 600;">${t("Change the day your year turns")}</summary>
         <div style="margin-top: 10px;">
           ${birthdayForm(profile, t("Save"))}
         </div>
@@ -110,11 +110,11 @@ function movementCard(state) {
   return `
     <div class="card">
       <h4 class="card-header">${t("Movement this year")}</h4>
-      <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 10px;">
+      <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: 10px;">
         ${tp("Measured against your closest recorded snapshot, {date}.", { date: escapeHtml(shortDate(anchor.date)) })}
       </p>
       ${rows.length === 0
-        ? `<p style="font-size: 0.85rem;">${t("Your scores have held steady so far.")}</p>`
+        ? `<p style="font-size: var(--text-base);">${t("Your scores have held steady so far.")}</p>`
         : `<div class="terminal">${rows.map(row => `
             <div class="terminal-line">
               <span class="terminal-gold">${aspectLabel(row.key)}</span>
@@ -131,12 +131,12 @@ function archiveCard(levelYears) {
     <div class="card">
       <h4 class="card-header">${t("Years filed")}</h4>
       ${years.length === 0
-        ? `<p style="font-size: 0.85rem; color: var(--color-text-secondary);">${t("Nothing filed yet — your first year closes on your next birthday.")}</p>`
+        ? `<p style="font-size: var(--text-base); color: var(--color-text-secondary);">${t("Nothing filed yet — your first year closes on your next birthday.")}</p>`
         : years.map(year => {
           const percent = Math.round(Math.max(0, Math.min(1, Number(year.ratio) || 0)) * 100);
           return `
           <div style="margin-bottom: 12px;">
-            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 500;">
+            <div style="display: flex; justify-content: space-between; font-size: var(--text-base); font-weight: 500;">
               <span>${tp("Year {level}", { level: escapeHtml(year.level) })}</span>
               <span class="text-gold" style="font-family: var(--font-mono);">
                 ${tp("{xp} / {possible} points", { xp: escapeHtml(year.xp), possible: escapeHtml(year.possible) })}
@@ -145,7 +145,7 @@ function archiveCard(levelYears) {
             <div class="xp-bar-container" style="height: 5px; margin-top: 4px;" role="progressbar"
               aria-label="${tp("Year {level}", { level: escapeHtml(year.level) })}"
               aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100">
-              <div class="xp-bar-fill" style="width: ${percent}%; background-color: var(--color-gold);"></div>
+              <div class="xp-bar-fill" style="width: ${percent}%; background-color: var(--color-accent);"></div>
             </div>
           </div>`;
         }).join("")}

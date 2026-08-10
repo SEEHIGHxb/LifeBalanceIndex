@@ -11,6 +11,7 @@ import {
   deepInstrumentBlock, collectDeepInstrument,
   validateScope
 } from "./instrument-forms.js";
+import { scrollIntoViewGently } from "./helpers.js";
 
 // 2c. RENDER THE MONTHLY MINI RE-ASSESSMENT (#/checkin)
 export function renderCheckin(containerId, state, onComplete) {
@@ -26,7 +27,7 @@ export function renderCheckin(containerId, state, onComplete) {
         <h1>${t("MONTHLY RE-ASSESSMENT")}</h1>
         <p>${t("Short instruments only • recalibrates Mental, Relationships & Personal Goals")}</p>
       </div>
-      <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 20px;">
+      <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin-bottom: 20px;">
         ${t("Answer for the recent weeks, not how you felt at onboarding. Scores shift by at most ±15 points per re-assessment, and consistent weekly reviews since the last one add a small bonus. Reward: +40 points.")}
       </p>
       <form id="checkin-form">
@@ -49,7 +50,7 @@ export function renderCheckin(containerId, state, onComplete) {
     if (invalid) {
       errorEl.textContent = t("Please answer every question before submitting.");
       errorEl.classList.remove("d-none");
-      invalid.scrollIntoView({ behavior: "smooth", block: "center" });
+      scrollIntoViewGently(invalid, { block: "center" });
       return;
     }
     try {
@@ -104,7 +105,7 @@ export function renderDeepAssessment(containerId, state, onComplete) {
         <h1>${t("IN-DEPTH ASSESSMENT")}</h1>
         <p>${t("Optional • full-length validated questionnaires • one section at a time")}</p>
       </div>
-      <p style="font-size: 0.85rem; color: var(--color-text-secondary);">
+      <p style="font-size: var(--text-base); color: var(--color-text-secondary);">
         ${t("These longer questionnaires make each aspect's estimate more reliable and tighten its percentile band. Save each section on its own — completed sections are kept as you go. Reward: +60 points per section.")}
       </p>
     </div>
@@ -121,7 +122,7 @@ export function renderDeepAssessment(containerId, state, onComplete) {
       if (invalid) {
         errorEl.textContent = t("Please answer every question before submitting.");
         errorEl.classList.remove("d-none");
-        invalid.scrollIntoView({ behavior: "smooth", block: "center" });
+        scrollIntoViewGently(invalid, { block: "center" });
         return;
       }
       try {

@@ -11,7 +11,7 @@ import { buildProvidedFlags, buildAnsweredFlags } from "../validation.js";
 import {
   numberField, instrumentBlock, collectInstrument, validateScope
 } from "./instrument-forms.js";
-import { birthdayFields } from "./helpers.js";
+import { birthdayFields, scrollIntoViewGently } from "./helpers.js";
 import { savingsRateFrom } from "../scoring.js";
 import { t, tp } from "../i18n.js";
 
@@ -71,7 +71,7 @@ export function renderOnboarding(containerId, onComplete) {
           ])}
         </div>
         ${birthdayFields({ idPrefix: "onb-birthday" })}
-        <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin: -6px 0 12px;">
+        <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin: -6px 0 12px;">
           ${t("Optional — month and day only, so the app knows when your year turns. Your birth year is never asked for and never stored.")}
         </p>
         ${selectField("onb-region", t("Primary Region (Cost of Living Mapping)"), [
@@ -221,7 +221,7 @@ export function renderOnboarding(containerId, onComplete) {
       document.getElementById(`onb-page-${i}`).classList.toggle("d-none", i !== idx);
     });
     updateProgress(idx);
-    container.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollIntoViewGently(container, { block: "start" });
   };
 
   // Next advances only when the current step is complete and in range.
@@ -231,7 +231,7 @@ export function renderOnboarding(containerId, onComplete) {
       const invalid = validateScope(document.getElementById(`onb-page-${idx}`));
       if (invalid) {
         showError(t("Please answer every question on this step."));
-        invalid.scrollIntoView({ behavior: "smooth", block: "center" });
+        scrollIntoViewGently(invalid, { block: "center" });
         return;
       }
       hideError();
@@ -288,7 +288,7 @@ export function renderOnboarding(containerId, onComplete) {
       if (invalid) {
         showPage(i);
         showError(t("Please answer every question before submitting."));
-        invalid.scrollIntoView({ behavior: "smooth", block: "center" });
+        scrollIntoViewGently(invalid, { block: "center" });
         return;
       }
     }

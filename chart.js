@@ -60,7 +60,7 @@ export function renderTrendChart(containerId, trend) {
   container.innerHTML = "";
 
   if (!trend || trend.length === 0) {
-    container.innerHTML = `<p style="font-size: 0.85rem; color: var(--color-text-secondary);">${t("No snapshots yet — trends appear after your first weekly sync.")}</p>`;
+    container.innerHTML = `<p style="font-size: var(--text-base); color: var(--color-text-secondary);">${t("No snapshots yet — trends appear after your first weekly sync.")}</p>`;
     return;
   }
 
@@ -104,6 +104,14 @@ export function renderTrendChart(containerId, trend) {
     label.setAttribute("text-anchor", "end");
     label.setAttribute("fill", "var(--color-text-secondary)");
     label.style.fontFamily = "var(--font-mono)";
+    // Not a --text-* token, here or at the three other sizes in this file.
+    // The svg is width="100%" over a viewBox, so its contents are in
+    // user-space units the browser rescales to whatever width the card
+    // happens to be. A rem would resolve against the root font size and THEN
+    // get multiplied by that ratio, so one token would render at a different
+    // size on a phone than on a desktop — the opposite of what a type scale
+    // is for. These four numbers are chart geometry; they belong to the
+    // viewBox, not to the sheet.
     label.style.fontSize = "9px";
     label.textContent = level;
     svg.appendChild(label);
@@ -115,7 +123,7 @@ export function renderTrendChart(containerId, trend) {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
     path.setAttribute("points", trend.map((pt, i) => `${xFor(i)},${yFor(pt.value)}`).join(" "));
     path.setAttribute("fill", "none");
-    path.setAttribute("stroke", "var(--color-astral)");
+    path.setAttribute("stroke", "var(--color-slate)");
     path.setAttribute("stroke-width", "2.5");
     path.setAttribute("stroke-linejoin", "round");
     svg.appendChild(path);
@@ -134,7 +142,7 @@ export function renderTrendChart(containerId, trend) {
     dot.setAttribute("cx", xFor(i));
     dot.setAttribute("cy", yFor(pt.value));
     dot.setAttribute("r", "3.5");
-    dot.setAttribute("fill", "var(--color-gold)");
+    dot.setAttribute("fill", "var(--color-accent)");
     dot.setAttribute("stroke", "#ffffff");
     dot.setAttribute("stroke-width", "1.5");
     const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
@@ -150,6 +158,7 @@ export function renderTrendChart(containerId, trend) {
       if (trend.length === 1) label.setAttribute("text-anchor", "middle");
       label.setAttribute("fill", "var(--color-text-secondary)");
       label.style.fontFamily = "var(--font-mono)";
+      // SVG user-space unit — see the note at the first label size above.
       label.style.fontSize = "9px";
       label.textContent = shortDate(pt.date);
       svg.appendChild(label);
@@ -252,6 +261,7 @@ export function renderRadarChart(containerId, aspects, options = {}) {
     text.setAttribute("text-anchor", "middle");
     text.setAttribute("fill", "var(--color-text-chart)");
     text.style.fontFamily = "var(--font-serif)";
+    // SVG user-space unit — see the note at the first label size above.
     text.style.fontSize = "11px";
     text.style.fontWeight = "bold";
     text.textContent = t(ASPECT_LABELS[key]);
@@ -284,7 +294,7 @@ export function renderRadarChart(containerId, aspects, options = {}) {
   const scorePolygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
   scorePolygon.setAttribute("points", scorePoints.join(" "));
   scorePolygon.setAttribute("fill", "rgba(36, 52, 77, 0.10)"); // Navy translucent fill
-  scorePolygon.setAttribute("stroke", "var(--color-astral)");
+  scorePolygon.setAttribute("stroke", "var(--color-slate)");
   scorePolygon.setAttribute("stroke-width", "2");
   svg.appendChild(scorePolygon);
 
@@ -294,7 +304,7 @@ export function renderRadarChart(containerId, aspects, options = {}) {
     circle.setAttribute("cx", x);
     circle.setAttribute("cy", y);
     circle.setAttribute("r", "4");
-    circle.setAttribute("fill", "var(--color-gold)");
+    circle.setAttribute("fill", "var(--color-accent)");
     circle.setAttribute("stroke", "#ffffff");
     circle.setAttribute("stroke-width", "1.5");
     svg.appendChild(circle);
@@ -304,8 +314,9 @@ export function renderRadarChart(containerId, aspects, options = {}) {
     scoreText.setAttribute("x", x);
     scoreText.setAttribute("y", y - 8);
     scoreText.setAttribute("text-anchor", "middle");
-    scoreText.setAttribute("fill", "var(--color-astral-dark)");
+    scoreText.setAttribute("fill", "var(--color-slate-dark)");
     scoreText.style.fontFamily = "var(--font-mono)";
+    // SVG user-space unit — see the note at the first label size above.
     scoreText.style.fontSize = "9px";
     scoreText.style.fontWeight = "bold";
     scoreText.textContent = score;

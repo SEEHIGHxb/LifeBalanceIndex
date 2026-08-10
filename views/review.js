@@ -194,12 +194,12 @@ export function renderReview(containerId, state, onComplete) {
     container.innerHTML = `
       <div class="card">
         <h3 class="card-header">${t("Weekly Review")}</h3>
-        <p style="font-size: 0.95rem; margin-bottom: 6px;">✅ <strong>${t("Reviewed this week.")}</strong></p>
-        <p style="font-size: 0.85rem; color: var(--color-text-secondary);">
+        <p style="font-size: var(--text-md); margin-bottom: 6px;">✅ <strong>${t("Reviewed this week.")}</strong></p>
+        <p style="font-size: var(--text-base); color: var(--color-text-secondary);">
           ${tp("Nothing to do here until {date} — live your week; the app can wait.", { date: nextReviewDate() })}
         </p>
         ${checkinDue ? `
-          <p style="font-size: 0.85rem; margin-top: 10px;">
+          <p style="font-size: var(--text-base); margin-top: 10px;">
             ${t("One thing while you're here: the monthly re-assessment is due.")}
             <a href="#/checkin">${t("Start Re-assessment")}</a>
           </p>` : ""}
@@ -217,7 +217,7 @@ export function renderReview(containerId, state, onComplete) {
   container.innerHTML = `
     <div class="card">
       <h3 class="card-header">${t("Weekly Review")}</h3>
-      <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 15px;">
+      <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin-bottom: 15px;">
         ${t("Report a rough weekly average for each habit — no daily logging needed. Every value is prefilled with last week's answer, so only touch what changed. Takes about two minutes.")}
       </p>
       ${connectionBanner(conn, state.profile)}
@@ -251,7 +251,7 @@ export function renderReview(containerId, state, onComplete) {
         </div>
 
         <details style="margin: 10px 0;">
-          <summary style="cursor: pointer; font-weight: 600; font-size: 0.9rem;">${t("Monthly habits (update when they change)")}</summary>
+          <summary style="cursor: pointer; font-weight: 600; font-size: var(--text-md);">${t("Monthly habits (update when they change)")}</summary>
           <div class="grid-2" style="margin-top: 10px;">
             ${box("monthlyDonations")}
             ${box("volunteeringHours")}

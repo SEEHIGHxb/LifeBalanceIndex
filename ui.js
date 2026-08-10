@@ -15,4 +15,4 @@ export { renderQuests } from "./views/quests.js";
 export { renderLeaderboard } from "./views/leaderboard.js";
 export { renderProfile } from "./views/profile.js";
 export { getLumiTip } from "./views/assistant.js";
-export { openDialog } from "./views/helpers.js";
+export { openDialog, prefersReducedMotion } from "./views/helpers.js";

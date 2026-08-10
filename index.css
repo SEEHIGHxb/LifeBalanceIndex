@@ -2,9 +2,22 @@
 
 :root {
   /* Color tokens — warm-paper professional palette.
-     The legacy variable NAMES (--color-gold, --color-astral*, --color-navy)
-     are preserved because inline styles in app.js/ui.js/chart.js reference
-     them; only their VALUES change to the new restrained palette. */
+
+     These names used to describe the palette this app had BEFORE the move to
+     warm paper, and were kept on the argument that JS inline styles referenced
+     them. The names lost that argument: --color-obsidian, "obsidian", held
+     #eceae4 — a near-white rail fill. A token whose name says black and whose
+     value is off-white is a trap for whoever next reaches for black, and on a
+     solo project that is the author. Renamed to say what they are:
+       gold    -> accent   (burgundy #6d2e3f; never was gold)
+       astral  -> slate    (navy-slate; never was neon)
+       nectar  -> success
+       obsidian-> track    (progress-bar and rail backgrounds)
+     Safe to do mechanically, and safe to do again: no call site builds a
+     property name dynamically — zero hits for getPropertyValue and for
+     var(--...${...}) across the codebase — so every reference is a literal a
+     find-replace can see. --color-navy and --color-crimson kept their names
+     because #24344d and #a23b3b are in fact navy and crimson. */
   --bg-primary: #f7f5f0;           /* warm paper */
   --color-card-bg: #ffffff;        /* cards */
   --color-card-border: #e3ded4;    /* muted borders */
@@ -14,33 +27,56 @@
      so the two cases need two tokens; #767676 is 4.54:1 on #ffffff. */
   --color-input-border: #767676;
 
-  /* Restrained burgundy accent, mapped onto the legacy "gold" hooks */
-  --color-gold: #6d2e3f;
-  --color-gold-light: #8a4a5a;
-  --color-gold-glow: rgba(109, 46, 63, 0.14);
+  /* Restrained burgundy accent */
+  --color-accent: #6d2e3f;
+  --color-accent-light: #8a4a5a;
+  --color-accent-glow: rgba(109, 46, 63, 0.14);
 
   --color-navy: #24344d;           /* primary / navy */
 
-  /* Legacy "astral" hooks now map to a quiet navy-slate for links,
-     progress fills, and focus rings — no neon. */
-  --color-astral: #3a5170;
-  --color-astral-dark: #24344d;
-  --color-astral-glow: rgba(36, 52, 77, 0.08);
+  /* Quiet navy-slate for links, progress fills, and focus rings */
+  --color-slate: #3a5170;
+  --color-slate-dark: #24344d;
+  --color-slate-glow: rgba(36, 52, 77, 0.08);
 
-  --color-nectar: #3f7d5a;         /* success */
+  --color-success: #3f7d5a;        /* success */
   --color-crimson: #a23b3b;        /* danger */
   --color-crimson-light: #c25a5a;
 
   --color-text-primary: #1f2733;   /* ink */
   --color-text-secondary: #5c6672; /* secondary */
   --color-text-chart: #1f2733;     /* chart labels */
-  --color-obsidian: #eceae4;       /* track / rail background */
+  --color-track: #eceae4;          /* progress track / rail background */
 
   /* Typography: Source Serif 4 headings, Inter body, Sarabun for Thai */
   --font-serif: 'Source Serif 4', 'Sarabun', Georgia, serif;
   --font-sans: 'Inter', 'Sarabun', system-ui, sans-serif;
   --font-mono: ui-monospace, 'Sarabun', 'SFMono-Regular', Menlo, monospace;
-  --font-accent: 'Source Serif 4', 'Sarabun', Georgia, serif;
+
+  /* Type scale.
+     Before this existed the sheet carried 25 distinct font sizes and the JS
+     inline styles carried 10 more, sixteen of them inside the 0.62-0.95rem
+     span — a 5px range holding sixteen steps, which is nudging, not a scale.
+     The steps below were chosen so the three most-used values (0.75, 0.8,
+     0.85) keep their exact numbers and roughly two thirds of call sites
+     render identically; only the strays moved, and none moved by more than
+     0.8px. Two tiers on purpose: ~1.06-1.11 ratios through the UI text range,
+     where small differences carry hierarchy inside a paragraph, and ~1.3
+     jumps for display figures, where the number IS the content.
+     One deliberate hold-out: the 16px literal in the mobile form-control
+     block near the end of this file. iOS zooms the viewport on focus for any
+     input under 16px, so that value is a behavioural guard, not a type
+     choice, and must not be folded into this scale. */
+  --text-2xs: 0.68rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8rem;
+  --text-base: 0.85rem;
+  --text-md: 0.9rem;
+  --text-lg: 1rem;
+  --text-xl: 1.15rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.9rem;
+  --text-4xl: 2.6rem;
 
   /* Layout */
   --radius: 4px;
@@ -131,7 +167,7 @@ header {
   gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
 }
 
@@ -147,7 +183,7 @@ header {
 
 .brand h1 {
   font-family: var(--font-serif);
-  font-size: 1.9rem;
+  font-size: var(--text-3xl);
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--color-navy);
@@ -156,7 +192,7 @@ header {
 
 .brand p {
   font-family: var(--font-sans);
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   font-weight: 400;
   color: var(--color-text-secondary);
   margin-top: 4px;
@@ -172,7 +208,7 @@ header {
 
 .tab-btn {
   font-family: var(--font-sans);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 500;
   color: var(--color-text-secondary);
   background: transparent;
@@ -191,7 +227,7 @@ header {
 
 .tab-btn.active {
   color: var(--color-navy);
-  border-bottom-color: var(--color-gold);
+  border-bottom-color: var(--color-accent);
   font-weight: 600;
 }
 
@@ -208,7 +244,7 @@ header {
 
 .card-header {
   font-family: var(--font-serif);
-  font-size: 1.15rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   border-bottom: 1px solid var(--color-card-border);
   padding-bottom: 10px;
@@ -257,7 +293,7 @@ header {
 .btn {
   font-family: var(--font-sans);
   font-weight: 500;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   padding: 9px 18px;
   border-radius: var(--radius);
   cursor: pointer;
@@ -295,6 +331,27 @@ header {
   border-color: var(--color-crimson);
 }
 
+/* Pressed state.
+   Every button above had :hover and nothing else, which is a desktop-shaped
+   assumption: a finger produces no hover, so on the app's primary surface the
+   only confirmation that a tap landed was whatever the tap went on to do —
+   and a slow render reads as a dead button, so people tap again. Same failure
+   as the v51 level tooltip: an affordance delivered only through hover is
+   not delivered at all on a phone.
+   translateY(1px) rather than a colour shift, because the colour change has
+   to survive :hover having already fired on desktop while never firing on
+   touch; 1px of travel reads identically in both cases. transition is
+   deliberately not extended to transform — the press must feel immediate,
+   and easing it in would reintroduce the lag this is here to deny.
+   Deliberately absent from the prefers-reduced-motion block further down:
+   1px over 0ms is feedback, not decoration, and provokes no vestibular
+   response. Suppressing it would withdraw the tap confirmation from exactly
+   the readers most likely to need confirming. */
+.btn:active,
+.tab-btn:active {
+  transform: translateY(1px);
+}
+
 /* Onboarding & Forms */
 .onboarding-container {
   max-width: 660px;
@@ -308,7 +365,7 @@ header {
 .form-group label {
   display: block;
   font-family: var(--font-sans);
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   font-weight: 500;
   margin-bottom: 6px;
   color: var(--color-text-primary);
@@ -322,14 +379,14 @@ header {
   background: #ffffff;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }
 
 .form-control:focus {
   outline: none;
   border-color: var(--color-navy);
-  box-shadow: 0 0 0 3px var(--color-astral-glow);
+  box-shadow: 0 0 0 3px var(--color-slate-glow);
   background: #ffffff;
 }
 
@@ -338,7 +395,7 @@ header {
   display: block;
   margin-top: 4px;
   color: var(--color-crimson);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   font-weight: 600;
 }
 
@@ -369,7 +426,7 @@ header {
 
 .survey-question legend {
   font-weight: 500;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   padding: 0 6px;
 }
@@ -383,7 +440,7 @@ header {
 .instrument-title {
   font-family: var(--font-serif);
   font-weight: 600;
-  font-size: 1rem;
+  font-size: var(--text-lg);
   color: var(--color-navy);
   margin-bottom: 12px;
 }
@@ -410,7 +467,7 @@ header {
 }
 
 .btn-compact {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   padding: 4px 10px;
 }
 
@@ -424,7 +481,7 @@ header {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   cursor: pointer;
   color: var(--color-text-secondary);
   transition: color var(--transition-speed) ease;
@@ -453,12 +510,12 @@ header {
 .speech-bubble {
   background: #ffffff;
   border: 1px solid var(--color-card-border);
-  border-left: 3px solid var(--color-gold);
+  border-left: 3px solid var(--color-accent);
   border-radius: var(--radius);
   padding: 13px 16px;
   max-width: 280px;
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   line-height: 1.5;
   box-shadow: 0 6px 20px rgba(31, 39, 51, 0.1);
   position: relative;
@@ -519,7 +576,7 @@ header {
   color: #ffffff;
   padding: 3px 10px;
   border-radius: var(--radius);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   border: 1px solid var(--color-navy);
 }
@@ -532,7 +589,7 @@ header {
    footnote to the name rather than a third figure competing on the card. */
 .level-note {
   font-family: var(--font-serif);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
   margin-top: 4px;
 }
@@ -540,7 +597,7 @@ header {
 .xp-bar-container {
   width: 100%;
   height: 8px;
-  background: var(--color-obsidian);
+  background: var(--color-track);
   border-radius: 4px;
   margin-top: 8px;
   overflow: hidden;
@@ -559,7 +616,7 @@ header {
   background: #f4f2ec;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   padding: 14px 16px;
   border-radius: var(--radius);
   max-height: 250px;
@@ -581,15 +638,15 @@ header {
 }
 
 .terminal-gold {
-  color: var(--color-gold);
+  color: var(--color-accent);
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
 }
 
 /* Small tag pills (mission type, tier) */
 .holo-badge {
   font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.02em;
   background: #f2efe8;
@@ -611,7 +668,7 @@ header {
   justify-content: center;
   font-family: var(--font-serif);
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: var(--text-lg);
   border: 1px solid var(--color-navy);
 }
 
@@ -643,7 +700,7 @@ header {
   border-radius: 50%;
   background: #f2e6e6;
   color: var(--color-crimson);
-  font-size: 0.7rem;
+  font-size: var(--text-2xs);
   cursor: pointer;
   line-height: 1;
 }
@@ -661,15 +718,15 @@ header {
 .action-title {
   font-family: var(--font-serif);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   margin-bottom: 6px;
   color: var(--color-navy);
 }
 
 .action-impacts {
   font-family: var(--font-sans);
-  font-size: 0.75rem;
-  color: var(--color-gold);
+  font-size: var(--text-xs);
+  color: var(--color-accent);
   font-weight: 600;
 }
 
@@ -690,7 +747,7 @@ header {
 .popup-card {
   background: #ffffff;
   border: 1px solid var(--color-card-border);
-  border-top: 3px solid var(--color-gold);
+  border-top: 3px solid var(--color-accent);
   border-radius: var(--radius);
   width: 90%;
   max-width: 440px;
@@ -701,7 +758,7 @@ header {
 
 .popup-title {
   font-family: var(--font-serif);
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
   font-weight: 700;
   margin-bottom: 10px;
   color: var(--color-navy);
@@ -711,9 +768,9 @@ header {
    trigger needs no wrapper of its own. */
 .share-open {
   font-family: var(--font-sans);
-  font-size: 0.76rem;
+  font-size: var(--text-xs);
   font-weight: 600;
-  color: var(--color-gold);
+  color: var(--color-accent);
   background: none;
   border: 1px solid var(--color-card-border);
   border-radius: var(--radius);
@@ -722,7 +779,7 @@ header {
 }
 
 .share-open:hover {
-  background: var(--color-gold-glow);
+  background: var(--color-accent-glow);
 }
 
 /* The sheet is taller than the other popups (preview + two control rows), so
@@ -762,7 +819,7 @@ header {
 }
 
 .share-option-label {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--color-text-secondary);
 }
@@ -774,7 +831,7 @@ header {
 
 .share-toggle {
   font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   padding: 5px 10px;
   border: 1px solid var(--color-card-border);
   background: #ffffff;
@@ -791,7 +848,7 @@ header {
 
 .share-note,
 .share-care {
-  font-size: 0.76rem;
+  font-size: var(--text-xs);
   line-height: 1.5;
   text-align: left;
   margin-bottom: 12px;
@@ -803,8 +860,8 @@ header {
 
 .share-care {
   color: var(--color-text-primary);
-  background: var(--color-gold-glow);
-  border-left: 3px solid var(--color-gold);
+  background: var(--color-accent-glow);
+  border-left: 3px solid var(--color-accent);
   padding: 8px 10px;
   border-radius: 0 var(--radius) var(--radius) 0;
 }
@@ -840,7 +897,7 @@ header {
   display: inline-block;
   margin-bottom: 14px;
   font-family: var(--font-sans);
-  font-size: 0.88rem;
+  font-size: var(--text-base);
   font-weight: 500;
   color: var(--color-navy);
   text-decoration: none;
@@ -859,13 +916,13 @@ header {
 
 .aspect-title {
   font-family: var(--font-serif);
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
   font-weight: 700;
   color: var(--color-navy);
 }
 
 .aspect-blurb {
-  font-size: 0.88rem;
+  font-size: var(--text-base);
   color: var(--color-text-secondary);
   margin-top: 4px;
 }
@@ -892,14 +949,14 @@ header {
 
 .aspect-score-value {
   font-family: var(--font-mono);
-  font-size: 1.8rem;
+  font-size: var(--text-3xl);
   font-weight: 700;
   color: var(--color-navy);
 }
 
 .aspect-score-max {
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
 }
 
@@ -908,7 +965,7 @@ header {
   position: relative;
   height: 12px;
   border-radius: 6px;
-  background: var(--color-obsidian);
+  background: var(--color-track);
   border: 1px solid var(--color-card-border);
   overflow: visible;
   margin: 8px 0 6px;
@@ -917,7 +974,7 @@ header {
 .gauge-fill {
   height: 100%;
   border-radius: 6px;
-  background: var(--color-astral);
+  background: var(--color-slate);
 }
 
 .gauge-marker {
@@ -926,7 +983,7 @@ header {
   width: 3px;
   height: 20px;
   border-radius: 2px;
-  background: var(--color-gold);
+  background: var(--color-accent);
   transform: translateX(-50%);
 }
 
@@ -940,13 +997,13 @@ header {
 }
 
 .gauge-summary {
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   color: var(--color-text-secondary);
   margin-top: 6px;
 }
 
 .gauge-note {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   margin-top: 4px;
   padding-left: 10px;
@@ -961,13 +1018,13 @@ header {
 .component-head {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   font-weight: 500;
   margin-bottom: 2px;
 }
 
 .component-detail {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
   margin-top: 3px;
 }
@@ -975,7 +1032,7 @@ header {
 /* Benchmark percentiles (dashboard) */
 .benchmark-line {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
   margin-top: 4px;
 }
@@ -989,7 +1046,7 @@ header {
   margin-top: 14px;
   border-top: 1px dashed var(--color-card-border);
   padding-top: 10px;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
 }
 
 .benchmark-sources summary {
@@ -1024,7 +1081,7 @@ header {
    secondary to the cited population comparison, never a competing verdict. */
 .criteria-caption {
   margin: 0 0 12px;
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   line-height: 1.5;
 }
@@ -1051,7 +1108,7 @@ header {
   flex: 0 0 auto;
   padding: 2px 8px;
   border-radius: 10px;
-  font-size: 0.68rem;
+  font-size: var(--text-2xs);
   font-weight: 700;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -1081,11 +1138,11 @@ header {
 
 .criterion-name {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: var(--text-base);
 }
 
 .criterion-detail {
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   line-height: 1.45;
 }
@@ -1106,7 +1163,7 @@ header {
 }
 
 .suggestion-item {
-  border-left: 3px solid var(--color-astral);
+  border-left: 3px solid var(--color-slate);
   background: #faf9f6;
   border-radius: 0 var(--radius) var(--radius) 0;
   padding: 10px 14px;
@@ -1120,12 +1177,12 @@ header {
 
 .suggestion-title {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-navy);
 }
 
 .suggestion-text {
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   margin-top: 2px;
   line-height: 1.45;
@@ -1133,8 +1190,8 @@ header {
 
 .suggestion-meta {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--color-gold);
+  font-size: var(--text-xs);
+  color: var(--color-accent);
   margin-top: 4px;
 }
 
@@ -1145,7 +1202,7 @@ header {
   align-items: center;
   gap: 14px;
   border: 1px solid var(--color-card-border);
-  border-left: 3px solid var(--color-gold);
+  border-left: 3px solid var(--color-accent);
   background: #faf9f6;
   border-radius: var(--radius);
   padding: 14px 16px;
@@ -1153,7 +1210,7 @@ header {
 }
 
 .checkin-banner p {
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   color: var(--color-text-primary);
   line-height: 1.45;
 }
@@ -1189,7 +1246,7 @@ header {
   margin-bottom: 4px;
 }
 .care-banner-text {
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   color: var(--color-text-primary);
   line-height: 1.45;
   margin-bottom: 10px;
@@ -1207,7 +1264,7 @@ header {
   justify-content: space-between;
   align-items: baseline;
   gap: 12px;
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   color: var(--color-text-secondary);
 }
 .care-resource-tel {
@@ -1223,12 +1280,12 @@ header {
 .commit-head {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   font-weight: 500;
 }
 
 .commit-note {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   margin-top: 6px;
   line-height: 1.45;
@@ -1240,13 +1297,13 @@ header {
    The only emphasis left is on the population-average column and the mark
    telling you whether a cell clears it, because that is the app's yardstick. */
 .sbs-intro {
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   color: var(--color-text-secondary);
   margin-bottom: 14px;
   line-height: 1.45;
 }
 .sbs-empty {
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   color: var(--color-text-secondary);
   padding: 18px;
   text-align: center;
@@ -1257,7 +1314,7 @@ header {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.85rem;
+  font-size: var(--text-base);
 }
 .sbs-table th,
 .sbs-table td {
@@ -1267,7 +1324,7 @@ header {
 }
 .sbs-table thead th {
   font-family: var(--font-serif);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-navy);
   vertical-align: bottom;
@@ -1279,17 +1336,17 @@ header {
   color: var(--color-text-secondary);
   background: var(--bg-primary);
 }
-.sbs-you { color: var(--color-gold); }
+.sbs-you { color: var(--color-accent); }
 .sbs-aspect { font-weight: 500; }
 .sbs-cell { text-align: center; font-family: var(--font-mono); }
 .sbs-score { font-weight: 600; }
-.sbs-mark { margin-left: 5px; font-size: 0.7rem; }
-.sbs-above { color: var(--color-gold); }
+.sbs-mark { margin-left: 5px; font-size: var(--text-2xs); }
+.sbs-above { color: var(--color-accent); }
 .sbs-below { color: var(--color-text-secondary); }
 .sbs-notes {
   margin-top: 14px;
   padding-left: 18px;
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   line-height: 1.5;
 }
@@ -1299,7 +1356,7 @@ header {
   background: none;
   border: none;
   color: var(--color-crimson);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   cursor: pointer;
   margin-left: 6px;
   padding: 2px 4px;
@@ -1311,9 +1368,9 @@ header {
 }
 
 /* Helper text colors */
-.text-gold { color: var(--color-gold); }
+.text-gold { color: var(--color-accent); }
 .text-purple { color: var(--color-navy); }
-.text-green { color: var(--color-nectar); }
+.text-green { color: var(--color-success); }
 .text-crimson { color: var(--color-crimson); }
 /* Keyboard focus ring.
  *
@@ -1331,7 +1388,7 @@ header {
  * .form-control is untouched: it already replaces the outline with its own
  * border + glow, and its class+pseudo specificity wins here. */
 :focus-visible {
-  outline: 3px solid var(--color-gold);
+  outline: 3px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -1352,7 +1409,7 @@ header {
   background: var(--color-navy);
   color: #ffffff;
   border-radius: var(--radius);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 600;
   text-decoration: none;
 }
@@ -1380,14 +1437,14 @@ header {
   justify-content: space-between;
   align-items: baseline;
   font-family: var(--font-sans);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   margin-bottom: 6px;
 }
 #onb-step-label { font-weight: 600; color: var(--color-navy); }
 .onb-progress-track {
   height: 6px;
-  background: var(--color-obsidian);
+  background: var(--color-track);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -1400,7 +1457,7 @@ header {
 }
 .onb-why {
   font-family: var(--font-sans);
-  font-size: 0.86rem;
+  font-size: var(--text-base);
   line-height: 1.45;
   color: var(--color-text-secondary);
   margin: -6px 0 18px;
@@ -1413,7 +1470,7 @@ header {
 }
 .profile-note {
   font-family: var(--font-sans);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   line-height: 1.4;
   color: var(--color-text-secondary);
   margin: -6px 0 14px;
@@ -1443,13 +1500,13 @@ header {
 }
 .conn-name {
   font-family: var(--font-serif);
-  font-size: 1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
 }
 .conn-role,
 .conn-fills {
   font-family: var(--font-sans);
-  font-size: 0.76rem;
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
 }
 .conn-switch {
@@ -1460,7 +1517,7 @@ header {
      the rest of the mobile layout was held to. */
   min-height: 44px;
   font-family: var(--font-sans);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
 }
@@ -1471,7 +1528,7 @@ header {
 }
 .conn-status {
   font-family: var(--font-sans);
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   line-height: 1.45;
   margin: 6px 0 4px;
 }
@@ -1485,7 +1542,7 @@ header {
 .prefill-chip {
   display: inline-block;
   font-family: var(--font-sans);
-  font-size: 0.66rem;
+  font-size: var(--text-2xs);
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -1497,7 +1554,7 @@ header {
 }
 .field-note {
   font-family: var(--font-sans);
-  font-size: 0.74rem;
+  font-size: var(--text-xs);
   line-height: 1.4;
   color: var(--color-text-secondary);
   margin: 4px 0 0;
@@ -1509,7 +1566,7 @@ header {
 }
 .conn-banner p {
   font-family: var(--font-sans);
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   line-height: 1.5;
   color: var(--color-text-secondary);
   margin: 0 0 6px;
@@ -1520,10 +1577,10 @@ header {
 .onb-optional {
   display: inline-block;
   font-family: var(--font-sans);
-  font-size: 0.68rem;
+  font-size: var(--text-2xs);
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: var(--color-nectar);
+  color: var(--color-success);
   background: rgba(63, 125, 90, 0.1);
   border: 1px solid rgba(63, 125, 90, 0.3);
   border-radius: 999px;
@@ -1550,7 +1607,7 @@ header {
   font-weight: 600;
 }
 .btn-onb-express:hover {
-  background: var(--color-astral-glow);
+  background: var(--color-slate-glow);
 }
 
 /* --- Dashboard: quick-start (express baseline) note --- */
@@ -1562,16 +1619,16 @@ header {
   padding: 12px 16px;
   margin-bottom: 18px;
   font-family: var(--font-sans);
-  font-size: 0.86rem;
+  font-size: var(--text-base);
   line-height: 1.45;
   color: var(--color-text-secondary);
 }
 .quickstart-note strong { color: var(--color-navy); }
 
 /* Completeness note (Phase 2b): estimated-score cue, amber-flagged. */
-.completeness-note { border-left-color: var(--color-gold); }
-.completeness-note strong { color: var(--color-gold); }
-.completeness-note a { color: var(--color-gold); font-weight: 600; }
+.completeness-note { border-left-color: var(--color-accent); }
+.completeness-note strong { color: var(--color-accent); }
+.completeness-note a { color: var(--color-accent); font-weight: 600; }
 
 /* --- Confidence tiers (Phase 2a) ---
    0.75rem (12px), not the 0.62rem this used to be. These badges are the
@@ -1585,7 +1642,7 @@ header {
   display: inline-block;
   vertical-align: middle;
   font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -1594,8 +1651,8 @@ header {
   border: 1px solid currentColor;
   line-height: 1.5;
 }
-.confidence-high { color: var(--color-nectar); }
-.confidence-partial { color: var(--color-gold); }
+.confidence-high { color: var(--color-success); }
+.confidence-partial { color: var(--color-accent); }
 .confidence-estimated { color: var(--color-text-secondary); }
 
 .aspect-confidence-line {
@@ -1605,7 +1662,7 @@ header {
   margin-top: 8px;
 }
 .confidence-caption {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
 }
 /* "In-depth" (deep-assessment) tier reads as the strongest — filled, not outlined. */
@@ -1635,7 +1692,7 @@ header {
    share one line at any legible size. */
 .benchmark-plain-lead {
   font-family: var(--font-sans);
-  font-size: 0.86rem;
+  font-size: var(--text-base);
   line-height: 1.45;
   margin-bottom: 4px;
 }
@@ -1650,7 +1707,7 @@ header {
    wraps cleanly inside the card instead of spilling past its edge. Kept as a
    rule rather than deleted because the color still differs from the parent. */
 .benchmark-detail {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
 }
 /* Keep the method tag whole: "(vs participation rates)" was breaking after
@@ -1663,7 +1720,7 @@ header {
 .benchmark-verified { color: var(--color-navy); font-weight: 700; }
 .percentile-definition {
   margin-top: 6px;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
   line-height: 1.4;
 }
@@ -1679,7 +1736,7 @@ header {
 .percentile-band {
   display: inline-block;
   font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -1689,10 +1746,10 @@ header {
   line-height: 1.5;
   white-space: nowrap;
 }
-.band-top10, .band-top25 { color: var(--color-nectar); }
-.band-above { color: var(--color-gold); }
+.band-top10, .band-top25 { color: var(--color-success); }
+.band-above { color: var(--color-accent); }
 .band-around { color: var(--color-text-secondary); }
-.band-below, .band-bottom { color: var(--color-gold-light); }
+.band-below, .band-bottom { color: var(--color-accent-light); }
 
 /* --- Letter grades (Phase L1) ---
    Same chip geometry as the confidence and percentile chips, one step larger
@@ -1707,7 +1764,7 @@ header {
   min-width: 1.55rem;
   text-align: center;
   font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.02em;
   padding: 1px 7px;
@@ -1717,17 +1774,17 @@ header {
 }
 .grade-a {
   color: #fff;
-  background: var(--color-nectar);
-  border-color: var(--color-nectar);
+  background: var(--color-success);
+  border-color: var(--color-success);
 }
-.grade-b { color: var(--color-nectar); }
+.grade-b { color: var(--color-success); }
 .grade-c { color: var(--color-text-secondary); }
-.grade-d { color: var(--color-gold); }
+.grade-d { color: var(--color-accent); }
 .grade-f { color: var(--color-crimson); }
 .grade-none {
   color: var(--color-text-secondary);
   border-style: dashed;
-  font-size: 0.62rem;
+  font-size: var(--text-2xs);
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -1736,7 +1793,7 @@ header {
    solid chip rather than the dashed "not filled in yet" one. */
 .grade-unranked {
   color: var(--color-text-secondary);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -1756,7 +1813,7 @@ header {
   border-collapse: collapse;
   width: 100%;
   min-width: 520px;
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
 }
 .provenance-table th,
 .provenance-table td {
@@ -1769,7 +1826,7 @@ header {
   font-weight: 700;
   color: var(--color-text-secondary);
   text-transform: uppercase;
-  font-size: 0.68rem;
+  font-size: var(--text-2xs);
   letter-spacing: 0.04em;
 }
 .provenance-table tbody th {
@@ -1781,7 +1838,7 @@ header {
 }
 .provenance-unranked th,
 .provenance-unranked td {
-  color: var(--color-gold);
+  color: var(--color-accent);
 }
 
 /* Keeps the grade chip and the raw score on one baseline in a dashboard row. */
@@ -1812,13 +1869,13 @@ header {
 }
 
 .grade-explainer p {
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   color: var(--color-text-primary);
   margin-bottom: 6px;
 }
 .grade-explainer p:last-child { margin-bottom: 0; }
 .grade-explainer-note {
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
 }
 
@@ -1836,20 +1893,20 @@ header {
 }
 .balance-index-value {
   font-family: var(--font-serif);
-  font-size: 2.6rem;
+  font-size: var(--text-4xl);
   font-weight: 700;
   line-height: 1;
   color: var(--color-navy);
 }
 .balance-index-max {
   font-family: var(--font-serif);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-secondary);
 }
 .balance-index-body { min-width: 0; }
 .balance-index-title {
   font-family: var(--font-serif);
-  font-size: 1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   color: var(--color-navy);
   display: flex;
@@ -1865,27 +1922,27 @@ header {
    action. */
 .balance-index-standing {
   font-family: var(--font-sans);
-  font-size: 0.88rem;
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--color-navy);
   line-height: 1.4;
   margin-bottom: 6px;
 }
 .balance-index-caption {
-  font-size: 0.76rem;
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
   line-height: 1.45;
 }
 .balance-index-weakest {
-  font-size: 0.8rem;
-  color: var(--color-gold);
+  font-size: var(--text-sm);
+  color: var(--color-accent);
   font-weight: 600;
   margin-top: 4px;
 }
 .balance-band {
   display: inline-block;
   font-family: var(--font-sans);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -1894,9 +1951,9 @@ header {
   border: 1px solid currentColor;
   line-height: 1.5;
 }
-.band-strong { color: var(--color-nectar); }
-.band-steady { color: var(--color-gold); }
-.band-uneven { color: var(--color-gold-light); }
+.band-strong { color: var(--color-success); }
+.band-steady { color: var(--color-accent); }
+.band-uneven { color: var(--color-accent-light); }
 .band-strained { color: var(--color-crimson); }
 
 /* Stack the index on narrow screens so the caption keeps a readable measure. */
@@ -1921,8 +1978,8 @@ header {
   padding: 14px 16px;
   margin-bottom: 18px;
 }
-.deep-banner p { font-size: 0.85rem; color: var(--color-text-primary); line-height: 1.45; }
-.deep-progress { font-size: 0.78rem; color: var(--color-text-secondary); margin-top: 4px; }
+.deep-banner p { font-size: var(--text-base); color: var(--color-text-primary); line-height: 1.45; }
+.deep-progress { font-size: var(--text-sm); color: var(--color-text-secondary); margin-top: 4px; }
 .deep-section-head {
   display: flex;
   align-items: center;
@@ -1931,7 +1988,7 @@ header {
 }
 .deep-section-done { border-left: 3px solid var(--color-navy); }
 .deep-done-note {
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   color: var(--color-navy);
   font-weight: 600;
   margin-bottom: 8px;
@@ -1939,7 +1996,7 @@ header {
 /* Explains why a full-length scale shows fewer questions than its name implies:
    the shared items were already answered at the baseline assessment. */
 .carry-note {
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   margin: -6px 0 12px;
 }
@@ -1957,7 +2014,7 @@ header {
   padding: 12px 18px 12px 14px;
   background: #ffffff;
   border: 1px solid var(--color-card-border);
-  border-left: 4px solid var(--color-nectar);
+  border-left: 4px solid var(--color-success);
   border-radius: 8px;
   box-shadow: 0 10px 28px rgba(31, 39, 51, 0.18);
   pointer-events: none;
@@ -1972,9 +2029,9 @@ header {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--color-nectar);
+  background: var(--color-success);
   color: #ffffff;
-  font-size: 1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
 }
 .reward-body {
@@ -1984,14 +2041,14 @@ header {
 }
 .reward-xp {
   font-family: var(--font-mono);
-  font-size: 0.92rem;
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-navy);
 }
 .reward-gains {
   font-family: var(--font-sans);
-  font-size: 0.78rem;
-  color: var(--color-nectar);
+  font-size: var(--text-sm);
+  color: var(--color-success);
   font-weight: 600;
 }
 @keyframes reward-in {
@@ -2002,6 +2059,14 @@ header {
   from { transform: translateY(0); opacity: 1; }
   to { transform: translateY(-22px); opacity: 0; }
 }
+/* This block is only half the story, and for a long time it was the only half
+   that existed. A media query cannot reach motion built in script: the toast
+   is a WAAPI element.animate(), the Lumi tip is a setInterval typewriter, and
+   scrollIntoView takes its behaviour from the options object rather than from
+   scroll-behavior here. Those four sites now ask prefersReducedMotion() in
+   views/helpers.js — change one side and check the other.
+   .btn:active / .tab-btn:active are excluded on purpose; see the note on that
+   rule for why 1px of press feedback should survive the preference. */
 @media (prefers-reduced-motion: reduce) {
   .reward-pop { animation: reward-out 0.4s ease-in 1.5s both; }
   .onb-progress-fill { transition: none; }
@@ -2030,7 +2095,7 @@ header {
   justify-content: center;
   gap: 0.35rem 1.25rem;
   font-family: var(--font-sans);
-  font-size: 0.78rem;
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
 }
 .radar-legend-item {
@@ -2042,7 +2107,7 @@ header {
   display: inline-block;
   width: 22px;
   height: 0;
-  border-top: 2px solid var(--color-astral);
+  border-top: 2px solid var(--color-slate);
 }
 .radar-legend-swatch--average {
   border-top: 2px dashed rgba(32, 50, 76, 0.55);
@@ -2050,7 +2115,7 @@ header {
 .radar-legend-caption {
   flex-basis: 100%;
   margin: 0.1rem 0 0;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   text-align: center;
   color: var(--color-text-secondary);
 }
@@ -2090,7 +2155,7 @@ header {
   }
 
   .card-header {
-    font-size: 1.05rem;
+    font-size: var(--text-lg);
     padding-bottom: 8px;
     margin-bottom: 12px;
   }
@@ -2106,14 +2171,14 @@ header {
     gap: 10px;
   }
 
-  .brand h1 { font-size: 1.15rem; }
+  .brand h1 { font-size: var(--text-xl); }
   .brand p { display: none; }
 
   .header-actions { gap: 6px; flex-shrink: 0; }
 
   /* Overriding what were inline styles until this release. */
   .btn-compact {
-    font-size: 0.85rem;
+    font-size: var(--text-base);
     padding: 10px 12px;
     min-height: 44px;
   }
@@ -2153,7 +2218,7 @@ header {
        Thai breaks legitimately at any character, so allowing it costs nothing
        and keeps the label at the 12px floor instead of shrinking to fit.
        Verified clipping-free in EN and TH at both 375px and 320px. */
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     overflow-wrap: anywhere;
     line-height: 1.15;
     padding: 6px 2px;
@@ -2165,7 +2230,7 @@ header {
   /* A bottom border would sit on the screen edge where it cannot be seen. */
   .tab-btn.active {
     border-bottom-color: transparent;
-    box-shadow: inset 0 2px 0 var(--color-gold);
+    box-shadow: inset 0 2px 0 var(--color-accent);
   }
 
   /* --- Floating assistant ------------------------------------------------
@@ -2177,13 +2242,16 @@ header {
     bottom: calc(64px + env(safe-area-inset-bottom));
   }
 
-  .speech-bubble { max-width: none; font-size: 0.85rem; }
+  .speech-bubble { max-width: none; font-size: var(--text-base); }
 
   /* --- Forms -------------------------------------------------------------
      THE iOS ZOOM FIX. Safari zooms the viewport whenever a focused field is
      under 16px, and every one of the app's 30 fields was 15.2px — so each tap
      zoomed the page and the reader had to pinch back out. 16px is a hard
-     threshold, not a preference: 15.9px still zooms. */
+     threshold, not a preference: 15.9px still zooms.
+     This is the one font-size in the sheet that is deliberately NOT a
+     --text-* token. It is a behavioural guard against a Safari rule, so it
+     must stay pinned to 16px even if the type scale is later retuned. */
   .form-control,
   input[type="text"],
   input[type="number"],
@@ -2196,7 +2264,7 @@ header {
     min-height: 44px;
   }
 
-  .form-group label { font-size: 0.875rem; }
+  .form-group label { font-size: var(--text-base); }
   .form-group { margin-bottom: 14px; }
 
   /* --- Tap targets -------------------------------------------------------
@@ -2221,7 +2289,7 @@ header {
 
   .radio-option {
     min-height: 44px;
-    font-size: 0.95rem;
+    font-size: var(--text-md);
   }
 
   .radio-option input[type="radio"] {
@@ -2250,7 +2318,7 @@ header {
   .gauge-note,
   .percentile-definition,
   .share-open {
-    font-size: 0.78rem;
+    font-size: var(--text-sm);
   }
 
   /* The provenance tables already scroll inside their card, so making their
@@ -2260,10 +2328,10 @@ header {
   .provenance-table th,
   .provenance-table td,
   .provenance-table thead th {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
   }
 
-  .app-footer { font-size: 0.8rem; }
+  .app-footer { font-size: var(--text-sm); }
 
   /* --- Prompt stack ------------------------------------------------------
      Two separate fixes.
@@ -2304,13 +2372,13 @@ header {
   }
 
   .prompt-stack .prompt:not(:first-child) .prompt-title {
-    font-size: 0.85rem;
+    font-size: var(--text-base);
   }
 
   .prompt-stack .prompt:not(:first-child) .btn {
     width: auto;
     flex-shrink: 0;
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     padding: 10px 12px;
     min-height: 44px;
   }

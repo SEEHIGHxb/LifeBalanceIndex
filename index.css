@@ -131,11 +131,15 @@ html {
 }
 
 /* Layout Utilities */
+/* 1240px, not a round 1200: it is 1184 — the widest instrument scale, see
+   .onboarding-container below — plus this container's own 2x24px padding.
+   The shell is sized by the widest thing that has to fit inside it, so the
+   two numbers move together. Change one and check the other. */
 .app-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  max-width: 1120px;
+  max-width: 1240px;
   margin: 0 auto;
   /* Bottom padding keeps content clickable above the floating assistant */
   padding: 24px 24px 160px;
@@ -353,8 +357,20 @@ header {
 }
 
 /* Onboarding & Forms */
+
+/* 1184px is measured, not chosen: it is the widest .radio-group any instrument
+   produces (1100px — cfc12's five long labels, in English) plus the 84px of
+   card and fieldset padding between this container's border box and the
+   group's content box. At the previous 660px the group had 576px, so every
+   scale above cfpb10 wrapped its options onto a second line.
+   Measured across all 151 items in both languages; the runners-up are who5 EN
+   at 897 and who5 TH at 753, so English, not Thai, sets the requirement.
+   Below roughly a 1290px viewport the shell can no longer supply 1184 and the
+   widest scales wrap again — that is a limit of the layout, not a regression.
+   The legend rule below caps the question text so it does not inherit this
+   width as its line length. */
 .onboarding-container {
-  max-width: 660px;
+  max-width: 1184px;
   margin: 24px auto;
 }
 
@@ -424,11 +440,17 @@ header {
   min-inline-size: auto; /* fieldset shrink-wrap fix */
 }
 
+/* The container widened to 1184px so the option row fits on one line. The
+   question text must not inherit that as its measure: a 1100px line is roughly
+   170 characters, well past the ~75 where the eye starts losing its place on
+   the return sweep. The option row still gets the full width; only the prose
+   is capped. ch, not px, so the cap tracks the font rather than fighting it. */
 .survey-question legend {
   font-weight: 500;
   font-size: var(--text-md);
   color: var(--color-text-primary);
   padding: 0 6px;
+  max-width: 75ch;
 }
 
 .instrument-block {

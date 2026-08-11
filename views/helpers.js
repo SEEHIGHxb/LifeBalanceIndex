@@ -220,8 +220,18 @@ export function benchmarkStanding(b, { compact = false } = {}) {
     // Two lines: the plain-language standing + band chip, then the exact
     // percentile detail on its own line so it never crowds the sentence (and
     // does not wrap mid-phrase in Thai, which runs longer).
+    //
+    // The phrase carries a .benchmark-phrase span so the phone stylesheet can
+    // drop it and keep the chip. At 375px these two paragraphs wrap to two
+    // lines each and cost 83 of the row's 133px; the sentence and the exact
+    // percentile are detail-page altitude, and the aspect page one tap away
+    // prints them alongside the range and the definition they need to be read
+    // correctly. The chip survives because it is the whole claim in two words.
+    // Wrapped rather than rebuilt as a separate mobile string: splitting the
+    // interpolated detail would cost two new i18n keys plus a th.js entry each,
+    // to show a number whose range would be hidden right beside it.
     return `
-      <p class="benchmark-plain-lead">${percentilePhrase(b.percentile, b.population)} ${chip}</p>
+      <p class="benchmark-plain-lead"><span class="benchmark-phrase">${percentilePhrase(b.percentile, b.population)}</span> ${chip}</p>
       <p class="benchmark-detail">${detail} <span class="benchmark-method">(${methodTag(b.method)})</span></p>`;
   }
   return `

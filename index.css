@@ -2448,4 +2448,51 @@ header {
   .dash-suggest  { order: 4; }
   .dash-activity { order: 5; }
   .dash-identity { order: 6; }
+
+  /* Aspect Scores, collapsed to one statement per aspect.
+     ---------------------------------------------------
+     Measured at 375px before this rule: every ranked row was 132.7px, of which
+     head (name + grade + score) was 23.2 and the bar 5. The remaining 83 was
+     .benchmark-plain-lead at 42.9 and .benchmark-detail at 39.7 — two
+     paragraphs, each wrapping to TWO lines in the card's ~311px of content
+     width. Eight aspects made a 1174px card: the list alone ran longer than one
+     and a half phone screens, and nothing below it was reachable without a
+     deliberate scroll.
+
+     Two problems, one cause. The obvious one is length. The subtler one is
+     raggedness: row height is a function of where each label happens to wrap,
+     so English ran 133/133/133/70 (Relationships is unranked, so it has no
+     .benchmark-detail at all) and Thai ran 93/113/133 — a list of identical
+     things rendered at four different heights, which reads as disorder rather
+     than as a scale.
+
+     Hiding the prose fixes both, because what remains is fixed-height: a chip
+     of two words, or the one-line unranked sentence. Rows land within a pixel
+     of each other in either language, so the eye can compare them.
+
+     What is NOT lost: the grade badge and the score both stay on the head line,
+     and the chip states the standing. The exact percentile, the typical range,
+     and the method tag move to the aspect page one tap away — the only place
+     they appear together with the definition that makes a percentile mean
+     anything. Showing a bare "68th percentile" here with its range hidden
+     beside it would be the worse option, not the safer one.
+
+     Scoped to .aspect-row so the aspect page's own standing block — same
+     classes, rendered by the non-compact branch of benchmarkStanding — keeps
+     every line. */
+  .aspect-row .benchmark-phrase,
+  .aspect-row .benchmark-detail {
+    display: none;
+  }
+
+  /* With the phrase gone the chip is the paragraph's first child, so its 6px
+     word-gap would render as a stray indent, and the 4px that used to separate
+     it from the detail line would now hang off the bottom of the row. */
+  .aspect-row .benchmark-plain-lead {
+    margin-bottom: 0;
+  }
+
+  .aspect-row .benchmark-plain-lead .percentile-band {
+    margin-left: 0;
+  }
 }

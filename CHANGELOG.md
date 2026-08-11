@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `55`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `56`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,101 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.9] — 2026-08-11 (APP_VERSION 56)
+
+### Aspect Scores was a 1174px list on a 812px phone
+
+Second of the three findings from the same mobile design review that produced
+the radar fix in 2.14.8. Measured at 375x812, every ranked row in the dashboard's
+Aspect Scores card was **132.7px**, and eight aspects came to a **1174px** card —
+the list alone ran longer than one and a half phone screens, and nothing beneath
+it was reachable without a deliberate scroll.
+
+Decomposing one row showed where it went:
+
+| Part | Height | |
+|---|---|---|
+| head — name, grade badge, score | 23.2 | the row's actual identity |
+| `.xp-bar-container` | 5.0 | |
+| `.benchmark-plain-lead` | 42.9 | prose sentence + band chip, **wrapped to 2 lines** |
+| `.benchmark-detail` | 39.7 | exact percentile + range + method, **wrapped to 2 lines** |
+
+**83 of the 133 pixels were two prose paragraphs**, each wrapping to two lines in
+the card's ~311px of content width. The part that identifies the aspect and
+states its score was 28px of it.
+
+There were two problems, not one. The obvious one is length. The subtler one is
+**raggedness**: row height depends on where each label happens to wrap, so
+English ran 133/133/133/**70** — Relationships is unranked, so it has no
+`.benchmark-detail` at all and collapsed to half height — and Thai ran
+**93/113/133**. Eight instances of the same thing rendered at four different
+heights, which reads as disorder rather than as a scale.
+
+Hiding the prose on phones fixes both, because what remains is fixed-height: a
+two-word chip, or the one-line unranked sentence.
+
+| | Before | After |
+|---|---|---|
+| Ranked row, English | 132.7 | **69.4** |
+| Ranked row, Thai | 93.2 – 132.7 | **69.4** |
+| Unranked row (Relationships) | 69.9 | **65.9** |
+| Card, English | 1174.4 | **726.9** |
+| Card, Thai | 1036.1 | **726.9** |
+| Dashboard page height, English | 3333 | **2885** |
+
+Row spread across all eight aspects went from **63px to 3.5px**, and it is now
+the same 727px card in both languages rather than two different layouts.
+
+**What is not lost.** The grade badge and the `NN/100` score both stay on the
+head line, and the band chip still states the standing in words. The exact
+percentile, the typical range, and the method tag move to the aspect page one
+tap away — the only place they appear together with the definition that makes a
+percentile mean anything. Showing a bare "68th percentile" here with its range
+hidden beside it would have been the worse option, not the safer one.
+
+**Why CSS and not a mobile render branch.** The dashboard does not re-render on
+resize, so a `matchMedia` branch in JS would leave a rotated phone showing the
+wrong variant until the next route change. The one JS change is a
+`.benchmark-phrase` span around the existing phrase so the sheet has something
+to target — no new strings, so no new `th.js` entries.
+
+**Considered and not done:** splitting the interpolated
+`"{pct} percentile · typical range {low}–{high}"` so the phone could keep the
+raw percentile. It costs two new i18n keys plus a Thai translation each, to show
+a number whose range would be hidden right beside it.
+
+**Known limits.** Two, both left deliberately.
+
+The row is three visual lines (head / bar / chip), not literally one. Folding
+the chip up onto the head line would save roughly another 180px, but at 375px
+that line already carries a Thai label, a confidence badge, an arrow, a grade
+badge and the score — and a wrap there would restore the exact raggedness this
+change removed. Not attempted without measuring it first.
+
+The unranked row now states itself twice: `gradeBadge` renders a **NOT RANKED**
+chip in the grade slot and `.benchmark-unranked-lead` repeats *"Not ranked
+against a population"* about 30px below it. Both elements predate this change —
+collapsing the row only stopped four lines of prose from hiding the stutter.
+Suppressing the sentence would leave that row 46px against the others' 69, a
+23px hitch replacing the 3.5px one; rewording it needs a new i18n key and a Thai
+translation, which is the same cost this entry declined to pay for the raw
+percentile. Left as-is, visible, rather than traded for a worse spread.
+
+**Verified.** `verify-aspect-rows.mjs`, 9/9 pass: prose hidden and all 7 chips
+still shown on mobile; row spread 3.5px; no horizontal overflow; the aspect
+detail page keeps `lead` + `detail` + `definition` at **both** widths (the hide
+is scoped to `.aspect-row`, and that page's block is rendered by the non-compact
+branch); desktop dashboard prose unchanged. Desktop was checked against a
+stashed baseline rather than an assumption — card **915.8 → 915.8**, heights
+identical. An earlier run failed on `min > 110px`; that threshold was wrong, not
+the code, since 133px was a mobile wrapping artifact and desktop rows were never
+that tall. `npx biome ci .` clean, `npm test` 461/461, smoke and e2e pass.
+
+**Files.** `views/helpers.js` (one span in the `compact` branch of
+`benchmarkStanding`), `index.css` (three rules added inside the existing
+`@media (max-width: 640px)` block; no existing selector touched), plus the
+version mirrors.
 
 ## [2.14.8] — 2026-08-10 (APP_VERSION 55)
 

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `56`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `57`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,58 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.10] — 2026-08-11 (APP_VERSION 57)
+
+### Footer links were 19.8px tall, under the WCAG 2.2 AA target floor
+
+Last of the three findings from the mobile design review. SC 2.5.8 (Target Size,
+Minimum) asks for **24x24 CSS px**; these links were a 19.8px line box — the
+height of their own text and nothing more.
+
+Measuring it first turned up more than the review had recorded:
+
+| Link | Before | After |
+|---|---|---|
+| `#footer-privacy` | 88.1 x **19.8** | 88.1 x **24** |
+| `#footer-methodology` | 79.8 x **19.8** | 79.8 x **24** |
+| `#footer-source` | 134.9 x **19.8** | 134.9 x **24** |
+| `privacy.html` — "Life Balance Index" | 100.9 x **19.8** | 100.9 x **24** |
+| `privacy.html` — "Source code & license" | 125.2 x **19.8** | 125.2 x **24** |
+
+Two things the review missed. **`privacy.html` has its own `.app-footer`** in
+static markup and was failing identically — the audit script never loaded that
+page, so its two links went unreported. And the failure is **not mobile-only**:
+2.5.8 governs pointer input generally, so all five failed at desktop width too.
+Width was never the issue; the narrowest is "Methodology" at 79.8.
+
+`min-height` rather than vertical padding, because padding would need
+recomputing the day `--text-sm` moves, whereas a floor stays a floor — and reads
+as one in the source. The links are flex items, so they blockify and the
+min-height applies; `.app-footer` gains `align-items: center` so the `·`
+separators, which are only as tall as their own text, stay centred against the
+now-taller links instead of hanging from the top of the row.
+
+**Left at AA on purpose.** SC 2.5.5 asks 44x44 and is AAA. A 44px floor would
+add 28px to the two-row phone footer — secondary navigation, sitting directly
+under a screen whose length was the entire subject of the two preceding
+releases. The cost lands in the wrong place.
+
+Footer height: **70.7 → 79** on a phone (where it wraps to two rows), **40.8 →
+45** everywhere else.
+
+**Not in scope, still outstanding.** Two other targets measure under 24 and are
+untouched: the dashboard's `Your year ›` link at **64x19**
+(`views/dashboard.js:185`, sized by an inline `font-size: var(--text-xs)`), and a
+citation link in the methodology copy at **406x15**. Both are real 2.5.8
+failures; neither is in the footer.
+
+**Verified.** `diag-footer.mjs` across `index.html` and `privacy.html` at 375px
+and 1440px: 5/5 links at 24px, **zero AA failures in all four combinations**.
+`npx biome ci .` exit 0, `npm test` 461/461, smoke and e2e pass.
+
+**Files.** `index.css` (`.app-footer`, `.app-footer a`) plus the version
+mirrors. No markup changed on either page.
 
 ## [2.14.9] — 2026-08-11 (APP_VERSION 56)
 

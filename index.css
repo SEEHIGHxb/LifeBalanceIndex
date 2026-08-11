@@ -173,16 +173,36 @@ header {
   border-top: 1px solid var(--color-card-border);
   display: flex;
   gap: 10px;
+  /* The links below are 24px tall while the "·" separators are only as tall as
+     their own text, so without this the dots hang from the top of the row. */
+  align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
 }
 
+/* WCAG 2.2 SC 2.5.8 (Target Size, Minimum) asks for 24x24 CSS px. These links
+   were a 19.8px line box — the height of their own text and nothing more — so
+   all three failed on the dashboard, both failed on privacy.html, and they
+   failed at DESKTOP width too: 2.5.8 governs pointer input generally, not just
+   touch. Width was never the problem; the narrowest is "Methodology" at 79.8.
+
+   min-height rather than vertical padding: padding would have to be recomputed
+   the day --text-sm moves, whereas a floor stays a floor. It also reads as a
+   floor in the source, which is the point of the rule.
+
+   This is the AA criterion. SC 2.5.5 (Target Size) asks 44x44 and is AAA — a
+   44px floor here would add 28px to the two-row phone footer, and this is
+   secondary navigation sitting under a screen whose length was the whole
+   subject of the two preceding releases. Left at AA deliberately. */
 .app-footer a {
   color: var(--color-text-secondary);
   text-decoration: underline;
   text-underline-offset: 2px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
 }
 
 .app-footer a:hover {

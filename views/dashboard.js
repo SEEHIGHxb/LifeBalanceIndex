@@ -182,7 +182,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
                    <span>${tp("Progress: {pct}%", { pct: pace.percent })}</span>`}
             </div>
             <p class="level-note">${t("Your level is your age, not points earned")}</p>
-            <a href="#/year" style="display: inline-block; margin-top: 6px; font-size: var(--text-xs); font-weight: 600;">${t("Your year")} &rsaquo;</a>
+            <a href="#/year" class="card-link">${t("Your year")} &rsaquo;</a>
           </div>
         </div>
 

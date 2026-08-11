@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `57`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `58`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,50 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.11] — 2026-08-11 (APP_VERSION 58)
+
+### "Your year ›" was 64x19, and its size lived in an inline style
+
+Follow-on to 2.14.10, which raised the footer links to the WCAG 2.2 SC 2.5.8
+floor of 24x24 and listed this one as still outstanding.
+
+The link measured **64x19**. The cause is worth recording separately from the
+number: `views/dashboard.js:185` carried four declarations in a `style`
+attribute — `display: inline-block; margin-top: 6px; font-size: var(--text-xs);
+font-weight: 600`. The element was sized nowhere near the stylesheet, so no
+sweep of `index.css` could have found it. The footer links were at least
+*visible* as a rule to audit; this one was not.
+
+| | Before | After |
+|---|---|---|
+| `Your year ›` | 64 x **19** | 64 x **24** |
+| Inline `style` attribute | 4 declarations | **none** |
+| Gap under `.level-note` | 6px | **6px** |
+
+Now a `.card-link` class. `inline-flex` rather than the original
+`inline-block`: an inline-block honours `min-height` but still aligns on the
+text baseline, so the added height would hang below the glyphs instead of
+splitting evenly around them. The 6px top margin is carried over, and the
+measured gap under `.level-note` is unchanged.
+
+**The phone is now clean.** A sweep of every `a[href]` and `button` on the
+dashboard at 375px returns **no target under 24x24** — footer, aspect rows and
+this link included.
+
+**One target still fails, on desktop only.** A citation link in the methodology
+copy renders at **406x15** — wide enough, 9px short on height. Untouched: it sits
+inside a body-copy paragraph rather than in a control, so giving it a 24px box
+is a decision about how inline citations should read, not a min-height. Out of
+scope for this fix.
+
+**Verified.** `diag-footer.mjs` at 375px and 1440px: the link is 64x24 at both,
+`getAttribute("style")` returns `null`, the gap under `.level-note` is 6, and
+the footer's five links stay at 24 with zero AA failures. `npx biome ci .` exit
+0, `npm test` 461/461, smoke and e2e pass.
+
+**Files.** `index.css` (new `.card-link`), `views/dashboard.js` (inline style
+replaced by the class), plus the version mirrors.
 
 ## [2.14.10] — 2026-08-11 (APP_VERSION 57)
 

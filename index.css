@@ -1141,14 +1141,42 @@ header {
   padding: 0;
 }
 
-.benchmark-sources li {
-  margin-bottom: 5px;
-  line-height: 1.4;
+/* 26px, not the 1.4 (16.8px) this used to be, so consecutive citation lines sit
+   far enough apart for the 24px hit areas below to tile without overlapping.
+   Applied to the line boxes that actually hold links — not to .benchmark-sources
+   as a whole, which would also loosen .benchmark-disclaimer, a paragraph of
+   prose that wants its 1.45. */
+.benchmark-sources li,
+.component-detail.benchmark-sources {
+  line-height: 26px;
 }
 
+.benchmark-sources li {
+  margin-bottom: 5px;
+}
+
+/* Citation links against WCAG 2.2 SC 2.5.8 (24x24). Measured at 1440px before
+   this rule: 14 links on the methodology page at 15px tall, plus the dashboard's
+   own source list once its <details> is opened. On a phone most of them wrap to
+   two lines and clear 24 by accident, which is not the same as passing.
+
+   These are NOT covered by the criterion's inline exception. That exemption is
+   for a target "in a sentence, or whose size is constrained by the line-height
+   of non-target text" — but citeLinks() emits nothing except links joined by
+   " · ", and the dashboard list is one bare <a> per <li>. There is no sentence
+   around them to be exempt inside of.
+
+   padding-block, and NOT display:inline-block, which was considered and
+   rejected: inline-block makes each citation an unbreakable box, and the widest
+   label here measures 560px against a 375px phone. That trades a 9px shortfall
+   for horizontal overflow. Vertical padding on an inline element expands the
+   hit area — getBoundingClientRect and hit-testing both include it — while
+   leaving line breaking exactly as it was, which is what a citation that has to
+   wrap needs. 15px text box + 2x5 = 25px, inside a 26px line. */
 .benchmark-sources a {
   color: var(--color-navy);
   word-break: break-word;
+  padding-block: 5px;
 }
 
 /* Guideline checks (criterion-referenced card on aspect pages).

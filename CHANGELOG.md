@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `58`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `59`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,70 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.12] — 2026-08-11 (APP_VERSION 59)
+
+### Citation links were 15px tall — 14 of them, not the one that was reported
+
+2.14.11 listed a single methodology citation at 406x15 as outstanding. Probing
+it properly found **14** sub-24px citation links on the methodology page at
+1440px, plus the dashboard's own benchmark source list.
+
+Two corrections to what the earlier entries claimed, both from measuring instead
+of extrapolating:
+
+- **The dashboard link was a false positive while collapsed.** A closed
+  `<details>` puts its subtree under `content-visibility: hidden`, which stops
+  it rendering but still lets descendants report a box. A filter of
+  `width > 0 && visibility !== "hidden"` does not catch that. Those links only
+  fail once the reader opens the disclosure — which is the moment they matter,
+  so they are fixed, but the earlier "fails on the desktop dashboard" phrasing
+  was measuring an unrendered subtree.
+- **The phone was never the worst case.** At 375px most citations wrap to two
+  lines and clear 24px by accident. Only 2 of 14 failed there against 14 of 14
+  on desktop. Clearing a threshold because the text happened to wrap is not the
+  same as passing it.
+
+| | Before | After |
+|---|---|---|
+| Methodology citations, 1440px | **14** fail | **0** |
+| Methodology citations, 375px | **2** fail | **0** |
+| Dashboard sources, disclosure open | **1** fail | **0** |
+
+**Not exempt under the inline exception.** SC 2.5.8 excuses a target "in a
+sentence, or whose size is constrained by the line-height of non-target text".
+`citeLinks()` emits nothing but links joined by `" · "`, and the dashboard list
+is one bare `<a>` per `<li>`. There is no sentence around them to be exempt
+inside of, so the exception was checked and found not to apply rather than
+quietly leaned on.
+
+**`padding-block`, not `display: inline-block`.** Vertical padding on an inline
+element expands the hit area — `getBoundingClientRect` and hit-testing both
+include it — while leaving line breaking untouched. inline-block would have made
+each citation an unbreakable box, and the widest label here measures **560px**
+against a 375px phone: that trades a 9px shortfall for horizontal overflow.
+15px text box + 2x5 = 25px, inside a line-height raised to 26px so consecutive
+citations tile without their hit areas overlapping.
+
+The 26px line-height is scoped to the line boxes that hold links, not to
+`.benchmark-sources` as a whole — `.benchmark-disclaimer` is a paragraph of
+prose and keeps its 1.45.
+
+**One target still fails, app-wide.** `← Overview` (`.aspect-back`) measures
+**77x21** — 3px short, on the methodology and aspect pages. It is a navigation
+control rather than a citation, so it is not in this fix. Two lines would close
+it: `display: inline-flex; align-items: center; min-height: 24px` on
+`.aspect-back` at `index.css:952`.
+
+**Verified.** The Aspect Scores card is untouched at **726.9px** in both
+languages, and the 9/9 regression probe from 2.14.9 still passes. Dashboard page
+height moved 2885 → 2898, entirely from the footer (+8.3) and `Your year` (+5)
+of the two preceding releases. `npx biome ci .` exit 0, `npm test` 461/461,
+smoke and e2e pass.
+
+**Files.** `index.css` (`.benchmark-sources li`,
+`.component-detail.benchmark-sources`, `.benchmark-sources a`) plus the version
+mirrors. No markup changed.
 
 ## [2.14.11] — 2026-08-11 (APP_VERSION 58)
 

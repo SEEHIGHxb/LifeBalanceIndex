@@ -11,7 +11,7 @@ import { buildProvidedFlags, buildAnsweredFlags } from "../validation.js";
 import {
   numberField, instrumentBlock, collectInstrument, validateScope
 } from "./instrument-forms.js";
-import { birthdayFields, scrollIntoViewGently } from "./helpers.js";
+import { scrollIntoViewGently } from "./helpers.js";
 import { savingsRateFrom } from "../scoring.js";
 import { t, tp } from "../i18n.js";
 
@@ -60,7 +60,7 @@ export function renderOnboarding(containerId, onComplete) {
       body: `
         <div class="form-group">
           <label for="onb-name">${t("Name")}</label>
-          <input type="text" id="onb-name" class="form-control" placeholder="${t("E.g., Alex")}" value="" maxlength="40">
+          <input type="text" id="onb-name" class="form-control" value="" maxlength="40">
         </div>
         <div class="grid-2">
           ${numberField("onb-age", t("Age"), "", 'min="15" max="100"', { required: true, placeholder: "15–100" })}
@@ -70,10 +70,6 @@ export function renderOnboarding(containerId, onComplete) {
             { v: "female", l: "Female" }
           ])}
         </div>
-        ${birthdayFields({ idPrefix: "onb-birthday" })}
-        <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin: -6px 0 12px;">
-          ${t("Optional — month and day only, so the app knows when your year turns. Your birth year is never asked for and never stored.")}
-        </p>
         ${selectField("onb-region", t("Primary Region (Cost of Living Mapping)"), [
           { v: "Provinces", l: "Provinces / Upcountry Thailand" },
           { v: "Bangkok", l: "Bangkok & Vicinity" }
@@ -298,10 +294,12 @@ export function renderOnboarding(containerId, onComplete) {
       const surveyData = {
         name: val("onb-name"),
         age: val("onb-age"),
-        // Blank when declined; submitOnboarding sanitizes and leaves the
-        // birthday null, which simply means no level-ups until it is answered.
-        birthMonth: val("onb-birthday-month"),
-        birthDay: val("onb-birthday-day"),
+        // No birthday here on purpose. It is not asked during first-run: month
+        // and day only matter once someone has used the app long enough for a
+        // level-year to turn, and submitOnboarding leaves both null when the
+        // keys are absent (sanitizeBirthday rejects non-integers). The Year
+        // screen asks for it when it is still missing (yearreview.js:163) and
+        // the Profile page carries it permanently (profile.js:193).
         gender: val("onb-gender"),
         region: val("onb-region"),
         employment: val("onb-employment"),

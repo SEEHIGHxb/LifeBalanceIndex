@@ -192,7 +192,13 @@ export function renderProfile(containerId, state, onSaved) {
         </div>
         ${birthdayFields({ idPrefix: "pf-birthday", month: p.birthMonth, day: p.birthDay })}
         <span class="field-error d-none" id="pf-birthday-err" aria-live="polite"></span>
-        <p class="profile-note">${t("Optional — month and day only, so the app knows when your year turns. Your birth year is never asked for and never stored.")}</p>
+        <!-- The "your birth year is never asked for and never stored" clause used
+             to close this line. It was dropped app-wide: Age is collected five
+             lines above, and age plus today's date gives the birth year to
+             within twelve months, so the reassurance was spent before it was
+             offered. What remains is the part that earns its space — why the
+             field exists at all. -->
+        <p class="profile-note">${t("Optional — month and day only, so the app knows when your year turns.")}</p>
 
         <h3 class="instrument-title">${t("Life Context")}</h3>
         ${selectField("pf-region", t("Primary Region (Cost of Living Mapping)"), regionOpts, p.region)}

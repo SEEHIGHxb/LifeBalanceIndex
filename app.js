@@ -16,7 +16,7 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=59";
+} from "./ui.js?v=60";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -138,6 +138,14 @@ function initializeApp() {
     document.getElementById("nav-container").classList.add("d-none");
     document.getElementById("main-view").innerHTML = `<div id="onboarding-mount"></div>`;
     document.getElementById("assistant-mount").classList.add("d-none");
+    // The header Profile button is dead during first run: setupNavigation()
+    // binds its only listener, and that runs solely in the onboarded branch
+    // below. Even wired up it would go nowhere — the #/profile route resolves
+    // through initializeApp, which re-renders onboarding while !onboarded. So
+    // it was a control that could be pressed and never responded. The language
+    // toggle beside it stays: it is bound unconditionally, and a Thai reader
+    // needs it on the very first screen.
+    document.getElementById("btn-profile").classList.add("d-none");
 
     renderOnboarding("onboarding-mount", () => {
       // Now that there is data worth keeping, ask the browser not to evict it.
@@ -149,6 +157,7 @@ function initializeApp() {
   } else {
     document.getElementById("nav-container").classList.remove("d-none");
     document.getElementById("assistant-mount").classList.remove("d-none");
+    document.getElementById("btn-profile").classList.remove("d-none");
     setupNavigation();
     setupAssistant();
     renderActiveTab();

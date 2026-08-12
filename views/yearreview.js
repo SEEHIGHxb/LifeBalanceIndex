@@ -54,12 +54,20 @@ function askCard(profile) {
   return `
     <div class="card">
       <h3 class="card-header">${t("Your year")}</h3>
-      <p style="font-size: var(--text-md); margin-bottom: 8px;">
+      <!-- 14px, not the 8px this carried before: the removed paragraph below it
+           was what actually held the form off the prose, and dropping it left
+           the fields 8px under the sentence. 14 is the margin that paragraph
+           reserved, so the form sits where it always did. -->
+      <p style="font-size: var(--text-md); margin-bottom: 14px;">
         ${t("Your level is simply your age — a fact about you, not a score you earned. Tell the app which day your year turns and it can close each year and open the next one for you.")}
       </p>
-      <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin-bottom: 14px;">
-        ${t("Month and day only. Your birth year is never asked for and never stored.")}
-      </p>
+      <!-- The second paragraph here was "Month and day only. Your birth year is
+           never asked for and never stored." Both halves were dead weight: the
+           reassurance is hollow (the profile already holds Age, which dates the
+           birth year to within twelve months), and the scoping half only
+           restated the two field labels directly beneath it — "Birth month" and
+           "Day of month". The paragraph above already says what the question is
+           for, so nothing was left to keep. -->
       ${birthdayForm(profile, t("Save"))}
     </div>`;
 }

@@ -70,11 +70,43 @@ Thai reader needs it on the very first screen.
 
 ### Known limits
 
-The same "never asked for and never stored" sentence still appears on the
-Profile page (`views/profile.js:195`), directly beneath that page's own Age
-field, and a variant is on the Year screen (`views/yearreview.js:61`). Both have
-the identical hollowness. Left in place because this change was scoped to the
-first-run screen; flagged rather than silently swept up.
+### The hollow birth-year promise is now gone app-wide
+
+The first-run removal above left the same claim on other screens. Sweeping for
+it turned up **three** sites, not the two that were flagged — the dashboard
+prompt had its own wording of it and had been missed:
+
+| Site | Change |
+|---|---|
+| `views/profile.js:195` | Trailing "Your birth year is never asked for and never stored." dropped; the "so the app knows when your year turns" half stays — it says why the field exists |
+| `views/yearreview.js:60` | Whole paragraph deleted |
+| `views/dashboard.js:85` | ", never the year you were born" dropped from the prompt body |
+
+The Year screen's paragraph went entirely rather than being trimmed: its
+surviving half ("Month and day only.") only restated the two field labels
+directly beneath it, and the paragraph above already explains what the question
+is for.
+
+**A spacing regression came with that deletion and was caught by measuring.**
+The removed paragraph carried `margin-bottom: 14px` and was the only thing
+holding the form off the prose; without it the fields sat 8px under the
+sentence. The intro paragraph's margin was raised 8px to 14px, restoring the
+form to where it had always been. Verified at 14px in both languages.
+
+Three Thai entries were updated to match — each a clean truncation of the
+existing translation, so no new wording was introduced. The "Month and day
+only. Your birth year is never asked for and never stored." key was deleted
+from `th.js` entirely, as `tests/i18n-orphans.test.mjs` requires.
+
+### Known limit
+
+`askBirthday` (`views/dashboard.js:130`) is `!p.birthMonth &&
+!p.birthdayPromptDismissed`, so with onboarding no longer asking, **every new
+user now meets the birthday prompt on their first dashboard.** That is a
+one-line dismissible banner rather than two fields and an explanation mid-form,
+so it is a large net reduction — but it is not "deferred until the app has been
+used consistently" either. Gating it on some usage history (a first weekly
+review, say) is a separate decision and was not made here.
 
 ## [2.14.12] — 2026-08-11 (APP_VERSION 59)
 

@@ -82,7 +82,11 @@ function actionPrompts({ reviewDue, checkinDue, needsBackup, askBirthday, deepDo
   if (askBirthday) {
     prompts.push(promptCard({
       title: t("When does your year turn?"),
-      body: t("Your level is your age. Tell the app the day and it can close each year and open the next — month and day only, never the year you were born."),
+      // "…, never the year you were born" dropped with the same clause on the
+      // Profile and Year screens: the profile already holds Age, so the promise
+      // was hollow. The scoping half stays — it tells the reader what the form
+      // will ask for before they tap through to it.
+      body: t("Your level is your age. Tell the app the day and it can close each year and open the next — month and day only."),
       actions: `<a href="#/year" class="btn btn-primary">${t("Answer")}</a>
                 <button type="button" id="birthday-prompt-dismiss" class="btn">${t("Not now")}</button>`
     }));

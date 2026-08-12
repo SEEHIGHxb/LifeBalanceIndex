@@ -381,16 +381,14 @@ export const TH = {
   "Day of month": "วันที่",
   "Save": "บันทึก",
   "When does your year turn?": "ปีของคุณเปลี่ยนวันไหน?",
-  "Your level is your age. Tell the app the day and it can close each year and open the next — month and day only, never the year you were born.":
-    "เลเวลของคุณคืออายุ บอกวันให้แอปรู้ แล้วแอปจะปิดปีเก่าและเปิดปีใหม่ให้ — ระบุเพียงเดือนและวันที่ ไม่เก็บปีเกิด",
+  "Your level is your age. Tell the app the day and it can close each year and open the next — month and day only.":
+    "เลเวลของคุณคืออายุ บอกวันให้แอปรู้ แล้วแอปจะปิดปีเก่าและเปิดปีใหม่ให้ — ระบุเพียงเดือนและวันที่",
   "Answer": "ตอบคำถาม",
   "Not now": "ไว้ก่อน",
   "Your level is simply your age — a fact about you, not a score you earned. Tell the app which day your year turns and it can close each year and open the next one for you.":
     "เลเวลของคุณคืออายุ — เป็นข้อเท็จจริงเกี่ยวกับตัวคุณ ไม่ใช่คะแนนที่ต้องไขว่คว้า บอกแอปว่าปีของคุณเปลี่ยนวันไหน แล้วแอปจะปิดปีเก่าและเปิดปีใหม่ให้คุณ",
-  "Month and day only. Your birth year is never asked for and never stored.":
-    "ระบุเพียงเดือนและวันที่ ไม่มีการถามหรือเก็บปีเกิดของคุณ",
-  "Optional — month and day only, so the app knows when your year turns. Your birth year is never asked for and never stored.":
-    "ไม่บังคับ — ระบุเพียงเดือนและวันที่ เพื่อให้แอปรู้ว่าปีของคุณเปลี่ยนวันไหน ไม่มีการถามหรือเก็บปีเกิดของคุณ",
+  "Optional — month and day only, so the app knows when your year turns.":
+    "ไม่บังคับ — ระบุเพียงเดือนและวันที่ เพื่อให้แอปรู้ว่าปีของคุณเปลี่ยนวันไหน",
   "Year {level}": "ปีอายุ {level}",
   "This year closes today.": "ปีนี้ปิดวันนี้",
   "Closes on {date} — {days} days from now.": "ปิดวันที่ {date} — อีก {days} วัน",

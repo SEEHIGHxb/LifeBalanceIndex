@@ -119,7 +119,6 @@ export const TH = {
   "Aspects beyond your first sections use baseline estimates. Submit a Weekly Review to shape them, and monthly re-assessments refine your survey scores over time.": "ด้านที่อยู่นอกเหนือช่วงแรกใช้ค่าประมาณพื้นฐาน ส่งการทบทวนรายสัปดาห์เพื่อปรับให้ตรงขึ้น และการประเมินซ้ำรายเดือนจะปรับคะแนนแบบสอบถามของคุณให้แม่นยำขึ้นเมื่อเวลาผ่านไป",
   "points": "คะแนน",
   "Name": "ชื่อ",
-  "E.g., Alex": "เช่น อเล็กซ์",
   "Guest": "ผู้มาเยือน",
   "Gender (for benchmark norms)": "เพศ (ใช้เทียบเกณฑ์มาตรฐาน)",
   "Prefer not to say": "ไม่ระบุ",

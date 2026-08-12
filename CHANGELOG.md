@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `59`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `60`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,66 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.13] — 2026-08-12 (APP_VERSION 60)
+
+### Four things removed from the first-run screen
+
+Nothing was added. Every change here deletes something that was asking for
+attention it had not earned on the one screen where a new reader has no context
+yet.
+
+**1. The birthday question moved out of onboarding.**
+
+Month and day only matter once a level-year turns — which cannot happen until
+someone has used the app for months. Asking on screen one spent two fields and a
+two-line explanation on a fact with no consequence for anything the reader is
+about to see.
+
+It was not rebuilt elsewhere, because both destinations already existed:
+
+| Surface | Behaviour |
+|---|---|
+| `#/year` (`views/yearreview.js:163`) | Renders `askCard()` whenever `birthMonth`/`birthDay` are missing — it *asks*, it does not merely tolerate the gap |
+| Profile page (`views/profile.js:193`) | Permanent editor, unchanged |
+
+Verified end to end: complete onboarding without a birthday → `localStorage`
+holds `{birthMonth: null, birthDay: null}` → the Year screen shows the ask form.
+`sanitizeBirthday()` (`sanitize.js:218`) already returned nulls for absent input,
+so no state or migration change was needed. The `birthMonth`/`birthDay` keys were
+dropped from the onboarding payload rather than left reading a removed element —
+`val()` does `getElementById(id).value`, which would have thrown on null.
+
+**2. The "your birth year is never asked for and never stored" note is gone.**
+
+Reported as not making sense, and that is right: **Age is collected two fields
+above it.** Age plus today's date gives the birth year to within twelve months,
+so the sentence offered a privacy assurance the same form had already spent. The
+claim is literally true and practically hollow — the worst combination, because
+it trains a reader to discount the privacy language that *is* load-bearing.
+
+**3. The Name placeholder ("E.g., Alex") is gone.** A labelled free-text field
+does not need an example. `"E.g., Alex"` was removed from `th.js` in the same
+commit, or `tests/i18n-orphans.test.mjs` would fail on the unreachable key.
+
+**4. The header Profile button is hidden until onboarding completes.**
+
+It genuinely did nothing. `setupNavigation()` (`app.js:167`) binds its only click
+listener and runs **solely** in the onboarded branch, so during first run the
+button had no listener at all. Wiring it up would not have helped: `#/profile`
+resolves through `initializeApp`, which re-renders onboarding while
+`!state.onboarded`. It was a control that could be pressed and never answered.
+
+The language toggle beside it stays visible — it is bound unconditionally, and a
+Thai reader needs it on the very first screen.
+
+### Known limits
+
+The same "never asked for and never stored" sentence still appears on the
+Profile page (`views/profile.js:195`), directly beneath that page's own Age
+field, and a variant is on the Year screen (`views/yearreview.js:61`). Both have
+the identical hollowness. Left in place because this change was scoped to the
+first-run screen; flagged rather than silently swept up.
 
 ## [2.14.12] — 2026-08-11 (APP_VERSION 59)
 

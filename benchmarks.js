@@ -395,11 +395,39 @@ function physicalBenchmark(profile) {
 // Revisit when a representative Thai general-adult dataset is published; the
 // research briefs live in docs/research/.
 //
-// For `relationships` specifically, that revisit has now been searched and
-// closed once: docs/research/round-4-social-connection-norms.md asked whether
-// ANY general-population score DISTRIBUTION exists for UCLA-3 or LSNS-6 (or for
-// a swappable instrument with a validated Thai adult version), and every one of
-// its four questions came back NOT FOUND — no PERCENTILE is available. ONS
+// `relationships` is the ONE EXCEPTION to that "revisit when data appears"
+// standing order, and the exception is now permanent. Do not re-open it.
+//
+// Two searches, and the second changed the KIND of answer. Round 4
+// (docs/research/round-4-social-connection-norms.md) asked whether any
+// general-population score DISTRIBUTION exists for UCLA-3 or LSNS-6, and got
+// NOT FOUND four times — an availability result, which invites looking again
+// later. Round 5 (docs/research/round-5-rankable-relationships.md) found the
+// real blocker is the INSTRUMENT, not the literature:
+//
+//   - UCLA-3 has seven possible values and ~72% of any general population sits
+//     in the lowest three of them. Spain's Trucharte et al. 2021 (N=1,951, ages
+//     18-75, doi:10.1007/s12144-021-02110-x) publishes a genuine percentile
+//     table by age and sex — and in it a raw score of 3 spans p1 to p30. Score
+//     -> percentile is not an invertible function; naming one number inside
+//     that flat region is guessing. A perfect present-day THAI table would have
+//     the same shape, so finding one would not help. This is arithmetic, not a
+//     gap in the search.
+//   - LSNS-6 has the granularity (31 points) and no raw-score distribution
+//     exists anywhere: Lubben's own 2006 validation (N=7,432), the Tohoku
+//     Medical Megabank GWAS (N=63,497, supplementary files checked) and China's
+//     SSAPUR (N=2,819) all publish prevalence-below-cutoff or a bare mean+SD.
+//     Rebuilding a curve from mean+SD is barred too — the distribution is
+//     materially skewed, so a normal fit is the error this app removed once.
+//   - Nothing else clears distribution + resolution + a validated Thai adult
+//     version at once. Thailand does now have a validated instrument — RULS-6,
+//     Wongpakaran et al. 2020, doi:10.1111/bjhp.12404 — whose own translators
+//     state it carries no population cut-off and no lookup table.
+//
+// So the honest disclosure is not "we are still looking". It is that a short
+// social-connection scale cannot carry a rank at all. Round 4's four NOT FOUNDs
+// remain the availability half of the record, and the ONS note below is part of
+// that half. ONS
 // publishes item-level responses and associations but no combined-score
 // distribution, and advises using the UCLA module alongside the direct question
 // rather than as a composite.

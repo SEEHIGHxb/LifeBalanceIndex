@@ -969,7 +969,21 @@ header {
 
 /* Aspect detail pages */
 .aspect-back {
-  display: inline-block;
+  /* 21.08px tall before this — the line-height of a 15px sans line, 2.9px short
+     of the 24px floor in WCAG 2.2 SC 2.5.8 (Target Size Minimum, AA). It is the
+     back link on four routes (#/aspect/*, #/methodology, #/deep, #/checkin) and
+     failed identically at 375px and 1440px in both languages, so this is not a
+     phone-only fix. Width was never the problem: 77px in English, 62px in Thai.
+
+     inline-flex rather than inline-block: inline-block honours min-height but
+     still sits on the text baseline, so the added 3px would hang below the
+     glyphs. Centring splits it evenly and the arrow stays optically aligned
+     with the label. Not padding, because there is no wrapping to preserve here
+     — this link is one short phrase that never breaks. 24px (AA) not 44px
+     (2.5.5, AAA): the extra 23px would be pure dead space above a heading. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
   margin-bottom: 14px;
   font-family: var(--font-sans);
   font-size: var(--text-base);

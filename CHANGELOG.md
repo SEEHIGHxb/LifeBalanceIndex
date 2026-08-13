@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `60`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `61`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,46 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.14] — 2026-08-13 (APP_VERSION 61)
+
+### The "← Overview" back link reaches the 24px AA floor
+
+`.aspect-back` measured **21.08px** tall — the line-height of a 15px sans line,
+2.9px under the floor in WCAG 2.2 SC 2.5.8 (Target Size Minimum, AA).
+
+Two corrections to what earlier entries said about it:
+
+- **It is on four routes, not two.** `2.14.12` described it as living on "the
+  aspect and methodology pages". It is also the back link on `#/deep` and
+  `#/checkin` — `views/assessments.js` renders it twice (`:24`, `:102`), and
+  `views/aspect.js:48` and `views/methodology.js:160` once each.
+- **It was not phone-only.** 21.08px at 375px *and* 1440px, in both languages.
+  Width was never the issue: 77.1px in English, 62.5px in Thai.
+
+`display: inline-flex` + `align-items: center` + `min-height: 24px`, matching
+`.app-footer a` and `.card-link`. `inline-block` honours `min-height` but keeps
+sitting on the text baseline, so the extra 3px would hang below the glyphs;
+centring splits it evenly and the arrow stays optically aligned with the label.
+Padding was not used — unlike the citation links there is no wrapping to
+preserve, this being one short phrase that never breaks. AA (24px) not AAA
+(2.5.5, 44px): the extra 23px would be dead space above a heading.
+
+Verified at 24px across all four routes × two widths × two languages.
+
+### Known limit — the back link was NOT the last sub-24 target
+
+`2.14.11` and `2.14.12` both called `.aspect-back` the last one. A full sweep of
+every `<a href>` and `<button>` across ten routes, run as part of this change,
+proves that wrong: **`.pledge-remove` on `#/quests` is 68x21 (EN) / 37x22 (TH)**
+— three instances, and the Thai one fails on width as well as height.
+
+It is **desktop-only**: the `@media (max-width: 640px)` layer already floors
+buttons at 44px, so the phone passes. `.pledge-remove` has no rule of its own in
+`index.css` — it inherits `.btn`, which sets no `min-height` outside that mobile
+block. Not fixed here; this change was scoped to the back link. The claim is
+corrected rather than left standing, because "the last one" is exactly the kind
+of statement that stops anyone from looking again.
 
 ## [2.14.13] — 2026-08-12 (APP_VERSION 60)
 

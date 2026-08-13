@@ -1,6 +1,6 @@
 {
   "name": "life-balance-index",
-  "version": "2.14.13",
+  "version": "2.14.14",
   "private": true,
   "type": "module",
   "description": "Life Balance Index — local-first personal wellbeing self-assessment with cited aspect scoring",

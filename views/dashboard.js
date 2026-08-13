@@ -127,7 +127,15 @@ export function renderDashboard(containerId, state, onExportBackup) {
   // A soft ask, shown once until it is answered or waved off. Without a
   // birthday the level can never advance, so the question matters — but a
   // blocking modal over someone's own wellbeing data would be the wrong trade.
-  const askBirthday = !p.birthMonth && !p.birthdayPromptDismissed;
+  //
+  // Held back until a first weekly review is on record. The birthday left
+  // onboarding because month and day cannot matter until a level-year turns,
+  // which takes months of use; firing this prompt on the very first dashboard
+  // would just relocate the question by one screen rather than defer it. One
+  // completed review is the cheapest honest signal that someone has come back
+  // at all. Nothing is lost by waiting: the Profile page carries the fields the
+  // whole time, and a level-year cannot turn inside the first week regardless.
+  const askBirthday = state.reviews.length > 0 && !p.birthMonth && !p.birthdayPromptDismissed;
   const needsBackup = stateManager.needsBackupNudge();
   const daysSinceExport = stateManager.daysSinceLastExport();
 

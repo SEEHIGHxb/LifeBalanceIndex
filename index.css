@@ -527,6 +527,29 @@ header {
   padding: 4px 10px;
 }
 
+/* The Remove control on each pledge row. Its font-size and padding lived in a
+   style="" attribute on the button (views/quests.js:36) — the same trap
+   index.html documents for the header buttons: an inline declaration outranks
+   every media query, so the mobile layer could never have reached it. Moved
+   here for the same reason .btn-compact exists, and floored at 24px.
+
+   Measured at 1440px: 68.1x21 (EN), 36.8x22 (TH) — under the 24px floor of
+   WCAG 2.2 SC 2.5.8 (Target Size Minimum, AA) on HEIGHT only. Width passed in
+   both languages; an earlier note claiming the Thai button also failed on
+   width was wrong. Desktop-only, because the mobile layer floors .btn at 44px.
+
+   inline-flex and centring rather than taller padding: padding would widen the
+   button as well, and three of these sit in a column beside the pledge text
+   where the extra width has nowhere to go. */
+.pledge-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 2px 10px;
+  font-size: var(--text-xs);
+}
+
 .radio-group {
   display: flex;
   gap: 14px;
@@ -2397,6 +2420,15 @@ header {
     justify-content: center;
     min-height: 44px;
     padding: 11px 18px;
+  }
+
+  /* .btn's 11px 18px would now reach the pledge Remove control and widen it —
+     it could not before, because that padding was an inline style no media
+     query could outrank. Restated here so extracting the inline style changes
+     nothing on the phone: the button still reaches 44px through min-height
+     alone, exactly as it did. Verified unchanged at 68.1x44 (EN), 36.8x44 (TH). */
+  .pledge-remove {
+    padding: 2px 10px;
   }
 
   .share-open {

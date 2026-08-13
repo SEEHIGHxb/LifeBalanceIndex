@@ -47,8 +47,8 @@ const REFERENCE_PROFILE = {
   vegetablePortions: 2, // per day — ASSUMPTION (app onboarding default)
   waterLiters: 1.5, // per day — ASSUMPTION (app onboarding default)
   singleUsePlastics: 3, // per day — Thai average post-ban (same anchor as benchmarks.js)
-  monthlyDonations: 100, // THB — 52% of Thais donate (CAF WGI); a modest median amount
-  volunteeringHours: 0, // per month — 81% do not volunteer (CAF WGI)
+  monthlyDonations: 100, // THB — 67% of Thais donate (CAF WGI 2024); a modest median amount
+  volunteeringHours: 0, // per month — 76% do not volunteer (CAF WGI 2024)
   longTermInvestments: false // most Thai workers lack retirement savings (ILO/OECD coverage)
 };
 

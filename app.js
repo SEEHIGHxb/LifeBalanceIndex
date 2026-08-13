@@ -16,7 +16,7 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=62";
+} from "./ui.js?v=63";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";

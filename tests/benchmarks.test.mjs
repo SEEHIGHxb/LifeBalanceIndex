@@ -297,6 +297,53 @@ test("social contribution bands follow CAF participation rates", () => {
   assert.ok(volunteer.percentile < both.percentile);
 });
 
+// The test above pins only the ORDER of the bands, and BASELINE carries no ptm,
+// so it exercises the fallback path and never touches a band edge at all. Any
+// three rates keep that order — which is how a swapped CAF column (the helped-a-
+// stranger rate filed as "donated money") and a stale edition both survived
+// several releases with every test green.
+//
+// These pin the EDGES to the rates named in the citation itself. A rate that
+// moves without its band, or a band that moves without its rate, now fails here
+// instead of on someone's screen.
+test("each social band floor is the complement of its cited CAF rate", () => {
+  // ptm 0 plus a donation that is a rounding error against income drives the
+  // stage-2 intensity to 0, which lands the percentile exactly on the floor.
+  const at = (overrides, ptm) =>
+    getAllBenchmarks(makeState(overrides, { ...BASELINE, ptm })).socialContribution;
+
+  const neither = at({ monthlyDonations: 0, volunteeringHours: 0 }, 0);
+  const donor = at({ income: 1000000, monthlyDonations: 1, volunteeringHours: 0 }, 0);
+  const volunteer = at({ monthlyDonations: 0, volunteeringHours: 2 }, 0);
+
+  const label = donor.sources[0].label;
+  const donated = Number(label.match(/(\d+)% donated money/)[1]);
+  const volunteered = Number(label.match(/(\d+)% volunteered/)[1]);
+
+  assert.equal(donor.percentile, 100 - donated, `donor floor must be 100 - ${donated}`);
+  assert.equal(volunteer.percentile, 100 - volunteered, `volunteer floor must be 100 - ${volunteered}`);
+  assert.equal(neither.percentile, 2, "the bottom band starts at 2, not 0");
+
+  // A donor giving the full 5% share with a maximal ptm sits at the donor
+  // ceiling, which must be exactly one below the volunteer floor: the bands
+  // partition the scale with no gap and no overlap.
+  const donorTop = at({ income: 1000000, monthlyDonations: 50000, volunteeringHours: 0 }, 20);
+  assert.equal(donorTop.percentile, volunteer.percentile - 1, "donor ceiling abuts the volunteer floor");
+});
+
+// Guards the direction of the v63 correction. The old rates put the donor floor
+// at 48; the corrected ones put it at 33, because more Thais give than this file
+// used to claim, so giving distinguishes a person LESS. If anyone reverts to a
+// rate that flatters donors, this fails.
+test("the cited CAF rates are the 2024 edition, read in the right columns", () => {
+  const label = getAllBenchmarks(makeState()).socialContribution.sources[0].label;
+  assert.match(label, /World Giving Index 2024/, "the 2024 edition is the last one CAF published");
+  assert.match(label, /67% donated money/, "donated money is 67%, not the 52% helped-a-stranger rate");
+  assert.match(label, /24% volunteered/);
+  assert.match(label, /64% helped a stranger/);
+  assert.match(label, /2023 data/, "the collection year is part of the claim, not just the edition");
+});
+
 test("environment percentile puts the ~3/day Thai average at the 50th", () => {
   assert.equal(getAllBenchmarks(makeState({ singleUsePlastics: 3 })).environment.percentile, 50);
   assert.equal(getAllBenchmarks(makeState({ singleUsePlastics: 0 })).environment.percentile, 90);

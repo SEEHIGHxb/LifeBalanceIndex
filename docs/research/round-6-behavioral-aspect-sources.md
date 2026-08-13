@@ -1,6 +1,9 @@
 # Round 6 research brief — published sources for Social Contribution and Environment
 
-Status: OPEN — written 2026-08-13.
+Status: **PARTLY CLOSED — answered 2026-08-13.** ASK A is answered: GEB-50 and the
+Self-Report Altruism Scale both survived verification. ASK B is **reopened, not closed** —
+the export's central finding is wrong. Four defects found in the export; read `## Outcome`
+at the foot of this file before treating anything above it as settled.
 Purpose: replace the app-authored item sets behind the two aspects that currently disclose
 *"App-authored behavioral items — not a standardized instrument. Read this aspect as a habits
 index, not a validated psychological measure."* Those are `ptm` (Social Contribution) and
@@ -19,7 +22,7 @@ citation already fixed.
 
 | | STAGE 1 — sets the band (cited) | STAGE 2 — positions within it (app-authored) |
 |---|---|---|
-| Social Contribution | CAF World Giving Index: 52% of Thais donated, 19% volunteered | `ptm`, 5 frequency items, 0-20 |
+| Social Contribution | CAF World Giving Index 2024: 67% of Thais donated, 24% volunteered | `ptm`, 5 frequency items, 0-20 |
 | Environment | Thai post-ban average of ~3 single-use plastic pieces/day | `geb`, 6 frequency items, 0-24 |
 
 So there are **two separable asks**, and a source can satisfy one without touching the other:
@@ -96,10 +99,23 @@ Not a Thai norm. Do not spend effort making it fit.
 
 ### 6. CAF WGI publishes THREE rates; the app uses TWO
 
-Stage 1 uses "donated money" (52%) and "volunteered time" (19%). CAF's third component —
-**"helped a stranger"** — is published on the same basis and maps directly onto `ptm` item 3
-("How often do you help strangers…"). Confirming Thailand's current figure for that third rate
-is a small, cheap, immediate improvement to stage 1.
+Stage 1 *scores* on "donated money" and "volunteered time". CAF's third component — **"helped
+a stranger"** — is published on the same basis and maps directly onto `ptm` item 3 ("How often
+do you help strangers…").
+
+**Correction, added 2026-08-13.** This lead was written wrong in two ways, both my error:
+
+- The third rate was **already in the citation label**, not missing. It is only absent from
+  the *bands*, which is a different and much smaller observation than the one I made.
+- The three rates as written here (52 / 19) were taken from the app's own label rather than
+  from CAF, so this brief repeated the app's mistake instead of catching it. Verifying the
+  export later exposed both: the label had the helped-a-stranger and donated-money columns
+  swapped, and drew them from the 2023 edition under a 2024 label. Corrected in v63 — see
+  the CHANGELOG entry for 2.14.16 and the note above `SOCIAL_BANDS`.
+
+The lesson generalises past this line: a brief that seeds itself from the codebase inherits
+whatever the codebase already got wrong. Pre-brief leads must be read from the source, on the
+same standard demanded of the export.
 
 ---
 
@@ -331,3 +347,122 @@ Test that:
 Close with an explicit **NOT FOUND list**: every question and sub-question where you searched
 and found nothing, with a one-line note on where you looked. A solid negative on Q1 is
 genuinely valuable — it tells me the ISSP route is closed and I stop paying attention to it.
+
+---
+
+# Outcome — 2026-08-13
+
+Export: *"Comprehensive Research Report: Psychometric Instruments and Thai Population
+Benchmarks for Environmental and Social Contribution Behaviors."* Every load-bearing claim was
+re-verified at source before any of it was used. Two survived, one reversed, four were defects.
+
+## ASK A — answered
+
+**GEB-50 — adopt-ready.** `doi:10.23668/psycharchives.4489` resolves correctly to Kaiser,
+*GEB-50. General Ecological Behavior Scale*, PsychArchives, item type Test, 50 items, the six
+domains as described, open access. (Export says 2021; the record says **2020**.) Five of the
+app's six `geb` items already map onto five of those domains, so this is a citation for an
+existing adaptation rather than a rewrite. Unresolved: the export's Rasch difficulty range of
+-2.50 to +2.30 logits is unverified, and GEB's native scoring is dichotomous — putting a
+5-point frequency scale over Rasch-calibrated items without recalibration changes the psycho-
+metric distances, which the export states but does not resolve.
+
+**Self-Report Altruism Scale — the answer to the `ptm` misnaming.** Rushton, Chrisjohn &
+Fekken 1981, *Personality and Individual Differences* 2(4) 293-302,
+`doi:10.1016/0191-8869(81)90084-2` — DOI resolves. Its response format is *Never / Once / More
+than once / Often / Very often*: a genuine **frequency** scale, which is the construct the app
+actually measures. Better than adopting PTM, which would mean switching the whole aspect from
+frequency to disposition. No Thai general-adult norm exists (student and medical cohorts only),
+which does not matter — ASK A never needed one.
+
+## ASK B — REOPENED, against the export's verdict
+
+**The export's central finding is wrong, and it closed the best lead we have.** It states the
+GESIS Variable Report gives "international pooled frequencies and summary parameters rather
+than standalone, item-level marginal frequency distribution tables for Thailand", and marks
+Thailand `MICRODATA ONLY`.
+
+GESIS's own Variable Report front matter says the opposite, verbatim:
+
+> "this Variable Report presents cross tabulations over countries for all substantial and most
+> of the demographic variables… All cross tabulations, descriptive statistics and frequency
+> distributions are based on unweighted data."
+
+A real ISSP Variable Report (963 pages) was opened and the structure confirmed directly:
+substantive variables carry a table with one row per country ISO code. Per-country marginals
+are precisely what these reports publish.
+
+Two honest limits on that finding:
+
+- The report opened was **ZA5950** (National Identity III), not ZA7650. GESIS returns 403 to
+  automated fetches and the download needs registration. The structural claim rests on the
+  shared ISSP Variable Report template, which the export itself confirms exists for ZA7650
+  (Issue 2023|06). One step removed — verify against ZA7650 itself before relying on it.
+- The tables are **unweighted**. That is a published statistic, but it is not the weighted
+  population estimate, and the Thai sample carries weights. Whether an unweighted marginal
+  clears this project's bar is a decision, not a lookup.
+
+**Next step, narrow:** open ZA7650's Variable Report and look for the Q19a and Q19b rows.
+
+## Defects in the export
+
+1. **The CAF figures are shifted one column.** Reported "helped a stranger 45%, donated money
+   52%, volunteered 19%". **45 is the World Giving Index score, not a percentage**, and 52% is
+   the helped-a-stranger rate. Verified by extracting both reports directly:
+
+   | Edition | Rank | Index score | Helped a stranger | Donated money | Volunteered |
+   |---|---|---|---|---|---|
+   | 2023 (2022 data) | 38 | 45 | 52% | 63% | 19% |
+   | 2024 (2023 data) | 14 | 52 | 64% | 67% | 24% |
+
+   Its own aside — *"reaches 63% in the 2023 data wave report"* — is the real donated-money
+   figure, spotted and then filed as a footnote. Its `VERBATIM QUOTE` field is a rewritten
+   table row, not a sentence that exists in the report. This defect matched an identical one in
+   the app's own citation, which is how the app's error was found; corrected in v63.
+
+2. **A fabricated DOI.** `doi:10.1016/S0140-1971(02)00073-2`, given for Carlo & Randall 2002,
+   **returns 404 at doi.org** — it is not registered. That prefix belongs to *Journal of
+   Adolescence*; the paper is in *Journal of Youth and Adolescence* 31, 31-44,
+   `doi:10.1023/A:1014033032440`. Third mismatched-citation incident across rounds 5 and 6. The
+   prompt made "open every DOI and confirm the title matches" a mandatory closing self-check;
+   it demonstrably did not run.
+
+3. **The ISSP item set is misdescribed.** The export lists four behaviour items on "a
+   standardized 4-point frequency scale: Always / Often / Sometimes / Never". From the ISSP
+   2020 source questionnaire:
+
+   | Export's claim | Actual |
+   |---|---|
+   | RECYCLE, 4-point | Q19a, 4-point ✓ — but with a `(-4)` "Recycling not available where I live" code the export dropped, which changes how it must be scored |
+   | AVOID, 4-point | Q19b, 4-point ✓ |
+   | OUT, 4-point | Q16, **5-point** (daily / several times a week / month / year / never), and it measures leisure in nature — nature *exposure*, not pro-environmental behaviour |
+   | MEAT, 4-point | Q17c, **not a frequency scale at all**: "In a typical week, on how many days do you eat **beef, lamb**, or products that contain them?", answered 0-7. The word "meat" does not appear |
+
+   It also missed Q17a (plane trips, a count) and Q17b (hours per week in a car), which are
+   genuinely behavioural. One response scale was asserted across items using three different
+   formats.
+
+   **Consequence for ASK A:** ISSP supplies frequency-Likert items matching only **2 of the
+   app's 6** environment items. Nothing covers single-use plastics, lights and appliances, or
+   air-conditioning — the three that matter most in Thailand, and the app's own note says A/C
+   is the dominant household energy behaviour. ISSP is a much weaker ASK A source than the
+   export presents it as.
+
+4. **An arithmetic claim that does not hold.** "Thai households donate over 75 billion Baht
+   annually (~0.6% of GDP)" implies a GDP near 12.5 trillion Baht, against roughly 17-18
+   trillion in recent years — closer to 0.43%. Marked unverified; the underlying TDRI figure
+   was not checked.
+
+**Unverified, treat as unconfirmed:** the GEB logit range; the Thai student samples (N=423,
+N=62, N=175); SRA's original N=416; MICS6's N=35,604; the ZA7650 Variable Report pages 654-655.
+
+## What changed in the app as a result
+
+Nothing from this round has been adopted into scoring. The only code change it *caused* was
+the v63 CAF correction, which is a defect fix the round surfaced by accident rather than a
+research finding: verifying the export's CAF dossier exposed the same column-shift in
+`SOURCES.cafWgi`, plus a stale edition and a wrong recall window. Two tests now pin the band
+edges to the cited rates so that class of error fails in CI.
+
+GEB-50 and SRA remain candidates, not commitments. Adopting either means rewriting an item set
+and re-deriving its scoring, which is its own piece of work.

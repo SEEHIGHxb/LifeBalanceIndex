@@ -65,7 +65,13 @@ export const SOURCES = {
     url: "https://www.psytoolkit.org/survey-library/grit-short.html"
   },
   cafWgi: {
-    label: "CAF World Giving Index 2024 - Thailand (52% donated money, 19% volunteered, 63% helped a stranger)",
+    // Read off the ranking table on p.16 of the 2024 report: Thailand, rank 14,
+    // index score 52, then the three rates in column order HELPED A STRANGER /
+    // DONATED MONEY / VOLUNTEERED. That column order is why this line was wrong
+    // for several releases — see the correction note above SOCIAL_BANDS.
+    // Collected 2023 (145,702 interviews, 142 countries, Gallup World Poll);
+    // all three ask what the respondent did IN THE PAST MONTH.
+    label: "CAF World Giving Index 2024 - Thailand, 2023 data (67% donated money, 24% volunteered, 64% helped a stranger)",
     url: "https://www.cafonline.org/docs/default-source/inside-giving/wgi/wgi_2024_report.pdf"
   },
   thaiPlastic: {
@@ -172,7 +178,7 @@ export function percentileBand(percentile) {
 // --- TWO-STAGE, BAND-LOCKED PERCENTILES ---
 //
 // Three aspects have no published DISTRIBUTION to sit on — CAF, the Pollution
-// Control Dept and OECD publish participation RATES and averages ("52% of
+// Control Dept and OECD publish participation RATES and averages ("67% of
 // Thais donated"), not a curve. Anchoring on a single cited rate made those
 // percentiles nearly constant: humanityFuture could only ever return 30 or 70,
 // because it was a two-valued function of one checkbox, and socialContribution
@@ -794,20 +800,49 @@ function personalGoalsBenchmark(baseline) {
 
 // --- SOCIAL CONTRIBUTION: giving participation vs CAF Thailand rates ---
 //
-// STAGE 1 (cited). CAF Thailand 2024: 52% donated money, 19% volunteered.
-// Those two rates carve the population into three non-overlapping bands, and
-// nothing a person answers can move them between bands:
-//   volunteers      -> the top 19%                      [81, 99]
-//   donates only    -> above the 48% who gave nothing,
-//                      below the 19% who volunteer      [48, 80]
-//   neither         -> the bottom 48%                   [ 2, 47]
+// CORRECTION, v63. The three rates below were wrong from the day they were
+// written, in two compounding ways, and both put numbers on screen.
+//
+// CAF's ranking table runs RANK / COUNTRY / INDEX SCORE / HELPED A STRANGER /
+// DONATED MONEY / VOLUNTEERED. Thailand's row was read one column short, so the
+// helped-a-stranger rate was recorded as "donated money" and the real donated
+// figure was recorded as "helped a stranger" — the two were swapped. On top of
+// that the values came from the 2023 edition while the label and URL both said
+// 2024, so the citation pointed at a report that does not contain them:
+//
+//   2023 edition (2022 data): rank 38, score 45, stranger 52, donated 63, vol 19
+//   2024 edition (2023 data): rank 14, score 52, stranger 64, donated 67, vol 24
+//
+// The old "52% donated" was Thailand's helped-a-stranger rate. The band floor
+// built from it (100 - 52 = 48) was therefore 15 points too high, and every
+// donor was told they stood above more of the population than they do. More
+// Thais give than this file claimed, so giving distinguishes a person less.
+// Correcting it moves some standings DOWN. That is the honest direction.
+//
+// STAGE 1 (cited). CAF Thailand, 2024 edition, 2023 data: 67% donated money,
+// 24% volunteered, each measured over the PAST MONTH. Those two rates carve the
+// population into three non-overlapping bands, and nothing a person answers can
+// move them between bands:
+//   volunteers      -> the top 24%                      [76, 99]
+//   donates only    -> above the 33% who gave nothing,
+//                      below the 24% who volunteer      [33, 75]
+//   neither         -> the bottom 33%                   [ 2, 32]
+//
+// This series is FINISHED. CAF retired the World Giving Index after the 2024
+// edition and replaced it with the World Giving Report, which measures share of
+// income donated and volunteering HOURS, folds in religious giving, and excludes
+// friends and family from its helping item. None of that is a participation
+// rate, so none of it can carry these bands — the complement of "1.28% of
+// income" is not a share of the population. Do not substitute it when this
+// number starts to look old. If a better Thai participation rate ever appears,
+// it replaces this outright; it does not get averaged with it.
 // Giving as a share of income is capped at 5% — well under a tithe, and the
 // point at which "gives regularly" stops being the interesting variable. That
 // cap is the app's own choice, and it only positions WITHIN a band.
 const SOCIAL_BANDS = {
-  volunteers: [81, 99],
-  donates: [48, 80],
-  neither: [2, 47]
+  volunteers: [76, 99],
+  donates: [33, 75],
+  neither: [2, 32]
 };
 const GENEROUS_GIVING_SHARE = 0.05;
 
@@ -819,7 +854,11 @@ function socialContributionBenchmark(profile, baseline) {
 
   const key = volunteers ? "volunteers" : donates ? "donates" : "neither";
   const [floor, ceil] = SOCIAL_BANDS[key];
-  // Pre-two-stage fixed values, used only when PTM was never answered.
+  // Pre-two-stage fixed values, used only when PTM was never answered. Left
+  // untouched by the v63 band correction, and re-checked against the new edges:
+  // 88 and 82 still sit inside [76, 99], 62 inside [33, 75], 24 inside [2, 32].
+  // Had any fallen outside, positionInBand would have returned a percentile its
+  // own band excludes.
   const fallback = volunteers ? (donates ? 88 : 82) : donates ? 62 : 24;
 
   // STAGE 2 (this app's own). The five PTM items carry helping, civic and
@@ -834,11 +873,12 @@ function socialContributionBenchmark(profile, baseline) {
 
   const band = key === "volunteers"
     ? (donates
-      ? "donates and volunteers — inside the 19% of Thais who volunteer"
-      : "volunteers — inside the 19% of Thais who volunteer")
+      ? "donates and volunteers — inside the 24% of Thais who volunteer"
+      : "volunteers — inside the 24% of Thais who volunteer")
     : key === "donates"
-      ? "donates — inside the 52% of Thais who gave money"
-      : "no regular giving yet — 52% of Thais donated last year";
+      ? "donates — inside the 67% of Thais who gave money"
+      // "last year" was wrong too: CAF asks about the past MONTH.
+      : "no regular giving yet — 67% of Thais donated last month";
 
   return {
     percentile: positionInBand(floor, ceil, intensity, fallback),

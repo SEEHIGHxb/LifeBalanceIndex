@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `62`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `63`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,74 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.16] — 2026-08-13 (APP_VERSION 63)
+
+### The CAF giving rates were wrong in two ways, and some standings move down
+
+**Social Contribution percentiles change for donors and volunteers. Most move
+down. That is the correction, not a regression.**
+
+`benchmarks.js` cited "CAF World Giving Index 2024 — Thailand (52% donated
+money, 19% volunteered, 63% helped a stranger)". Checked against the report the
+line itself links to, both halves were wrong.
+
+CAF's ranking table runs `RANK / COUNTRY / INDEX SCORE / HELPED A STRANGER /
+DONATED MONEY / VOLUNTEERED`. Thailand's row was read one column short, so the
+helped-a-stranger rate was recorded as "donated money" and the real donated
+figure was recorded as "helped a stranger" — the two were swapped. Separately,
+the values came from the **2023** edition while the label and URL both said
+2024, so the citation pointed at a report that does not contain them.
+
+| Edition | Rank | Index score | Helped a stranger | Donated money | Volunteered |
+|---|---|---|---|---|---|
+| 2023 (2022 data) | 38 | 45 | 52% | 63% | 19% |
+| **2024 (2023 data)** | **14** | **52** | **64%** | **67%** | **24%** |
+
+The old "52% donated" was Thailand's helped-a-stranger rate.
+
+**What moves.** Band floors are the complement of the participation rate, so the
+error propagated straight into the scale:
+
+| Band | Before | After |
+|---|---|---|
+| volunteers | [81, 99] | **[76, 99]** |
+| donates only | [48, 80] | **[33, 75]** |
+| neither | [2, 47] | **[2, 32]** |
+
+A donor with no volunteering previously ranked above the 48th percentile and
+read "inside the 52% of Thais who gave money". They now start at the 33rd and
+read 67%. Nobody's behaviour changed — more Thais give than this app was
+claiming, so giving distinguishes a person less than it appeared to. The
+direction is unflattering and correct.
+
+The recall window was wrong too: the empty-state string said Thais "donated last
+year" where CAF asks about **the past month**.
+
+**Why no test caught it.** `tests/benchmarks.test.mjs` asserted only that the
+three bands come in the right *order*, and its baseline carries no `ptm`, so it
+exercised the fallback path and never touched a band edge. Any three rates keep
+that order. Two tests now pin the edges to the rates named in the citation
+itself — parsed out of the label, so a rate that moves without its band, or a
+band that moves without its rate, fails in CI. Verified by mutation: restoring
+the old floor of 48 fails the new assertion.
+
+**This series is finished.** CAF retired the World Giving Index after the 2024
+edition and replaced it with the World Giving Report, which measures share of
+income donated and volunteering hours, folds in religious giving, and excludes
+friends and family from its helping item. None of those is a participation rate,
+so none can carry these bands — the complement of "1.28% of income" is not a
+share of the population. `benchmarks.js` now says so at the band definition, so
+the next reader who notices the date does not reach for the wrong replacement.
+
+### Research
+
+Round 6 (`docs/research/round-6-behavioral-aspect-sources.md`) closed with four
+verified defects in its export and one reversal: its central finding — that
+Thailand's ISSP 2020 distributions are microdata-only — is contradicted by
+GESIS's own Variable Report documentation, so that route is reopened rather than
+closed. GEB-50 and the Self-Report Altruism Scale survived verification and are
+the standing candidates for replacing the app-authored item sets.
 
 ## [2.14.15] — 2026-08-13 (APP_VERSION 62)
 

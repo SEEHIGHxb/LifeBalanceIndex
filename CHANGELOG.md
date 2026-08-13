@@ -98,15 +98,34 @@ existing translation, so no new wording was introduced. The "Month and day
 only. Your birth year is never asked for and never stored." key was deleted
 from `th.js` entirely, as `tests/i18n-orphans.test.mjs` requires.
 
-### Known limit
+### The dashboard prompt is gated on a first weekly review
 
-`askBirthday` (`views/dashboard.js:130`) is `!p.birthMonth &&
-!p.birthdayPromptDismissed`, so with onboarding no longer asking, **every new
-user now meets the birthday prompt on their first dashboard.** That is a
-one-line dismissible banner rather than two fields and an explanation mid-form,
-so it is a large net reduction — but it is not "deferred until the app has been
-used consistently" either. Gating it on some usage history (a first weekly
-review, say) is a separate decision and was not made here.
+Removing the birthday from onboarding exposed a second problem: `askBirthday`
+was `!p.birthMonth && !p.birthdayPromptDismissed`, so **every new user met the
+prompt on their first dashboard** — the question relocated by one screen rather
+than deferred. It now also requires `state.reviews.length > 0`.
+
+One completed review is the cheapest honest signal that someone came back at
+all. Nothing is lost by waiting: the Profile page carries the fields the whole
+time, and a level-year cannot turn inside the first week regardless.
+
+**Both directions are pinned in `tests/e2e.mjs` flow 2**, because "deferred" and
+"suppressed" fail in opposite directions and a one-sided assertion would miss
+one of them:
+
+| Assertion | Catches |
+|---|---|
+| Prompt absent on the first dashboard | Under-gating — the prompt firing immediately |
+| Prompt present after the review lands | Over-gating — a birthday the app never asks for, and a level that silently never advances |
+
+Both were mutation-tested rather than trusted for going green: reverting the
+gate trips the first, forcing `askBirthday = false` trips the second. The check
+reads the `#birthday-prompt-dismiss` button rather than matching prose, so
+rewording the copy cannot silently disarm it.
+
+`views/dashboard.js` has no unit harness — it is one of the modules covered only
+by e2e — and building one for a single boolean was not worth it when the e2e
+suite already drives onboarding → dashboard → weekly review in a real browser.
 
 ## [2.14.12] — 2026-08-11 (APP_VERSION 59)
 

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `61`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `62`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,58 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.14.15] — 2026-08-13 (APP_VERSION 62)
+
+### The pledge Remove buttons reach the 24px AA floor
+
+The last sub-24px target the sweep in 2.14.14 turned up. Three instances on
+`#/quests`, measured at 1440px:
+
+| | Before | After |
+|---|---|---|
+| English | 68.1 x **21** | 68.1 x **24** |
+| Thai | 36.8 x **22** | 36.8 x **24** |
+
+**Correction to 2.14.14.** That entry said the Thai button "fails on width as
+well as height". It does not — 36.8px clears the 24px floor comfortably. Only
+height ever failed, in both languages. The fix is the same either way, but the
+claim overstated the defect and is withdrawn.
+
+Desktop-only, as 2.14.14 said: the `@media (max-width: 640px)` layer already
+floors `.btn` at 44px.
+
+**The cause was an inline style, and that is the more interesting half.** The
+button carried `style="font-size: var(--text-xs); padding: 2px 10px;"`
+(`views/quests.js:36`). An inline declaration outranks every media query — the
+exact trap `index.html:53-55` documents for the header buttons, which is why
+`.btn-compact` exists. So no rule in the stylesheet could have reached this
+button's box, and a CSS-only fix was impossible without first extracting the
+attribute. It now lives in a `.pledge-remove` rule beside `.btn-compact`, and
+the markup carries only classes.
+
+`inline-flex` + centring + `min-height: 24px` rather than taller padding:
+padding grows width as well, and these sit in a row beside the pledge title
+where the extra width has nowhere useful to go. Width is unchanged at 68.1px
+(EN) and 36.8px (TH).
+
+**Extracting the inline style put mobile at risk, which the fix had to
+neutralise.** `.btn` inside the mobile layer sets `padding: 11px 18px` — it
+could never reach this button while the padding was inline, but a plain class
+would have let it through and widened the control on the phone. The mobile
+block now restates `padding: 2px 10px` for `.pledge-remove`. Verified: mobile
+is pixel-identical to the pre-change baseline, 68.1x44 (EN) and 36.8x44 (TH),
+still reaching 44px through `min-height` alone.
+
+Also verified the control still works: with the `confirm()` at
+`views/quests.js:120` accepted, clicking Remove takes `goals` from
+`[water, exerciseDays, sleep]` to `[exerciseDays, sleep]`, and the re-rendered
+buttons hold 24px.
+
+A ten-route sweep of every `<a href>` and `<button>` at both widths in both
+languages now returns **no sub-24px targets anywhere**. Stated as a measurement
+of those ten routes, not as the app-wide "last one" claim that 2.14.11 and
+2.14.12 both made and 2.14.14 had to retract.
 
 ## [2.14.14] — 2026-08-13 (APP_VERSION 61)
 

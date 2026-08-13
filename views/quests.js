@@ -33,7 +33,7 @@ function pledgeCard(goal) {
           <span class="holo-badge">${aspectLabel(tmpl.aspect).toUpperCase()}</span>
           <strong style="font-size: var(--text-lg);">${t(tmpl.title)}</strong>${streak}
         </div>
-        <button type="button" class="btn pledge-remove" data-pledge-id="${escapeHtml(goal.id)}" style="font-size: var(--text-xs); padding: 2px 10px;">${t("Remove")}</button>
+        <button type="button" class="btn pledge-remove" data-pledge-id="${escapeHtml(goal.id)}">${t("Remove")}</button>
       </div>
       <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin: 4px 0;">${tp(tmpl.desc, { target: escapeHtml(goal.target) })}</p>
       <p style="font-size: var(--text-sm); margin: 4px 0 0;">${resultLine}</p>

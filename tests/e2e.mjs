@@ -93,8 +93,21 @@ try {
 // --- FLOW 2: weekly review -> measured values land, pledges grade, points pay ---
 // Onboarding counts as this week's measurement, so backdate the baseline a
 // week to make the review due, exactly as a returning user would find it.
+// Reads the dashboard's birthday prompt by its dismiss button, which only that
+// card renders — matching on prose would break the moment the copy is reworded.
+const birthdayPromptShown = () =>
+  page.evaluate(() => !!document.getElementById("birthday-prompt-dismiss"));
+
 try {
   const before = await readState();
+
+  // The birthday left onboarding, so it must not simply reappear on the first
+  // dashboard — that would relocate the question rather than defer it. At this
+  // point the user has onboarded and submitted nothing, so the prompt is gated.
+  if (await birthdayPromptShown()) {
+    problems.push("flow2: the birthday prompt fired before the first weekly review");
+  }
+
   await page.evaluate(() => {
     const s = JSON.parse(localStorage.getItem("lifequest_state"));
     s.baseline.date = new Date(Date.now() - 8 * 86400000).toISOString();
@@ -128,6 +141,15 @@ try {
     problems.push("flow2: water pledge was not graded by the review");
   } else if (waterPledge.lastResult.met !== true) {
     problems.push("flow2: 2.5 L/day must meet the 2 L/day default pledge");
+  }
+
+  // The other half of the gate: deferred is not the same as suppressed. With a
+  // review on record the prompt has to actually arrive, or the birthday becomes
+  // a question the app never asks and the level silently never advances.
+  await page.click("#tab-dashboard");
+  await page.waitForSelector("#tab-dashboard", { timeout: 10000 });
+  if (!(await birthdayPromptShown())) {
+    problems.push("flow2: the birthday prompt never arrived after the first weekly review");
   }
 } catch (err) {
   problems.push(`flow2 (weekly review): ${err.message}`);

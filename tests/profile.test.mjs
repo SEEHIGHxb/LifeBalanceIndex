@@ -46,17 +46,23 @@ test("a weight change moves physical through BMI", () => {
   assert.ok(Object.hasOwn(shifts, "physical"), "BMI feeds the physical score");
 });
 
-test("digital literacy moves personalGoals by 0.3 x the learning-score delta", () => {
+test("digital literacy moves personalGoals by (0.3/0.7) x the learning-score delta", () => {
   // learningScore = 0.5*study + 0.5*digital; study(2h)=40. 50->100 gives +25;
-  // aspect delta = 0.3 * 25 = 7.5 -> 8.
+  // aspect delta = (0.3/0.7) * 25 = 10.71 -> 11. The weight is 0.3/0.7 rather
+  // than a flat 0.3 because grit left the composite in v64 and the two
+  // surviving weights were renormalized over 0.7 rather than re-picked.
   const shifts = profileEditShifts(BASE_PROFILE, { ...BASE_PROFILE, digitalLiteracy: 100 }, BASELINE);
-  assert.equal(shifts.personalGoals, 8);
+  assert.equal(shifts.personalGoals, 11);
 });
 
-test("enabling long-term investments lifts humanityFuture by its pension weight", () => {
-  // pension term = 0.25 * 0.5 * 100 = 12.5 -> 13.
+// INVERTED IN v64. This used to assert that ticking the pension box lifted
+// humanityFuture by 13 points. A pension is a financial fact, Finance already
+// scores the financial facts, and paying for it again here charged one
+// circumstance to two aspects — plus a third time through the percentile band
+// it used to gate.
+test("enabling long-term investments no longer moves humanityFuture", () => {
   const shifts = profileEditShifts(BASE_PROFILE, { ...BASE_PROFILE, longTermInvestments: true }, BASELINE);
-  assert.equal(shifts.humanityFuture, 13);
+  assert.ok(!Object.hasOwn(shifts, "humanityFuture"), "a pension must not move an aspect about contribution");
 });
 
 test("a lower income raises socialContribution via the donation-to-income ratio", () => {
@@ -141,8 +147,11 @@ test("editing profile facts awards no XP", () => {
 });
 
 test("aspect deltas are applied and clamped to 0-100", () => {
+  // Uses digital literacy rather than the pension, which stopped shifting any
+  // aspect in v64. personalGoals gains (0.3/0.7)*0.5*(100-50) ~= 11, so a start
+  // of 95 must clamp rather than reach 106.
   const m = seededManager();
-  m.state.aspects.humanityFuture = 95;
-  m.updateProfile({ longTermInvestments: "true" }); // +13 would overshoot 100
-  assert.ok(m.state.aspects.humanityFuture > 95 && m.state.aspects.humanityFuture <= 100);
+  m.state.aspects.personalGoals = 95;
+  m.updateProfile({ digitalLiteracy: "100" });
+  assert.ok(m.state.aspects.personalGoals > 95 && m.state.aspects.personalGoals <= 100);
 });

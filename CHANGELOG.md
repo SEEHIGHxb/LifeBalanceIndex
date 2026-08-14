@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `63`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `64`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,129 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.15.0] — 2026-08-14 (APP_VERSION 64)
+
+### Humanity's Future is no longer ranked, and grit no longer scores
+
+**Two aspects change. Both changes are subtractions — nothing new was added,
+and nothing was invented to replace what came out.**
+
+#### Humanity's Future ranked income and called it contribution
+
+Stage 1 of this aspect's percentile was a two-band split on one checkbox,
+`profile.longTermInvestments`. Holding a retirement product placed you in
+`[50, 92]`; not holding one placed you in `[8, 49]`. The LFIS answers then only
+positioned you *inside* whichever band the checkbox had already chosen, and the
+two-stage design is band-locked by construction — stage 2 can never cross a
+stage-1 boundary.
+
+A farmer who had taught three children a trade and held a village together,
+with no pension, sat below every pension-holder in Thailand, and nothing they
+answered could lift them out.
+
+The citation was never fake. Thai retirement coverage (ILO/OECD) is a real
+published statistic. It measures **financial security**, while this aspect is
+about what a person leaves the people who come after them. A sound number
+answering the wrong question still ranks the wrong thing.
+
+The rank is **removed rather than re-based**, because there is nothing honest to
+re-base it on. Round 7 searched for a Thai population distribution of purpose or
+generativity and found none; both candidates its research export returned failed
+verification (see below). The aspect now follows `relationships`: measured,
+every real number shown, no percentile, and `unranked` carrying the reason.
+
+| | Before | After |
+|---|---|---|
+| Stage-1 band | pension checkbox → `[50,92]` or `[8,49]` | none — unranked |
+| Percentile | 8–92 | `null` |
+| Letter grade | A–F | none |
+| Provenance row | "Band placement · Thailand · workers" | "Not ranked · none published" |
+
+#### The same pension was being counted three times
+
+High income raised Finance; the pension raised Humanity's Future's security
+term; and the pension *also* gated the percentile band above. One circumstance,
+three credits — and symmetrically three penalties at the other end.
+
+`longTermInvestments` now scores **nothing**. It is still collected and still
+shown on the aspect page, labelled as not scored. Moving it into Finance is a
+separate question with its own citation burden and is deliberately not answered
+here.
+
+#### Grit left the score and stayed in the app
+
+Credé, Tynan & Harms 2017 (*JPSP* 113(3):492-511, `doi:10.1037/pspp0000102`)
+meta-analysed 88 samples covering 66,807 people: grit correlates with ordinary
+conscientiousness at ρ ≈ .84, its higher-order structure is not confirmed, and
+it adds under half a percent of incremental variance over the Big Five.
+
+Scoring it here meant scoring a **personality trait** as though it were a life
+domain. It cannot move between yearly retests, and a low number reads as a
+verdict on who someone is rather than on how their life is going.
+
+Grit is still asked, still stored, still shown as a component bar and as a
+benchmark note — labelled "not scored". The two surviving weights are the old
+0.4 and 0.3 **renormalized over 0.7**, not re-picked, so this is grit's removal
+and nothing else: self-efficacy's emphasis relative to learning is unchanged.
+
+#### Two LFIS items were rewritten to stop testing for a profession
+
+| # | Before | After |
+|---|---|---|
+| 1 | "…skills that will stay relevant in the future **(AI, data, languages)**" | "…skills that will still matter in ten years, **whatever work I do**" |
+| 5 | "…support causes addressing global **existential risks (climate, pandemics, AI safety)**" | "**I teach or pass on skills and knowledge** to younger or less experienced people." |
+
+Item 1's parenthetical was knowledge-work coded; soil management, culinary
+technique and trade certification do not read as "AI, data, languages". Item 5
+was effective-altruism adjacent and near-floor for most Thai adults. It now asks
+about the "offering" facet of Eriksonian generativity — the generative act
+available to someone with no money to give.
+
+Same positions, same count, same 5-point frequency scale, so stored `lfis` sums
+stay valid and **no migration is needed**.
+
+### Scores that move
+
+| | Before | After | Why |
+|---|---|---|---|
+| Reference `personalGoals` | 59 | 57 | grit left the composite |
+| Reference `humanityFuture` | 44 | 50 | the reference profile holds no pension, so it had been scoring zero on half a term for a fact Finance already counts |
+| Balance Index (v39 fixture) | 47 | 46 | scored relative to those two averages |
+
+Individual users: anyone holding a pension loses that credit in Humanity's
+Future and loses its percentile entirely; anyone without one gains roughly six
+points of score. Personal Goals moves in whichever direction a user's grit sat
+relative to their self-efficacy and learning.
+
+### Research
+
+`docs/research/round-7-purpose-generativity-aspects.md` asks whether these two
+aspects earn dimension status at all, and adds a third ask alongside items and
+Thai norms: **ASK C, dimensionality and measurement invariance** — whether the
+instruments show differential item functioning across occupation and social
+class.
+
+Verified from the export, and acted on here:
+
+- **Grit's meta-analytic verdict** (above). DOI resolves, title matches.
+- **Q2 came back NOT FOUND**, matching an independent pre-search: no measurement
+  invariance or DIF study exists for the Loyola Generativity Scale or the Social
+  Generativity Scale across socioeconomic status, occupation or income.
+- **Ryff's Purpose in Life has a real discriminant-validity problem.** Springer,
+  Hauser & Freese 2006 verified at source: *"In the WLS the correlations among
+  the four factors are all above 0.9"*, and *"four of the six RPWB factors are
+  virtually indistinguishable."*
+
+Rejected after verification — and the reason this release adds no new norm:
+
+- **A claimed national TMHI-15 norm** (mean 46.85, SD 6.42, N = 7,337,
+  age-banded) contradicts this project's own verified round-2 finding. The real
+  figures are mean 29.71, SD 4.10 on a 0–45 range, N = 1,429, nineteen
+  **north-eastern** provinces, published 2001 — and round 2 established that no
+  nationally representative Thai norm exists.
+- **WVS Wave 7 Thailand variables** cited for age-stratified generativity norms
+  are demographic fields: Q262 is the respondent's age, Q275 is education.
 
 ## [2.14.16] — 2026-08-13 (APP_VERSION 63)
 

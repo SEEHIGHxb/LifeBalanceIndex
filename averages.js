@@ -61,6 +61,8 @@ const REFERENCE_ANSWERS = {
   lsns: [3, 3, 3, 3, 3, 2], // raw 17 — community means run 16.1-17.9 (Lubben et al.)
   ucla: [2, 1, 1], // raw 4 — HRS population mean 3.89
   gse: [3, 3, 3, 3, 3, 3], // raw 18 — Scholz 25-country mean 2.955/item
+  // Kept for the aspect-page grit bar and the benchmark note; NOT scored since
+  // v64, so it no longer moves personalGoals here either.
   grit: [4, 3, 4, 3], // raw 14 — Duckworth samples average ~3.4/item
   ptm: [2, 2, 2, 2, 2], // app-authored items: scale midpoint (ASSUMPTION)
   geb: [2, 2, 2, 2, 2, 2], // app-authored items: scale midpoint (ASSUMPTION)
@@ -71,8 +73,14 @@ const R = REFERENCE_PROFILE;
 const A = REFERENCE_ANSWERS;
 
 // Expected values (pinned within ±15 by tests/averages.test.mjs): finance 53,
-// physical 62, mental 69, relationships 70, personalGoals 59,
-// socialContribution 32, environment 50, humanityFuture 44.
+// physical 62, mental 69, relationships 70, personalGoals 57,
+// socialContribution 32, environment 50, humanityFuture 50.
+//
+// personalGoals moved 59 -> 57 and humanityFuture 44 -> 50 in v64, both by
+// SUBTRACTION: grit left the personal-goals composite, and the pension left
+// the humanity's-future security term. humanityFuture rose because this
+// reference profile holds no long-term investments, so it had been scoring
+// zero on half of that term for a financial fact Finance already counts.
 //
 // finance moved 55 -> 53 in v46, when the income term stopped being a
 // percentile and became a magnitude. REFERENCE_PROFILE.income stays at the
@@ -84,7 +92,7 @@ export const AVERAGE_ASPECT_SCORES = Object.freeze({
   physical: calculatePhysicalScore(R, A.jss),
   mental: calculateMentalScore(R, A.st5, A.who5),
   relationships: calculateRelationshipsScore(R, A.lsns, A.ucla, null),
-  personalGoals: calculatePersonalGoalsScore(R, A.gse, A.grit),
+  personalGoals: calculatePersonalGoalsScore(R, A.gse),
   socialContribution: calculateSocialContributionScore(R, A.ptm),
   environment: calculateEnvironmentScore(R, A.geb),
   humanityFuture: calculateHumanityFutureScore(R, A.lfis)

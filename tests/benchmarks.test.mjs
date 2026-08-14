@@ -79,10 +79,12 @@ test("ordinal renders English suffixes including the 11-13 exceptions", () => {
 
 // --- STRUCTURE ---
 
-// `relationships` is measured but deliberately unranked — its instruments are
-// normed on older adults, so it carries no percentile. Every OTHER aspect must
-// still produce one.
-const UNRANKED_ASPECTS = ["relationships"];
+// Two aspects are measured but deliberately unranked, and carry no percentile.
+// `relationships` because its instruments are normed on older adults;
+// `humanityFuture` because no Thai norm for purpose or generativity is
+// published at all, and the pension checkbox it used to rank on was an income
+// proxy (v64). Every OTHER aspect must still produce a percentile.
+const UNRANKED_ASPECTS = ["relationships", "humanityFuture"];
 const RANKED_ASPECTS = ALL_ASPECTS.filter(k => !UNRANKED_ASPECTS.includes(k));
 
 test("getAllBenchmarks returns an entry per aspect with percentile, method, sources", () => {
@@ -214,6 +216,10 @@ test("survey-based aspects return null without a stored baseline (pre-benchmark 
   assert.equal(all.relationships, null);
   assert.equal(all.personalGoals, null);
   assert.ok(all.finance && all.physical && all.socialContribution && all.environment && all.humanityFuture);
+  // humanityFuture survives a pre-baseline save because its reason for being
+  // unranked does not depend on the instrument — only the raw reading does.
+  assert.equal(all.humanityFuture.percentile, null);
+  assert.ok(!all.humanityFuture.notes.some(n => /\/20/.test(n)), "no reading is invented without a baseline");
 });
 
 test("collectSources dedupes by URL", () => {
@@ -350,10 +356,28 @@ test("environment percentile puts the ~3/day Thai average at the 50th", () => {
   assert.equal(getAllBenchmarks(makeState({ singleUsePlastics: 12 })).environment.percentile, 10);
 });
 
-test("humanity future benchmark hinges on long-term investments", () => {
+// THE INVERSE OF THE TEST THIS REPLACES. Until v64 this asserted that holding a
+// retirement product RAISED the humanity's-future standing — the app's clearest
+// case of ranking income and calling it contribution. A farmer with no pension
+// could not reach a pension-holder's band no matter what they answered, because
+// the two-stage design is band-locked.
+test("humanity future is not ranked, and a pension cannot move it", () => {
   const invested = getAllBenchmarks(makeState({ longTermInvestments: true })).humanityFuture;
   const not = getAllBenchmarks(makeState({ longTermInvestments: false })).humanityFuture;
-  assert.ok(invested.percentile > not.percentile);
+  assert.equal(invested.percentile, null, "no percentile");
+  assert.equal(not.percentile, null, "no percentile");
+  assert.equal(invested.population, null, "no population is claimed");
+  assert.deepEqual(invested.notes, not.notes, "the pension must not change a single word shown");
+  assert.match(invested.unranked, /income/i, "the reason names what the old rank actually measured");
+  assert.equal(gradeForBenchmark(invested), null, "and therefore no letter grade");
+});
+
+// The score still moves on the instrument — unranked must not mean unmeasured.
+test("humanity future still responds to its own LFIS answers", () => {
+  const low = getAllBenchmarks(makeState({}, { ...BASELINE, lfis: 0 })).humanityFuture;
+  const high = getAllBenchmarks(makeState({}, { ...BASELINE, lfis: 20 })).humanityFuture;
+  assert.ok(low.notes.some(n => /0\/20/.test(n)), "the raw reading is shown");
+  assert.ok(high.notes.some(n => /20\/20/.test(n)), "the raw reading is shown");
 });
 
 // --- STATE INTEGRATION ---
@@ -526,16 +550,16 @@ const OUTWARD_BASELINE = { ...BASELINE, ptm: 10, geb: 12, lfis: 10 };
 const bench = (profileOverrides, instruments) =>
   getAllBenchmarks(makeState(profileOverrides, instruments === null ? null : { ...OUTWARD_BASELINE, ...instruments }));
 
-test("the outward three respond to their instruments, not just to a checkbox", () => {
+// Was "the outward three" until v64, when humanityFuture stopped being ranked
+// and left the two-stage set. Its instrument sensitivity is covered above.
+test("the outward two respond to their instruments, not just to a checkbox", () => {
   // Same profile, opposite instrument answers: the percentile must move.
-  const low = bench({ monthlyDonations: 200, longTermInvestments: true, singleUsePlastics: 2 }, { ptm: 0, geb: 0, lfis: 0 });
-  const high = bench({ monthlyDonations: 200, longTermInvestments: true, singleUsePlastics: 2 }, { ptm: 20, geb: 24, lfis: 20 });
+  const low = bench({ monthlyDonations: 200, longTermInvestments: true, singleUsePlastics: 2 }, { ptm: 0, geb: 0 });
+  const high = bench({ monthlyDonations: 200, longTermInvestments: true, singleUsePlastics: 2 }, { ptm: 20, geb: 24 });
   assert.ok(high.socialContribution.percentile > low.socialContribution.percentile,
     "PTM answers must move the social-contribution standing");
   assert.ok(high.environment.percentile > low.environment.percentile,
     "GEB answers must move the environment standing");
-  assert.ok(high.humanityFuture.percentile > low.humanityFuture.percentile,
-    "LFIS answers must move the humanity's-future standing");
 });
 
 test("band lock: measured intensity can never cross a cited participation boundary", () => {
@@ -546,10 +570,11 @@ test("band lock: measured intensity can never cross a cited participation bounda
   assert.ok(bestNonGiver < worstGiver,
     `a non-giver (${bestNonGiver}) outranked a giver (${worstGiver}) — the band lock is broken`);
 
-  const bestUninvested = bench({ longTermInvestments: false }, { lfis: 20 }).humanityFuture.percentile;
-  const worstInvested = bench({ longTermInvestments: true }, { lfis: 0 }).humanityFuture.percentile;
-  assert.ok(bestUninvested < worstInvested,
-    `an uninvested profile (${bestUninvested}) outranked an invested one (${worstInvested})`);
+  // The humanityFuture band lock was DELETED in v64, not relaxed. It used to
+  // read: the best possible uninvested profile must rank below the worst
+  // possible invested one. That assertion was the defect, written down and
+  // guarded — it is exactly the farmer-below-every-pension-holder guarantee.
+  // Its replacement is "a pension cannot move it" above.
 
   const bestHeavyPlastic = bench({ singleUsePlastics: 10 }, { geb: 24 }).environment.percentile;
   const worstLightPlastic = bench({ singleUsePlastics: 0 }, { geb: 0 }).environment.percentile;
@@ -571,8 +596,11 @@ test("an unanswered instrument returns the exact pre-two-stage percentile", () =
     [0, 1, 2, 3, 4, 6, 10].map(p => bench({ singleUsePlastics: p }, null).environment.percentile),
     [90, 78, 64, 50, 34, 20, 10]
   );
-  assert.equal(bench({ longTermInvestments: true }, null).humanityFuture.percentile, 70);
-  assert.equal(bench({ longTermInvestments: false }, null).humanityFuture.percentile, 30);
+  // humanityFuture had a 70/30 pre-two-stage fallback here, driven by the same
+  // pension checkbox. With no baseline it now returns null outright rather than
+  // a fabricated standing.
+  assert.equal(bench({ longTermInvestments: true }, null).humanityFuture.percentile, null);
+  assert.equal(bench({ longTermInvestments: false }, null).humanityFuture.percentile, null);
 });
 
 test("giving as a share of income positions within the donor band", () => {
@@ -585,10 +613,14 @@ test("giving as a share of income positions within the donor band", () => {
 
 test("every outward aspect discloses that the band is cited and the position is not", () => {
   const set = bench({ monthlyDonations: 100 }, {});
-  for (const key of ["socialContribution", "environment", "humanityFuture"]) {
+  for (const key of ["socialContribution", "environment"]) {
     assert.ok(set[key].notes.some(n => /can never move you into a different band/i.test(n)),
       `${key} does not disclose the two-stage design`);
   }
+  // humanityFuture must NOT carry that note any more: it has no cited band left
+  // to disclose, and saying it did would be a claim about a rank that is gone.
+  assert.ok(!set.humanityFuture.notes.some(n => /can never move you into a different band/i.test(n)),
+    "an unranked aspect must not advertise a two-stage band");
 });
 
 test("income uses one shared cited model — the benchmark card matches incomePercentile (#9)", () => {

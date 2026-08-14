@@ -945,28 +945,52 @@ function environmentBenchmark(profile, baseline) {
 // only ever grade C or B, and every LFIS answer about legacy, philanthropy and
 // long-horizon thinking changed the score but not the standing.
 // `fallback` is the fixed 70/30 this returned before the two-stage design.
-const FUTURE_BANDS = {
-  invested: { floor: 50, ceil: 92, fallback: 70 },
-  none: { floor: 8, ceil: 49, fallback: 30 }
-};
-
+// THE RANK IS GONE, AND IT WAS AN INCOME PROXY (v64).
+//
+// Stage 1 used to be a two-band split on `profile.longTermInvestments`: holding
+// a retirement product put you in [50, 92], not holding one put you in [8, 49].
+// LFIS then positioned you inside whichever band the checkbox had already
+// chosen — and the two-stage design is BAND-LOCKED, so stage 2 can never cross
+// a stage-1 boundary. A farmer who had taught three children a trade and held a
+// village together, with no pension, sat below every pension-holder in the
+// country by construction, and nothing they answered could lift them out.
+//
+// The citation was never fake. Thai retirement coverage is a real published
+// statistic — it just measures FINANCIAL SECURITY, while this aspect is about
+// what a person leaves the people who come after them. A sound number
+// answering the wrong question still ranks the wrong thing.
+//
+// The rank is removed rather than re-based, because there is nothing honest to
+// re-base it on: round 7 looked for a Thai population distribution of purpose
+// or generativity and found none. Both candidates its export returned failed
+// verification — one contradicted this project's own verified round-2 finding
+// on the TMHI-15, the other cited WVS Wave 7 variables that are demographic
+// fields (Q262 is the respondent's age). See
+// docs/research/round-7-purpose-generativity-aspects.md.
+//
+// This now follows relationshipsBenchmark above: measure it, show every real
+// number, refuse the rank. `unranked` carries the reason, and every consumer
+// already branches on a null percentile.
 function humanityFutureBenchmark(profile, baseline) {
-  const invested = Boolean(profile.longTermInvestments);
-  const { floor, ceil, fallback } = invested ? FUTURE_BANDS.invested : FUTURE_BANDS.none;
-  // STAGE 2 (this app's own): the five LFIS items — future skills, legacy,
-  // philanthropic intent, long-horizon risk thinking, security planning.
-  const intensity = intensityOf((baseline || {}).lfis, 20);
+  const lfis = (baseline || {}).lfis;
+  const notes = [
+    t("Holding retirement investments no longer moves this aspect. That is a financial fact, and Finance is where this app scores financial facts.")
+  ];
+  // The raw reading is shown when there is one. The REASON for not ranking does
+  // not depend on the instrument, so — unlike relationships, whose whole content
+  // is its two instrument readings — this aspect still returns a benchmark on a
+  // pre-baseline save. Withholding the explanation would leave the aspect
+  // looking merely broken rather than deliberately unranked.
+  if (Number.isFinite(lfis)) {
+    notes.unshift(tp("Long-Term Future Index {n}/20 — future skills, legacy, giving toward future generations, long-horizon planning, and passing skills on.", { n: lfis }));
+  }
   return {
-    percentile: positionInBand(floor, ceil, intensity, fallback),
-    method: "threshold",
-    population: t("Thai workers"),
-    summary: t(invested
-      ? "Holds long-term retirement investments — ahead of most Thai workers"
-      : "No long-term retirement investments yet — like most Thai workers"),
-    notes: [
-      t("Most Thai workers lack adequate retirement savings; ~2 in 3 over-60s get no social-security annuity."),
-      TWO_STAGE_NOTE()
-    ],
+    percentile: null,
+    unranked: t("No published Thai norm exists for purpose, legacy or generativity, so this app will not rank you on it. Until v64 this aspect was ranked on whether you hold a retirement product, which ranked your income rather than your contribution. Your score and the items behind it are real measurements; the population comparison was the part that was not."),
+    method: "estimate",
+    population: null,
+    summary: t("Future orientation and legacy — measured, not ranked"),
+    notes,
     sources: [SOURCES.thaiRetirement]
   };
 }

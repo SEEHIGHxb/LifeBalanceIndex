@@ -53,7 +53,7 @@ export const ASPECT_META = {
   physical: { label: "Physical", blurb: "Weekly activity, body composition, sleep, and nutrition." },
   mental: { label: "Mental", blurb: "Well-being (WHO-5) and stress resilience (Thai DMH ST-5)." },
   relationships: { label: "Relationships", blurb: "Social network strength, loneliness, and romantic satisfaction." },
-  personalGoals: { label: "Personal Goals", blurb: "Self-efficacy, grit, and active learning habits." },
+  personalGoals: { label: "Personal Goals", blurb: "Self-efficacy and active learning habits." },
   socialContribution: { label: "Social Contribution", blurb: "Giving, volunteering, and prosocial habits." },
   environment: { label: "Environment", blurb: "Plastic footprint and everyday green behavior." },
   humanityFuture: { label: "Humanity's Future", blurb: "Future skills, long-term security, and future orientation." }
@@ -298,8 +298,13 @@ function personalGoalsComponents(p, b) {
   if (b && Number.isFinite(b.gse)) {
     items.push({ key: "gse", label: t("Self-efficacy (GSE)"), value: clamp100(gseScore(b.gse)), detail: tp("Raw {n}/24 at baseline", { n: b.gse }) });
   }
+  // Shown but NOT scored since v64. The bar deliberately stays: grit is worth
+  // knowing about yourself, it just isn't a life domain (see
+  // personalGoalsComposite). The detail line says so, because a bar that looks
+  // exactly like the scored ones and quietly counts for nothing would be worse
+  // than removing it outright.
   if (b && Number.isFinite(b.grit)) {
-    items.push({ key: "grit", label: t("Grit (perseverance)"), value: clamp100(gritScore(b.grit)), detail: tp("Perseverance facet only — {g}/5 vs the ~3.4 full-scale reference", { g: (b.grit / 4).toFixed(1) }) });
+    items.push({ key: "grit", scored: false, label: t("Grit (perseverance)"), value: clamp100(gritScore(b.grit)), detail: tp("Not scored — shown for information. Perseverance facet only, {g}/5 vs the ~3.4 full-scale reference.", { g: (b.grit / 4).toFixed(1) }) });
   }
   const digital = Math.max(0, Math.min(100, parseFloat(p.digitalLiteracy || 0)));
   items.push({ key: "learning", label: t("Active learning"), value: clamp100(learningScore(p)), detail: tp("{h}h/week study + digital skills {d}/100", { h: p.weeklyLearningHours || 0, d: digital }) });
@@ -337,7 +342,10 @@ function humanityFutureComponents(p, b) {
   // reuse is surfaced to the user in the detail line below so it is not silent.
   const items = [
     { key: "skills", label: t("Future skills"), value: clamp100(futureStudyScore(p)), detail: tp("{h}h/week toward future-proof skills — reuses your weekly learning hours", { h: p.weeklyLearningHours || 0 }) },
-    { key: "security", label: t("Long-term security"), value: p.longTermInvestments ? 100 : 0, detail: p.longTermInvestments ? t("Holds retirement/long-term investments") : t("No retirement/long-term investments yet") }
+    // Shown but NOT scored since v64: a pension is a financial fact and Finance
+    // is where financial facts are scored. Counting it here charged one
+    // circumstance to two aspects, and to the percentile band on top of that.
+    { key: "security", scored: false, label: t("Long-term security"), value: p.longTermInvestments ? 100 : 0, detail: p.longTermInvestments ? t("Not scored here — shown for information. Holds retirement/long-term investments.") : t("Not scored here — shown for information. No retirement/long-term investments yet.") }
   ];
   if (b && Number.isFinite(b.lfis)) {
     items.push({ key: "lfis", label: t("Future orientation (LFIS)"), value: clamp100((b.lfis / 20) * 100), detail: tp("Raw {n}/20 at baseline", { n: b.lfis }) });

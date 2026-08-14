@@ -205,14 +205,20 @@ test("age changes the mental percentile and nothing score-based", () => {
     getAllBenchmarks(old).mental.percentile,
     "the whole point of the release"
   );
-  // Unchanged from v39/v40: scores, the index, the at-or-above tally.
-  assert.equal(balanceIndex(aspects), 47);
+  // Still unmoved by AGE, which is what this test is for. The index reads 46
+  // rather than v39's 47 because v64 changed two reference averages (grit left
+  // personalGoals, the pension left humanityFuture), and balanceIndex scores
+  // relative to those averages — so a change there moves it by design. Both
+  // ages still produce the same number, which is the actual assertion.
+  assert.equal(balanceIndex(aspects), 46);
   assert.deepEqual(aspectsAtOrAboveAverage(aspects), { count: 3, total: 8 });
-  // finance re-pinned 55 -> 53 in v46 (income magnitude scale); the other seven
-  // are untouched, which is the point of asserting the whole object here.
+  // finance re-pinned 55 -> 53 in v46 (income magnitude scale); personalGoals
+  // 59 -> 57 and humanityFuture 44 -> 50 in v64 (grit and the pension left
+  // their composites). The other five are untouched, which is the point of
+  // asserting the whole object here.
   assert.deepEqual({ ...AVERAGE_ASPECT_SCORES }, {
     finance: 53, physical: 62, mental: 69, relationships: 70,
-    personalGoals: 59, socialContribution: 32, environment: 50, humanityFuture: 44
+    personalGoals: 57, socialContribution: 32, environment: 50, humanityFuture: 50
   });
   // Comparison codes encode the scores, so v2 codes stay valid across this
   // release and two users of different ages still share an identical code.

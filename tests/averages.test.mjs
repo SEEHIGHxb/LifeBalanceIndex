@@ -10,16 +10,21 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { AVERAGE_ASPECT_SCORES } from "../averages.js";
 
-// Hand-computed from the reference inputs documented in averages.js.
+// Hand-computed from the reference inputs documented in averages.js. Re-synced
+// in v64: personalGoals 59 -> 57 (grit left the composite) and humanityFuture
+// 44 -> 50 (the pension left the security term). finance had also been reading
+// 55 since v46's income-magnitude change — the ±15 tolerance hid all three, so
+// they are corrected here rather than left as three wrong numbers under a
+// comment claiming they were hand-computed.
 const EXPECTED = {
-  finance: 55,
+  finance: 53,
   physical: 62,
   mental: 69,
   relationships: 70,
-  personalGoals: 59,
+  personalGoals: 57,
   socialContribution: 32,
   environment: 50,
-  humanityFuture: 44
+  humanityFuture: 50
 };
 const TOLERANCE = 15;
 

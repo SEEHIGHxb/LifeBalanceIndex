@@ -226,14 +226,25 @@ export const INSTRUMENTS = {
       { text: "How often do you choose eco-friendly or refillable products?", options: FREQ_5, def: 2 }
     ]
   },
+  // DE-BIASED in v64. Items 1 and 5 used to name knowledge-work skills ("AI,
+  // data, languages") and global existential-risk causes ("climate, pandemics,
+  // AI safety"). Both encoded one profession's idea of contributing to the
+  // future and put a farmer, cook or carer on the floor — see the item audit in
+  // docs/research/round-7-purpose-generativity-aspects.md.
+  //
+  // Item 5 now asks about passing skills on, which is the "offering" facet of
+  // Eriksonian generativity and the thing a maintainer of a community does
+  // constantly. Same positions, same count, same FREQ_5 scale, so stored `lfis`
+  // sums stay valid and need no migration — same reasoning as the grit
+  // rewording above.
   lfis: {
     title: "Long-Term Future Index",
     items: [
-      { text: "I actively learn skills that will stay relevant in the future (AI, data, languages).", options: FREQ_5, def: 3 },
+      { text: "I actively learn or practise skills that will still matter in ten years, whatever work I do.", options: FREQ_5, def: 3 },
       { text: "I do things intended to leave a positive legacy beyond my own life.", options: FREQ_5, def: 2 },
       { text: "I support or donate to causes addressing future generations' well-being.", options: FREQ_5, def: 2 },
       { text: "I plan my finances with a horizon of 10 years or more.", options: FREQ_5, def: 3 },
-      { text: "I support causes addressing global existential risks (climate, pandemics, AI safety).", options: FREQ_5, def: 2 }
+      { text: "I teach or pass on skills and knowledge to younger or less experienced people.", options: FREQ_5, def: 2 }
     ]
   }
 };

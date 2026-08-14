@@ -267,9 +267,26 @@ export function relationshipsComposite(lsnsRaw, uclaRaw, rasRaw) {
   return 0.4 * network + 0.3 * lowLoneliness + 0.3 * rasScore(rasRaw);
 }
 
-// Personal goals: self-efficacy, grit, and active learning habits.
-export function personalGoalsComposite(profile, gseRaw, gritRaw) {
-  return 0.4 * gseScore(gseRaw) + 0.3 * gritScore(gritRaw) + 0.3 * learningScore(profile);
+// Personal goals: self-efficacy and active learning habits.
+//
+// GRIT LEFT THE SCORE IN v64, and deliberately did NOT leave the app.
+// Credé, Tynan & Harms 2017 (JPSP 113(3):492-511, doi:10.1037/pspp0000102) meta-
+// analysed 88 samples covering 66,807 people: grit correlates with ordinary
+// conscientiousness at rho ~= .84, its higher-order structure is not confirmed,
+// and it adds under half a percent of incremental variance over the Big Five.
+// Scoring it here meant scoring a personality trait as though it were a life
+// domain — it cannot move between yearly retests, and a low number reads as a
+// verdict on who someone is rather than on how their life is going.
+//
+// Grit is still asked, still stored, and still SHOWN: as a component bar on the
+// aspect page and as a note on the benchmark card. It informs, it no longer
+// ranks. That is why gritScore() is still exported.
+//
+// The two surviving weights are the old 0.4 and 0.3 RENORMALIZED over 0.7,
+// not re-picked. So this change is grit's removal and nothing else — the
+// relative emphasis of self-efficacy against learning is exactly as it was.
+export function personalGoalsComposite(profile, gseRaw) {
+  return ((0.4 * gseScore(gseRaw)) + (0.3 * learningScore(profile))) / 0.7;
 }
 
 // --- THE EIGHT ASPECT CALCULATORS (onboarding: answers -> 0-100 score) ---
@@ -338,8 +355,10 @@ export function calculateRelationshipsScore(profile, lsnsAnswers, uclaAnswers, r
   return clampScore(relationshipsComposite(lsnsRaw, uclaRaw, rasAnswers ? rawSum(rasAnswers) : 3));
 }
 
-export function calculatePersonalGoalsScore(profile, gseAnswers, gritAnswers) {
-  return clampScore(personalGoalsComposite(profile, rawSum(gseAnswers), rawSum(gritAnswers)));
+// `gritAnswers` is no longer a parameter: grit is collected and displayed but
+// not scored (see personalGoalsComposite).
+export function calculatePersonalGoalsScore(profile, gseAnswers) {
+  return clampScore(personalGoalsComposite(profile, rawSum(gseAnswers)));
 }
 
 export function calculateSocialContributionScore(profile, ptmAnswers) {
@@ -391,15 +410,24 @@ export function calculateHumanityFutureScore(profile, lfisAnswers) {
   // Legacy (Q2)
   const S_legacy = qValues[1] * 25;
 
-  // Risk / Philanthropy (Q3 & Q5)
-  const S_philanthropy = ((qValues[2] + qValues[4]) / 8) * 100;
+  // Offering (Q3 giving to future generations & Q5 passing skills on). Q5 used
+  // to ask about global existential-risk causes; since v64 it asks about
+  // teaching and handing on what you know, which is the generative act
+  // available to someone with no money to give.
+  const S_offering = ((qValues[2] + qValues[4]) / 8) * 100;
 
-  // Security (Q4 & Pension)
-  const pensionVal = profile.longTermInvestments ? 100 : 0;
-  const Q4_val = qValues[3] * 25;
-  const S_security = (0.5 * pensionVal) + (0.5 * Q4_val);
+  // Security (Q4 only). THE PENSION LEFT THIS TERM IN v64. `longTermInvestments`
+  // is a financial fact, and Finance already scores the financial facts —
+  // income, savings rate and the CFPB well-being items. Counting it here paid
+  // one circumstance twice across two aspects, and paid it a third time through
+  // the percentile band it used to gate (see humanityFutureBenchmark).
+  //
+  // The field is still collected and still shown on the aspect page; it simply
+  // scores nothing until Finance has a cited basis for scoring it, which is a
+  // separate question from this one and is not answered yet.
+  const S_security = qValues[3] * 25;
 
-  return clampScore((0.25 * S_skills) + (0.25 * S_legacy) + (0.25 * S_philanthropy) + (0.25 * S_security));
+  return clampScore((0.25 * S_skills) + (0.25 * S_legacy) + (0.25 * S_offering) + (0.25 * S_security));
 }
 
 // --- WEEKLY REVIEW (measured re-scoring) ---
@@ -426,7 +454,7 @@ export function weeklyAspectShifts(oldProfile, newProfile, baseline) {
   const deltas = {
     physical: calculatePhysicalScore(newProfile, jss) - calculatePhysicalScore(oldProfile, jss),
     finance: savingsBonus(newProfile) - savingsBonus(oldProfile),
-    personalGoals: 0.3 * (learningScore(newProfile) - learningScore(oldProfile)),
+    personalGoals: (0.3 / 0.7) * (learningScore(newProfile) - learningScore(oldProfile)),
     socialContribution:
       (0.4 * 0.5) * (donationVolumeFactor(newProfile) - donationVolumeFactor(oldProfile))
       + (0.4 * 0.6) * (volunteerFactor(newProfile) - volunteerFactor(oldProfile)),
@@ -483,21 +511,18 @@ export function ageBandShifts(profile, oldAge, newAge, baseline) {
 export function profileEditShifts(oldProfile, newProfile, baseline) {
   const cfpb = [Number(baseline && baseline.cfpb) || 0];
   const jss = [Number(baseline && baseline.jss) || 0];
-  const pension = p => (p.longTermInvestments ? 100 : 0);
   const deltas = {
     // income, region, age (CFPB band), savings all live inside this calculator
     finance: calculateFinanceScore(newProfile, cfpb) - calculateFinanceScore(oldProfile, cfpb),
     // weight/height -> BMI (plus any behavioural field, unchanged here)
     physical: calculatePhysicalScore(newProfile, jss) - calculatePhysicalScore(oldProfile, jss),
-    // digital literacy (half of learningScore), 0.3-weighted into the aspect
-    personalGoals: 0.3 * (learningScore(newProfile) - learningScore(oldProfile)),
+    // digital literacy (half of learningScore), (0.3/0.7)-weighted since v64
+    personalGoals: (0.3 / 0.7) * (learningScore(newProfile) - learningScore(oldProfile)),
     // income moves the donation-to-income ratio, 0.4*0.5 into the aspect
     socialContribution: (0.4 * 0.5) * (donationVolumeFactor(newProfile) - donationVolumeFactor(oldProfile)),
-    // long-term investments (pension term, 0.25*0.5) + shared learning hours
-    // (futureStudy term, 0.25*0.5) are the only future fields on the page
-    humanityFuture:
-      (0.25 * 0.5) * (pension(newProfile) - pension(oldProfile))
-      + (0.25 * 0.5) * (futureStudyScore(newProfile) - futureStudyScore(oldProfile))
+    // Shared learning hours (futureStudy term, 0.25*0.5) are now the only future
+    // field on this page: the pension term left the aspect in v64.
+    humanityFuture: (0.25 * 0.5) * (futureStudyScore(newProfile) - futureStudyScore(oldProfile))
   };
   const shifts = {};
   for (const [aspect, delta] of Object.entries(deltas)) {
@@ -566,11 +591,19 @@ export function deepAspectScore(aspectKey, profile, baseline, currentScore) {
       return clampScore(score);
     }
     case "personalGoals": {
-      // Swap GSE-6->GSE-10 (w=0.4) and Grit-S->Grit-12 (w=0.3), then blend in
-      // Rosenberg self-esteem at 15%.
+      // Swap GSE-6->GSE-10, then blend in Rosenberg self-esteem at 15%.
+      //
+      // The GSE weight tracks the composite: 0.4/0.7 after grit's removal in
+      // v64, not the old flat 0.4. A deep swap has to be worth what the thing
+      // it replaces is worth, or the deep section quietly re-weights the aspect.
+      //
+      // The Grit-12 line is gone with it. Grit-12 is still offered and still
+      // stored — it sharpens the grit READOUT, which is now the only thing grit
+      // does. Adjusting the score by a 0.3-weighted grit delta on an aspect
+      // that no longer scores grit at all would have been the exact drift the
+      // aspect-parity tests exist to catch.
       let score = currentScore;
-      if (has("gse10")) score += 0.4 * (DEEP_NORM.gse10(d.gse10) - gseScore(num(baseline.gse)));
-      if (has("grit12")) score += 0.3 * (DEEP_NORM.grit12(d.grit12) - gritScore(num(baseline.grit)));
+      if (has("gse10")) score += (0.4 / 0.7) * (DEEP_NORM.gse10(d.gse10) - gseScore(num(baseline.gse)));
       if (has("rses")) score = 0.85 * score + 0.15 * DEEP_NORM.rses(d.rses);
       return clampScore(score);
     }

@@ -82,7 +82,11 @@ test("survey aspects are ungraded until a baseline exists", () => {
   for (const key of ["mental", "relationships", "personalGoals"]) {
     assert.equal(grades[key], null, `${key} must be ungraded without a baseline`);
   }
-  for (const key of ["finance", "physical", "socialContribution", "environment", "humanityFuture"]) {
+  // humanityFuture is ungraded for a different reason than the three above: it
+  // HAS a benchmark, that benchmark simply carries no percentile since v64, so
+  // there is nothing to grade. Two routes to null, both correct.
+  assert.equal(grades.humanityFuture, null, "an unranked aspect is never graded");
+  for (const key of ["finance", "physical", "socialContribution", "environment"]) {
     assert.ok(grades[key] && grades[key].grade, `${key} should be gradeable from the profile alone`);
   }
 });

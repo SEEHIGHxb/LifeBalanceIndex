@@ -70,7 +70,11 @@ const COMPARISON_SAMPLES = [
   { aspect: "Personal Goals", sample: "General Self-Efficacy Scale, 25-country pooled norms (N=19,120)", where: "multi", rank: "ranked" },
   { aspect: "Social Contribution", sample: "CAF World Giving Index — Thai donating and volunteering rates", where: "thAdults", rank: "band" },
   { aspect: "Environment", sample: "Thai single-use plastic use per person per day", where: "thAdults", rank: "band" },
-  { aspect: "Humanity's Future", sample: "Thai retirement-savings coverage (ILO / OECD)", where: "thWorkers", rank: "band" }
+  // v64: was `band` on Thai retirement-savings coverage. That statistic is real
+  // but it measures financial security, and banding this aspect on it ranked
+  // income rather than contribution. No Thai norm for purpose or generativity
+  // is published, so there is nothing to re-band on and the rank is gone.
+  { aspect: "Humanity's Future", sample: "No published Thai norm for purpose, legacy or generativity", where: "noThaiNorm", rank: "none" }
 ];
 
 const RANK_LABELS = () => ({
@@ -90,7 +94,8 @@ const WHERE_LABELS = () => ({
   deAdults: t("Germany · adults"),
   deAdultsAge: t("Germany · adults, by age band"),
   multi: t("25 countries · adults"),
-  wrongAgePlusEngland: t("Norms: wrong age band. Band placement: England · adults 16+")
+  wrongAgePlusEngland: t("Norms: wrong age band. Band placement: England · adults 16+"),
+  noThaiNorm: t("None published — measured, not ranked")
 });
 
 // GUIDELINE CHECKS — the criterion-referenced table.
@@ -194,8 +199,8 @@ export function renderMethodology(containerId, state) {
       )}
       ${aspectSection(
         t("Personal Goals"),
-        t("40% self-efficacy (GSE) + 30% grit (Grit-S perseverance facet) + 30% active learning (weekly study hours + self-rated digital literacy). The in-depth section adds the full GSE-10, Grit-12, and Rosenberg self-esteem."),
-        t("Belief you can act, persistence, and actual learning time together approximate progress toward goals."),
+        t("Self-efficacy (GSE) and active learning (weekly study hours + self-rated digital literacy), in the same 40:30 proportion as before, renormalized after grit left the score. The in-depth section adds the full GSE-10 and Rosenberg self-esteem. Grit is still asked and still shown, but is no longer scored."),
+        t("Grit was dropped from the score because a 2017 meta-analysis of 66,807 people found it is almost the same thing as ordinary conscientiousness and adds under half a percent of new information. That makes it a personality trait rather than a life domain: it barely moves between yearly retests, and scoring it low reads as a verdict on who you are. Belief you can act, and actual learning time, are what remain."),
         ["gse", "grit", "rses"]
       )}
       ${aspectSection(
@@ -212,8 +217,8 @@ export function renderMethodology(containerId, state) {
       )}
       ${aspectSection(
         t("Humanity's Future"),
-        t("25% future skills + 25% legacy actions + 25% future-oriented giving + 25% long-term security (retirement investments). The in-depth CFC-12 adds a validated future-orientation reading."),
-        t("Four equal parts because there is no published evidence for ranking them — an honest uniform prior."),
+        t("25% future skills + 25% legacy actions + 25% offering (giving toward future generations and passing skills on) + 25% long-horizon planning. The in-depth CFC-12 adds a validated future-orientation reading."),
+        t("Four equal parts because there is no published evidence for ranking them — an honest uniform prior. This aspect is measured but NOT ranked against a population, because no Thai norm for purpose, legacy or generativity is published. It used to be ranked on whether you hold a retirement product, which ranked your income rather than your contribution: a farmer who had taught three children a trade could not reach a pension-holder's band no matter what they answered. Holding retirement investments is still shown here, and now counts only in Finance."),
         ["cfc"]
       )}
     </div>

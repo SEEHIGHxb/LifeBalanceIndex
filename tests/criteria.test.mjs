@@ -266,22 +266,35 @@ test("the vegetable pledge default matches the WHO guideline it cites", () => {
 // must not perturb the norm-referenced stack. These values are the v39 numbers;
 // a diff here means a criterion leaked into scoring.
 
-test("AVERAGE_ASPECT_SCORES moved only where v46 intended (finance)", () => {
+test("AVERAGE_ASPECT_SCORES moved only where v46 and v64 intended", () => {
   // v46 replaced the finance income percentile with a magnitude scale, so the
-  // reference profile's finance average moved 55 -> 53. Asserting the whole
-  // object is what proves the other seven aspects did NOT drift with it.
+  // reference profile's finance average moved 55 -> 53.
+  //
+  // v64 moved exactly two more, both by removing something rather than adding:
+  //   personalGoals 59 -> 57  grit left the composite; the reference profile's
+  //                           grit sat above its GSE/learning mix, so dropping
+  //                           it pulls the average down a little.
+  //   humanityFuture 44 -> 50 the pension left the security term. The reference
+  //                           profile holds no long-term investments, so it had
+  //                           been scoring zero on half that term for a
+  //                           financial fact Finance already counts.
+  //
+  // Asserting the whole object is what proves the other five did NOT drift.
   assert.deepEqual({ ...AVERAGE_ASPECT_SCORES }, {
     finance: 53, physical: 62, mental: 69, relationships: 70,
-    personalGoals: 59, socialContribution: 32, environment: 50, humanityFuture: 44
+    personalGoals: 57, socialContribution: 32, environment: 50, humanityFuture: 50
   });
 });
 
-test("the Balance Index and the at-or-above-average standing are unchanged from v39", () => {
+test("the Balance Index and the at-or-above-average standing move only with the reference averages", () => {
   const aspects = {
     finance: 60, physical: 55, mental: 70, relationships: 65,
     personalGoals: 50, socialContribution: 40, environment: 45, humanityFuture: 35
   };
-  assert.equal(balanceIndex(aspects), 47);
+  // 47 from v39 through v63; 46 from v64. balanceIndex scores each aspect
+  // RELATIVE to AVERAGE_ASPECT_SCORES, so the two averages that moved above
+  // move this too. Criteria still leak nothing into it, which is the point.
+  assert.equal(balanceIndex(aspects), 46);
   assert.deepEqual(aspectsAtOrAboveAverage(aspects), { count: 3, total: 8 });
 });
 

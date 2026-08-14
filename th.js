@@ -16,7 +16,8 @@ export const TH = {
   "Mental health support": "การสนับสนุนด้านสุขภาพจิต",
   // --- Instrument-fidelity disclosures (finding #8) ---
   "Grit (perseverance)": "ความมุ่งมั่น (ด้านความเพียร)",
-  "Perseverance facet only — {g}/5 vs the ~3.4 full-scale reference": "เฉพาะด้านความเพียร — {g}/5 เทียบกับค่าอ้างอิงฉบับเต็ม ~3.4",
+  "Not scored — shown for information. Perseverance facet only, {g}/5 vs the ~3.4 full-scale reference.":
+    "ไม่ถูกนำไปคิดคะแนน แสดงเพื่อเป็นข้อมูล เฉพาะด้านความเพียร {g}/5 เทียบกับค่าอ้างอิงฉบับเต็ม ~3.4",
   "Raw {n}/20 — converted with the CFPB's official scoring table (self-administered)": "คะแนนดิบ {n}/20 — แปลงด้วยตารางคะแนนทางการของ CFPB (แบบตอบด้วยตนเอง)",
   "Full 10-item scale — raw {n}/40, converted with the CFPB's official scoring table": "แบบเต็ม 10 ข้อ — คะแนนดิบ {n}/40 แปลงด้วยตารางคะแนนทางการของ CFPB",
   "Grit {g}/5 from your full 12-item scale vs the ~3.4 adult reference point.": "ความมุ่งมั่น {g}/5 จากแบบวัดฉบับเต็ม 12 ข้อ เทียบกับค่าอ้างอิงผู้ใหญ่ ~3.4",
@@ -91,7 +92,7 @@ export const TH = {
   "Weekly activity, body composition, sleep, and nutrition.": "กิจกรรมรายสัปดาห์ องค์ประกอบร่างกาย การนอน และโภชนาการ",
   "Well-being (WHO-5) and stress resilience (Thai DMH ST-5).": "สุขภาวะ (WHO-5) และความทนทานต่อความเครียด (ST-5 กรมสุขภาพจิต)",
   "Social network strength, loneliness, and romantic satisfaction.": "ความแข็งแรงของเครือข่ายสังคม ความเหงา และความพึงพอใจในความรัก",
-  "Self-efficacy, grit, and active learning habits.": "การรับรู้ความสามารถของตนเอง ความมุ่งมั่น และนิสัยการเรียนรู้",
+  "Self-efficacy and active learning habits.": "การรับรู้ความสามารถของตนเอง และนิสัยการเรียนรู้",
   "Giving, volunteering, and prosocial habits.": "การให้ การอาสา และพฤติกรรมเพื่อสังคม",
   "Plastic footprint and everyday green behavior.": "การใช้พลาสติกและพฤติกรรมรักษ์โลกในชีวิตประจำวัน",
   "Future skills, long-term security, and future orientation.": "ทักษะแห่งอนาคต ความมั่นคงระยะยาว และการมองการณ์ไกล",
@@ -216,10 +217,10 @@ export const TH = {
     "40% เครือข่ายสังคม (LSNS-6) + 30% ความเหงาต่ำ (UCLA-3) + 30% ความพึงพอใจในความสัมพันธ์ (RAS เฉพาะคู่รัก) คนโสดกระจายน้ำหนักเป็น 50/50 — ความโสดไม่ถูกหักคะแนน",
   "Network size and felt loneliness measure different things; both matter, so neither dominates.":
     "ขนาดเครือข่ายกับความเหงาที่รู้สึกวัดคนละสิ่ง ทั้งคู่สำคัญจึงไม่ให้ด้านใดครอบงำ",
-  "40% self-efficacy (GSE) + 30% grit (Grit-S perseverance facet) + 30% active learning (weekly study hours + self-rated digital literacy). The in-depth section adds the full GSE-10, Grit-12, and Rosenberg self-esteem.":
-    "40% การรับรู้ความสามารถของตน (GSE) + 30% ความมุ่งมั่น (Grit-S ด้านความเพียร) + 30% การเรียนรู้ (ชั่วโมงเรียนต่อสัปดาห์ + ทักษะดิจิทัลที่ประเมินเอง) แบบประเมินเชิงลึกเพิ่ม GSE-10, Grit-12 และความภาคภูมิใจในตนเองของ Rosenberg",
-  "Belief you can act, persistence, and actual learning time together approximate progress toward goals.":
-    "ความเชื่อว่าทำได้ ความเพียร และเวลาเรียนรู้จริง รวมกันสะท้อนความคืบหน้าสู่เป้าหมาย",
+  "Self-efficacy (GSE) and active learning (weekly study hours + self-rated digital literacy), in the same 40:30 proportion as before, renormalized after grit left the score. The in-depth section adds the full GSE-10 and Rosenberg self-esteem. Grit is still asked and still shown, but is no longer scored.":
+    "การรับรู้ความสามารถของตน (GSE) และการเรียนรู้ (ชั่วโมงเรียนต่อสัปดาห์ + ทักษะดิจิทัลที่ประเมินเอง) ในสัดส่วน 40:30 เท่าเดิม โดยปรับฐานใหม่หลังจากตัดความมุ่งมั่นออกจากคะแนน แบบประเมินเชิงลึกเพิ่ม GSE-10 และความภาคภูมิใจในตนเองของ Rosenberg ส่วนความมุ่งมั่นยังคงถามและแสดงผล แต่ไม่ถูกนำไปคิดคะแนน",
+  "Grit was dropped from the score because a 2017 meta-analysis of 66,807 people found it is almost the same thing as ordinary conscientiousness and adds under half a percent of new information. That makes it a personality trait rather than a life domain: it barely moves between yearly retests, and scoring it low reads as a verdict on who you are. Belief you can act, and actual learning time, are what remain.":
+    "ความมุ่งมั่นถูกตัดออกจากคะแนน เพราะงานวิเคราะห์อภิมานปี 2017 จากกลุ่มตัวอย่าง 66,807 คน พบว่ามันเกือบจะเป็นสิ่งเดียวกับความมีวินัยตามปกติ และเพิ่มข้อมูลใหม่ไม่ถึงครึ่งเปอร์เซ็นต์ นั่นทำให้มันเป็นลักษณะนิสัย ไม่ใช่ด้านหนึ่งของชีวิต มันแทบไม่เปลี่ยนระหว่างการประเมินแต่ละปี และการได้คะแนนต่ำก็เหมือนคำตัดสินว่าคุณเป็นคนอย่างไร สิ่งที่เหลืออยู่คือความเชื่อว่าทำได้ และเวลาเรียนรู้จริง",
   "40% donations (frequency + amount vs income) + 40% action (volunteering hours + helping behavior) + 20% civic participation.":
     "40% การบริจาค (ความถี่ + จำนวนเทียบรายได้) + 40% การลงมือทำ (ชั่วโมงจิตอาสา + พฤติกรรมช่วยเหลือ) + 20% การมีส่วนร่วมทางสังคม",
   "Giving money and giving time are weighted equally; civic habits count but are the hardest to self-report accurately.":
@@ -228,10 +229,10 @@ export const TH = {
     "40% ขยะ (พลาสติกใช้ครั้งเดียวต่อวันเทียบค่าเฉลี่ยไทย ~3 ชิ้น/วัน + นิสัยแยกขยะ) + 40% การเลือกการเดินทาง + 20% นิสัยประหยัดพลังงาน",
   "Plastics and transport dominate the part of an individual Thai footprint that daily habits can actually change.":
     "พลาสติกกับการเดินทางคือส่วนใหญ่ของรอยเท้าสิ่งแวดล้อมรายบุคคลที่นิสัยประจำวันเปลี่ยนได้จริง",
-  "25% future skills + 25% legacy actions + 25% future-oriented giving + 25% long-term security (retirement investments). The in-depth CFC-12 adds a validated future-orientation reading.":
-    "25% ทักษะแห่งอนาคต + 25% การสร้างมรดกเชิงบวก + 25% การให้เพื่อคนรุ่นหลัง + 25% ความมั่นคงระยะยาว (การลงทุนเกษียณ) แบบประเมินเชิงลึก CFC-12 เพิ่มการวัดมุมมองต่ออนาคตที่ผ่านการตรวจสอบแล้ว",
-  "Four equal parts because there is no published evidence for ranking them — an honest uniform prior.":
-    "สี่ส่วนเท่ากันเพราะยังไม่มีหลักฐานตีพิมพ์ที่บอกว่าอะไรสำคัญกว่า — จึงให้น้ำหนักเท่ากันอย่างตรงไปตรงมา",
+  "25% future skills + 25% legacy actions + 25% offering (giving toward future generations and passing skills on) + 25% long-horizon planning. The in-depth CFC-12 adds a validated future-orientation reading.":
+    "25% ทักษะแห่งอนาคต + 25% การสร้างมรดกเชิงบวก + 25% การส่งต่อ (การให้เพื่อคนรุ่นหลังและการถ่ายทอดทักษะ) + 25% การวางแผนระยะยาว แบบประเมินเชิงลึก CFC-12 เพิ่มการวัดมุมมองต่ออนาคตที่ผ่านการตรวจสอบแล้ว",
+  "Four equal parts because there is no published evidence for ranking them — an honest uniform prior. This aspect is measured but NOT ranked against a population, because no Thai norm for purpose, legacy or generativity is published. It used to be ranked on whether you hold a retirement product, which ranked your income rather than your contribution: a farmer who had taught three children a trade could not reach a pension-holder's band no matter what they answered. Holding retirement investments is still shown here, and now counts only in Finance.":
+    "สี่ส่วนเท่ากันเพราะยังไม่มีหลักฐานตีพิมพ์ที่บอกว่าอะไรสำคัญกว่า — จึงให้น้ำหนักเท่ากันอย่างตรงไปตรงมา ด้านนี้มีการวัดผลแต่ไม่ถูกจัดอันดับเทียบประชากร เพราะยังไม่มีค่ามาตรฐานของคนไทยที่เผยแพร่สำหรับเป้าหมายชีวิต สิ่งที่ทิ้งไว้ หรือการส่งต่อสู่คนรุ่นหลัง เดิมทีด้านนี้จัดอันดับจากการมีการลงทุนเพื่อเกษียณ ซึ่งเท่ากับจัดอันดับรายได้ ไม่ใช่การมีส่วนร่วม ชาวนาที่สอนวิชาชีพให้ลูกสามคนก็ไม่มีทางไปถึงช่วงคะแนนของผู้มีกองทุนเกษียณได้ ไม่ว่าจะตอบอย่างไร การมีการลงทุนเพื่อเกษียณยังคงแสดงที่นี่ แต่นับคะแนนเฉพาะในด้านการเงินเท่านั้น",
   "App-authored behavioral items — not a standardized instrument. Read this aspect as a habits index, not a validated psychological measure.":
     "ชุดคำถามพฤติกรรมที่แอปสร้างเอง — ไม่ใช่เครื่องมือมาตรฐาน โปรดอ่านด้านนี้เป็นดัชนีนิสัย ไม่ใช่การวัดทางจิตวิทยาที่ผ่านการตรวจสอบ",
   "Confidence, benchmarks, and answer quality": "ความเชื่อมั่น เกณฑ์เปรียบเทียบ และคุณภาพคำตอบ",
@@ -345,11 +346,13 @@ export const TH = {
   "How often do you turn off lights and appliances when not in use?": "คุณปิดไฟและเครื่องใช้ไฟฟ้าเมื่อไม่ใช้งานบ่อยแค่ไหน?",
   "How often do you limit air-conditioning use or set it to 25°C or higher?": "คุณจำกัดการใช้แอร์หรือตั้งอุณหภูมิ 25°C ขึ้นไปบ่อยแค่ไหน?",
   "How often do you choose eco-friendly or refillable products?": "คุณเลือกสินค้ารักษ์โลกหรือแบบเติมได้บ่อยแค่ไหน?",
-  "I actively learn skills that will stay relevant in the future (AI, data, languages).": "ฉันเรียนรู้ทักษะที่จะยังสำคัญในอนาคตอย่างจริงจัง (AI ข้อมูล ภาษา)",
+  "I actively learn or practise skills that will still matter in ten years, whatever work I do.":
+    "ฉันเรียนรู้หรือฝึกฝนทักษะที่จะยังสำคัญในอีกสิบปีข้างหน้าอย่างจริงจัง ไม่ว่าฉันจะทำงานอะไร",
   "I do things intended to leave a positive legacy beyond my own life.": "ฉันทำสิ่งที่ตั้งใจให้เป็นมรดกที่ดีเกินอายุขัยของตัวเอง",
   "I support or donate to causes addressing future generations' well-being.": "ฉันสนับสนุนหรือบริจาคให้ประเด็นที่ดูแลความเป็นอยู่ของคนรุ่นหลัง",
   "I plan my finances with a horizon of 10 years or more.": "ฉันวางแผนการเงินโดยมองไกล 10 ปีขึ้นไป",
-  "I support causes addressing global existential risks (climate, pandemics, AI safety).": "ฉันสนับสนุนประเด็นความเสี่ยงระดับโลก (สภาพภูมิอากาศ โรคระบาด ความปลอดภัยของ AI)",
+  "I teach or pass on skills and knowledge to younger or less experienced people.":
+    "ฉันสอนหรือถ่ายทอดทักษะและความรู้ให้คนรุ่นหลังหรือผู้ที่มีประสบการณ์น้อยกว่า",
 
   // --- Dashboard ---
   "Erase all data": "ลบข้อมูลทั้งหมด",
@@ -651,8 +654,10 @@ export const TH = {
   "Future skills": "ทักษะแห่งอนาคต",
   "{h}h/week toward future-proof skills — reuses your weekly learning hours": "{h} ชม./สัปดาห์กับทักษะที่พร้อมรับอนาคต — ใช้ชั่วโมงการเรียนรู้รายสัปดาห์ร่วมกัน",
   "Long-term security": "ความมั่นคงระยะยาว",
-  "Holds retirement/long-term investments": "มีการลงทุนเพื่อเกษียณ/ระยะยาว",
-  "No retirement/long-term investments yet": "ยังไม่มีการลงทุนเพื่อเกษียณ/ระยะยาว",
+  "Not scored here — shown for information. Holds retirement/long-term investments.":
+    "ไม่ถูกนำไปคิดคะแนนในด้านนี้ แสดงเพื่อเป็นข้อมูล มีการลงทุนเพื่อเกษียณ/ระยะยาว",
+  "Not scored here — shown for information. No retirement/long-term investments yet.":
+    "ไม่ถูกนำไปคิดคะแนนในด้านนี้ แสดงเพื่อเป็นข้อมูล ยังไม่มีการลงทุนเพื่อเกษียณ/ระยะยาว",
   "Future orientation (LFIS)": "การมองการณ์ไกล (LFIS)",
 
   // --- Benchmarks (benchmarks.js) ---
@@ -704,10 +709,15 @@ export const TH = {
   "{pieces} single-use plastic pieces/day vs the ~3/day Thai average": "พลาสติกใช้ครั้งเดียว {pieces} ชิ้น/วัน เทียบค่าเฉลี่ยคนไทย ~3 ชิ้น/วัน",
   "Banded around the post-plastic-ban Thai average; per-person distribution data is not published.":
     "จัดช่วงรอบค่าเฉลี่ยคนไทยหลังมาตรการงดถุงพลาสติก; ไม่มีข้อมูลการแจกแจงรายบุคคลที่เผยแพร่",
-  "Holds long-term retirement investments — ahead of most Thai workers": "มีการลงทุนเพื่อเกษียณระยะยาว — นำหน้าแรงงานไทยส่วนใหญ่",
-  "No long-term retirement investments yet — like most Thai workers": "ยังไม่มีการลงทุนเพื่อเกษียณระยะยาว — เหมือนแรงงานไทยส่วนใหญ่",
-  "Most Thai workers lack adequate retirement savings; ~2 in 3 over-60s get no social-security annuity.":
-    "แรงงานไทยส่วนใหญ่มีเงินเก็บเกษียณไม่พอ; ผู้สูงวัย 60+ ราว 2 ใน 3 ไม่มีสิทธิ์รับบำนาญประกันสังคม",
+  // v64: this aspect is measured but no longer ranked. The keys that used to
+  // live here described a percentile banded on retirement investments.
+  "Future orientation and legacy — measured, not ranked": "มุมมองต่ออนาคตและสิ่งที่ทิ้งไว้ — วัดผล แต่ไม่จัดอันดับ",
+  "No published Thai norm exists for purpose, legacy or generativity, so this app will not rank you on it. Until v64 this aspect was ranked on whether you hold a retirement product, which ranked your income rather than your contribution. Your score and the items behind it are real measurements; the population comparison was the part that was not.":
+    "ยังไม่มีค่ามาตรฐานของคนไทยที่เผยแพร่สำหรับเป้าหมายชีวิต สิ่งที่ทิ้งไว้ หรือการส่งต่อสู่คนรุ่นหลัง แอปนี้จึงจะไม่จัดอันดับคุณในด้านนี้ ก่อนเวอร์ชัน 64 ด้านนี้จัดอันดับจากการมีการลงทุนเพื่อเกษียณ ซึ่งเท่ากับจัดอันดับรายได้ ไม่ใช่การมีส่วนร่วมของคุณ คะแนนและข้อคำถามเบื้องหลังเป็นการวัดผลจริง ส่วนที่ไม่จริงคือการเปรียบเทียบกับประชากร",
+  "Long-Term Future Index {n}/20 — future skills, legacy, giving toward future generations, long-horizon planning, and passing skills on.":
+    "ดัชนีอนาคตระยะยาว {n}/20 — ทักษะแห่งอนาคต สิ่งที่ทิ้งไว้ การให้เพื่อคนรุ่นหลัง การวางแผนระยะยาว และการส่งต่อทักษะ",
+  "Holding retirement investments no longer moves this aspect. That is a financial fact, and Finance is where this app scores financial facts.":
+    "การมีการลงทุนเพื่อเกษียณไม่มีผลต่อด้านนี้อีกต่อไป เพราะเป็นข้อเท็จจริงทางการเงิน และแอปนี้ให้คะแนนเรื่องการเงินในด้านการเงิน",
 
   // --- GUIDELINE CHECKS (criteria.js + the aspect card + methodology table) ---
   // Terminology note: "เกณฑ์แนะนำ" (recommended standard) is used throughout for
@@ -1287,6 +1297,7 @@ export const TH = {
   "Germany · adults, by age band": "เยอรมนี · ผู้ใหญ่ แยกตามช่วงอายุ",
   "25 countries · adults": "25 ประเทศ · ผู้ใหญ่",
   "Not ranked — band placement only": "ไม่จัดอันดับ — บอกได้เพียงช่วงคะแนน",
+  "None published — measured, not ranked": "ยังไม่มีที่เผยแพร่ — วัดผล แต่ไม่จัดอันดับ",
   "Norms: wrong age band. Band placement: England · adults 16+": "เกณฑ์อ้างอิง: ช่วงอายุไม่ตรง · การจัดช่วง: อังกฤษ · ผู้ใหญ่ 16 ปีขึ้นไป",
   "A percentile is a claim about where you sit among a group of people — so the group matters as much as the number. A literature search in July 2026 found no representative Thai general-adult norm published for any of the questionnaires here. Every reference sample is therefore either foreign or non-representative, and this table says which is which instead of leaving you to assume the comparison is with Thai people your age.":
     "เปอร์เซ็นไทล์คือการบอกว่าคุณอยู่ตรงไหนในกลุ่มคนกลุ่มหนึ่ง — กลุ่มที่ใช้เทียบจึงสำคัญพอ ๆ กับตัวเลข การค้นคว้าเอกสารวิชาการเมื่อกรกฎาคม 2569 ไม่พบเกณฑ์อ้างอิงของผู้ใหญ่ไทยทั่วไปที่เป็นตัวแทนประชากรสำหรับแบบสอบถามชุดใดเลยที่ใช้ในแอปนี้ กลุ่มอ้างอิงทุกกลุ่มจึงเป็นชาวต่างชาติหรือไม่ได้เป็นตัวแทนประชากร ตารางนี้จึงระบุให้ชัดว่าอันไหนเป็นอย่างไร แทนที่จะปล่อยให้คุณเข้าใจเองว่ากำลังถูกเทียบกับคนไทยวัยเดียวกัน",

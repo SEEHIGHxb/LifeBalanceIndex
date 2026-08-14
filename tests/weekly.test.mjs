@@ -47,13 +47,15 @@ test("savings rate 0% -> 20% adds exactly the +10 finance bonus", () => {
   assert.deepEqual(shifts, { finance: 10 });
 });
 
-test("learning hours feed personalGoals (0.3 x learningScore) and humanityFuture (0.125 x futureStudy)", () => {
+test("learning hours feed personalGoals ((0.3/0.7) x learningScore) and humanityFuture (0.125 x futureStudy)", () => {
   // learningScore: 0.5*(hours/5*100) + 0.5*digitalLiteracy => 25 -> 75 (+50);
-  // personalGoals delta = 0.3 * 50 = 15.
+  // personalGoals delta = (0.3/0.7) * 50 = 21.43 -> 21. The weight became
+  // 0.3/0.7 in v64, when grit left the composite and the two surviving weights
+  // were renormalized over 0.7 rather than re-picked.
   // futureStudyScore: hours/4*100 capped => 0 -> 100; humanityFuture delta
   // = 0.25 * 0.5 * 100 = 12.5, rounded half-up to 13.
   const shifts = weeklyAspectShifts(BASE, { ...BASE, weeklyLearningHours: 5 }, JSS_BASELINE);
-  assert.deepEqual(shifts, { personalGoals: 15, humanityFuture: 13 });
+  assert.deepEqual(shifts, { personalGoals: 21, humanityFuture: 13 });
 });
 
 test("donations and volunteering shift socialContribution by their factor weights", () => {

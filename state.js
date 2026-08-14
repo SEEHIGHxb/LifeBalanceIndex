@@ -729,12 +729,13 @@ export class GameStateManager {
     };
     const since = this.lastCalibrationDate();
 
-    // LSNS and grit aren't re-asked monthly, so their stored baseline sums
-    // stand in; everything else uses the fresh reading.
+    // LSNS isn't re-asked monthly, so its stored baseline sum stands in;
+    // everything else uses the fresh reading. Grit used to stand in here too —
+    // since v64 it is not scored at all, so there is nothing to stand in for.
     const targets = {
       mental: mentalComposite(sums.who5, sums.st5),
       relationships: relationshipsComposite(b.lsns, sums.ucla, sums.ras),
-      personalGoals: personalGoalsComposite(p, sums.gse, b.grit)
+      personalGoals: personalGoalsComposite(p, sums.gse)
     };
 
     // One consistent week of measurement ≈ one bonus point, capped.
@@ -916,7 +917,7 @@ export class GameStateManager {
     aspects.physical = calculatePhysicalScore(p, surveyData.jss);
     aspects.mental = calculateMentalScore(p, surveyData.st5, surveyData.who5);
     aspects.relationships = calculateRelationshipsScore(p, surveyData.lsns, surveyData.ucla, surveyData.ras);
-    aspects.personalGoals = calculatePersonalGoalsScore(p, surveyData.gse, surveyData.grit);
+    aspects.personalGoals = calculatePersonalGoalsScore(p, surveyData.gse);
     aspects.socialContribution = calculateSocialContributionScore(p, surveyData.ptm);
     aspects.environment = calculateEnvironmentScore(p, surveyData.geb);
     aspects.humanityFuture = calculateHumanityFutureScore(p, surveyData.lfis);

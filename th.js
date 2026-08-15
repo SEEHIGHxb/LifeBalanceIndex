@@ -721,6 +721,10 @@ export const TH = {
     "ยังไม่มีค่ามาตรฐานของคนไทยที่เผยแพร่สำหรับเป้าหมายชีวิต สิ่งที่ทิ้งไว้ หรือการส่งต่อสู่คนรุ่นหลัง แอปนี้จึงจะไม่จัดอันดับคุณในด้านนี้ ก่อนเวอร์ชัน 64 ด้านนี้จัดอันดับจากการมีการลงทุนเพื่อเกษียณ ซึ่งเท่ากับจัดอันดับรายได้ ไม่ใช่การมีส่วนร่วมของคุณ คะแนนและข้อคำถามเบื้องหลังเป็นการวัดผลจริง ส่วนที่ไม่จริงคือการเปรียบเทียบกับประชากร",
   "Long-Term Future Index {n}/{max} — future skills, legacy, giving toward future generations, long-horizon planning, passing skills on, and maintaining what lasts.":
     "ดัชนีอนาคตระยะยาว {n}/{max} — ทักษะแห่งอนาคต สิ่งที่ทิ้งไว้ การให้เพื่อคนรุ่นหลัง การวางแผนระยะยาว การส่งต่อทักษะ และการดูแลรักษาสิ่งที่อยู่ได้นาน",
+  // The five-item wording, for a baseline taken before v65 added the
+  // maintaining item. Both forms stay live as long as pre-v65 saves do.
+  "Long-Term Future Index {n}/{max} — future skills, legacy, giving toward future generations, long-horizon planning, and passing skills on. Taken before the maintaining item existed, so it is not counted in this total.":
+    "ดัชนีอนาคตระยะยาว {n}/{max} — ทักษะแห่งอนาคต สิ่งที่ทิ้งไว้ การให้เพื่อคนรุ่นหลัง การวางแผนระยะยาว และการส่งต่อทักษะ วัดไว้ก่อนที่จะเพิ่มข้อการดูแลรักษา จึงยังไม่ถูกนับรวมในคะแนนนี้",
   "Holding retirement investments no longer moves this aspect. That is a financial fact, and Finance is where this app scores financial facts.":
     "การมีการลงทุนเพื่อเกษียณไม่มีผลต่อด้านนี้อีกต่อไป เพราะเป็นข้อเท็จจริงทางการเงิน และแอปนี้ให้คะแนนเรื่องการเงินในด้านการเงิน",
 

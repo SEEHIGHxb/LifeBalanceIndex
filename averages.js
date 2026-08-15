@@ -66,7 +66,11 @@ const REFERENCE_ANSWERS = {
   grit: [4, 3, 4, 3], // raw 14 — Duckworth samples average ~3.4/item
   ptm: [2, 2, 2, 2, 2], // app-authored items: scale midpoint (ASSUMPTION)
   geb: [2, 2, 2, 2, 2, 2], // app-authored items: scale midpoint (ASSUMPTION)
-  lfis: [2, 2, 2, 2, 2] // app-authored items: scale midpoint (ASSUMPTION)
+  // Six values since v65: the 6th is the maintaining item. The reference person
+  // answers it at the same midpoint as the other five, which is the only
+  // defensible assumption available — nothing published says how often a
+  // typical Thai adult repairs or tends what they have.
+  lfis: [2, 2, 2, 2, 2, 2] // app-authored items: scale midpoint (ASSUMPTION)
 };
 
 const R = REFERENCE_PROFILE;

@@ -95,7 +95,7 @@ export const TH = {
   "Self-efficacy and active learning habits.": "การรับรู้ความสามารถของตนเอง และนิสัยการเรียนรู้",
   "Giving, volunteering, and prosocial habits.": "การให้ การอาสา และพฤติกรรมเพื่อสังคม",
   "Plastic footprint and everyday green behavior.": "การใช้พลาสติกและพฤติกรรมรักษ์โลกในชีวิตประจำวัน",
-  "Future skills, long-term security, and future orientation.": "ทักษะแห่งอนาคต ความมั่นคงระยะยาว และการมองการณ์ไกล",
+  "Future skills, future orientation, and maintaining what lasts.": "ทักษะแห่งอนาคต การมองการณ์ไกล และการดูแลรักษาสิ่งที่อยู่ได้นาน",
 
   // --- Profile values shown on the dashboard ---
   "Bangkok": "กรุงเทพฯ",
@@ -229,10 +229,10 @@ export const TH = {
     "40% ขยะ (พลาสติกใช้ครั้งเดียวต่อวันเทียบค่าเฉลี่ยไทย ~3 ชิ้น/วัน + นิสัยแยกขยะ) + 40% การเลือกการเดินทาง + 20% นิสัยประหยัดพลังงาน",
   "Plastics and transport dominate the part of an individual Thai footprint that daily habits can actually change.":
     "พลาสติกกับการเดินทางคือส่วนใหญ่ของรอยเท้าสิ่งแวดล้อมรายบุคคลที่นิสัยประจำวันเปลี่ยนได้จริง",
-  "25% future skills + 25% legacy actions + 25% offering (giving toward future generations and passing skills on) + 25% long-horizon planning. The in-depth CFC-12 adds a validated future-orientation reading.":
-    "25% ทักษะแห่งอนาคต + 25% การสร้างมรดกเชิงบวก + 25% การส่งต่อ (การให้เพื่อคนรุ่นหลังและการถ่ายทอดทักษะ) + 25% การวางแผนระยะยาว แบบประเมินเชิงลึก CFC-12 เพิ่มการวัดมุมมองต่ออนาคตที่ผ่านการตรวจสอบแล้ว",
-  "Four equal parts because there is no published evidence for ranking them — an honest uniform prior. This aspect is measured but NOT ranked against a population, because no Thai norm for purpose, legacy or generativity is published. It used to be ranked on whether you hold a retirement product, which ranked your income rather than your contribution: a farmer who had taught three children a trade could not reach a pension-holder's band no matter what they answered. Holding retirement investments is still shown here, and now counts only in Finance.":
-    "สี่ส่วนเท่ากันเพราะยังไม่มีหลักฐานตีพิมพ์ที่บอกว่าอะไรสำคัญกว่า — จึงให้น้ำหนักเท่ากันอย่างตรงไปตรงมา ด้านนี้มีการวัดผลแต่ไม่ถูกจัดอันดับเทียบประชากร เพราะยังไม่มีค่ามาตรฐานของคนไทยที่เผยแพร่สำหรับเป้าหมายชีวิต สิ่งที่ทิ้งไว้ หรือการส่งต่อสู่คนรุ่นหลัง เดิมทีด้านนี้จัดอันดับจากการมีการลงทุนเพื่อเกษียณ ซึ่งเท่ากับจัดอันดับรายได้ ไม่ใช่การมีส่วนร่วม ชาวนาที่สอนวิชาชีพให้ลูกสามคนก็ไม่มีทางไปถึงช่วงคะแนนของผู้มีกองทุนเกษียณได้ ไม่ว่าจะตอบอย่างไร การมีการลงทุนเพื่อเกษียณยังคงแสดงที่นี่ แต่นับคะแนนเฉพาะในด้านการเงินเท่านั้น",
+  "20% future skills + 20% legacy actions + 20% offering (giving toward future generations and passing skills on) + 20% long-horizon planning + 20% maintaining (keeping a home, tools, land, animals or something shared in good order). The in-depth CFC-12 adds a validated future-orientation reading.":
+    "20% ทักษะแห่งอนาคต + 20% การสร้างมรดกเชิงบวก + 20% การส่งต่อ (การให้เพื่อคนรุ่นหลังและการถ่ายทอดทักษะ) + 20% การวางแผนระยะยาว + 20% การดูแลรักษา (การดูแลบ้าน เครื่องมือ ที่ดิน สัตว์เลี้ยง หรือของส่วนรวมให้อยู่ในสภาพดี) แบบประเมินเชิงลึก CFC-12 เพิ่มการวัดมุมมองต่ออนาคตที่ผ่านการตรวจสอบแล้ว",
+  "Five equal parts because there is no published evidence for ranking them — an honest uniform prior. This aspect is measured but NOT ranked against a population, because no Thai norm for purpose, legacy or generativity is published. It used to be ranked on whether you hold a retirement product, which ranked your income rather than your contribution: a farmer who had taught three children a trade could not reach a pension-holder's band no matter what they answered. Holding retirement investments is still shown here, and now counts only in Finance. The maintaining question was added in v65: psychology describes contributing to the future as creating, maintaining and offering, and until then this aspect asked only about the first and the third — so work that sustains rather than originates scored nowhere at all. If you answered before v65, your reading stays on the earlier five-question scale and is labelled with it, because restating an old answer against a question you were never asked would be a guess rather than a measurement.":
+    "ห้าส่วนเท่ากันเพราะยังไม่มีหลักฐานตีพิมพ์ที่บอกว่าอะไรสำคัญกว่า — จึงให้น้ำหนักเท่ากันอย่างตรงไปตรงมา ด้านนี้มีการวัดผลแต่ไม่ถูกจัดอันดับเทียบประชากร เพราะยังไม่มีค่ามาตรฐานของคนไทยที่เผยแพร่สำหรับเป้าหมายชีวิต สิ่งที่ทิ้งไว้ หรือการส่งต่อสู่คนรุ่นหลัง เดิมทีด้านนี้จัดอันดับจากการมีการลงทุนเพื่อเกษียณ ซึ่งเท่ากับจัดอันดับรายได้ ไม่ใช่การมีส่วนร่วม ชาวนาที่สอนวิชาชีพให้ลูกสามคนก็ไม่มีทางไปถึงช่วงคะแนนของผู้มีกองทุนเกษียณได้ ไม่ว่าจะตอบอย่างไร การมีการลงทุนเพื่อเกษียณยังคงแสดงที่นี่ แต่นับคะแนนเฉพาะในด้านการเงินเท่านั้น คำถามเรื่องการดูแลรักษาเพิ่มเข้ามาในเวอร์ชัน 65 จิตวิทยาอธิบายการมีส่วนร่วมต่ออนาคตว่าประกอบด้วยการสร้าง การดูแลรักษา และการส่งต่อ แต่ก่อนหน้านี้ด้านนี้ถามเฉพาะข้อแรกและข้อสุดท้าย งานที่ประคับประคองมากกว่าสร้างใหม่จึงไม่ได้คะแนนเลย หากคุณตอบก่อนเวอร์ชัน 65 ผลของคุณยังอยู่บนมาตรห้าคำถามเดิมและมีกำกับไว้ เพราะการนำคำตอบเก่ามาคิดใหม่กับคำถามที่คุณไม่เคยถูกถามคือการเดา ไม่ใช่การวัดผล",
   "App-authored behavioral items — not a standardized instrument. Read this aspect as a habits index, not a validated psychological measure.":
     "ชุดคำถามพฤติกรรมที่แอปสร้างเอง — ไม่ใช่เครื่องมือมาตรฐาน โปรดอ่านด้านนี้เป็นดัชนีนิสัย ไม่ใช่การวัดทางจิตวิทยาที่ผ่านการตรวจสอบ",
   "Confidence, benchmarks, and answer quality": "ความเชื่อมั่น เกณฑ์เปรียบเทียบ และคุณภาพคำตอบ",
@@ -353,6 +353,8 @@ export const TH = {
   "I plan my finances with a horizon of 10 years or more.": "ฉันวางแผนการเงินโดยมองไกล 10 ปีขึ้นไป",
   "I teach or pass on skills and knowledge to younger or less experienced people.":
     "ฉันสอนหรือถ่ายทอดทักษะและความรู้ให้คนรุ่นหลังหรือผู้ที่มีประสบการณ์น้อยกว่า",
+  "I maintain, repair or care for things meant to last — a home, tools, land, animals, or something shared in my community.":
+    "ฉันดูแล ซ่อมแซม หรือรักษาสิ่งที่ควรอยู่ได้นาน — บ้าน เครื่องมือ ที่ดิน สัตว์เลี้ยง หรือของส่วนรวมในชุมชนของฉัน",
 
   // --- Dashboard ---
   "Erase all data": "ลบข้อมูลทั้งหมด",
@@ -614,7 +616,10 @@ export const TH = {
   "Income standing": "สถานะรายได้",
   "Percentile vs Thai worker earnings (estimate)": "เปอร์เซ็นไทล์เทียบรายได้แรงงานไทย (ค่าประมาณ)",
   "Financial well-being (CFPB)": "สุขภาวะทางการเงิน (CFPB)",
+  // Both forms are live. PTM is a fixed 5-item instrument and keeps the literal
+  // /20; LFIS changed length in v65 and carries its own max.
   "Raw {n}/20 at baseline": "คะแนนดิบ {n}/20 ณ จุดเริ่มต้น",
+  "Raw {n}/{max} at baseline": "คะแนนดิบ {n}/{max} ณ จุดเริ่มต้น",
   "Savings habit": "นิสัยการออม",
   "Saving {thb} THB/mo = {rate}% of income (20%+ maxes this)": "ออม {thb} บาท/เดือน = {rate}% ของรายได้ (20% ขึ้นไปได้เต็ม)",
   "Activity": "การเคลื่อนไหว",
@@ -714,8 +719,8 @@ export const TH = {
   "Future orientation and legacy — measured, not ranked": "มุมมองต่ออนาคตและสิ่งที่ทิ้งไว้ — วัดผล แต่ไม่จัดอันดับ",
   "No published Thai norm exists for purpose, legacy or generativity, so this app will not rank you on it. Until v64 this aspect was ranked on whether you hold a retirement product, which ranked your income rather than your contribution. Your score and the items behind it are real measurements; the population comparison was the part that was not.":
     "ยังไม่มีค่ามาตรฐานของคนไทยที่เผยแพร่สำหรับเป้าหมายชีวิต สิ่งที่ทิ้งไว้ หรือการส่งต่อสู่คนรุ่นหลัง แอปนี้จึงจะไม่จัดอันดับคุณในด้านนี้ ก่อนเวอร์ชัน 64 ด้านนี้จัดอันดับจากการมีการลงทุนเพื่อเกษียณ ซึ่งเท่ากับจัดอันดับรายได้ ไม่ใช่การมีส่วนร่วมของคุณ คะแนนและข้อคำถามเบื้องหลังเป็นการวัดผลจริง ส่วนที่ไม่จริงคือการเปรียบเทียบกับประชากร",
-  "Long-Term Future Index {n}/20 — future skills, legacy, giving toward future generations, long-horizon planning, and passing skills on.":
-    "ดัชนีอนาคตระยะยาว {n}/20 — ทักษะแห่งอนาคต สิ่งที่ทิ้งไว้ การให้เพื่อคนรุ่นหลัง การวางแผนระยะยาว และการส่งต่อทักษะ",
+  "Long-Term Future Index {n}/{max} — future skills, legacy, giving toward future generations, long-horizon planning, passing skills on, and maintaining what lasts.":
+    "ดัชนีอนาคตระยะยาว {n}/{max} — ทักษะแห่งอนาคต สิ่งที่ทิ้งไว้ การให้เพื่อคนรุ่นหลัง การวางแผนระยะยาว การส่งต่อทักษะ และการดูแลรักษาสิ่งที่อยู่ได้นาน",
   "Holding retirement investments no longer moves this aspect. That is a financial fact, and Finance is where this app scores financial facts.":
     "การมีการลงทุนเพื่อเกษียณไม่มีผลต่อด้านนี้อีกต่อไป เพราะเป็นข้อเท็จจริงทางการเงิน และแอปนี้ให้คะแนนเรื่องการเงินในด้านการเงิน",
 

@@ -380,6 +380,19 @@ test("humanity future still responds to its own LFIS answers", () => {
   assert.ok(high.notes.some(n => /20\/20/.test(n)), "the raw reading is shown");
 });
 
+// v65 added a sixth LFIS item, so this note's denominator stopped being a
+// constant. A save predating the change carries no `lfisItems` and must keep
+// reading /20 — restating an old baseline against six items would show the user
+// a fifth of a drop they never experienced.
+test("the LFIS note denominator follows the baseline, not the current instrument", () => {
+  const old = getAllBenchmarks(makeState({}, { ...BASELINE, lfis: 15 })).humanityFuture;
+  const now = getAllBenchmarks(makeState({}, { ...BASELINE, lfis: 15, lfisItems: 6 })).humanityFuture;
+  assert.ok(old.notes.some(n => /15\/20/.test(n)), "a pre-v65 baseline stays on its own scale");
+  assert.ok(now.notes.some(n => /15\/24/.test(n)), "a v65 baseline reads out of 24 — 6 items x 4");
+  assert.equal(old.percentile, null, "still unranked either way");
+  assert.equal(now.percentile, null, "still unranked either way");
+});
+
 // --- STATE INTEGRATION ---
 
 const SURVEY_DATA = {

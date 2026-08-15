@@ -883,7 +883,14 @@ export class GameStateManager {
       grit: rawSum(surveyData.grit),
       ptm: rawSum(surveyData.ptm),
       geb: rawSum(surveyData.geb),
-      lfis: rawSum(surveyData.lfis)
+      lfis: rawSum(surveyData.lfis),
+      // The ONLY instrument whose length has ever changed (5 -> 6 in v65, when
+      // the maintaining item was added). Its sum therefore has two possible
+      // scales, 0-20 and 0-24, and a bare number cannot say which. Recording
+      // the count keeps every reader honest, and keeps a Phase 4 re-assessment
+      // from comparing a 0-24 sum against a 0-20 baseline. Absent on older
+      // saves, where every reader correctly reads it as 5.
+      lfisItems: (surveyData.lfis || []).length
     };
 
     // Coverage flags let later phases tell an answered instrument/field from a

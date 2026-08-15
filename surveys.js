@@ -237,6 +237,31 @@ export const INSTRUMENTS = {
   // constantly. Same positions, same count, same FREQ_5 scale, so stored `lfis`
   // sums stay valid and need no migration — same reasoning as the grit
   // rewording above.
+  //
+  // ITEM 6 ADDED IN v65, and it is the first time this instrument changed
+  // LENGTH rather than wording. Round 8 verified McAdams & de St. Aubin's
+  // taxonomy of generative action — CREATING, MAINTAINING, OFFERING — and then
+  // audited these items against it: item 2 is creating, items 3 and 5 are
+  // offering, items 1 and 4 are neither (preparation and planning). Nothing
+  // asked about MAINTAINING: keeping land, a household, a craft, a tool or a
+  // community in good order. v64 fixed this instrument's WORDING but not its
+  // SHAPE, and the shape was the real complaint — a farmer, cook, carer or
+  // mechanic contributes to the future constantly and scored on none of it.
+  //
+  // ONE item, not several. Two more offering items would have made the
+  // instrument longer without making it measure more. See
+  // docs/research/round-8-generative-behavior-checklist.md.
+  //
+  // It names THINGS rather than PEOPLE on purpose: Social Contribution's `ptm`
+  // items already cover helping people, and Environment's `geb` items cover
+  // consumption, transit and energy. Repair and stewardship of physical and
+  // shared things is scored nowhere else in the app.
+  //
+  // Changing the length is not free. Stored sums from v64 and earlier are on a
+  // 0-20 scale and this one is 0-24 (4 points x 6 items), so `state.js` records `lfisItems`
+  // alongside the sum and every reader scales by it. Old sums are NOT rescaled
+  // — multiplying a 14/20 by 1.2 would invent an answer to a question that
+  // user was never asked.
   lfis: {
     title: "Long-Term Future Index",
     items: [
@@ -244,7 +269,8 @@ export const INSTRUMENTS = {
       { text: "I do things intended to leave a positive legacy beyond my own life.", options: FREQ_5, def: 2 },
       { text: "I support or donate to causes addressing future generations' well-being.", options: FREQ_5, def: 2 },
       { text: "I plan my finances with a horizon of 10 years or more.", options: FREQ_5, def: 3 },
-      { text: "I teach or pass on skills and knowledge to younger or less experienced people.", options: FREQ_5, def: 2 }
+      { text: "I teach or pass on skills and knowledge to younger or less experienced people.", options: FREQ_5, def: 2 },
+      { text: "I maintain, repair or care for things meant to last — a home, tools, land, animals, or something shared in my community.", options: FREQ_5, def: 3 }
     ]
   }
 };

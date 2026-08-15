@@ -56,7 +56,7 @@ export const ASPECT_META = {
   personalGoals: { label: "Personal Goals", blurb: "Self-efficacy and active learning habits." },
   socialContribution: { label: "Social Contribution", blurb: "Giving, volunteering, and prosocial habits." },
   environment: { label: "Environment", blurb: "Plastic footprint and everyday green behavior." },
-  humanityFuture: { label: "Humanity's Future", blurb: "Future skills, long-term security, and future orientation." }
+  humanityFuture: { label: "Humanity's Future", blurb: "Future skills, future orientation, and maintaining what lasts." }
 };
 
 // --- CONFIDENCE (Phase 2a) ---
@@ -348,7 +348,13 @@ function humanityFutureComponents(p, b) {
     { key: "security", scored: false, label: t("Long-term security"), value: p.longTermInvestments ? 100 : 0, detail: p.longTermInvestments ? t("Not scored here — shown for information. Holds retirement/long-term investments.") : t("Not scored here — shown for information. No retirement/long-term investments yet.") }
   ];
   if (b && Number.isFinite(b.lfis)) {
-    items.push({ key: "lfis", label: t("Future orientation (LFIS)"), value: clamp100((b.lfis / 20) * 100), detail: tp("Raw {n}/20 at baseline", { n: b.lfis }) });
+    // 4 points per item, and the item count changed from 5 to 6 in v65. A save
+    // from before that carries no `lfisItems` and is on the 0-20 scale, so the
+    // fallback is 5 and deliberately NOT the current instrument length —
+    // reading the live length here would silently restate every old baseline
+    // as a fifth lower than it was measured.
+    const lfisMax = (b.lfisItems || 5) * 4;
+    items.push({ key: "lfis", label: t("Future orientation (LFIS)"), value: clamp100((b.lfis / lfisMax) * 100), detail: tp("Raw {n}/{max} at baseline", { n: b.lfis, max: lfisMax }) });
   }
   return items;
 }

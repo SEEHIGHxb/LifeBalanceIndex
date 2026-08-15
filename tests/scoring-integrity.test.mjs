@@ -184,3 +184,46 @@ test("all 8 aspect calculators stay within 0-100 at both extremes", () => {
     assert.ok(hi > lo, `${name}: best-case answers (${hi}) must beat worst-case (${lo})`);
   }
 });
+
+// --- LFIS LENGTH CHANGE (v65) ---
+//
+// The LFIS is the only instrument that has ever changed length: 5 items to 6,
+// when the maintaining item was added. That makes `lfisAnswers.length` a live
+// branch inside calculateHumanityFutureScore, and both sides of it need
+// pinning — the whole existing suite takes the five-answer side, so without
+// these the new side ships untested.
+//
+// Mutation check: delete the `hasMaintaining` guard so the term always applies.
+// The first test then fails, because a five-answer save begins scoring zero on
+// a question that user was never shown.
+
+const LFIS_PROFILE = { weeklyLearningHours: 2, longTermInvestments: false };
+
+test("a pre-v65 five-answer LFIS scores exactly as it did in v64", () => {
+  // v64's formula, inlined: four terms at 0.25, no maintaining term and no
+  // renormalization. futureStudyScore(2h) is 50, which the profile above fixes.
+  const answers = ["3", "2", "2", "3", "2"];
+  const q = answers.map(Number);
+  const expected = Math.round(
+    (0.25 * ((0.5 * 50) + (0.5 * (q[0] * 25)))) +
+    (0.25 * (q[1] * 25)) +
+    (0.25 * (((q[2] + q[4]) / 8) * 100)) +
+    (0.25 * (q[3] * 25))
+  );
+  assert.equal(calculateHumanityFutureScore(LFIS_PROFILE, answers), expected);
+});
+
+test("the maintaining item carries a real fifth of the aspect", () => {
+  const at = v => calculateHumanityFutureScore(LFIS_PROFILE, ["3", "2", "2", "3", "2", String(v)]);
+  assert.equal(at(4) - at(0), 20, "0.20 weight x a 0-100 term = 20 points end to end");
+  assert.ok(at(2) > at(0) && at(4) > at(2), "and it moves monotonically in between");
+});
+
+test("adding the sixth item dilutes the money-gated donation item", () => {
+  // Item 3 asks about donating, which someone with no money to give cannot do.
+  // It used to be half of a 0.25 offering term; it is now half of a 0.20 one.
+  // This is the fairness side effect of the change and is worth pinning.
+  const five = a => calculateHumanityFutureScore(LFIS_PROFILE, ["2", "2", String(a), "2", "2"]);
+  const six = a => calculateHumanityFutureScore(LFIS_PROFILE, ["2", "2", String(a), "2", "2", "2"]);
+  assert.ok((six(4) - six(0)) < (five(4) - five(0)), "donation swings the aspect less than it used to");
+});

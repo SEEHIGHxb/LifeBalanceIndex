@@ -400,8 +400,17 @@ export function calculateEnvironmentScore(profile, gebAnswers) {
 }
 
 export function calculateHumanityFutureScore(profile, lfisAnswers) {
-  // LFIS (5 items, each 0-4)
+  // LFIS (6 items since v65, 5 before it, each 0-4)
   const qValues = lfisAnswers.map(v => parseInt(v || 0));
+
+  // A save written before v65 holds five answers. `qValues[5]` would then be
+  // parseInt(undefined || 0) === 0, scoring every existing user zero on
+  // maintaining for a question they were never shown. So the term is only
+  // ADDED when its answer exists, and the weights renormalize over the terms
+  // actually present: five at 0.20 with maintaining, four at 0.25 without —
+  // which is the v64 formula exactly, for a v64 save.
+  const hasMaintaining = lfisAnswers.length >= 6;
+  const w = hasMaintaining ? 0.2 : 0.25;
 
   // Future Skills (see the futureStudyScore note on the shared learning hours)
   const Q1_val = qValues[0] * 25;
@@ -427,7 +436,17 @@ export function calculateHumanityFutureScore(profile, lfisAnswers) {
   // separate question from this one and is not answered yet.
   const S_security = qValues[3] * 25;
 
-  return clampScore((0.25 * S_skills) + (0.25 * S_legacy) + (0.25 * S_offering) + (0.25 * S_security));
+  // Maintaining (Q6, ADDED IN v65). The third facet of McAdams & de St. Aubin's
+  // generative action — creating, maintaining, offering — and the one this
+  // instrument had no item for. Keeping a home, tools, land, animals or
+  // something shared in working order is a contribution to the people who come
+  // after you, and it is the contribution available to someone whose work is
+  // maintenance rather than creation. See
+  // docs/research/round-8-generative-behavior-checklist.md.
+  const S_maintaining = (qValues[5] || 0) * 25;
+
+  const base = (w * S_skills) + (w * S_legacy) + (w * S_offering) + (w * S_security);
+  return clampScore(hasMaintaining ? base + (w * S_maintaining) : base);
 }
 
 // --- WEEKLY REVIEW (measured re-scoring) ---

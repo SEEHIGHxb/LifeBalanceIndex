@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `64`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `65`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,94 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.16.0] — 2026-08-15 (APP_VERSION 65)
+
+### Added
+
+**A maintaining item for Humanity's Future — the LFIS goes from 5 items to 6.**
+
+Round 8 verified McAdams & de St. Aubin's taxonomy of generative action:
+**creating, maintaining, offering**. Audited against it, the five LFIS items
+were two offering (Q3 donating, Q5 passing skills on), one creating (Q2
+legacy), and two neither (Q1 preparation, Q4 planning). **Nothing asked about
+maintaining.**
+
+v64 de-biased this instrument's *wording* — it removed "AI, data, languages"
+from Q1 and "climate, pandemics, AI safety" from Q5. It did not change its
+*shape*, and the shape was the actual complaint: a farmer, cook, carer or
+mechanic contributes to the future continuously and scored on none of it.
+
+New Q6: *"I maintain, repair or care for things meant to last — a home, tools,
+land, animals, or something shared in my community."* FREQ_5, `def: 3`.
+
+It names **things rather than people** deliberately. Social Contribution's
+`ptm` items already cover helping people and Environment's `geb` items cover
+consumption, transit and energy; repair and stewardship of physical and shared
+things was scored nowhere in the app.
+
+**One item, not several.** Two more offering items would have made the
+instrument longer without making it measure more.
+
+### Changed
+
+- `calculateHumanityFutureScore` is now **five equal terms at 0.20** —
+  skills, legacy, offering, security, maintaining — where it was four at 0.25.
+- Side effect worth naming: Q3 (donating, which someone with no money cannot
+  do) drops from **12.5% to 10%** of the aspect. Pinned by a test.
+- `views/methodology.js`, `ASPECT_META.humanityFuture.blurb` and the benchmark
+  note all restate the formula and say when the item arrived.
+
+### Migration — the part that had a wrong answer available
+
+`baseline.lfis` is stored as a bare sum. At five items its scale was 0-20; at
+six it is **0-24** (FREQ_5 scores 0-4 per item). A number alone cannot say
+which, and three things read it: the aspect bar, the benchmark note, and the
+Phase 4 monthly re-assessment.
+
+Two hazards, both handled by **recording the count rather than rescaling**:
+
+1. **Scoring.** `qValues[5]` on a five-answer save is
+   `parseInt(undefined || 0)` → `0`, which would have scored every existing
+   user **zero on maintaining for a question they were never shown**. The term
+   is therefore only added when its answer exists, and the weights renormalize
+   over the terms present. A pre-v65 save scores byte-identically to v64.
+2. **Display and trend.** `state.baseline.lfisItems` now records the item
+   count. Readers use `(lfisItems || 5) * 4`, so an old baseline stays on its
+   own 0-20 scale and is labelled with it.
+
+Old sums are **not** rescaled. Multiplying a 14/20 by 1.2 would invent an
+answer to a question that user was never asked — the same objection that took
+the fabricated norms out of rounds 6 and 7.
+
+### Tests
+
+470 total, up from 464.
+
+- `tests/scoring-integrity.test.mjs` +3: pre-v65 five-answer equivalence to
+  v64 (inlined, not calling the function under test), the maintaining term's
+  full 20-point range, and the donation-dilution side effect.
+- `tests/aspects.test.mjs` +2 and `tests/benchmarks.test.mjs` +1: the
+  denominator follows the baseline, not the live instrument.
+
+**Why these were needed.** After the source change the suite went **464/464
+green without a single edit** — every existing fixture is a five-answer array,
+so all of them took the legacy path. Passing tests were evidence the migration
+worked, and simultaneously evidence that none of the new behaviour was covered.
+
+Both guards are mutation-tested. Forcing `hasMaintaining = true` fails the
+v64-equivalence test; changing the `|| 5` fallback to `|| 6` fails three
+denominator tests.
+
+**One defect caught by the new tests, in my own arithmetic.** I wrote the
+scale as 0-25 in the tests and in five comments. `FREQ_5` scores 0-4, so six
+items max at **24**. The code (`* 4`) was right; the expectations and prose
+were wrong, and the first test run said so.
+
+### Not done
+
+`longTermInvestments` still scores nowhere — collected, displayed, inert.
+Moving it into Finance needs its own citation and therefore its own round.
 
 ## [2.15.0] — 2026-08-14 (APP_VERSION 64)
 

@@ -139,6 +139,25 @@ test("humanity future long-term security is binary on investments", () => {
   assert.equal(without.components.find(c => c.label === "Long-term security").value, 0);
 });
 
+// v65 took the LFIS from 5 items to 6, so a stored sum now has two possible
+// scales and the number alone cannot say which. These two tests exist because
+// the change is otherwise silent: every pre-v65 fixture in this suite passed
+// unaltered, which is the correct behaviour and precisely why the new
+// behaviour needed coverage of its own.
+test("an LFIS baseline without lfisItems is read on the pre-v65 0-20 scale", () => {
+  const d = getAspectDetail(makeState({ baseline: { ...BASELINE, lfis: 10 } }), "humanityFuture");
+  const lfis = d.components.find(c => c.label.startsWith("Future orientation"));
+  assert.equal(lfis.value, 50, "10 of 20 is half — an old baseline must not be restated against 6 items");
+  assert.match(lfis.detail, /10\/20/);
+});
+
+test("an LFIS baseline recording six items is read on the 0-24 scale", () => {
+  const d = getAspectDetail(makeState({ baseline: { ...BASELINE, lfis: 10, lfisItems: 6 } }), "humanityFuture");
+  const lfis = d.components.find(c => c.label.startsWith("Future orientation"));
+  assert.equal(lfis.value, 42, "10 of 24 — FREQ_5 scores 0-4, so six items max at 24, not 25");
+  assert.match(lfis.detail, /10\/24/);
+});
+
 test("finance components include the benchmark-based income standing", () => {
   const d = getAspectDetail(makeState(), "finance");
   const income = d.components.find(c => c.label === "Income standing");

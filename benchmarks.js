@@ -982,7 +982,11 @@ function humanityFutureBenchmark(profile, baseline) {
   // pre-baseline save. Withholding the explanation would leave the aspect
   // looking merely broken rather than deliberately unranked.
   if (Number.isFinite(lfis)) {
-    notes.unshift(tp("Long-Term Future Index {n}/20 — future skills, legacy, giving toward future generations, long-horizon planning, and passing skills on.", { n: lfis }));
+    // Same rule as the aspect bar: 4 points per item, and a save carrying no
+    // `lfisItems` predates v65 and is on the 0-20 scale. Never substitute the
+    // live instrument length for a baseline measured with a shorter one.
+    const max = ((baseline || {}).lfisItems || 5) * 4;
+    notes.unshift(tp("Long-Term Future Index {n}/{max} — future skills, legacy, giving toward future generations, long-horizon planning, passing skills on, and maintaining what lasts.", { n: lfis, max }));
   }
   return {
     percentile: null,

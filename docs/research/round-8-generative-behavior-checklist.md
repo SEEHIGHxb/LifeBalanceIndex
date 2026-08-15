@@ -1,6 +1,7 @@
 # Round 8 research brief — is the Generative Behavior Checklist adoptable for Humanity's Future?
 
-Status: **OPEN — written 2026-08-15.**
+Status: **CLOSED — 2026-08-15. Adoption rejected. See the Outcome section at the foot of this
+file.** No code changed. The finding worth keeping is recorded there and is not about the GBC.
 
 Purpose: decide whether to replace the five app-authored `lfis` items (`surveys.js:229`,
 consumed by `calculateHumanityFutureScore` at `scoring.js:383`) with a published instrument.
@@ -304,3 +305,152 @@ On receipt:
 4. Read licence claims from the rights-holder's own wording, not from a summary.
 5. Adoption additionally requires a mutation-tested guard in `tests/` binding the shipped items
    to their citation, on the pattern of the CAF band tests added in v63.
+
+---
+
+# Outcome — 2026-08-15
+
+**Verdict: adoption rejected. No code changed. The five app-authored `lfis` items stay exactly as
+v64 left them, with their existing "measured, not ranked" disclosure.**
+
+The export reached the same verdict I did, for one of the same reasons. Kill criterion 2 fired:
+the GBC is 50 items with no validated short form, so it cannot be asked at onboarding, and a
+subset chosen by us would make this project the source of the instrument. That is decisive on
+its own and the licensing question never needed to be reached.
+
+Source: `docs/research/.docx/Generative Behavior Checklist Assessment.docx`.
+
+## What verified at source
+
+Everything below was checked against the primary document, not against the export.
+
+| Claim | Status |
+|---|---|
+| McAdams & de St. Aubin's taxonomy of generative action is **creating, maintaining, offering** | **VERIFIED** — this is the genuine 1992 model, and it is the one thing from this round worth keeping |
+| GBC-R: N = 996 Japanese adults, three factors **offering / maintaining / creativity**, validated against the EPSI and the IPB, positive with Big Five extraversion and openness, negative with the BDI | **VERIFIED** verbatim from the J-Stage English abstract (this was already verified pre-brief) |
+| Polish adaptation: Bandel, Soroko & Sękowski, *Psychologia Rozwojowa* 28(2), 63-79, `doi:10.4467/20843879PR.23.016.19853`, **N = 237, ages 19-93**, **CC BY 4.0** | **VERIFIED** via Crossref. One correction: Crossref dates it **2024**, not the 2023 in the export's citation line |
+| Spanish study: Casado et al., *Revista de Enfermagem Referência* VI(3) e31274, `doi:10.12707/RVI23.64.31274`, **N = 141** LGBT+ adults 50+, GBC explained **41.76 %** of variance, GBC↔LGS **r_s = 0.310** | **VERIFIED** from the article's own abstract |
+| GAS-C: Guo & Ngai 2021, `doi:10.3390/ijerph18189950`, **20 items, 5-point (1 = Almost none … 5 = Very often), two-month recall, four factors** (domestic 4, agentic 5, communal 6, civic 5), **N = 1,013**, α total **0.923**, subscales **0.897-0.953**, invariance across gender, age and hukou | **VERIFIED** from the PMC full text |
+| No occupational DIF or IRT study exists for the GBC | **Reported NOT LOCATED**, and consistent with round 7's identical negative for disposition scales. Accepted as a negative |
+| No Thai translation of the GBC or GBC-R | **Reported NOT LOCATED.** Accepted |
+
+The GAS-C is correctly identified as an independent instrument rather than a GBC translation,
+which is what the brief asked for, and it was correctly not pursued further.
+
+## Defects found
+
+Six. Two are fabrications of the same kind as rounds 6 and 7.
+
+**1. The Spanish study's factor names are invented.** The export reports Factor 1 as
+*"Collaboration, Care, and Donation" / Colaboración, Cuidado y Donación* and Factor 2 as
+*"Civic and Community Involvement" / Participación Cívica y Comunitaria*. The paper's actual
+factors are **"Volunteering and donate" (11 items, 32.26 % of variance)** and **"Collaboration
+and care" (9 items, 9.41 %)**. There is no civic factor. The export's Factor 1 is the two real
+factor names blended together, and its Factor 2 does not exist. The Spanish-language names it
+supplies appear nowhere in the article — the words *Colaboración* and *Cívica* return zero hits
+in the full text. The export invented a bilingual label pair for a factor that was never
+extracted.
+
+**2. The Spanish study did not use the 50-item pool.** The export's comparison table lists it as
+"50 items (Full pool)". The paper states a GBC score range of **0 to 58**, which at the 0-2
+response coding is **29 items**, and its two factors account for 20 of them. It is the Villar et
+al. Spanish version, not the full instrument.
+
+**3. The "maintaining" definition — the answer to this round's secondary question — is
+unsourced.** The export states that Marushima and Arimitsu define maintaining as *"the sustained
+preservation, upkeep, and continuity of community assets, physical surroundings, craft
+traditions, and household life, rather than the bureaucratic maintenance of corporate boards,
+public institutions, or executive hierarchies"*, and then maps ten original-GBC English item
+numbers (19, 25, 29, 32, 35, 37, 40, 41, 42, 45) onto that factor.
+
+Three things are wrong with this at once:
+
+- The export's **own NOT FOUND register** says the raw 2007 Japanese item strings *"remain behind
+  restricted journal print barriers"*. It cannot both lack the items and know which items load.
+- The item mapping carries citation marker `1` — the **1992** paper. A 1992 paper cannot contain
+  2007 factor loadings.
+- The export's own comparison table gives the GBC-R's item count as a **"Reconstructed pool"**,
+  which is what the abstract says: the scales were *reconstructed* from item analysis. Mapping a
+  reconstructed Japanese pool onto original English item numbers is not possible from anything it
+  located.
+
+The J-Stage abstract, which I read in full, contains no definition of maintaining beyond the
+factor's name. **The secondary question this round existed to answer is still open**, and it did
+not fail for lack of an answer — it failed because the answer was manufactured.
+
+**4. Every Cronbach's alpha in the document is an empty placeholder.** The numbers in the export
+are LaTeX images rather than text. Recovering all 22 of them shows six rendered as a bare
+`α =` or `α ≈` **with no value**. Two of those had a published value sitting in the abstract of
+the paper being cited: the Spanish GBC is **0.879** and the GAS-C total is **0.923**. In the
+plain-text reading the holes appear as *"high internal reliability ()"*, which scans as a value
+rather than as a gap.
+
+**5. The licensing position is overstated in a checkable direction.** The export says the GBC is
+proprietary, that *"institutional researchers must execute signed copyright permission agreements
+with the original authors"*, and that a *"validated scoring manual maintained by the Foley Center
+for the Study of Lives"* supplies the filler designations. The rights-holder's own instruments
+page says the opposite about what it distributes — **"Researchers are free to use any and all of
+these instruments – no explicit permission is needed"** — and the GBC is **not among the ten
+instruments listed there**; the LGS is. The Foley Center itself ran until 2019 and its successor
+is the Study of Lives Research Group.
+
+The accurate position is therefore **"not distributed by the rights-holder, terms unaddressed"**,
+not "signed permission required". That is still not a licence to ship, so the conclusion holds,
+but the reasoning as written is wrong and would not survive being checked.
+
+**6. Item wording and the filler list come from a scale-aggregator, which the brief prohibited.**
+The brief said in terms: *"Do not cite a review, blog, scale-database entry, secondary summary or
+AI answer as the source of item wording."* Citation `1`, carrying the entire 50-item table, is
+`db.arabpsychology.com`. Worse, that page **contradicts** the export: it designates no fillers at
+all and states that researchers *"typically calculate a total score by summing the frequency
+ratings … across all 50 items"*. The specific filler list (items 3, 4, 8, 14, 18, 22, 33, 39, 46,
+47) is attributed to a doctoral dissertation on Academia.edu that I could not open. Treat both
+the item text and the filler split as **unverified**.
+
+## The finding worth keeping, which is about our items and not the GBC
+
+The taxonomy is real and verified: generative action is **creating, maintaining, offering**.
+Measured against it, the five `lfis` items at `surveys.js:240` sit like this:
+
+| Item | Facet |
+|---|---|
+| 1. Learn or practise skills that will still matter in ten years | neither — self-directed preparation |
+| 2. Do things intended to leave a positive legacy | creating |
+| 3. Support or donate to causes for future generations | offering, and money-gated |
+| 4. Plan finances with a 10-year-plus horizon | neither — and it double-counts Finance |
+| 5. Teach or pass on skills and knowledge | offering |
+
+**There is no maintaining item.** v64 removed the profession-specific *examples* from items 1 and
+5, which was the right fix for the wording, but it did not change the shape of the set: two
+offering items, one creating item, two planning items. The farmer who keeps land in good heart,
+the cook who feeds a neighbourhood, the carer who holds a household together, the mechanic who
+keeps things running rather than replaced — none of that is asked about anywhere in this app.
+Your original objection was that the aspect rewarded a creator's idea of contributing to the
+future. It still does, and now there is a published taxonomy that names exactly what is missing.
+
+Two honest options, and the choice is a design decision rather than a research one:
+
+- **Author a maintaining item ourselves.** All five items are already app-authored and disclosed
+  as such, and the aspect is already unranked, so a sixth app-authored item adds no new
+  unsourced claim — it is the same disclosure covering one more item. It would need the same
+  treatment as v64: FREQ_5, an explicit comment, i18n lockstep, and a stored-sum migration,
+  because adding an item changes the `lfis` range from 20 to 25 and every saved sum with it.
+  That migration is the real cost, not the item.
+- **Leave it and record the gap.** Defensible, since the aspect is unranked and the methodology
+  page already says the items are ours.
+
+I have not done either. It changes what the app measures, so it is yours to call.
+
+## What this round cost and what the shape is worth
+
+The narrow shape held up. Scope was respected — no other instruments, and no population statistic
+for any country, which was the surface both round-7 fabrications appeared on. The verdict came
+back as a decision rather than a reading list, and the kill criteria written up front are what
+made it cheap to accept. The two fabrications that did occur (defects 1 and 3) were both in
+answer to the *secondary* question, where the export had nothing and would not say so — even
+though the brief told it plainly that NOT FOUND was a successful result.
+
+Six rounds have now produced a fabricated positive whenever a question had no published answer.
+The countermeasure that works is not a better prompt. It is that every load-bearing claim gets
+opened at its source before it touches the code, and that prior rounds stay in the repository to
+contradict the next one.

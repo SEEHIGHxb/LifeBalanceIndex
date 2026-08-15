@@ -393,6 +393,19 @@ test("the LFIS note denominator follows the baseline, not the current instrument
   assert.equal(now.percentile, null, "still unranked either way");
 });
 
+// The note NAMES the things the number contains. On a pre-v65 baseline the
+// sixth was never asked, so the prose has to shorten along with the
+// denominator. The v65 tests above missed this because they only ever read the
+// digits — found instead by loading the deployed site with a v64-shaped save.
+test("the LFIS note does not claim maintaining is inside a five-item baseline", () => {
+  const old = getAllBenchmarks(makeState({}, { ...BASELINE, lfis: 15 })).humanityFuture;
+  const now = getAllBenchmarks(makeState({}, { ...BASELINE, lfis: 15, lfisItems: 6 })).humanityFuture;
+  const noteOf = b => b.notes.find(n => /Long-Term Future Index/.test(n));
+  assert.doesNotMatch(noteOf(old), /maintaining what lasts/, "a 5-item sum must not list a facet it never measured");
+  assert.match(noteOf(old), /not counted in this total/, "and it says so, rather than quietly dropping the clause");
+  assert.match(noteOf(now), /maintaining what lasts/, "a 6-item sum does contain it");
+});
+
 // --- STATE INTEGRATION ---
 
 const SURVEY_DATA = {

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `65`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `66`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,34 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.16.1] — 2026-08-15 (APP_VERSION 66)
+
+### Fixed
+
+- The Long-Term Future Index note on Humanity's Future listed six things the
+  score contains — including "maintaining what lasts" — even when the baseline
+  it described predated v65 and had only five items in it. The denominator
+  already forked correctly (`15/20` vs `15/24`); the sentence beside it did
+  not, so a pre-v65 reader was told their total counted an answer they were
+  never asked for. The note now shortens along with the denominator and says
+  plainly that the maintaining item came later and is not in the total.
+
+### Found by
+
+- Loading the **deployed** site with a v64-shaped save, not by a test. Every
+  fixture in `tests/benchmarks.test.mjs` had the prose and the denominator
+  agreeing, and every assertion read only the digits, so nothing in the suite
+  ever compared the two. It does now.
+
+### Verified
+
+- 471 tests pass. The new fork was mutation-tested (`max >= 24` → `max >= 20`
+  fails exactly one test). Biome clean across 74 files. The v65 migration
+  itself was confirmed end to end on the live site: a fresh assessment writes
+  `lfisItems: 6` and reads `12/24`; the same save with `lfisItems` deleted and
+  `lfis` set to a five-item sum reads `10/20` and is not restated. Item 6
+  renders in Thai at 375px without overflow. No console errors.
 
 ## [2.16.0] — 2026-08-15 (APP_VERSION 65)
 

@@ -986,7 +986,15 @@ function humanityFutureBenchmark(profile, baseline) {
     // `lfisItems` predates v65 and is on the 0-20 scale. Never substitute the
     // live instrument length for a baseline measured with a shorter one.
     const max = ((baseline || {}).lfisItems || 5) * 4;
-    notes.unshift(tp("Long-Term Future Index {n}/{max} — future skills, legacy, giving toward future generations, long-horizon planning, passing skills on, and maintaining what lasts.", { n: lfis, max }));
+    // The sentence ENUMERATES what the number contains, so it has to fork the
+    // same way the denominator does. A pre-v65 baseline was measured on five
+    // items and was never asked about maintaining; naming it there describes a
+    // sixth answer that is not inside that sum. Found by reading the live site
+    // with a v64-shaped save, not by any test — every fixture had prose and
+    // denominator agreeing, so nothing ever compared the two.
+    notes.unshift(max >= 24
+      ? tp("Long-Term Future Index {n}/{max} — future skills, legacy, giving toward future generations, long-horizon planning, passing skills on, and maintaining what lasts.", { n: lfis, max })
+      : tp("Long-Term Future Index {n}/{max} — future skills, legacy, giving toward future generations, long-horizon planning, and passing skills on. Taken before the maintaining item existed, so it is not counted in this total.", { n: lfis, max }));
   }
   return {
     percentile: null,

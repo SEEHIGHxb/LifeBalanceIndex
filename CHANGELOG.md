@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `66`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `67`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,62 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.17.0] — 2026-08-17 (APP_VERSION 67)
+
+### Removed
+
+- **The "Start long-term investing" suggestion.** It read *"Open an SSF/RMF or
+  index fund with any amount"* — product-specific financial advice this app does
+  not give, and it was worst for the people it actually reached. SSF and RMF are
+  tax *deductions*: below the taxable threshold the benefit is zero while the
+  lock-up is real (ten years for SSF, age 55 for RMF). It was also ranked
+  **first** for most users, because the `security` component reads 0 for anyone
+  without a pension and suggestions rank weakest-component-first — so an
+  unscored, informational field was driving the app's leading recommendation.
+
+### Changed
+
+- Unscored components (`scored: false`) are excluded from suggestion ranking
+  entirely. Advising action on something that cannot move any score is advice
+  with no measurement behind it. Done as a general filter rather than by deleting
+  one rule, so it cannot be reintroduced one component at a time.
+- Long-term security copy: *"Not scored **here**"* implied it counted somewhere
+  else. It counts nowhere, and now says so. Dropped *"yet"* from "No
+  retirement/long-term investments yet" — non-ownership tracks income and job
+  type far more than prudence, and "yet" told users below the tax threshold they
+  were behind.
+
+### Research
+
+- **Round 9 closed. `longTermInvestments` will not be scored, in Finance or
+  anywhere else.** All three pre-registered kill criteria fired on evidence
+  verified at source: no validated wellbeing index scores asset ownership (the
+  CFPB scale is ten subjective items); Thai tax-filer participation is ~70% in
+  the top income quintile against 20–40% in Q1–Q4; and roughly half the workforce
+  is informal and outside mandatory coverage. Finance already weights income 0.6,
+  so scoring it would double-count earnings and mark informal workers down for a
+  structural exclusion.
+- Six defects recorded in the export, including a **reversal** of the CFPB
+  technical report: it claimed CFPB confirmed measurement invariance across
+  income groups; the report says differential item functioning *was found*
+  (across age and survey mode) and ships four scoring rubrics because of it, and
+  never tested income at all. See
+  `docs/research/round-9-retirement-assets-in-finance.md`.
+
+### Tests
+
+- 473 pass (up from 471). Two new tests: no unscored component produces a
+  suggestion, and no suggestion anywhere recommends a financial product. The two
+  guards are each individually sufficient, so each masks the other —
+  mutation-tested by neutering **both** at once, which fails exactly these two
+  tests.
+
+### Not done
+
+- Whether to keep *asking* the question. It now scores nothing by decision rather
+  than by omission, is still shown for information, and still feeds the Midori
+  connector. That is a product call, not a research finding.
 
 ## [2.16.1] — 2026-08-15 (APP_VERSION 66)
 

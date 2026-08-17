@@ -5,7 +5,7 @@ import {
   getAspectSuggestions, getTopSuggestions, getMentalHealthNotice,
   rankPledgesByGrade, isPriorityPledge
 } from "../suggestions.js";
-import { ASPECT_KEYS } from "../aspects.js";
+import { ASPECT_KEYS, getAspectDetail } from "../aspects.js";
 
 // A deliberately weak profile/baseline so every aspect has low components.
 const WEAK_PROFILE = {
@@ -62,6 +62,32 @@ test("every aspect yields well-formed suggestions for a weak profile", () => {
     });
   }
   assert.deepEqual(getAspectSuggestions(state, "notAnAspect"), []);
+});
+
+// v67 / round 9. An unscored component cannot move any score, so advising
+// action on one is advice with no measurement behind it. `security` was the
+// live case: it reads 0 for every user without a pension, which made an
+// informational field the weakest component and therefore the FIRST suggestion
+// most people saw — and the advice was to buy a tax-deduction product that
+// returns nothing below the tax threshold.
+test("an unscored component never produces a suggestion", () => {
+  const state = makeState();
+  const security = getAspectDetail(state, "humanityFuture").components.find(c => c.key === "security");
+  assert.equal(security.scored, false, "fixture still has an unscored component to test with");
+  assert.equal(security.value, 0, "and it is the weakest, so it would rank first if it ranked at all");
+
+  const keys = getAspectSuggestions(state, "humanityFuture").map(s => s.componentKey);
+  assert.ok(!keys.includes("security"), "the unscored component is filtered out before ranking");
+  assert.ok(keys.length > 0, "the scored components still suggest");
+});
+
+test("no suggestion anywhere recommends buying a financial product", () => {
+  const state = makeState();
+  const all = ASPECT_KEYS.flatMap(k => getAspectSuggestions(state, k));
+  // \b matters: a bare /SSF/i also matches "stre-SSF-ul", which is how the
+  // first version of this test failed against the stress suggestion.
+  const offenders = all.filter(s => /\bSSF\b|\bRMF\b|index fund|long-term investing/i.test(`${s.title} ${s.text}`));
+  assert.deepEqual(offenders, [], "product-specific financial advice must not reach a user");
 });
 
 test("suggestions are ordered weakest component first", () => {

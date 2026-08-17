@@ -342,10 +342,22 @@ function humanityFutureComponents(p, b) {
   // reuse is surfaced to the user in the detail line below so it is not silent.
   const items = [
     { key: "skills", label: t("Future skills"), value: clamp100(futureStudyScore(p)), detail: tp("{h}h/week toward future-proof skills — reuses your weekly learning hours", { h: p.weeklyLearningHours || 0 }) },
-    // Shown but NOT scored since v64: a pension is a financial fact and Finance
-    // is where financial facts are scored. Counting it here charged one
-    // circumstance to two aspects, and to the percentile band on top of that.
-    { key: "security", scored: false, label: t("Long-term security"), value: p.longTermInvestments ? 100 : 0, detail: p.longTermInvestments ? t("Not scored here — shown for information. Holds retirement/long-term investments.") : t("Not scored here — shown for information. No retirement/long-term investments yet.") }
+    // Shown but NOT scored since v64. The v64 comment here said a pension is a
+    // financial fact and Finance is where financial facts get scored. Round 9
+    // checked that and it was wrong, so the copy no longer reads "not scored
+    // HERE" — which implied it counted somewhere else. It counts nowhere.
+    //
+    // Verified: no validated financial-wellbeing index scores asset ownership
+    // (the CFPB scale is ten subjective items); Thai tax-filer participation is
+    // ~70% in the top income quintile against 20-40% in Q1-Q4; and roughly half
+    // the workforce is informal and outside mandatory coverage. Finance already
+    // weights income 0.6, so scoring this would double-count earnings and mark
+    // informal workers down for a structural exclusion.
+    //
+    // "yet" is gone from the negative case for the same reason: below the tax
+    // threshold SSF/RMF return nothing, so "yet" told those users they were
+    // behind. See docs/research/round-9-retirement-assets-in-finance.md.
+    { key: "security", scored: false, label: t("Long-term security"), value: p.longTermInvestments ? 100 : 0, detail: p.longTermInvestments ? t("Not scored — shown for information. Holds retirement/long-term investments.") : t("Not scored — shown for information. Whether a person holds these depends heavily on income and job type, so this app does not grade it.") }
   ];
   if (b && Number.isFinite(b.lfis)) {
     // 4 points per item, and the item count changed from 5 to 6 in v65. A save

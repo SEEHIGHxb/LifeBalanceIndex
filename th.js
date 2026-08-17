@@ -659,10 +659,12 @@ export const TH = {
   "Future skills": "ทักษะแห่งอนาคต",
   "{h}h/week toward future-proof skills — reuses your weekly learning hours": "{h} ชม./สัปดาห์กับทักษะที่พร้อมรับอนาคต — ใช้ชั่วโมงการเรียนรู้รายสัปดาห์ร่วมกัน",
   "Long-term security": "ความมั่นคงระยะยาว",
-  "Not scored here — shown for information. Holds retirement/long-term investments.":
-    "ไม่ถูกนำไปคิดคะแนนในด้านนี้ แสดงเพื่อเป็นข้อมูล มีการลงทุนเพื่อเกษียณ/ระยะยาว",
-  "Not scored here — shown for information. No retirement/long-term investments yet.":
-    "ไม่ถูกนำไปคิดคะแนนในด้านนี้ แสดงเพื่อเป็นข้อมูล ยังไม่มีการลงทุนเพื่อเกษียณ/ระยะยาว",
+  // "ในด้านนี้" ("in this aspect") is gone along with the English "here":
+  // round 9 settled that this is scored in no aspect at all.
+  "Not scored — shown for information. Holds retirement/long-term investments.":
+    "ไม่ถูกนำไปคิดคะแนน แสดงเพื่อเป็นข้อมูล มีการลงทุนเพื่อเกษียณ/ระยะยาว",
+  "Not scored — shown for information. Whether a person holds these depends heavily on income and job type, so this app does not grade it.":
+    "ไม่ถูกนำไปคิดคะแนน แสดงเพื่อเป็นข้อมูล การมีการลงทุนเหล่านี้ขึ้นอยู่กับรายได้และประเภทงานเป็นอย่างมาก แอปนี้จึงไม่นำมาให้เกรด",
   "Future orientation (LFIS)": "การมองการณ์ไกล (LFIS)",
 
   // --- Benchmarks (benchmarks.js) ---
@@ -874,9 +876,10 @@ export const TH = {
   "Upskill for the future": "อัปสกิลเพื่ออนาคต",
   "One hour of AI/data study per week already scores — 4h/week maxes this component.":
     "เรียน AI/ข้อมูลสัปดาห์ละหนึ่งชั่วโมงก็ได้คะแนนแล้ว — 4 ชั่วโมง/สัปดาห์ได้เต็มส่วนนี้",
-  "Start long-term investing": "เริ่มลงทุนระยะยาว",
-  "Open an SSF/RMF or index fund with any amount — most Thai workers have no retirement savings, so starting at all puts you ahead.":
-    "เปิด SSF/RMF หรือกองทุนดัชนีด้วยเงินเท่าไรก็ได้ — แรงงานไทยส่วนใหญ่ไม่มีเงินเก็บเกษียณ แค่เริ่มก็นำหน้าแล้ว",
+  // The "Start long-term investing" suggestion and its body were deleted in
+  // v67 (round 9) — product-specific financial advice that returned nothing for
+  // users below the tax threshold. Their Thai keys go with them; leaving them
+  // here would fail tests/i18n-orphans.test.mjs.
   "Act with a longer horizon": "ลงมือโดยมองให้ไกลขึ้น",
   "Mentor someone or support one cause aimed at future generations this month.":
     "เป็นพี่เลี้ยงให้ใครสักคน หรือสนับสนุนประเด็นเพื่อคนรุ่นหลังหนึ่งเรื่องในเดือนนี้",

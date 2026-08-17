@@ -132,10 +132,15 @@ const RULES = {
       title: "Upskill for the future",
       text: "One hour of AI/data study per week already scores — 4h/week maxes this component."
     }),
-    security: () => ({
-      title: "Start long-term investing",
-      text: "Open an SSF/RMF or index fund with any amount — most Thai workers have no retirement savings, so starting at all puts you ahead."
-    }),
+    // NO `security` RULE. Removed in v67 after round 9. It read "Open an
+    // SSF/RMF or index fund with any amount", which was product-specific
+    // financial advice this app does not give — and it was worst for exactly
+    // the people it reached. SSF and RMF are tax DEDUCTIONS, so below the
+    // taxable threshold the benefit is zero while the lock-up is real: ten
+    // years for SSF, age 55 for RMF. Verified Thai tax-filer participation is
+    // ~70% in the top income quintile against 20-40% in Q1-Q4, so
+    // non-ownership tracks income and job formality, not imprudence.
+    // See docs/research/round-9-retirement-assets-in-finance.md.
     lfis: () => ({
       title: "Act with a longer horizon",
       text: "Mentor someone or support one cause aimed at future generations this month."
@@ -148,6 +153,13 @@ export function getAspectSuggestions(state, aspectKey) {
   const detail = getAspectDetail(state, aspectKey);
   if (!detail) return [];
   return detail.components
+    // An UNSCORED component cannot move any score, so advising action on one
+    // is advice with no measurement behind it. Worse, `security` reads 0 for
+    // every user without a pension, which made an informational field the
+    // weakest component and therefore the FIRST suggestion for most people.
+    // Filtering on the flag rather than deleting rules one at a time means a
+    // future `scored: false` component cannot reintroduce this. (v67, round 9.)
+    .filter(c => c.scored !== false)
     .filter(c => c.value < WEAK_COMPONENT_THRESHOLD)
     .sort((a, b) => a.value - b.value)
     .map(c => {

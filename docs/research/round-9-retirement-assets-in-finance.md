@@ -1,7 +1,9 @@
 # Round 9 research brief — should holding retirement assets score in Finance?
 
-Status: **OPEN — brief written 2026-08-17.** No code changes until an export is verified against
-its primary sources.
+Status: **CLOSED — 2026-08-17. Verdict adopted: `longTermInvestments` will not be scored, in
+Finance or anywhere else.** Six defects found in the export, one of them a reversal of its primary
+source. The change this round produced is not a scoring change — it removed advice the research
+showed to be wrong. See the Outcome section at the foot of this file.
 
 ---
 
@@ -266,3 +268,139 @@ When the export comes back I will, as in rounds 2–8:
 
 An export returning "no, do not score it" with sound sourcing closes this round in one pass and
 costs nothing further. That is the outcome I expect, and it is a good one.
+
+---
+
+# Outcome — 2026-08-17
+
+**Verdict adopted: do not score `longTermInvestments`.** All three kill criteria fire, each on
+evidence verified at the primary source. The export reached the right conclusion.
+
+It also reversed one of its two most important sources, invented four data points, and restated a
+three-group econometric design as a five-group one. The conclusion survives all of it, because the
+conclusion never depended on the parts that were wrong.
+
+## What verified at source
+
+| Claim | Status |
+| --- | --- |
+| PIER: ~70% of Q5 tax filers hold long-term savings vs 20%–40% for Q1–Q4 | **VERIFIED.** Thai quote accurate at `pier.or.th/abridged/2020/21/` |
+| MPS declines 22.6% (middle income) and 5.4% (high income); low income not significant | **VERIFIED** in PIER DP 143 |
+| `doi:10.1007/s10797-021-09687-w` → Muthitacharoen & Burong, *Int Tax Public Finance* 29(3), 726–750, 2022 | **VERIFIED** via Crossref — title, journal, volume, issue, pages, both authors |
+| CFPB scale is 10 items (5-item abbreviated form), IRT-scored, all items subjective | **VERIFIED** in the technical report |
+| No asset-ownership item is scored in the CFPB scale | **VERIFIED** — the 10 items are all self-report statements |
+| Thai PIT brackets 0%→35%; SSF capped at 30% of taxable income / THB 200,000; THB 500,000 combined ceiling | **VERIFIED** against the statutory schedule |
+| ~half the Thai workforce is informal and outside mandatory coverage | **VERIFIED directionally** (NSO 2023: 52.3%) |
+
+## Defects found
+
+**1. The CFPB measurement-invariance claim is the reverse of what the report says.** The export
+wrote that CFPB "confirmed that subjective evaluative items maintain structural measurement
+invariance across demographic and income groups". The technical report says:
+
+> "Because differential item functioning was found across both age groups and survey modes, item
+> parameters are provided in Appendix B for scoring four different types of scale respondents"
+
+CFPB **found** DIF — enough of it to ship four separate scoring rubrics. And the grouping variables
+it examined were "age, sex, mode of administration"; **income was never tested.** So the export
+inverted the finding *and* added a grouping variable that does not appear. This is the worst defect
+of the round: it sits on the highest-priority question, and it manufactures psychometric support
+for the conclusion the export was already heading toward. The direction of the error is the tell.
+
+**2. Four fabricated data points.** The export's table gives per-quintile participation as Q1 20%,
+Q2 25%, Q3 30%, Q4 35%. The source publishes a single combined range for Q1–Q4 and does not
+disaggregate by quintile at all. Four point estimates ascending in exact 5-point steps is
+interpolation wearing the costume of data.
+
+**3. A three-group design restated as five quintiles.** DP 143 estimates **low / middle / high**
+income groups. The export copied the middle-income −22.6% into Q2, Q3 *and* Q4 as though they were
+three separate estimates, and mapped high-income −5.4% onto Q5. The numbers are real and correctly
+signed; the structure around them is invented.
+
+**4. CFPB's validator list is misdescribed.** The export states that "holding retirement accounts,
+investment portfolios, or home equity is analyzed strictly as an external covariate to establish
+criterion-related validity". The report's actual validators are self-reported credit rating,
+confidence in raising $2,000 in 30 days, having three months of expenses saved, self-rated
+financial situation, negative economic events, and material hardship. The word **"retirement"
+appears zero times in the entire report.** The conclusion — assets are not scored — is right. The
+mechanism offered for it was made up.
+
+**5. The NSO "VERBATIM QUOTE" is not verbatim, and its numbers are off.** The quote carries its own
+disclaimer — "(Documented in labor sector evaluation of NSO survey data)" — which is an admission
+that it was not copied from the document. Its figures are 20.4M informal of 37.5M employed; NSO's
+2023 release reports ~21M informal, 52.3% of ~40.1M employed. The export also puts 52.5% of
+informal workers in agriculture where NSO reports 55.4%. The share is roughly right; the counts are
+not, and a fabricated quotation is a fabrication regardless of how close the number lands.
+
+**6. Works-cited contamination.** The reference list includes a humanitarian-crisis article about
+Myanmar and a study of herbicide metabolite levels in Thai tractor sprayers. Neither has any
+relation to the topic. Rounds 6, 7 and 8 each had a version of this.
+
+**Unverified, not counted as a defect:** the Global Findex figure of 59.2% of Thai adults able to
+raise emergency funds. I could not reach a Thailand row. It is plausible against the 55%
+developing-economy benchmark, but the export blends "within 30 days" with "without difficulty",
+which are different denominators in Findex. Treat as unconfirmed.
+
+**Missed opportunity:** DP 143 footnote 18 states that top-quintile taxpayers account for around
+75% of the tax expenditure on savings-related deductions. That is a cleaner regressivity statistic
+than anything the export used, and it sits in a document the export claims to have read in full.
+
+## The verdict, restated on verified evidence only
+
+1. **No validated index scores asset ownership.** The CFPB scale is ten subjective items. Verified
+   directly, without needing the export's invented mechanism.
+2. **Thai ownership is concentrated by income.** ~70% in Q5 against 20%–40% in Q1–Q4 — and note
+   this is among *tax filers*, who are already a higher-income subset of the workforce, so the
+   population gradient is steeper than the published one.
+3. **Coverage tracks employment sector.** Roughly half the workforce is informal and outside
+   mandatory coverage by default.
+
+`longTermInvestments` will not be scored. Finance already weights income at 0.6; adding a field
+whose main signal is income and job formality would double-count earnings and mark down informal
+workers for a structural exclusion — the v64 mistake in a new aspect.
+
+## What actually changed in the code, and why it was not the scoring
+
+The verdict is the status quo, so nothing needed to change to honour it. But verifying the round
+surfaced something live and wrong.
+
+The Humanity's Future aspect page carried this as its **top-ranked** suggestion:
+
+> **Start long-term investing** — "Open an SSF/RMF or index fund with any amount — most Thai
+> workers have no retirement savings, so starting at all puts you ahead."
+
+Three things are wrong with it, and this round is what makes them provable:
+
+- **It is product-specific financial advice**, which this app does not give and which this round's
+  brief explicitly refused to source.
+- **It is worst for the users the app is aimed at.** SSF and RMF are tax *deductions*. Below the
+  taxable threshold the benefit is exactly zero, while the lock-up is real — ten years for SSF, age
+  55 for RMF. A verification profile on 20,000 THB/month sits in the 0% bracket, and the app told it
+  to buy a tax-deduction product.
+- **It was ranked first for almost everyone.** `getAspectSuggestions` ranks components weakest-first
+  and the `security` component reads 0 for anyone without a pension — so an *unscored,
+  informational* field was driving the app's leading recommendation. Suggesting action on a
+  component that cannot move any score is incoherent on its own terms, independent of this round.
+
+Fixed by excluding `scored: false` components from suggestion ranking entirely — the general fix, so
+this cannot be reintroduced one component at a time — and by deleting the rule. The aspect-page copy
+also dropped "yet" from "No retirement/long-term investments yet": the research is that
+non-ownership is frequently rational liquidity management or structural exclusion, and "yet" quietly
+told the user they were behind.
+
+## What this round cost and what the shape bought
+
+One question, one export, six defects, verdict adopted. The narrow shape held for a second round
+running: everything fabricated was **decoration on a conclusion that was already true** —
+per-quintile granularity, a quotation, a mechanism — rather than the conclusion itself. Round 8
+showed the same pattern.
+
+The uncomfortable part is defect 1. The brief wrote down my own priors and told the export to attack
+them; instead the export returned a reversed source that supported them. Accepting the verdict
+because it matched what I already believed would have shipped a claim about CFPB that its own
+technical report contradicts. **Agreement with a prior is the cheapest thing an export can
+manufacture, and the point at which verification matters most.**
+
+Left open, unchanged: whether to keep *asking* the question at all. It now scores nothing by
+decision rather than by omission, it is still shown for information, and it still feeds the Midori
+connector. Removing it is a product call, not a research finding.

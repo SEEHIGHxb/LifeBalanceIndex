@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `67`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `68`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,36 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.18.0] — 2026-08-18 (APP_VERSION 68)
+
+### Removed
+- **The long-term pension / retirement-products question**, from onboarding and
+  the Profile page. v64 stopped scoring it, round 9 (v67) established it should
+  never be scored, and a question whose answer reaches no score is a question
+  that costs the user time and returns nothing.
+- **The "Long-term security" row** on the Humanity's Future aspect page, and its
+  three Thai strings. With nobody being asked, the row read 0 for every user —
+  an informational field that looked like a failing one.
+
+### Kept, deliberately
+- `profile.longTermInvestments` still exists in `defaults.js`, `sanitize.js` and
+  the `setProfile` mutator. The Midori connector's published `FACT_SPECS`
+  contract carries `hasLongTermInvestments`, so deleting the field would break
+  an external contract to save one boolean. It is now a stored fact with no UI
+  and no score — the same held-for-later state as `liquidSavings`.
+
+### Tests
+- 473 pass. Three tests were rewritten rather than deleted: the two that
+  asserted the row's value and confidence now assert that the flag reaches no
+  component and moves no score, and the v67 unscored-component guard now sweeps
+  every aspect. That last one is **vacuous today** — no `scored: false`
+  component remains — and says so in the test body; it is kept because the
+  filter in `getAspectSuggestions` is what stops the pattern returning.
+
+### Not done
+- Nothing was changed about Finance. The open question — whether to collect
+  committed monthly outflow, liquid savings, or debt — is deferred to round 10.
 
 ## [2.17.0] — 2026-08-17 (APP_VERSION 67)
 

@@ -161,9 +161,9 @@ export const TH = {
   "Monthly Donations (THB)": "เงินบริจาคต่อเดือน (บาท)",
   "Volunteering Hours per Month": "ชั่วโมงจิตอาสาต่อเดือน",
   "Single-Use Plastic Items per Day": "พลาสติกใช้ครั้งเดียวต่อวัน (ชิ้น)",
-  "Long-term pension / retirement products (SSF, RMF, stock portfolio)?": "มีผลิตภัณฑ์บำนาญ/เกษียณระยะยาว (SSF, RMF, พอร์ตหุ้น) หรือไม่?",
-  "No, not yet planning pension": "ยังไม่มี ยังไม่ได้วางแผนเกษียณ",
-  "Yes, retirement assets secured": "มีแล้ว มีสินทรัพย์เพื่อเกษียณ",
+  // The pension question was retired in v68 — it scored nothing anywhere, and
+  // round 9 established it never should. Its three Thai keys go with it;
+  // leaving them here would fail tests/i18n-orphans.test.mjs.
   "Back": "ย้อนกลับ",
   "Next": "ถัดไป",
   "Complete Assessment": "ทำแบบประเมินให้เสร็จ",
@@ -658,13 +658,10 @@ export const TH = {
   "Green habits (GEB)": "นิสัยรักษ์โลก (GEB)",
   "Future skills": "ทักษะแห่งอนาคต",
   "{h}h/week toward future-proof skills — reuses your weekly learning hours": "{h} ชม./สัปดาห์กับทักษะที่พร้อมรับอนาคต — ใช้ชั่วโมงการเรียนรู้รายสัปดาห์ร่วมกัน",
-  "Long-term security": "ความมั่นคงระยะยาว",
-  // "ในด้านนี้" ("in this aspect") is gone along with the English "here":
-  // round 9 settled that this is scored in no aspect at all.
-  "Not scored — shown for information. Holds retirement/long-term investments.":
-    "ไม่ถูกนำไปคิดคะแนน แสดงเพื่อเป็นข้อมูล มีการลงทุนเพื่อเกษียณ/ระยะยาว",
-  "Not scored — shown for information. Whether a person holds these depends heavily on income and job type, so this app does not grade it.":
-    "ไม่ถูกนำไปคิดคะแนน แสดงเพื่อเป็นข้อมูล การมีการลงทุนเหล่านี้ขึ้นอยู่กับรายได้และประเภทงานเป็นอย่างมาก แอปนี้จึงไม่นำมาให้เกรด",
+  // The "Long-term security" row and its two detail strings were deleted in
+  // v68 along with the question that fed them. v67 had already made them
+  // unscored; a row reading 0 for everyone who was never asked is worse than
+  // no row.
   "Future orientation (LFIS)": "การมองการณ์ไกล (LFIS)",
 
   // --- Benchmarks (benchmarks.js) ---

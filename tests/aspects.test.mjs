@@ -132,11 +132,18 @@ test("RAS component appears only for coupled users with RAS data", () => {
   assert.equal(ras.value, 75); // (12-3)/12*100
 });
 
-test("humanity future long-term security is binary on investments", () => {
-  const withInv = getAspectDetail(makeState(), "humanityFuture");
-  assert.equal(withInv.components.find(c => c.label === "Long-term security").value, 100);
-  const without = getAspectDetail(makeState({ profile: { longTermInvestments: false } }), "humanityFuture");
-  assert.equal(without.components.find(c => c.label === "Long-term security").value, 0);
+// v68 retired the "Long-term security" row along with the question behind it.
+// The two tests that used to live here asserted its binary value and its null
+// confidence; both are gone rather than inverted, because an assertion that a
+// deleted row is absent tells a future reader nothing it could act on. What
+// DOES need pinning is that `longTermInvestments` survives as a stored fact for
+// the Midori connector while reaching no score and no screen.
+test("longTermInvestments is stored but reaches no component and no score", () => {
+  const on = getAspectDetail(makeState({ profile: { longTermInvestments: true } }), "humanityFuture");
+  const off = getAspectDetail(makeState({ profile: { longTermInvestments: false } }), "humanityFuture");
+  assert.equal(on.components.find(c => c.key === "security"), undefined, "the row is gone");
+  assert.deepEqual(on.components.map(c => c.value), off.components.map(c => c.value), "and the flag moves nothing");
+  assert.equal(on.score, off.score);
 });
 
 // v65 took the LFIS from 5 items to 6, so a stored sum now has two possible
@@ -225,13 +232,13 @@ test("relationships confidence counts RAS only for coupled users", () => {
   assert.equal(getAspectConfidence(coupled, "relationships").total, 3); // + ras
 });
 
-test("untracked binary components (humanity 'security') never affect the tier", () => {
+test("an untracked profile field never affects the confidence tier", () => {
   const state = makeState({
     profile: { provided: allProvided(true) },
     baseline: { ...BASELINE, answered: allAnswered(true) }
   });
-  // Only weeklyLearningHours + lfis are tracked; longTermInvestments is not.
+  // Only weeklyLearningHours + lfis are tracked; longTermInvestments is not —
+  // and since v68 it has no component at all, so the count must stay at 2
+  // rather than falling to it by accident.
   assert.equal(getAspectConfidence(state, "humanityFuture").total, 2);
-  const security = getAspectDetail(state, "humanityFuture").components.find(x => x.key === "security");
-  assert.equal(security.confidence, null);
 });

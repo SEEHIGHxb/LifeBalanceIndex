@@ -156,11 +156,7 @@ export function renderOnboarding(containerId, onComplete) {
         </div>
         ${instrumentBlock("geb")}
         ${numberField("onb-plastics", t("Single-Use Plastic Items per Day"), "", 'min="0" max="100"', { required: true, field: "singleUsePlastics", placeholder: "0–100" })}
-        ${instrumentBlock("lfis")}
-        ${selectField("onb-pension", t("Long-term pension / retirement products (SSF, RMF, stock portfolio)?"), [
-          { v: "false", l: "No, not yet planning pension" },
-          { v: "true", l: "Yes, retirement assets secured" }
-        ])}`
+        ${instrumentBlock("lfis")}`
     }
   ];
 
@@ -326,7 +322,6 @@ export function renderOnboarding(containerId, onComplete) {
         monthlyDonations: val("onb-donations"),
         volunteeringHours: val("onb-volunteer"),
         singleUsePlastics: val("onb-plastics"),
-        longTermInvestments: val("onb-pension"),
         cfpb: collectInstrument("cfpb"),
         jss: collectInstrument("jss"),
         st5: collectInstrument("st5"),

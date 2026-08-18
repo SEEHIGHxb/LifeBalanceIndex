@@ -23,7 +23,7 @@ import { dirname, join } from "node:path";
 import { incomeStandingScore, incomePercentile } from "../benchmarks.js";
 import {
   SCORE_MAX, clampScore, savingsRateFrom, savingsAmountFrom,
-  calculateFinanceScore
+  calculateFinanceScore, cfpbScore
 } from "../scoring.js";
 import { balanceIndex } from "../grades.js";
 
@@ -48,9 +48,10 @@ test("the Revenue Department top band reaches the top of the scale", () => {
 });
 
 test("the top band is a real ceiling — income above it buys nothing", () => {
-  // Not a cosmetic clamp. This term carries 0.6 of the finance score, so an
-  // unclamped 1,000,000 (which computes to 118) would go on adding points
-  // above the anchor and defeat the anchor's purpose.
+  // Not a cosmetic clamp. An unclamped 1,000,000 computes to 118 and would go
+  // on adding points above the anchor, defeating the anchor's purpose. v69 cut
+  // this term's weight from 0.6 to 0.15, which makes the overflow smaller and
+  // no less wrong — an unbounded term is unbounded at any weight.
   const atBand = incomeStandingScore(TOP_BAND, "Provinces");
   assert.equal(Math.round(atBand), 100);
   for (const above of [500000, 1000000, 5000000, 100000000]) {
@@ -108,6 +109,67 @@ test("no income is out of range rather than a low score", () => {
   }
 });
 
+// --- 1b. THE WEIGHTS (v69: 0.6/0.4 -> 0.15/0.85) ---
+//
+// Round 10 found that no validated financial well-being instrument scores raw
+// income at any weight, and CFPB's Making Ends Meet Wave 2 Table 3 (p.11) puts
+// the whole observed spread from the lowest US income band to the highest at
+// 13.9 points on a 0-100 scale. 0.15 is this app's reading of that spread, not
+// a published weight — which is exactly why it is pinned here: an inference
+// that nobody can find later is indistinguishable from a number made up.
+//
+// Asserted by ALGEBRA on the live calculator rather than by reading the source,
+// so the guard survives the line being rewritten.
+
+test("income carries 0.15 of the finance score and CFPB carries 0.85", () => {
+  // The score is ROUNDED on the way out (clampScore), so this reconstructs the
+  // expected rounded value from the published parts instead of differencing two
+  // finished scores. A difference of rounded numbers is not the rounded
+  // difference — the gap is up to a point, which is exactly the size of the
+  // weight drift a careless version of this test would miss. savingsRate 0
+  // keeps the bonus out of the arithmetic.
+  const AGE = 40;
+  const base = { region: "Provinces", savingsRate: 0, age: AGE };
+  const expected = (income, raw) => clampScore(
+    (0.15 * incomeStandingScore(income, "Provinces")) + (0.85 * cfpbScore(raw, AGE))
+  );
+
+  const probes = [
+    [0, [0, 0, 0, 0, 0], 0],
+    [TOP_BAND, [0, 0, 0, 0, 0], 0],
+    [0, [4, 4, 4, 4, 4], 20],
+    [LFS_MEAN, [2, 2, 2, 2, 2], 10],
+    [75000, [1, 1, 1, 1, 1], 5]
+  ];
+  for (const [income, answers, raw] of probes) {
+    assert.equal(calculateFinanceScore({ ...base, income }, answers), expected(income, raw),
+      `income ${income}, CFPB raw ${raw}`);
+  }
+
+  // And the direction that matters: the measured instrument must dominate the
+  // income proxy. 0.85 x 63 points of CFPB range against 0.15 x 100 of income.
+  const cfpbRange = 0.85 * (cfpbScore(20, AGE) - cfpbScore(0, AGE));
+  const incomeRange = 0.15 * 100;
+  assert.ok(cfpbRange > incomeRange * 3,
+    `CFPB range ${cfpbRange} must dwarf income range ${incomeRange}`);
+});
+
+test("THE REGRESSION v69: a big salary no longer outranks someone coping better", () => {
+  // The two real people this change came from. The friend earns 75,000 and
+  // answers the CFPB items badly — supporting family, servicing debt, worried.
+  // The student earns 3,000 from family, owes nothing, pays for nothing, and
+  // answers them well. Under 0.6 the salary won by 16 points, which inverted
+  // the only validated measurement in the aspect. The order must now follow the
+  // instrument.
+  const worriedEarner = calculateFinanceScore(
+    { income: 75000, region: "Provinces", savingsRate: 0, age: 28 }, [1, 1, 1, 1, 1]);
+  const calmStudent = calculateFinanceScore(
+    { income: 3000, region: "Provinces", savingsRate: 0, age: 25 }, [3, 4, 3, 4, 3]);
+
+  assert.ok(calmStudent > worriedEarner,
+    `the calmer person must score higher: student ${calmStudent} vs earner ${worriedEarner}`);
+});
+
 // --- 2. THE SCORE CEILING ---
 
 test("clampScore never returns 100, and never returns below 0", () => {
@@ -120,8 +182,30 @@ test("clampScore never returns 100, and never returns below 0", () => {
 });
 
 test("a maximal finance profile still cannot reach 100", () => {
-  const rich = { income: 10000000, region: "Bangkok", savingsRate: 100, age: 40 };
+  // The fixture is age 75 since v69, and the reason is worth reading. The CFPB
+  // conversion table tops out at 82 for everyone under 70 and at 90 from 70 up.
+  // At the old 0.6/0.4 weights the income term was large enough to push any age
+  // past the cap; at 0.15/0.85 only the 70+ band still reaches it. So this test
+  // needs an over-70 profile to exercise the clamp at all — which is itself the
+  // finding recorded in the next test.
+  const rich = { income: 10000000, region: "Bangkok", savingsRate: 100, age: 75 };
   assert.equal(calculateFinanceScore(rich, [4, 4, 4, 4, 4]), SCORE_MAX);
+});
+
+test("v69 CONSEQUENCE: finance now tops out at 95 for anyone under 70", () => {
+  // Not a bug and not hidden. Finance is now dominated by an instrument whose
+  // own converted maximum is 82, so a flawless finance profile reaches
+  // 0.15(100) + 0.85(82) + 10 = 94.7 -> 95. Every other aspect can still print
+  // 99, which means finance is quietly harder to top than its siblings and
+  // drags the Balance Index a little for everyone.
+  //
+  // This is pinned rather than fixed because fixing it means rescaling the
+  // CFPB conversion — changing a published table to make a number look nicer,
+  // which is the opposite of what round 10 was about. If it is ever addressed
+  // it must be addressed openly, and this test will be the thing that fails.
+  const best = { income: 10000000, region: "Bangkok", savingsRate: 100, age: 40 };
+  assert.equal(calculateFinanceScore(best, [4, 4, 4, 4, 4]), 95);
+  assert.ok(95 < SCORE_MAX, "and it therefore never reaches the app-wide cap");
 });
 
 test("the Balance Index is capped too", () => {

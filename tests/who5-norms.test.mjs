@@ -212,12 +212,15 @@ test("age changes the mental percentile and nothing score-based", () => {
   // ages still produce the same number, which is the actual assertion.
   assert.equal(balanceIndex(aspects), 46);
   assert.deepEqual(aspectsAtOrAboveAverage(aspects), { count: 3, total: 8 });
-  // finance re-pinned 55 -> 53 in v46 (income magnitude scale); personalGoals
-  // 59 -> 57 and humanityFuture 44 -> 50 in v64 (grit and the pension left
-  // their composites). The other five are untouched, which is the point of
-  // asserting the whole object here.
+  // finance re-pinned 55 -> 53 in v46 (income magnitude scale) and 53 -> 54 in
+  // v69 (income weight 0.6 -> 0.15); personalGoals 59 -> 57 and humanityFuture
+  // 44 -> 50 in v64 (grit and the pension left their composites). The other
+  // five are untouched, which is the point of asserting the whole object here.
+  // Note that balanceIndex above still reads 46: a one-point move in one
+  // reference average is not enough to shift it, so this release changes the
+  // typical person's standing not at all.
   assert.deepEqual({ ...AVERAGE_ASPECT_SCORES }, {
-    finance: 53, physical: 62, mental: 69, relationships: 70,
+    finance: 54, physical: 62, mental: 69, relationships: 70,
     personalGoals: 57, socialContribution: 32, environment: 50, humanityFuture: 50
   });
   // Comparison codes encode the scores, so v2 codes stay valid across this

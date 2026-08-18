@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `68`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `69`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,86 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.19.0] — 2026-08-19 (APP_VERSION 69)
+
+### Changed
+
+- **The finance income weight fell from 0.6 to 0.15**, and the CFPB well-being
+  term rose from 0.4 to 0.85. `calculateFinanceScore` is otherwise untouched:
+  same inputs, same savings bonus, same clamp.
+
+  Round 10 (`docs/research/round-10-finance-composition.md`) set out to find the
+  highest income weight any published composite uses, expecting to lower 0.6
+  toward it. The verified answer was stronger than a smaller number: **no
+  validated instrument scores raw income at any weight.** CFPB scores ten
+  subjective items; the Financial Health Network scores eight behavioural
+  indicators; Netemeyer et al. 2018 treat income explicitly as an *antecedent*
+  of financial well-being rather than a part of it.
+
+  0.15 comes from CFPB *Making Ends Meet* Wave 2, Table 3 (p.11): mean financial
+  well-being runs 44.75 for households at or below $40,000/yr to 58.62 above
+  $100,000 — **13.9 points across the entire US income distribution**, on the
+  same 0–100 scale this app uses. A term worth about 14 points of the finished
+  score is a weight near 0.15. The app's old term could move finance by 60.
+
+  **Honest limit:** turning an observed band spread into a weight is this
+  project's inference, not a published weighting, and the sample is American.
+  It is an inference from a real table, which is more than 0.6 ever had, and it
+  is written into the code comment so the next reader can argue with it rather
+  than mistake it for a citation.
+
+- **Methodology page rewritten for Finance** — the formula line now reads 15/85,
+  and the rationale line no longer claims objective standing is weighted above
+  sentiment, because it no longer is. Both strings re-translated in `th.js`.
+
+### Consequence, recorded rather than fixed
+
+- **Finance now tops out at 95 for anyone under 70**, where every other aspect
+  still reaches 99. The CFPB conversion table's own maximum is 82 (90 from age
+  70), so a flawless finance profile computes 0.15(100) + 0.85(82) + 10 = 94.7.
+  Under the old weights the income term was large enough to push any age past
+  the cap.
+
+  Not fixed, deliberately: fixing it means rescaling a published conversion
+  table so a number looks nicer, which is the opposite of what round 10 was
+  about. `tests/finance-scale.test.mjs` pins 95 so that any future attempt to
+  change it has to be a decision rather than a drift.
+
+- **`AVERAGE_ASPECT_SCORES.finance` moved 53 → 54.** One point is the entire
+  effect on the reference profile, and the Balance Index for the standard test
+  aspect set is unchanged at 46. That is the expected shape: the reference
+  earns the median and answers the CFPB items at the midpoint, so it is nearly
+  indifferent to which term leads. The reweight bites at the extremes.
+
+### Tests
+
+- `income carries 0.15 of the finance score and CFPB carries 0.85` — five probes
+  asserted against `clampScore` of the published parts rather than by
+  differencing finished scores, because the score is rounded and a difference of
+  rounded numbers is not the rounded difference.
+- `THE REGRESSION v69: a big salary no longer outranks someone coping better` —
+  the two real people this change came from: a 75,000 THB earner answering the
+  CFPB items badly must now score below a 3,000 THB student answering them well.
+  Under 0.6 the salary won by 16 points.
+- `v69 CONSEQUENCE: finance now tops out at 95 for anyone under 70`.
+- The maximal-profile ceiling test moved to an age-75 fixture, because that is
+  now the only band that still reaches the clamp.
+
+### Not done
+
+- **No new fields.** Committed outflow and liquid savings — the two things that
+  would actually distinguish a 75,000 salary that is spoken for from one that is
+  not — are part 2 of this plan and are not in this release.
+- **Runway is still unshippable as a score.** Round 10's kill criteria 1 and 2
+  neither fired nor cleared: the OECD/INFE instrument PDF returned HTTP 403, the
+  Financial Health Network weighting is absent from the report that is cited for
+  it, and the Thai anchor is a confirmed NOT FOUND. Without a distribution there
+  is no defensible normalizer, and picking one would repeat the mistake this
+  release corrects.
+- **Nobody has viewed v65–v69 with human eyes.** Browser verification continues
+  to be dispatched clicks and geometric measurement; screenshots fail because
+  the Browser pane is not displayed.
 
 ## [2.18.0] — 2026-08-18 (APP_VERSION 68)
 

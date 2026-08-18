@@ -76,7 +76,7 @@ const REFERENCE_ANSWERS = {
 const R = REFERENCE_PROFILE;
 const A = REFERENCE_ANSWERS;
 
-// Expected values (pinned within ±15 by tests/averages.test.mjs): finance 53,
+// Expected values (pinned within ±15 by tests/averages.test.mjs): finance 54,
 // physical 62, mental 69, relationships 70, personalGoals 57,
 // socialContribution 32, environment 50, humanityFuture 50.
 //
@@ -91,6 +91,14 @@ const A = REFERENCE_ANSWERS;
 // national MEDIAN (12,900): this profile is meant to be the typical person,
 // and the typical person earns the median, not the mean. On the new scale that
 // sits a little under the mean-anchored 50, which is exactly right.
+//
+// finance moved again in v69, 53 -> 54, when the income weight fell from 0.6 to
+// 0.15 (see calculateFinanceScore). A ONE-POINT move is the whole effect on the
+// typical person, and that is the point rather than a disappointment: this
+// profile earns the median and answers the CFPB items at the midpoint, so it
+// sits mid-scale on both terms and is nearly indifferent to which one leads.
+// The reweight was never about the middle. It was about the ends, where a large
+// salary used to overrule what the five CFPB questions had already measured.
 export const AVERAGE_ASPECT_SCORES = Object.freeze({
   finance: calculateFinanceScore(R, A.cfpb),
   physical: calculatePhysicalScore(R, A.jss),

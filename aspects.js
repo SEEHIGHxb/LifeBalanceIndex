@@ -106,8 +106,6 @@ export const COMPONENT_COVERAGE = {
   },
   humanityFuture: {
     skills: { fields: ["weeklyLearningHours"] },
-    // "security" is a binary longTermInvestments toggle with no tracked
-    // provided-flag, so it is intentionally uncounted (no coverage entry).
     lfis: { instruments: ["lfis"] }
   }
 };
@@ -342,22 +340,14 @@ function humanityFutureComponents(p, b) {
   // reuse is surfaced to the user in the detail line below so it is not silent.
   const items = [
     { key: "skills", label: t("Future skills"), value: clamp100(futureStudyScore(p)), detail: tp("{h}h/week toward future-proof skills — reuses your weekly learning hours", { h: p.weeklyLearningHours || 0 }) },
-    // Shown but NOT scored since v64. The v64 comment here said a pension is a
-    // financial fact and Finance is where financial facts get scored. Round 9
-    // checked that and it was wrong, so the copy no longer reads "not scored
-    // HERE" — which implied it counted somewhere else. It counts nowhere.
-    //
-    // Verified: no validated financial-wellbeing index scores asset ownership
-    // (the CFPB scale is ten subjective items); Thai tax-filer participation is
-    // ~70% in the top income quintile against 20-40% in Q1-Q4; and roughly half
-    // the workforce is informal and outside mandatory coverage. Finance already
-    // weights income 0.6, so scoring this would double-count earnings and mark
-    // informal workers down for a structural exclusion.
-    //
-    // "yet" is gone from the negative case for the same reason: below the tax
-    // threshold SSF/RMF return nothing, so "yet" told those users they were
-    // behind. See docs/research/round-9-retirement-assets-in-finance.md.
-    { key: "security", scored: false, label: t("Long-term security"), value: p.longTermInvestments ? 100 : 0, detail: p.longTermInvestments ? t("Not scored — shown for information. Holds retirement/long-term investments.") : t("Not scored — shown for information. Whether a person holds these depends heavily on income and job type, so this app does not grade it.") }
+    // NO "security" COMPONENT. v64 stopped scoring it, round 9 (v67) confirmed
+    // it should never be scored, and v68 stopped asking the question — so
+    // displaying a row that reads 0 for everyone who was never asked is worse
+    // than displaying nothing. `profile.longTermInvestments` still exists and
+    // is still settable by the Midori connector, whose FACT_SPECS contract
+    // publishes `hasLongTermInvestments`; it is now a stored fact with no UI
+    // and no score, in the same held-for-later state as `liquidSavings`.
+    // See docs/research/round-9-retirement-assets-in-finance.md.
   ];
   if (b && Number.isFinite(b.lfis)) {
     // 4 points per item, and the item count changed from 5 to 6 in v65. A save

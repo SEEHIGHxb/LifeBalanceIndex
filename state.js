@@ -189,6 +189,9 @@ export class GameStateManager {
     for (const key of PROFILE_EDIT_NUMERIC) {
       if (edits[key] !== undefined && String(edits[key]).trim() !== "") candidate[key] = edits[key];
     }
+    // Not editable from the Profile page since v68 (the question was retired).
+    // Kept because the Midori connector still delivers it through the same
+    // mutator, and `undefined` must not clobber a stored true.
     if (edits.longTermInvestments !== undefined) {
       candidate.longTermInvestments = edits.longTermInvestments === true || edits.longTermInvestments === "true";
     }
@@ -866,7 +869,6 @@ export class GameStateManager {
     p.singleUsePlastics = parseInt(surveyData.singleUsePlastics || 0);
     p.monthlyDonations = parseFloat(surveyData.monthlyDonations || 0);
     p.volunteeringHours = parseFloat(surveyData.volunteeringHours || 0);
-    p.longTermInvestments = surveyData.longTermInvestments === "true";
 
     // Raw instrument sums preserved for benchmark percentiles and the
     // Phase 4 monthly re-assessments.

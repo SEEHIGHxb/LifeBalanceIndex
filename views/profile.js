@@ -173,11 +173,6 @@ export function renderProfile(containerId, state, onSaved) {
     { value: "Single", label: t("Single") },
     { value: "Coupled", label: t("In a Relationship / Married") }
   ];
-  const pensionOpts = [
-    { value: "false", label: t("No, not yet planning pension") },
-    { value: "true", label: t("Yes, retirement assets secured") }
-  ];
-
   container.innerHTML = `
     <div class="profile-view">
       <div class="card">
@@ -214,7 +209,6 @@ export function renderProfile(containerId, state, onSaved) {
           ${numberField("pf-weight", t("Weight (kg)"), p.weight, 'min="25" max="300"')}
         </div>
         ${numberField("pf-digital", t("Digital Literacy Self-Rating (0-100)"), p.digitalLiteracy, 'min="0" max="100"')}
-        ${selectField("pf-pension", t("Long-term pension / retirement products (SSF, RMF, stock portfolio)?"), pensionOpts, p.longTermInvestments ? "true" : "false")}
 
         <p id="profile-error" class="d-none" style="color: var(--color-crimson); margin-top: 12px; font-weight: 600;"></p>
         <button type="button" id="pf-save" class="btn btn-primary" style="margin-top: 8px;">${t("Save changes")}</button>
@@ -315,7 +309,7 @@ export function renderProfile(containerId, state, onSaved) {
       gender: val("pf-gender"), region: val("pf-region"),
       employment: val("pf-employment"), relationshipStatus: val("pf-relationship"),
       income: val("pf-income"), weight: val("pf-weight"), height: val("pf-height"),
-      digitalLiteracy: val("pf-digital"), longTermInvestments: val("pf-pension")
+      digitalLiteracy: val("pf-digital")
     });
     // Birthday rides its own mutator (re-anchors level-ups safely).
     if (birthdayChange) stateManager.setBirthday(birthdayChange.birthMonth, birthdayChange.birthDay);

@@ -64,21 +64,30 @@ test("every aspect yields well-formed suggestions for a weak profile", () => {
   assert.deepEqual(getAspectSuggestions(state, "notAnAspect"), []);
 });
 
-// v67 / round 9. An unscored component cannot move any score, so advising
-// action on one is advice with no measurement behind it. `security` was the
-// live case: it reads 0 for every user without a pension, which made an
+// v67 / round 9, rewritten in v68. An unscored component cannot move any score,
+// so advising action on one is advice with no measurement behind it. `security`
+// was the live case: it read 0 for every user without a pension, which made an
 // informational field the weakest component and therefore the FIRST suggestion
 // most people saw — and the advice was to buy a tax-deduction product that
 // returns nothing below the tax threshold.
-test("an unscored component never produces a suggestion", () => {
+//
+// HONEST LIMITATION: v68 deleted that component, so no `scored: false`
+// component exists today and the first assertion below currently passes
+// VACUOUSLY. It is kept deliberately — the guard in getAspectSuggestions is
+// what stops the pattern returning, and this is the assertion that fires the
+// moment someone adds an unscored component with a matching rule. The second
+// assertion is not vacuous and is the one carrying weight right now.
+test("no suggestion ever targets an unscored component", () => {
   const state = makeState();
-  const security = getAspectDetail(state, "humanityFuture").components.find(c => c.key === "security");
-  assert.equal(security.scored, false, "fixture still has an unscored component to test with");
-  assert.equal(security.value, 0, "and it is the weakest, so it would rank first if it ranked at all");
-
-  const keys = getAspectSuggestions(state, "humanityFuture").map(s => s.componentKey);
-  assert.ok(!keys.includes("security"), "the unscored component is filtered out before ranking");
-  assert.ok(keys.length > 0, "the scored components still suggest");
+  const unscored = [];
+  for (const key of ASPECT_KEYS) {
+    const byKey = new Map(getAspectDetail(state, key).components.map(c => [c.key, c]));
+    for (const s of getAspectSuggestions(state, key)) {
+      if (byKey.get(s.componentKey)?.scored === false) unscored.push(`${key}.${s.componentKey}`);
+    }
+  }
+  assert.deepEqual(unscored, [], "an unscored component must never be advised on");
+  assert.ok(getAspectSuggestions(state, "humanityFuture").length > 0, "scored components still suggest");
 });
 
 test("no suggestion anywhere recommends buying a financial product", () => {

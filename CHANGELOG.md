@@ -56,8 +56,14 @@ but not a minor version.
   Under the old weights the income term was large enough to push any age past
   the cap.
 
+  **Measured cost: one point of Balance Index, for a person scoring 99 on all
+  eight aspects at once.** Grades are unaffected entirely — `gradeForBenchmark`
+  reads the income percentile, never the score — and `balanceIndex` runs on
+  `relativeToPopulation`, which rescales each aspect against its own average
+  precisely so aspects that cannot realistically top out are not punished.
+
   Not fixed, deliberately: fixing it means rescaling a published conversion
-  table so a number looks nicer, which is the opposite of what round 10 was
+  table so a number looks rounder, which is the opposite of what round 10 was
   about. `tests/finance-scale.test.mjs` pins 95 so that any future attempt to
   change it has to be a decision rather than a drift.
 

@@ -193,16 +193,23 @@ test("a maximal finance profile still cannot reach 100", () => {
 });
 
 test("v69 CONSEQUENCE: finance now tops out at 95 for anyone under 70", () => {
-  // Not a bug and not hidden. Finance is now dominated by an instrument whose
-  // own converted maximum is 82, so a flawless finance profile reaches
-  // 0.15(100) + 0.85(82) + 10 = 94.7 -> 95. Every other aspect can still print
-  // 99, which means finance is quietly harder to top than its siblings and
-  // drags the Balance Index a little for everyone.
+  // Not a bug, not hidden, and — measured — not costly. Finance is now
+  // dominated by an instrument whose own converted maximum is 82, so a flawless
+  // finance profile reaches 0.15(100) + 0.85(82) + 10 = 94.7 -> 95 while every
+  // other aspect can still print 99.
   //
-  // This is pinned rather than fixed because fixing it means rescaling the
-  // CFPB conversion — changing a published table to make a number look nicer,
-  // which is the opposite of what round 10 was about. If it is ever addressed
-  // it must be addressed openly, and this test will be the thing that fails.
+  // MEASURED CONSEQUENCE: one point of Balance Index, for a person scoring 99
+  // on all eight aspects simultaneously. Grades are unaffected entirely, since
+  // gradeForBenchmark reads the income PERCENTILE and never the score. And
+  // balanceIndex runs on relativeToPopulation, which rescales each aspect
+  // against its own average precisely so aspects that cannot realistically top
+  // out are not punished for it (see the comment above balanceIndex).
+  //
+  // So this is pinned rather than fixed on two grounds. It costs almost nothing,
+  // and fixing it would mean rescaling the CFPB conversion — editing a published
+  // table so a number looks rounder, which is the opposite of what round 10 was
+  // about. If it is ever addressed it must be addressed openly, and this test
+  // will be the thing that fails.
   const best = { income: 10000000, region: "Bangkok", savingsRate: 100, age: 40 };
   assert.equal(calculateFinanceScore(best, [4, 4, 4, 4, 4]), 95);
   assert.ok(95 < SCORE_MAX, "and it therefore never reaches the app-wide cap");

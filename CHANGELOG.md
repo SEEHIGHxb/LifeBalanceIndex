@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `70`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `71`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.20.1] — 2026-08-19 (APP_VERSION 71)
+
+### Changed
+
+- **The site moves to its own domain: `lbi.plainpoint.net`.** Previously served
+  from `seehighxb.github.io/LifeBalanceIndex/`. GitHub keeps redirecting the old
+  address, so no existing link breaks.
+
+  The base path changes from `/LifeBalanceIndex/` to `/`, which is a non-event
+  here only because every internal reference was already relative: `./app.js`,
+  `./assets/...`, and a manifest whose `start_url` is `./index.html` and whose
+  `scope` is `./`. Nothing internal needed touching. Six ABSOLUTE references did:
+
+  - `index.html` — `canonical`, `og:url`, `og:image`. A canonical still naming
+    the old origin would tell search engines the new domain is the copy.
+  - `story-card.js` — the URL is drawn into the shared image itself, so an old
+    address there is the one people would actually type.
+  - `README.md` — the live link.
+
+  Left alone deliberately: the "Source code & license" links in `index.html` and
+  `privacy.html`, and the link-checker's user-agent string. Those point at the
+  GitHub REPOSITORY, which has not moved.
+
+- **`CNAME` added, and staged explicitly in `.github/workflows/ci.yml`.** This
+  line is load-bearing rather than ceremonial: the deploy job builds `_site`
+  from a hand-written `cp` list, not from a copy of the repo, so a `CNAME` at
+  the repo root would never reach the published artifact on its own.
+
+### Not done here — these are outside the repository
+
+- The Cloudflare DNS record and the GitHub Pages custom-domain setting. Neither
+  is a file in this project, and until both are in place this commit changes
+  nothing about where the site answers.
 
 ## [2.20.0] — 2026-08-19 (APP_VERSION 70)
 

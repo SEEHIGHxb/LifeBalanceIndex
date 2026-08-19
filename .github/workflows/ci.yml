@@ -81,6 +81,11 @@ jobs:
         run: |
           mkdir -p _site/views _site/assets/fonts
           cp index.html privacy.html 404.html index.css manifest.webmanifest *.js _site/
+          # CNAME is what tells Pages the site answers on lbi.plainpoint.net.
+          # Staging is an explicit file list, not a copy of the repo, so this
+          # line is load-bearing: without it the artifact ships with no CNAME
+          # and the custom domain can be dropped on the next deploy.
+          cp CNAME _site/
           cp views/*.js _site/views/
           cp assets/icon-192.png assets/icon-512.png assets/lumi.png _site/assets/
           cp assets/fonts/* _site/assets/fonts/

@@ -387,7 +387,7 @@ export function drawStoryCard(ctx, data, opts = {}) {
 
   ctx.font = font(400, 22, SANS);
   ctx.fillStyle = theme.muted;
-  ctx.fillText("seehighxb.github.io/LifeBalanceIndex", STORY_W / 2, LAYOUT.url);
+  ctx.fillText("lbi.plainpoint.net", STORY_W / 2, LAYOUT.url);
 }
 
 // Everything the card needs, assembled from state the dashboard already has.

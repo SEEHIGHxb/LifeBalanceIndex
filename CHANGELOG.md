@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `69`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `70`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,108 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.20.0] — 2026-08-19 (APP_VERSION 70)
+
+Part 2 of the plan v69 opened. v69 removed the term that was overruling the
+measurement; v70 adds the fact the measurement was missing — and pointedly does
+not score it.
+
+### Added
+
+- **Two new profile fields, `liquidSavings` and `committedOutflow`**, both in
+  THB, both asked on onboarding step 1 next to income and savings, both editable
+  afterwards on the Profile page. Additive with a default of 0, so no
+  `schemaVersion` bump: an older save simply has no runway to show.
+
+- **Runway, shown on the Finance page and scored by nothing.**
+  `runwayMonths(profile)` = liquid savings ÷ committed monthly outflow. This is
+  the quantity round 10 identified as the real gap: two salaries of 75,000 are
+  the same number to `income` and to `savingsRate` whether or not they are
+  already spoken for, and the CFPB items capture only how that difference
+  *feels*. Runway is the fact underneath the feeling.
+
+  It returns **months, not a 0–100 score**, and appears in a new `facts` list on
+  the aspect bundle rather than in `components`. That separation is the point:
+  every component carries a 0–100 value and renders as a bar, and a bar is a
+  claim about where a number sits on a scale. No such scale is published for
+  months-of-runway, so the fact carries a formatted string and **no `value` at
+  all** — the aspect view reads `value` to size the bar, so its absence is what
+  structurally prevents runway from ever becoming one.
+
+  Rendered under its own **"Measured, Not Scored"** heading, with the reason on
+  the row itself rather than only in the heading.
+
+- **`docs/research/round-11-runway-normalizer.md`** — opened to answer exactly
+  one question: can months-of-runway honestly become a component? Round 10's
+  three relevant leads were an HTTP 403 (OECD/INFE instrument), a weighting
+  absent from the report cited for it (Financial Health Network), and a
+  confirmed NOT FOUND (Thai anchor). Two of those are access failures rather
+  than confirmed negatives, which is why this is a round and not a decision.
+  Kill criterion 3 — both confirmed NOT FOUND — closes it as a **permanent**
+  negative, and that outcome is a success, not a disappointment.
+
+### Deliberately not done
+
+- **No weight, no normalizer, no bar.** Inventing a divisor to turn months into
+  a score is precisely the mistake v69 spent a release correcting. The number is
+  reported to the user; it is not ranked against anyone.
+
+- **The Midori connector is still not wired to either field.** Its
+  `liquidSavings` fact stays validated-and-unconsumed, and its `monthlyExpenses`
+  is **total** spending — a different quantity from committed outflow. Silently
+  equating them would put a number in the denominator the user never agreed to.
+  Round 11 Q3 is the decision that unblocks it.
+
+- **Not added to the Weekly Review.** These are slow-moving facts, not weekly
+  behaviour, and the weekly review exists to re-measure scores — which these
+  deliberately do not touch.
+
+### Semantics worth knowing
+
+- **Null is not zero.** No committed outflow on file means **no runway is
+  defined**, and the row is omitted. Someone who genuinely owes nothing each
+  month has an unbounded runway, and unbounded is not a quantity a line of text
+  can print. This is the same null-means-omit contract `bmiScore` and
+  `sleepDurationScore` already use.
+- **Zero savings against a real outflow IS zero months**, and prints as such.
+  "I owe 12,000 a month and have nothing put by" is a measurement; it is not the
+  same fact as "I owe nothing" and must not render the same way.
+
+### Fixed during development
+
+- **`runwayMonths` returned `NaN` for a non-numeric `liquidSavings`**, which
+  would have printed the literal string "NaN months" on the Finance page.
+  `parseFloat("abc")` is NaN and NaN survives `Math.max`. Found by the test
+  written for it, before it shipped; NaN now floors to zero months. The outflow
+  side was already safe, because `NaN > 0` is false and returns null.
+
+### Tests
+
+- `tests/runway.test.mjs`, 9 tests. The load-bearing one is **`V70 CONTRACT:
+  runway changes no score anywhere in the app`** — five probes spanning 1,000
+  months, 0 months, an underwater balance and an undefined runway, all asserted
+  to leave every aspect score and every component bar identical. If a future
+  edit ever weights runway into a composite without an anchor, this fails before
+  anyone's number changes.
+- `the Finance page carries runway as a fact with no 0-100 value` asserts
+  `value === undefined` specifically, because that absence is the mechanism, not
+  a style preference.
+
+### Score impact
+
+**None, and this is asserted rather than claimed.** No aspect score moves, no
+component bar moves, the Balance Index does not move, and
+`AVERAGE_ASPECT_SCORES` is untouched — the reference profile in `averages.js`
+sets only the fields the calculators read, and no calculator reads either new
+field.
+
+### Still true from v69, and still not done
+
+- **Nobody has viewed v65–v70 with human eyes.** Browser verification continues
+  to be dispatched clicks and geometric measurement; screenshots fail because
+  the Browser pane is not displayed. v70 adds a new card to the Finance page and
+  two new inputs to onboarding step 1, none of it seen rendered.
 
 ## [2.19.0] — 2026-08-19 (APP_VERSION 69)
 

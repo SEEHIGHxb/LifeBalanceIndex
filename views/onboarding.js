@@ -19,7 +19,8 @@ import { t, tp } from "../i18n.js";
 // its onboarding input id — used for reading and coverage tracking. The inputs
 // also carry data-field so validateScope range-checks them per step.
 const ONB_NUMERIC_IDS = {
-  income: "onb-income", monthlySavings: "onb-savings", digitalLiteracy: "onb-digital",
+  income: "onb-income", monthlySavings: "onb-savings",
+  liquidSavings: "onb-liquid", committedOutflow: "onb-outflow", digitalLiteracy: "onb-digital",
   weeklyLearningHours: "onb-learning", weeklyVigorousDays: "onb-vig-days",
   weeklyVigorousMins: "onb-vig-mins", weeklyModerateDays: "onb-mod-days",
   weeklyModerateMins: "onb-mod-mins", weeklyWalkingDays: "onb-walk-days",
@@ -87,6 +88,11 @@ export function renderOnboarding(containerId, onComplete) {
         ])}
         ${numberField("onb-income", t("Monthly Individual Income (Net THB)"), "", 'min="0"', { required: true, field: "income" })}
         ${numberField("onb-savings", t("Monthly Savings (THB)"), "", 'min="0"', { required: true, field: "monthlySavings", placeholder: t("e.g. 3,000") })}
+        <div class="grid-2">
+          ${numberField("onb-liquid", t("Liquid Savings You Could Reach This Week (THB)"), "", 'min="0"', { required: true, field: "liquidSavings", placeholder: t("e.g. 50,000") })}
+          ${numberField("onb-outflow", t("Committed Monthly Outflow (THB)"), "", 'min="0"', { required: true, field: "committedOutflow", placeholder: t("e.g. 12,000") })}
+        </div>
+        <p class="onb-why">${t("The second box is what you cannot skip in a month — rent, loan repayments, family support, bills. Together these two give your runway: how long you could cover the unskippable if income stopped. It is shown on your Finance page and is deliberately not scored, because no published distribution says what a given number of months is worth.")}</p>
         ${instrumentBlock("cfpb")}`
     },
     {
@@ -306,6 +312,10 @@ export function renderOnboarding(containerId, onComplete) {
         // amount itself is deliberately NOT stored: one savings number in the
         // state means an income edit cannot leave two of them disagreeing.
         savingsRate: savingsRateFrom(val("onb-savings"), val("onb-income")),
+        // Kept in baht, unlike savings above: there is no rate to derive, and a
+        // stock over an outflow is a ratio the app prints rather than stores.
+        liquidSavings: val("onb-liquid"),
+        committedOutflow: val("onb-outflow"),
         height: val("onb-height"),
         weight: val("onb-weight"),
         sleepHours: val("onb-sleep"),

@@ -51,6 +51,15 @@ export const DEFAULT_STATE = {
     // two of them in disagreement. The amount is re-derived for display by
     // savingsAmountFrom (scoring.js). This is why v46 needed no schema bump.
     savingsRate: 10,
+    // The two runway fields (v70). Both default to 0, and a committed outflow
+    // of 0 makes runwayMonths return null rather than a number, so a save that
+    // predates these questions simply shows no runway row. That is why they are
+    // additive with no schemaVersion bump — same reasoning as
+    // birthdayPromptDismissed above, and unlike savingsRate neither of these is
+    // derived from the other, because a stock and an outflow are independent
+    // facts that no income edit can put in disagreement.
+    liquidSavings: 0, // THB, cash you could reach this week
+    committedOutflow: 0, // THB/mo you cannot skip: rent, loans, family support
     digitalLiteracy: 50,
     weeklyLearningHours: 2,
     weeklyVigorousDays: 0,

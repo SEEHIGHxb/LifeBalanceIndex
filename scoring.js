@@ -236,6 +236,45 @@ export function savingsAmountFrom(rate, income) {
   return Math.round((r / 100) * inc);
 }
 
+// --- RUNWAY: MEASURED, DELIBERATELY NOT SCORED (v70) ---
+//
+// Months of committed outflow covered by liquid savings. This is the number
+// round 10 concluded the finance aspect was missing: a 75,000 salary that is
+// entirely spoken for and a 75,000 salary that is not are the same number to
+// `income` and to `savingsRate`, and the CFPB items only capture how that
+// difference FEELS. Runway is the fact underneath the feeling.
+//
+// IT RETURNS MONTHS, NOT A 0-100 SCORE, AND NOTHING WEIGHTS IT. That is the
+// whole point of shipping it this way. Turning months into a component would
+// need a normalizer — some published distribution saying what 3 months is
+// worth against 9 — and round 10 established that no such anchor is available:
+// the OECD/INFE instrument PDF returned HTTP 403, the Financial Health Network
+// weighting is absent from the report cited for it, and the Thai anchor is a
+// confirmed NOT FOUND. Round 11 (docs/research/round-11-runway-normalizer.md)
+// exists to find one. Until it does, inventing a divisor here would repeat
+// exactly the mistake v69 spent a release correcting.
+//
+// NULL means "no runway is defined", and it is returned when committed outflow
+// is zero or absent — not zero months. Someone who genuinely owes nothing each
+// month (the student from the v69 regression test pays for nothing) has an
+// unbounded runway, and unbounded is not a quantity this can print. Callers
+// OMIT the row, the same contract bmiScore and sleepDurationScore already use.
+//
+// Zero or negative savings against a real outflow IS zero months, and says so.
+// Negative is reachable from a connector reporting net of debt, never from the
+// form, which floors at 0.
+export function runwayMonths(profile) {
+  const outflow = parseFloat(profile.committedOutflow || 0);
+  if (!(outflow > 0)) return null;
+  const savings = parseFloat(profile.liquidSavings || 0);
+  // NaN floors to zero months rather than propagating: `parseFloat("abc")` is
+  // NaN, and NaN survives Math.max, so an unguarded version printed the literal
+  // string "NaN months" on the Finance page. The outflow side above is already
+  // safe because NaN > 0 is false, which returns null and omits the row.
+  if (!(savings > 0)) return 0;
+  return savings / outflow;
+}
+
 // Donation volume vs income, 0-100: 2% of income or 500 THB/mo maxes it.
 export function donationVolumeFactor(profile) {
   const donRate = parseFloat(profile.monthlyDonations || 0);

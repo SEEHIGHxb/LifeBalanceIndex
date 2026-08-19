@@ -22,6 +22,14 @@ export const FIELD_CONSTRAINTS = {
   // hand-edited import can still carry one.
   monthlySavings: { min: 0, max: 10000000 },
   savingsRate: { min: 0, max: 100 },
+  // Runway inputs (v70). Both are asked in baht and stored in baht — unlike
+  // savings there is nothing to derive, so what the user types is what is kept.
+  // liquidSavings shares income's ceiling rather than monthlySavings's because
+  // it is a STOCK: a lifetime of saving is legitimately larger than a month of
+  // earning. Neither is scored; they are range-checked anyway, because a
+  // garbage number reaching the runway line would be a wrong number on screen.
+  liquidSavings: { min: 0, max: 10000000 },
+  committedOutflow: { min: 0, max: 10000000 },
   digitalLiteracy: { min: 0, max: 100 },
   weeklyLearningHours: { min: 0, max: 168 },
   weeklyVigorousDays: { min: 0, max: 7 },

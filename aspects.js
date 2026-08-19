@@ -37,6 +37,7 @@ import {
   futureStudyScore,
   savingsAmountFrom,
   savingsHabitScore,
+  runwayMonths,
   donationVolumeFactor,
   volunteerFactor,
   DEEP_NORM
@@ -346,7 +347,10 @@ function humanityFutureComponents(p, b) {
     // than displaying nothing. `profile.longTermInvestments` still exists and
     // is still settable by the Midori connector, whose FACT_SPECS contract
     // publishes `hasLongTermInvestments`; it is now a stored fact with no UI
-    // and no score, in the same held-for-later state as `liquidSavings`.
+    // and no score. `liquidSavings` left that held-for-later state in v70,
+    // where it became a profile field feeding the runway fact above; the
+    // Midori FACT of the same name is still unconsumed, because that connector
+    // reports TOTAL spending and runway needs committed outflow.
     // See docs/research/round-9-retirement-assets-in-finance.md.
   ];
   if (b && Number.isFinite(b.lfis)) {
@@ -359,6 +363,35 @@ function humanityFutureComponents(p, b) {
     items.push({ key: "lfis", label: t("Future orientation (LFIS)"), value: clamp100((b.lfis / lfisMax) * 100), detail: tp("Raw {n}/{max} at baseline", { n: b.lfis, max: lfisMax }) });
   }
   return items;
+}
+
+// --- FACTS: MEASURED, NOT SCORED (v70) ---
+//
+// A second, separate list from `components`, and separate on purpose. Every
+// component carries a 0-100 value and renders as a bar; a fact carries a
+// FORMATTED STRING and renders as a line. Grit is the precedent for showing an
+// unscored number, but grit had a published normalizer and so could honestly
+// occupy a bar with `scored: false` on it. Runway has no normalizer at all —
+// that is the open question round 11 exists to answer — so giving it a bar
+// would mean inventing the very divisor the app is refusing to invent. A fact
+// with no bar cannot silently acquire a weight.
+function aspectFacts(aspectKey, p) {
+  if (aspectKey !== "finance") return [];
+  const months = runwayMonths(p);
+  // null = no committed outflow on file, so no runway is defined. Omitted
+  // rather than printed as zero or as infinity — same contract as bmiScore.
+  if (months === null) return [];
+  return [{
+    key: "runway",
+    label: t("Runway"),
+    // One decimal: the inputs are self-reported round numbers, and a second
+    // decimal would claim a precision neither of them has.
+    display: tp("{n} months", { n: Math.round(months * 10) / 10 }),
+    detail: tp("{savings} THB you could reach this week ÷ {outflow} THB/mo you cannot skip. Not scored — no published distribution says what a given number of months is worth, so this is reported to you rather than ranked.", {
+      savings: Math.round(parseFloat(p.liquidSavings || 0)).toLocaleString(),
+      outflow: Math.round(parseFloat(p.committedOutflow || 0)).toLocaleString()
+    })
+  }];
 }
 
 // Full detail bundle for one aspect page.
@@ -414,6 +447,7 @@ export function getAspectDetail(state, aspectKey) {
     benchmark,
     confidence: getAspectConfidence(state, aspectKey),
     components,
+    facts: aspectFacts(aspectKey, p),
     flaggedInstruments,
     trend: (state.snapshots || []).map(s => ({
       date: s.date,

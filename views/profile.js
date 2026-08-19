@@ -43,7 +43,8 @@ const AGE_MAX = 100;
 // its inline <span class="field-error"> in the DOM.
 const ERR_IDS = {
   income: "pf-income-err", weight: "pf-weight-err", height: "pf-height-err",
-  digitalLiteracy: "pf-digital-err", age: "pf-age-err", birthday: "pf-birthday-err"
+  digitalLiteracy: "pf-digital-err", age: "pf-age-err", birthday: "pf-birthday-err",
+  liquidSavings: "pf-liquid-err", committedOutflow: "pf-outflow-err"
 };
 
 // A labelled <select> prefilled to `current`. options: [{ value, label }].
@@ -209,6 +210,11 @@ export function renderProfile(containerId, state, onSaved) {
           ${numberField("pf-weight", t("Weight (kg)"), p.weight, 'min="25" max="300"')}
         </div>
         ${numberField("pf-digital", t("Digital Literacy Self-Rating (0-100)"), p.digitalLiteracy, 'min="0" max="100"')}
+        <div class="grid-2">
+          ${numberField("pf-liquid", t("Liquid Savings You Could Reach This Week (THB)"), p.liquidSavings, 'min="0"')}
+          ${numberField("pf-outflow", t("Committed Monthly Outflow (THB)"), p.committedOutflow, 'min="0"')}
+        </div>
+        <p class="profile-note">${t("These two give your runway on the Finance page. They change nothing about your score — no published distribution says what a given number of months is worth, so the app reports the figure rather than ranking it.")}</p>
 
         <p id="profile-error" class="d-none" style="color: var(--color-crimson); margin-top: 12px; font-weight: 600;"></p>
         <button type="button" id="pf-save" class="btn btn-primary" style="margin-top: 8px;">${t("Save changes")}</button>
@@ -271,7 +277,8 @@ export function renderProfile(containerId, state, onSaved) {
     // Numeric fields validated against the shared FIELD_CONSTRAINTS.
     const { errors: numErrors } = validateProfile({
       income: val("pf-income"), weight: val("pf-weight"),
-      height: val("pf-height"), digitalLiteracy: val("pf-digital")
+      height: val("pf-height"), digitalLiteracy: val("pf-digital"),
+      liquidSavings: val("pf-liquid"), committedOutflow: val("pf-outflow")
     });
     Object.assign(errors, numErrors);
 
@@ -309,7 +316,8 @@ export function renderProfile(containerId, state, onSaved) {
       gender: val("pf-gender"), region: val("pf-region"),
       employment: val("pf-employment"), relationshipStatus: val("pf-relationship"),
       income: val("pf-income"), weight: val("pf-weight"), height: val("pf-height"),
-      digitalLiteracy: val("pf-digital")
+      digitalLiteracy: val("pf-digital"),
+      liquidSavings: val("pf-liquid"), committedOutflow: val("pf-outflow")
     });
     // Birthday rides its own mutator (re-anchors level-ups safely).
     if (birthdayChange) stateManager.setBirthday(birthdayChange.birthMonth, birthdayChange.birthDay);

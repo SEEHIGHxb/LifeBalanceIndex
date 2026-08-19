@@ -1,8 +1,11 @@
 # Round 10 research brief — what should the Finance aspect be made of?
 
-Status: **OPEN — 2026-08-18.** Three questions, deliberately: two candidate new inputs and the
-weight that would sit beside them. See "Why this round breaks the one-question rule" before reading
-further, and read the fabrication guard attached to it.
+Status: **CLOSED — 2026-08-18. Kill criterion 4 fired: no validated instrument scores raw income
+at all, so 0.6 is indefensible.** Ten defects found in the export, including one fabricated
+statistic, two DOIs resolving to the wrong papers, and a macro time-series study described as a
+household micro-analysis. The verdict survives on evidence verified independently of every one of
+them. The decisive number was not in the export — it was found while checking one of its claims.
+See the Outcome section at the foot of this file.
 
 ---
 
@@ -353,3 +356,136 @@ When the export comes back I will, as in rounds 2–9:
 validated composite puts 0.6 on income. That closes the round with a one-line change and no new
 questions asked of the user. **The most likely failure mode** is a Q2 answer full of clean
 per-quintile Thai percentages that no table contains.
+
+---
+
+# Outcome — 2026-08-18
+
+## The verdict, restated on independently verified evidence only
+
+**Kill criterion 4 fired.** It was pre-registered as "no published composite financial-wellbeing
+index weights an objective income term at or above 0.5." The verified answer is stronger than the
+criterion: **no validated instrument I could open scores raw income at any weight.**
+
+| Instrument | What it scores | Income weight | Verified how |
+|---|---|---|---|
+| CFPB Financial Well-Being Scale | 10 subjective items, IRT to 0–100 | **none — not an input** | technical report, round 9 |
+| FinHealth Score | 8 indicators across Spend / Save / Borrow / Plan | **none of the 8 is income** | 2024 Trends Report, p. 20 |
+| Netemeyer et al. 2018 | two 5-item reflective subscales (CMMS, EFFS) | **antecedent, not component** | JCR 45(1) 68–89 via Crossref |
+
+## The decisive number, which the export did not report
+
+While checking the export's `$15,000` claim I opened **Table 3 of the CFPB Making Ends Meet Wave 2
+report (p. 11)**, which reports mean financial well-being by household income band:
+
+| 2018 household income | Mean FWB (June 2019) |
+|---|---|
+| $40,000 or less | 44.75 |
+| $40,001–$70,000 | 51.08 |
+| $70,001–$100,000 | 53.24 |
+| More than $100,000 | 58.62 |
+
+**Across the entire income distribution, from the bottom band to the top, measured financial
+wellbeing moves 13.9 points on a 0–100 scale.**
+
+`calculateFinanceScore` lets its income term move the score by **60 points** on the same 0–100
+scale. That is roughly a **fourfold overstatement** against the best directly-measured comparison
+available, and unlike everything the export offered for this question it is a published table anyone
+can open and check.
+
+This is what the round needed, and the export missed it while fabricating a statistic to answer the
+same question.
+
+## What was verified
+
+1. **The `$15,000` quote is verbatim and exact.** CFPB Making Ends Meet Wave 2, body text on p. 11:
+   *"For comparison, across consumers, a one-point increase is associated with an increase of
+   household income by approximately $15,000, a five-year age increase, or a 20-point increase in
+   credit score (see Table 3)."* Note what it is: a **yardstick for interpreting a 1-point movement
+   over time**, not a variance decomposition. The export's own CLAIM sentence overreaches by
+   appending "demonstrating that income explains a modest fraction of score variance" — an inference
+   the source does not make.
+2. **Netemeyer et al. 2018** — title, all four authors, journal, 45(1), 68–89, DOI 10.1093/jcr/ucx109.
+   Every element correct.
+3. **FinHealth Score structure** — "a composite measure of eight indicators that represent the four
+   pillars of financial health – Spend, Save, Borrow, and Plan", 2024 Trends Report p. 20. The
+   structure is real; the **weights are not in this document** (see defect 7).
+4. **The scale-choice finding** — a 2.3-point decline and an 8.1 percentage-point shift into the
+   "low" tier among lower-income respondents on the 5-item form. The finding is real and correctly
+   quoted. Its citation is wrong in three ways (defects 2 and 3).
+5. **Thai DSR exceeded 30% during 2020–2021** — confirmed in the cited paper's own abstract.
+
+## Defects
+
+1. **A fabricated statistic.** The export reports *"gross income explains only 10% to 15% of the
+   variance (R² ≈ 0.10–0.15) in financial well-being scores"*, cited to the CFPB Making Ends Meet
+   report, and repeats it in the Verdict. **That report contains zero occurrences of "R-squared",
+   "R2" or "R²"**, and one occurrence of "variance" unrelated to income. The number does not exist
+   in the cited source. It is also the single most load-bearing figure in the export's answer to Q3.
+2. **A DOI resolving to a different paper.** `10.1017/flw.2024.1` is *"High school financial
+   education courses in the United States"* by Luedtke & Urban, JFLW **1(3), 431–449, 2023** — not
+   the scale-choice paper. The export's ID CHECK field states *"Cambridge Core article opened;
+   verified randomized experiment results."*
+3. **Invented authorship.** The scale-choice paper is by **Patrick Heck, Caroline Ratcliffe and Elle
+   Tibbitts**, in **2(2), July 2024**. The export attributes it to a corporate author that does not
+   exist — *"Consumer Financial Protection Bureau & Academic Collaborators"* — in issue 2(1),
+   pp. 1–24.
+4. **A citation wrong in every element.** The Thai debt source is *"The Determinants of Thai
+   Household Debt: A Macro-level Study"* by **Pakarat Jumpanoi and Wanakiti Wanasilp**, Journal of
+   Demography **38(2), 71–83**, DOI **10.58837/CHULA.JDM.38.2.8**. The export gives different
+   authors, a different title, pp. 71–88, and DOI 10.14456/jod.2022.7. **The export's own
+   works-cited list, entry 7, carries the correct title** — the document contradicts itself.
+5. **A macro study described as a micro study.** That paper is an ADF / Error-Correction time-series
+   analysis of quarterly aggregates, Q1 2007 – Q1 2022. The export gives its POPULATION as
+   *"Representative sample of Thai households, Bank of Thailand micro-analysis of NSO SES data"* and
+   hangs household-level DSR splits on it. **This is round 9's DP 143 defect repeated** — a real
+   paper's design restated as a different design so it can carry numbers it never produced.
+6. **The Q2 headline figures are unverifiable.** Low-income DSR 73.0% and high-income DSR 24.0% could
+   not be located in the cited paper or anywhere else, and cannot come from a macro time-series
+   study. **This landed exactly where the brief predicted it would** — the pre-declared high-risk
+   distribution question. Four rounds, four fabrications, all in the same place.
+7. **Weights not in the cited source.** The 12.5%-per-indicator / 25%-per-pillar claim is the whole
+   of the export's answer to "at what weight". In the 110-page report it cites, **"12.5" appears 0
+   times and "equally" appears 0 times**, and its VERBATIM QUOTE ("The FinHealth Score® is a metric
+   based on survey questions…") is not in that document. Equal weighting may well be true; it is not
+   sourced here, and I could not confirm it from the Financial Health Network's own methodology page
+   either. Recorded as **NOT VERIFIED**, not as false.
+8. **Two survey years inside one citation block.** The NSO block is cited, located and populated as
+   SES 2564 (2021), but its AS-PUBLISHED FIGURE line reports "Non-consumption outlays = 13.2%
+   **(SES 2567)**" — a different survey. The 27,352 / 21,616 / 79.0% figures are directionally
+   plausible but I could not open the primary table (the NSO link is a base64 download handler);
+   they are recorded as **unverified at source**.
+9. **A rendering gap that hides a missing number.** The elasticity table's credit-score row renders
+   as "Strong (*r =* , bivariate correlation)" — the statistic itself is absent from the embedded
+   formula image. An empty coefficient presented as a filled cell.
+10. **Works-cited contamination.** Entry 25 is *"Economic Anthropology lecture two Money and
+    Currencies"*, a Danish lecture slide deck. Also present with no bearing on any question asked: a
+    Banco Central do Brasil financial-citizenship report, a Bank of Greece paper on Cyprus, and a
+    Hong Kong financial-literacy monitor. Milder than round 9's Myanmar and herbicide entries, but
+    the same failure.
+
+## What this round changed in code
+
+**Nothing yet, deliberately.** The verdict is unambiguous — 0.6 on raw income is indefensible — but
+the replacement is a genuine design fork with different migration consequences per option, and every
+stored snapshot and benchmark comparison moves with it. That is the app author's call, not a research
+finding. Recorded here so the reasoning is not lost if it is deferred.
+
+Also unresolved, and honestly so: **kill criteria 1 and 2 did not fire, but neither did they clear.**
+Expense-coverage duration is scored *somewhere* — OECD/INFE uses it as its primary resilience item
+and FinHealth appears to include a three-months-of-expenses indicator — but I could not open the
+OECD instrument (HTTP 403) and the FinHealth weighting is unsourced. And the Thai anchor for expense
+coverage is a confirmed **NOT FOUND**, which the export reported honestly. Without a distribution
+there is no defensible normalizer, so a runway measure still cannot ship.
+
+## The lesson this round adds
+
+Round 9's was that agreement with a written-down prior is the cheapest thing an export can
+manufacture. This round's is narrower and more useful: **the export fabricated a statistic to answer
+a question whose real answer was sitting in a table it had already cited.** The `$15,000` quote and
+the income-band table are on adjacent pages of the same CFPB report. One was quoted correctly; the
+other — better evidence, needing no inference — was replaced with an invented R².
+
+The pipeline caught it for the same reason it caught the last three: the claim was checked at source
+rather than assessed for plausibility. R² ≈ 0.10–0.15 is an entirely plausible number. It is simply
+not in the document.

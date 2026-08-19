@@ -71,10 +71,14 @@ const BACKUP_NUDGE_MIN_LOGS = 10;
 // sanitizeProfileFields knows, and age is bounded tighter than the importer's
 // 1-120). birthMonth/birthDay ride the existing setBirthday path, not this one.
 const PROFILE_EDIT_ENUMS = ["gender", "region", "employment", "relationshipStatus"];
-const PROFILE_EDIT_NUMERIC = ["income", "weight", "height", "digitalLiteracy"];
+// liquidSavings and committedOutflow joined in v70. They belong here rather
+// than in the weekly review because they are slow-moving FACTS, not weekly
+// behaviour — and because the weekly review re-measures scores, which these
+// deliberately do not touch.
+const PROFILE_EDIT_NUMERIC = ["income", "weight", "height", "digitalLiteracy", "liquidSavings", "committedOutflow"];
 // The numeric fields whose hand-entry should upgrade the confidence tier: a
 // value the user just typed is provided data, same as answering it at onboarding.
-const PROFILE_EDIT_PROVIDED = ["income", "weight", "height", "digitalLiteracy"];
+const PROFILE_EDIT_PROVIDED = ["income", "weight", "height", "digitalLiteracy", "liquidSavings", "committedOutflow"];
 const AGE_MIN = 15;
 const AGE_MAX = 100;
 
@@ -853,6 +857,10 @@ export class GameStateManager {
     p.relationshipStatus = surveyData.relationshipStatus;
     p.income = parseFloat(surveyData.income || 0);
     p.savingsRate = parseFloat(surveyData.savingsRate || 0);
+    // Stored in baht exactly as typed. Nothing scores them (see runwayMonths);
+    // an absent or zero committedOutflow simply leaves the runway undefined.
+    p.liquidSavings = parseFloat(surveyData.liquidSavings || 0);
+    p.committedOutflow = parseFloat(surveyData.committedOutflow || 0);
     p.digitalLiteracy = parseFloat(surveyData.digitalLiteracy || 50);
     p.weeklyLearningHours = parseFloat(surveyData.weeklyLearningHours || 0);
     p.weeklyVigorousDays = parseInt(surveyData.weeklyVigorousDays || 0);

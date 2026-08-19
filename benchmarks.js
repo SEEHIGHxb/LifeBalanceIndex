@@ -279,9 +279,11 @@ export function incomeStandingScore(income, region) {
     ? INCOME_MEAN_NATIONAL * INCOME_BANGKOK_RATIO
     : INCOME_MEAN_NATIONAL;
   // Clamped to 0-100 HERE, not left to the caller. The top band has to be a
-  // real ceiling: unclamped, an income of 1,000,000 returns 118, and since
-  // this term carries 0.6 of the finance score that surplus would keep buying
-  // points above the anchor — which is exactly what the anchor exists to stop.
+  // real ceiling: unclamped, an income of 1,000,000 returns 118, and that
+  // surplus would keep buying points above the anchor — which is exactly what
+  // the anchor exists to stop. This term's weight on the finance score fell
+  // from 0.6 to 0.15 in v69, which shrinks the damage without removing the
+  // reason: an unbounded term is unbounded at any weight.
   // The separate app-wide 99 cap still applies to the finished score.
   const raw = 50 + 50 * (Math.log(inc / centre) / Math.log(INCOME_TOP_ANCHOR / centre));
   return Math.max(0, Math.min(100, raw));

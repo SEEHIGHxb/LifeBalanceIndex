@@ -148,6 +148,20 @@ export function renderAspectPage(containerId, state, aspectKey) {
           `).join("")}
         </div>
 
+        ${detail.facts.length > 0 ? `
+        <div class="card">
+          <h4 class="card-header">${t("Measured, Not Scored")}</h4>
+          ${detail.facts.map(f => `
+            <div class="component-row">
+              <div class="component-head">
+                <span>${escapeHtml(f.label)}</span>
+                <span class="text-gold" style="font-family: var(--font-mono); font-weight: bold;">${escapeHtml(f.display)}</span>
+              </div>
+              <div class="component-detail">${escapeHtml(f.detail)}</div>
+            </div>
+          `).join("")}
+        </div>` : ""}
+
         ${suggestions.length > 0 ? `
         <div class="card">
           <h4 class="card-header">${t("Suggested Focus")}</h4>

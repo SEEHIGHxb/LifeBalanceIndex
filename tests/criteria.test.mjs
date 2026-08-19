@@ -279,9 +279,18 @@ test("AVERAGE_ASPECT_SCORES moved only where v46 and v64 intended", () => {
   //                           been scoring zero on half that term for a
   //                           financial fact Finance already counts.
   //
+  // v69 moved finance once more, 53 -> 54, when the income weight fell from 0.6
+  // to 0.15. ONE POINT is the entire effect on the typical person — and that is
+  // the strongest evidence that the reweight did what it was meant to. The
+  // reference profile earns the national median and answers the CFPB items at
+  // the midpoint, so it sits near the middle of both terms and barely notices
+  // which one leads. The change bites at the EXTREMES, where a large salary
+  // used to overrule bad CFPB answers; tests/finance-scale.test.mjs pins that
+  // case with the two real people it came from.
+  //
   // Asserting the whole object is what proves the other five did NOT drift.
   assert.deepEqual({ ...AVERAGE_ASPECT_SCORES }, {
-    finance: 53, physical: 62, mental: 69, relationships: 70,
+    finance: 54, physical: 62, mental: 69, relationships: 70,
     personalGoals: 57, socialContribution: 32, environment: 50, humanityFuture: 50
   });
 });

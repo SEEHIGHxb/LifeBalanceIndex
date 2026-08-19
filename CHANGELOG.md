@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `68`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `71`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,228 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.20.1] — 2026-08-19 (APP_VERSION 71)
+
+### Changed
+
+- **The site moves to its own domain: `lbi.plainpoint.net`.** Previously served
+  from `seehighxb.github.io/LifeBalanceIndex/`. GitHub keeps redirecting the old
+  address, so no existing link breaks.
+
+  The base path changes from `/LifeBalanceIndex/` to `/`, which is a non-event
+  here only because every internal reference was already relative: `./app.js`,
+  `./assets/...`, and a manifest whose `start_url` is `./index.html` and whose
+  `scope` is `./`. Nothing internal needed touching. Six ABSOLUTE references did:
+
+  - `index.html` — `canonical`, `og:url`, `og:image`. A canonical still naming
+    the old origin would tell search engines the new domain is the copy.
+  - `story-card.js` — the URL is drawn into the shared image itself, so an old
+    address there is the one people would actually type.
+  - `README.md` — the live link.
+
+  Left alone deliberately: the "Source code & license" links in `index.html` and
+  `privacy.html`, and the link-checker's user-agent string. Those point at the
+  GitHub REPOSITORY, which has not moved.
+
+- **`CNAME` added, and staged explicitly in `.github/workflows/ci.yml`.** This
+  line is load-bearing rather than ceremonial: the deploy job builds `_site`
+  from a hand-written `cp` list, not from a copy of the repo, so a `CNAME` at
+  the repo root would never reach the published artifact on its own.
+
+### Not done here — these are outside the repository
+
+- The Cloudflare DNS record and the GitHub Pages custom-domain setting. Neither
+  is a file in this project, and until both are in place this commit changes
+  nothing about where the site answers.
+
+## [2.20.0] — 2026-08-19 (APP_VERSION 70)
+
+Part 2 of the plan v69 opened. v69 removed the term that was overruling the
+measurement; v70 adds the fact the measurement was missing — and pointedly does
+not score it.
+
+### Added
+
+- **Two new profile fields, `liquidSavings` and `committedOutflow`**, both in
+  THB, both asked on onboarding step 1 next to income and savings, both editable
+  afterwards on the Profile page. Additive with a default of 0, so no
+  `schemaVersion` bump: an older save simply has no runway to show.
+
+- **Runway, shown on the Finance page and scored by nothing.**
+  `runwayMonths(profile)` = liquid savings ÷ committed monthly outflow. This is
+  the quantity round 10 identified as the real gap: two salaries of 75,000 are
+  the same number to `income` and to `savingsRate` whether or not they are
+  already spoken for, and the CFPB items capture only how that difference
+  *feels*. Runway is the fact underneath the feeling.
+
+  It returns **months, not a 0–100 score**, and appears in a new `facts` list on
+  the aspect bundle rather than in `components`. That separation is the point:
+  every component carries a 0–100 value and renders as a bar, and a bar is a
+  claim about where a number sits on a scale. No such scale is published for
+  months-of-runway, so the fact carries a formatted string and **no `value` at
+  all** — the aspect view reads `value` to size the bar, so its absence is what
+  structurally prevents runway from ever becoming one.
+
+  Rendered under its own **"Measured, Not Scored"** heading, with the reason on
+  the row itself rather than only in the heading.
+
+- **`docs/research/round-11-runway-normalizer.md`** — opened to answer exactly
+  one question: can months-of-runway honestly become a component? Round 10's
+  three relevant leads were an HTTP 403 (OECD/INFE instrument), a weighting
+  absent from the report cited for it (Financial Health Network), and a
+  confirmed NOT FOUND (Thai anchor). Two of those are access failures rather
+  than confirmed negatives, which is why this is a round and not a decision.
+  Kill criterion 3 — both confirmed NOT FOUND — closes it as a **permanent**
+  negative, and that outcome is a success, not a disappointment.
+
+### Deliberately not done
+
+- **No weight, no normalizer, no bar.** Inventing a divisor to turn months into
+  a score is precisely the mistake v69 spent a release correcting. The number is
+  reported to the user; it is not ranked against anyone.
+
+- **The Midori connector is still not wired to either field.** Its
+  `liquidSavings` fact stays validated-and-unconsumed, and its `monthlyExpenses`
+  is **total** spending — a different quantity from committed outflow. Silently
+  equating them would put a number in the denominator the user never agreed to.
+  Round 11 Q3 is the decision that unblocks it.
+
+- **Not added to the Weekly Review.** These are slow-moving facts, not weekly
+  behaviour, and the weekly review exists to re-measure scores — which these
+  deliberately do not touch.
+
+### Semantics worth knowing
+
+- **Null is not zero.** No committed outflow on file means **no runway is
+  defined**, and the row is omitted. Someone who genuinely owes nothing each
+  month has an unbounded runway, and unbounded is not a quantity a line of text
+  can print. This is the same null-means-omit contract `bmiScore` and
+  `sleepDurationScore` already use.
+- **Zero savings against a real outflow IS zero months**, and prints as such.
+  "I owe 12,000 a month and have nothing put by" is a measurement; it is not the
+  same fact as "I owe nothing" and must not render the same way.
+
+### Fixed during development
+
+- **`runwayMonths` returned `NaN` for a non-numeric `liquidSavings`**, which
+  would have printed the literal string "NaN months" on the Finance page.
+  `parseFloat("abc")` is NaN and NaN survives `Math.max`. Found by the test
+  written for it, before it shipped; NaN now floors to zero months. The outflow
+  side was already safe, because `NaN > 0` is false and returns null.
+
+### Tests
+
+- `tests/runway.test.mjs`, 9 tests. The load-bearing one is **`V70 CONTRACT:
+  runway changes no score anywhere in the app`** — five probes spanning 1,000
+  months, 0 months, an underwater balance and an undefined runway, all asserted
+  to leave every aspect score and every component bar identical. If a future
+  edit ever weights runway into a composite without an anchor, this fails before
+  anyone's number changes.
+- `the Finance page carries runway as a fact with no 0-100 value` asserts
+  `value === undefined` specifically, because that absence is the mechanism, not
+  a style preference.
+
+### Score impact
+
+**None, and this is asserted rather than claimed.** No aspect score moves, no
+component bar moves, the Balance Index does not move, and
+`AVERAGE_ASPECT_SCORES` is untouched — the reference profile in `averages.js`
+sets only the fields the calculators read, and no calculator reads either new
+field.
+
+### Still true from v69, and still not done
+
+- **Nobody has viewed v65–v70 with human eyes.** Browser verification continues
+  to be dispatched clicks and geometric measurement; screenshots fail because
+  the Browser pane is not displayed. v70 adds a new card to the Finance page and
+  two new inputs to onboarding step 1, none of it seen rendered.
+
+## [2.19.0] — 2026-08-19 (APP_VERSION 69)
+
+### Changed
+
+- **The finance income weight fell from 0.6 to 0.15**, and the CFPB well-being
+  term rose from 0.4 to 0.85. `calculateFinanceScore` is otherwise untouched:
+  same inputs, same savings bonus, same clamp.
+
+  Round 10 (`docs/research/round-10-finance-composition.md`) set out to find the
+  highest income weight any published composite uses, expecting to lower 0.6
+  toward it. The verified answer was stronger than a smaller number: **no
+  validated instrument scores raw income at any weight.** CFPB scores ten
+  subjective items; the Financial Health Network scores eight behavioural
+  indicators; Netemeyer et al. 2018 treat income explicitly as an *antecedent*
+  of financial well-being rather than a part of it.
+
+  0.15 comes from CFPB *Making Ends Meet* Wave 2, Table 3 (p.11): mean financial
+  well-being runs 44.75 for households at or below $40,000/yr to 58.62 above
+  $100,000 — **13.9 points across the entire US income distribution**, on the
+  same 0–100 scale this app uses. A term worth about 14 points of the finished
+  score is a weight near 0.15. The app's old term could move finance by 60.
+
+  **Honest limit:** turning an observed band spread into a weight is this
+  project's inference, not a published weighting, and the sample is American.
+  It is an inference from a real table, which is more than 0.6 ever had, and it
+  is written into the code comment so the next reader can argue with it rather
+  than mistake it for a citation.
+
+- **Methodology page rewritten for Finance** — the formula line now reads 15/85,
+  and the rationale line no longer claims objective standing is weighted above
+  sentiment, because it no longer is. Both strings re-translated in `th.js`.
+
+### Consequence, recorded rather than fixed
+
+- **Finance now tops out at 95 for anyone under 70**, where every other aspect
+  still reaches 99. The CFPB conversion table's own maximum is 82 (90 from age
+  70), so a flawless finance profile computes 0.15(100) + 0.85(82) + 10 = 94.7.
+  Under the old weights the income term was large enough to push any age past
+  the cap.
+
+  **Measured cost: one point of Balance Index, for a person scoring 99 on all
+  eight aspects at once.** Grades are unaffected entirely — `gradeForBenchmark`
+  reads the income percentile, never the score — and `balanceIndex` runs on
+  `relativeToPopulation`, which rescales each aspect against its own average
+  precisely so aspects that cannot realistically top out are not punished.
+
+  Not fixed, deliberately: fixing it means rescaling a published conversion
+  table so a number looks rounder, which is the opposite of what round 10 was
+  about. `tests/finance-scale.test.mjs` pins 95 so that any future attempt to
+  change it has to be a decision rather than a drift.
+
+- **`AVERAGE_ASPECT_SCORES.finance` moved 53 → 54.** One point is the entire
+  effect on the reference profile, and the Balance Index for the standard test
+  aspect set is unchanged at 46. That is the expected shape: the reference
+  earns the median and answers the CFPB items at the midpoint, so it is nearly
+  indifferent to which term leads. The reweight bites at the extremes.
+
+### Tests
+
+- `income carries 0.15 of the finance score and CFPB carries 0.85` — five probes
+  asserted against `clampScore` of the published parts rather than by
+  differencing finished scores, because the score is rounded and a difference of
+  rounded numbers is not the rounded difference.
+- `THE REGRESSION v69: a big salary no longer outranks someone coping better` —
+  the two real people this change came from: a 75,000 THB earner answering the
+  CFPB items badly must now score below a 3,000 THB student answering them well.
+  Under 0.6 the salary won by 16 points.
+- `v69 CONSEQUENCE: finance now tops out at 95 for anyone under 70`.
+- The maximal-profile ceiling test moved to an age-75 fixture, because that is
+  now the only band that still reaches the clamp.
+
+### Not done
+
+- **No new fields.** Committed outflow and liquid savings — the two things that
+  would actually distinguish a 75,000 salary that is spoken for from one that is
+  not — are part 2 of this plan and are not in this release.
+- **Runway is still unshippable as a score.** Round 10's kill criteria 1 and 2
+  neither fired nor cleared: the OECD/INFE instrument PDF returned HTTP 403, the
+  Financial Health Network weighting is absent from the report that is cited for
+  it, and the Thai anchor is a confirmed NOT FOUND. Without a distribution there
+  is no defensible normalizer, and picking one would repeat the mistake this
+  release corrects.
+- **Nobody has viewed v65–v69 with human eyes.** Browser verification continues
+  to be dispatched clicks and geometric measurement; screenshots fail because
+  the Browser pane is not displayed.
 
 ## [2.18.0] — 2026-08-18 (APP_VERSION 68)
 

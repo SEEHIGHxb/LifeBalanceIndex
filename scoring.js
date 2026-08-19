@@ -236,6 +236,45 @@ export function savingsAmountFrom(rate, income) {
   return Math.round((r / 100) * inc);
 }
 
+// --- RUNWAY: MEASURED, DELIBERATELY NOT SCORED (v70) ---
+//
+// Months of committed outflow covered by liquid savings. This is the number
+// round 10 concluded the finance aspect was missing: a 75,000 salary that is
+// entirely spoken for and a 75,000 salary that is not are the same number to
+// `income` and to `savingsRate`, and the CFPB items only capture how that
+// difference FEELS. Runway is the fact underneath the feeling.
+//
+// IT RETURNS MONTHS, NOT A 0-100 SCORE, AND NOTHING WEIGHTS IT. That is the
+// whole point of shipping it this way. Turning months into a component would
+// need a normalizer — some published distribution saying what 3 months is
+// worth against 9 — and round 10 established that no such anchor is available:
+// the OECD/INFE instrument PDF returned HTTP 403, the Financial Health Network
+// weighting is absent from the report cited for it, and the Thai anchor is a
+// confirmed NOT FOUND. Round 11 (docs/research/round-11-runway-normalizer.md)
+// exists to find one. Until it does, inventing a divisor here would repeat
+// exactly the mistake v69 spent a release correcting.
+//
+// NULL means "no runway is defined", and it is returned when committed outflow
+// is zero or absent — not zero months. Someone who genuinely owes nothing each
+// month (the student from the v69 regression test pays for nothing) has an
+// unbounded runway, and unbounded is not a quantity this can print. Callers
+// OMIT the row, the same contract bmiScore and sleepDurationScore already use.
+//
+// Zero or negative savings against a real outflow IS zero months, and says so.
+// Negative is reachable from a connector reporting net of debt, never from the
+// form, which floors at 0.
+export function runwayMonths(profile) {
+  const outflow = parseFloat(profile.committedOutflow || 0);
+  if (!(outflow > 0)) return null;
+  const savings = parseFloat(profile.liquidSavings || 0);
+  // NaN floors to zero months rather than propagating: `parseFloat("abc")` is
+  // NaN, and NaN survives Math.max, so an unguarded version printed the literal
+  // string "NaN months" on the Finance page. The outflow side above is already
+  // safe because NaN > 0 is false, which returns null and omits the row.
+  if (!(savings > 0)) return 0;
+  return savings / outflow;
+}
+
 // Donation volume vs income, 0-100: 2% of income or 500 THB/mo maxes it.
 export function donationVolumeFactor(profile) {
   const donRate = parseFloat(profile.monthlyDonations || 0);
@@ -305,8 +344,42 @@ export function calculateFinanceScore(profile, cfpbAnswers) {
   //    so rather than leaving the reader to reconcile them.
   const S_income = incomeStandingScore(profile.income, profile.region);
 
-  // Savings rate modifier (max 10 bonus points)
-  return clampScore((0.6 * S_income) + (0.4 * S_wellbeing) + savingsBonus(profile));
+  // THE WEIGHTS CHANGED IN v69, from 0.6/0.4 to 0.15/0.85.
+  //
+  // Round 10 (docs/research/round-10-finance-composition.md) went looking for a
+  // published composite that weights an objective income term at or above 0.5,
+  // and found something stronger than a lower number: NO validated instrument
+  // scores raw income at any weight. CFPB scores ten subjective items. The
+  // Financial Health Network scores eight behavioural indicators across
+  // Spend/Save/Borrow/Plan. Netemeyer et al. 2018 (J. Consumer Research 45(1),
+  // doi:10.1093/jcr/ucx109) treat income explicitly as an ANTECEDENT of
+  // financial well-being rather than a component of it.
+  //
+  // At 0.6 this term was not supporting the measurement, it was overruling it.
+  // Two real people whose CFPB answers put them 36 points apart came out of
+  // this function 16 points apart in the OPPOSITE order — the salary decided
+  // the score and the five questions about how they are actually coping lost.
+  //
+  // WHERE 0.15 COMES FROM, and how much of it is inference. CFPB, Making Ends
+  // Meet Wave 2, Table 3 (p.11): mean financial well-being runs 44.75 for
+  // households at or below $40,000/yr to 58.62 for households above $100,000 —
+  // 13.9 points on this same 0-100 scale, across the ENTIRE income
+  // distribution. A term whose full range is worth about 14 points of the
+  // finished score is a weight near 0.15.
+  //
+  // That last step is MINE, not the CFPB's. They publish band means, not a
+  // weighting, and the sample is American. So 0.15 is an inference from a real
+  // published table rather than a published weight — which is still more than
+  // 0.6 ever had, and it is recorded here so the next reader can argue with the
+  // inference instead of mistaking it for a citation.
+  //
+  // Income did not leave the app and did not leave the score. It is still
+  // asked, still ranked on the benchmark card, still shown on the aspect page,
+  // and still the denominator of the savings rate. It stopped being four times
+  // louder than the evidence supports.
+  //
+  // Savings rate modifier (max 10 bonus points) is unchanged.
+  return clampScore((0.15 * S_income) + (0.85 * S_wellbeing) + savingsBonus(profile));
 }
 
 export function calculatePhysicalScore(profile, jssAnswers) {

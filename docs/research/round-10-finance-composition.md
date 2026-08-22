@@ -478,6 +478,16 @@ OECD instrument (HTTP 403) and the FinHealth weighting is unsourced. And the Tha
 coverage is a confirmed **NOT FOUND**, which the export reported honestly. Without a distribution
 there is no defensible normalizer, so a runway measure still cannot ship.
 
+> **Superseded by round 11 (closed 2026-08-22).** Two of the three barriers above were errors, not
+> absences. The OECD instrument PDF downloads without a 403, and the FinHealth weighting is
+> published — in the *FinHealth Score Toolkit*, not in the Pulse report cited for it here: the
+> months-covered item is 1 of 8 equally-weighted indicators with explicit point values. The Thai
+> anchor is half-overturned too: the Bank of Thailand fielded the OECD/INFE survey (n = 12,402) and
+> **48.2% of Thai adults can cover three months**, published in Annex D Table 4.4. What survives is
+> narrower and still correct — no *distribution* of months-covered is published for Thailand or the
+> OECD sample, only a binary at the three-month line. See
+> `docs/research/round-11-runway-normalizer.md`.
+
 ## The lesson this round adds
 
 Round 9's was that agreement with a written-down prior is the cheapest thing an export can

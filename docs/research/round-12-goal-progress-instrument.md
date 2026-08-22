@@ -1,6 +1,7 @@
 # Round 12 research brief — is there a goal-progress instrument this app can actually use?
 
 Status: **CLOSED — 2026-08-22** (opened 2026-08-22). **Kill criterion 1 fired: the CIT Accomplishment subscale is adoptable.**
+**Addendum 2026-08-22: all four unretrievable items closed at primary source; weight and display decided.**
 
 Narrow by design. One construct, one question, following round 8's format rather than round 7's:
 the broad rounds keep returning fabrications buried in good material, and this subject area is
@@ -153,6 +154,9 @@ Named as a barrier, not worked around, and not relied on.
 
 ### Q2 — is goal accomplishment distinct from self-efficacy? Yes, structurally, and it is measured.
 
+> **Superseded in part by the source-retrieval addendum below**, which reports the measured
+> correlation (r = .62) instead of the factor-model argument.
+
 The strongest available evidence is that a CFA of the CIT **models Accomplishment and Self-Efficacy
 as separate first-order factors and fits well**.
 
@@ -198,6 +202,9 @@ score. This is now a checked negative rather than an untested assumption.
 
 ### Q5 — NOT FOUND for Thailand, as expected.
 
+> **The Wiese blocker is resolved in the source-retrieval addendum below.** The country list and the
+> three inadmissible countries are now recorded at primary source. Thailand is still NOT FOUND.
+
 No Thai validation of the CIT, the BIT, or the PERMA-Profiler was found. A Vietnamese validation of
 the PERMA-Profiler exists (Ho Chi Minh City Open University Journal of Science) and is recorded as a
 lead only — it was not retrieved or assessed, it concerns the rejected instrument, and Vietnam is not
@@ -214,7 +221,8 @@ as support for it.
 ### What this means for the code — and what it does not
 
 Criterion 1 fired, so the brief's own rule applies: an instrument was found, and **the weight it
-should carry against GSE inside `personalGoalsComposite` is not decided here.** That is a release
+should carry against GSE inside `personalGoalsComposite` is not decided here.** *(Decided
+afterwards, on the addendum's evidence: equal thirds, unranked. See the decisions there.)* That is a release
 decision argued against the existing 0.4/0.3 split, exactly as round 11 refused to propose a runway
 weight.
 
@@ -242,6 +250,165 @@ What can be said without proposing a weight:
    Personal Goals behavioural in the way Physical or Environment are. It makes it *measured*, which
    is a different and lesser claim, and the methodology page should say so rather than implying the
    app now observes goal attainment. It does not; Q4 is why.
+
+### Source-retrieval addendum — 2026-08-22
+
+The round closed with four items recorded as unretrievable, because the primary texts sat behind
+Wiley and behind a journal whose TLS certificate does not cover its own hostname. **The author
+supplied the three PDFs directly.** All four items are now closed at primary source, and the record
+below supersedes the secondary and unverified figures above where they conflict.
+
+Read at source: Su, Tay & Diener 2014 (`doi:10.1111/aphw.12027`); Wiese, Tay, Su & Diener 2018
+(`doi:10.1111/aphw.12119`); Butler & Kern 2016 (`doi:10.5502/ijw.v6i3.1`). The PDFs are publisher
+copies and are **not committed** — `docs/article/` is git-ignored for the same reason the raw
+research exports are.
+
+#### 1. The instrument and the licence, verified against the published paper
+
+The three Accomplishment items and the 1–5 response scale quoted above match Appendix A of the
+published paper exactly. The subscale-reuse permission is **in the paper itself**, as the closing
+note of Appendix A, not only on the author's webpage:
+
+> "The CIT subscales may be used alone or in combination with each other."
+
+Item 1 carries the BIT asterisk in the published appendix, confirming what the findings claimed
+about it being the authors' own single-item representative of the facet.
+
+**α from the original validation, five samples: .88, .94, .93, .94, .95** (Table 4). This supersedes
+the α = 0.90 taken from the Brazilian replication — the original range is higher, and the replication
+figure stays valid as an independent confirmation in a second language.
+
+**Four-month test–retest = .78** (Table 5 diagonal). The paper names Accomplishment as one of its
+five most stable subscales, behind only Support (.83), Optimism (.81), Life Satisfaction (.80) and
+Positive Emotions (.79). Stable enough to justify treating it the way `gse10` is treated in the
+yearly deep retest.
+
+#### 2. Q2 is now answered directly, and it supersedes the structural argument above
+
+Table 5 of the original paper reports the subscale intercorrelations the findings could not obtain:
+
+| Pair | r |
+|---|---|
+| Accomplishment ↔ Self-Efficacy | **.62** |
+| Accomplishment ↔ Learning | **.50** |
+
+Moderate. The two constructs share meaningful variance and remain distinct — which is the answer the
+factor-model argument could only approximate. The honest limit stated above still stands unchanged:
+this is discriminability, **not** an incremental prediction of wellbeing by goal progress over and
+above self-efficacy. No such regression exists in the retrieved text and none is claimed.
+
+#### 3. A finding that argues against adoption, recorded because the round rejected PERMA on it
+
+PERMA-Profiler Accomplishment was rejected above partly for correlating **.774** with overall
+wellbeing — near enough to a wellbeing proxy to risk double-counting against WHO-5 in Mental.
+
+Applied evenly, the same test reads worse for the pick. From Table 5:
+
+| Pair | r |
+|---|---|
+| Accomplishment ↔ Life Satisfaction | **.82** |
+| Accomplishment ↔ Positive Emotions | **.71** |
+
+That is the third-highest life-satisfaction correlation of any non-SWB subscale, behind only
+Meaning (.84) and Optimism (.83).
+
+**Why this does not reverse the decision, stated so the reasoning can be attacked later.** The PERMA
+rejection was for *item contamination*: its A subscale asks about handling responsibilities, and
+Butler & Kern's own sub-domain list describes A as bundling "self-efficacy, sense of accomplishment,
+and achieving personal goals" — three constructs scored as one. CIT Accomplishment's three items ask
+about goal progress and nothing else; its correlation with life satisfaction is a substantive
+relation between distinct constructs, not shared item content. Meaning sits at .84 and is not
+thereby redundant.
+
+**The consequence is real and belongs on the methodology page:** after this adoption, Personal Goals
+and Mental are **not independent evidence**. A user scoring low on both is not two findings.
+
+#### 4. Q5's blocker is resolved — the Wiese country list
+
+Ten countries plus a US reference sample: **Argentina, Australia, China, Germany, India, Mexico,
+Russia, Singapore, Spain, Turkey.** No Thailand. The only Southeast Asian sample is Singapore.
+
+The three countries whose CIT solutions were inadmissible are **Argentina, Mexico, and China**:
+
+- Argentina and Mexico failed on the **Flow** subscale — α = .37, with item 19 loading .12–.23.
+  Irrelevant to this adoption; the app is not taking Flow.
+- **China failed differently and more seriously.** Several latent factors correlated above .90, no
+  single factor could be identified as the cause, and no theory-driven or exploratory alternative
+  model reached acceptable fit. The nearest East Asian sample in the study is the one where the
+  instrument's structure could not be established at all.
+
+This supersedes the unverified "inadmissible in three" note above, which is now confirmed but was
+recorded as secondary.
+
+#### 5. The invariance result, which decides how the score may be displayed
+
+Item numbering was cross-checked before drawing conclusions: the paper's BIT-asterisked items map
+exactly onto the BIT's freed-intercept set {16, 31, 20, 28, 3, 34}, and the Flow discussion pins
+items 19–21, so the item-to-subscale mapping is certain. Accomplishment is items **28–30**.
+
+**In the CIT's seven-country invariance test, the freed intercepts were items 13, 9, and 25** —
+Loneliness, Trust, and Learning. Accomplishment's three items were **fully scalar invariant**.
+
+**In the BIT's ten-country test, the freed intercepts included item 28 — "I am achieving most of my
+goals."** Intercept non-invariance is precisely the property that breaks *mean comparison* across
+cultures.
+
+The two results are not in conflict — different models, different item sets — but the second is the
+binding one for a Thai user compared against an American norm.
+
+**Therefore: score the subscale, do not rank it.** See the decisions below.
+
+US norms are recorded here for completeness, and deliberately **not** wired into `benchmarks.js`:
+N = 1,090, **M = 3.30, SD = 1.06**, quartiles 2.67 / 3.33 / 4.00 — which is **57.5** on the app's
+0–100 normaliser. Accomplishment has the lowest mean of any positively-worded CIT subscale except
+Community.
+
+#### 6. There is no published CIT aggregation rule. This was searched for, not merely unfound.
+
+The round's follow-up question was whether the CIT publishes its own rule for combining subscales,
+because a published rule would make any weight in `personalGoalsComposite` a citation rather than an
+inference — the way FinHealth's stated "average of the point values for questions 1–8" settled the
+equivalent question in round 11.
+
+**It does not.** Su et al. treat the 18 subscales as 18 separate scores throughout. In the validity
+regressions the CIT enters as eighteen predictors; the only overall figure computed anywhere is a
+*sum of relative importance weights*, which is a statistic about variance explained, not a scoring
+rule. No CIT total-score formula appears in the paper.
+
+What exists instead, and it is weaker: when these authors built a composite of this instrument
+themselves — the BIT — they took **one item from each of ten different subscales and weighted them
+equally**, as a unit-weighted single factor with no facet privileged. That is the authors' revealed
+aggregation practice across facets, and it is an inference from their construction rather than a
+stated rule. It is recorded at that strength and must be disclosed at that strength.
+
+#### Decisions taken on this evidence
+
+1. **Weight: equal thirds.** `personalGoalsComposite` becomes an equal-weighted mean of GSE-6,
+   CIT Accomplishment, and learning. The justification is the BIT's unit weighting plus the CIT's own
+   treatment of Mastery facets as coordinate — **an inferred precedent, not a published rule**, and
+   the release must disclose it in the register v69 used for the 0.15 income weight. The alternative
+   considered and not taken was dropping Accomplishment into grit's vacated 0.3 slot, whose only
+   virtue was changing one thing at a time.
+2. **No benchmark.** Accomplishment is displayed unranked. No `benchmarks.js` entry, no percentile,
+   no band — because item 28's intercept is known to move across cultures and the only norms
+   available are American. This is cheaper to build than the alternative and better supported.
+3. **The two cautions above stand unchanged**, and the Mental non-independence in §3 joins them as a
+   third thing the adopting release must state rather than imply.
+
+#### What remains open after this addendum
+
+- **Nothing about the instrument.** Items, scale, licence, reliability, stability, discriminant
+  correlations, cross-cultural behaviour and norms are all now at primary source.
+- **Still unanswered, and unchanged by these PDFs:** whether goal progress predicts wellbeing over
+  and above self-efficacy. It would need a regression nobody in this literature appears to have run.
+- **Still NOT FOUND:** any Thai validation of the CIT or BIT, and any licence to score wellbeing from
+  observed pledge attainment (Q4). Pledges stay XP.
+- **Newly raised, not pursued:** `learningScore` is now the only term in the aspect not drawn from a
+  published instrument — half of it is an unvalidated self-rated slider — and the CIT publishes a
+  **Learning** subscale under the same licence (α .79–.82) that would replace it. Note that its first
+  item is item 25, one of the CIT's freed intercepts, so it carries the same do-not-benchmark
+  property. Deliberately deferred to a release after the Accomplishment addition, because it changes
+  an existing score rather than adding one.
 
 ---
 

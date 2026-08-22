@@ -9,3 +9,8 @@ Thumbs.db
 # docs/research/*.md — the raw files are inputs, and several of their numbers
 # turned out to be fabricated, so they are not a citable record.
 docs/research/*.docx
+
+# Publisher PDFs of cited papers. Read to verify findings, never redistributed --
+# this repo is public and the articles are copyrighted. The verified numbers live
+# in docs/research/*.md; the DOIs there are the citable record.
+docs/article/

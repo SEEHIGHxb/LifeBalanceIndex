@@ -590,6 +590,8 @@ Still open, in priority order:
    scoring, licence, any non-Western validation. Round 2's one-question format is the right
    shape — the broad rounds keep returning fabrications buried in good material.
 2. **A goal-progress instrument** for Personal Goals, so the aspect measures what its name says.
+   **Now briefed as round 12** (`round-12-goal-progress-instrument.md`, opened 2026-08-22),
+   narrow and single-construct, with the six constraints an instrument must clear stated up front.
 3. **The remaining double-count**: LFIS item 3 (donations toward future generations) still
    overlaps Social Contribution, and item 4 (10-year financial horizon) still overlaps Finance.
    Left in place because removing them without a replacement instrument would leave the aspect

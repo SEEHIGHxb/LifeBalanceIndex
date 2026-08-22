@@ -244,15 +244,23 @@ export function savingsAmountFrom(rate, income) {
 // `income` and to `savingsRate`, and the CFPB items only capture how that
 // difference FEELS. Runway is the fact underneath the feeling.
 //
-// IT RETURNS MONTHS, NOT A 0-100 SCORE, AND NOTHING WEIGHTS IT. That is the
-// whole point of shipping it this way. Turning months into a component would
-// need a normalizer — some published distribution saying what 3 months is
-// worth against 9 — and round 10 established that no such anchor is available:
-// the OECD/INFE instrument PDF returned HTTP 403, the Financial Health Network
-// weighting is absent from the report cited for it, and the Thai anchor is a
-// confirmed NOT FOUND. Round 11 (docs/research/round-11-runway-normalizer.md)
-// exists to find one. Until it does, inventing a divisor here would repeat
-// exactly the mistake v69 spent a release correcting.
+// IT RETURNS MONTHS, NOT A 0-100 SCORE, AND NOTHING WEIGHTS IT.
+//
+// Round 11 closed 2026-08-22 and found that a normalizer DOES exist, correcting
+// round 10: the Financial Health Network's FinHealth Score Toolkit scores this
+// exact question as 1 of 8 equally-weighted indicators, with published point
+// values (6mo+ = 100, 3-5mo = 75, 1-2mo = 50, 1-3wk = 25, <1wk = 0). Round 10
+// looked in the Pulse report; the weighting is in the Toolkit.
+//
+// It is still not applied here, for two reasons that are decisions rather than
+// research gaps. First, BOTH published instruments divide by TOTAL spending,
+// while committedOutflow is deliberately the unskippable subset — so our months
+// are always larger than the months those bands describe, and borrowing the
+// table would overstate everyone. Second, the Toolkit is "all rights reserved"
+// and its own publisher requires a licence for use of the Score in software.
+//
+// See docs/research/round-11-runway-normalizer.md. Until those two are settled,
+// inventing a divisor here would repeat the mistake v69 spent a release fixing.
 //
 // NULL means "no runway is defined", and it is returned when committed outflow
 // is zero or absent — not zero months. Someone who genuinely owes nothing each

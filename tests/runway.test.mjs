@@ -9,11 +9,12 @@
 //
 //   2. The Finance aspect page carries it as a FACT — a formatted string with
 //      no 0-100 value — and never as a component. Components render as bars,
-//      and a bar is a claim about where a number sits on a scale. Round 10
-//      established that no such scale is published for months-of-runway (the
-//      OECD/INFE instrument PDF returned HTTP 403, the Financial Health Network
-//      weighting is absent from the report cited for it, and the Thai anchor is
-//      a confirmed NOT FOUND). Round 11 exists to find one.
+//      and a bar is a claim about where a number sits on a scale. Round 11
+//      (closed 2026-08-22) found that such a scale IS published — the FinHealth
+//      Score Toolkit scores this question at 1/8 weight with explicit point
+//      values — but it divides by TOTAL spending where committedOutflow is the
+//      unskippable subset, and the Toolkit is licensed for software use. Until
+//      those are settled the fact stays a fact, so this file still holds.
 //
 //   3. NOTHING ABOUT THE SCORE MOVES. Not the finance score, not any of the
 //      other seven, not the Balance Index. This is the guard that makes v70

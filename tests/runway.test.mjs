@@ -13,8 +13,9 @@
 //      (closed 2026-08-22) found that such a scale IS published — the FinHealth
 //      Score Toolkit scores this question at 1/8 weight with explicit point
 //      values — but it divides by TOTAL spending where committedOutflow is the
-//      unskippable subset, and the Toolkit is licensed for software use. Until
-//      those are settled the fact stays a fact, so this file still holds.
+//      unskippable subset, it is licensed for software use, and it carries no
+//      psychometric validation. Runway therefore stays a fact PERMANENTLY,
+//      decided 2026-08-22. This file is the guard on that decision.
 //
 //   3. NOTHING ABOUT THE SCORE MOVES. Not the finance score, not any of the
 //      other seven, not the Balance Index. This is the guard that makes v70

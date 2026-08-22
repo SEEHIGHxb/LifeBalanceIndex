@@ -1,6 +1,6 @@
 # Round 11 research brief — is there a defensible normalizer for runway?
 
-Status: **CLOSED — 2026-08-22** (opened 2026-08-19). Opened by v70, which ships the runway measure *collected and
+Status: **CLOSED — 2026-08-22** (opened 2026-08-19). **Decision: runway stays unscored permanently.** Opened by v70, which ships the runway measure *collected and
 displayed but not scored*. This round has exactly one job: find out whether months-of-runway can
 honestly be turned into a 0–100 component, or confirm that it cannot.
 
@@ -165,11 +165,36 @@ gap, named rather than worked around.
 Unchanged, and correctly so. The brief forbids proposing a weight here, and nothing above should be
 read as one. What changed is that "no published normalizer exists" is **no longer true** — one
 exists, it is citable, and it is equally weighted. What stands between it and the Finance page is a
-denominator that does not match ours and a licence that may not permit it. Both are decisions for a
-release, not findings for a round.
+denominator that does not match ours and a licence that may not permit it.
 
-The `runwayMonths` comment should **not** yet be changed to say "unscored permanently" — criterion 3
-did not fire.
+---
+
+## DECISION — 2026-08-22: runway stays unscored, permanently
+
+Taken by the app author after the findings above, and recorded here so it stops being reopened.
+
+Criterion 3 did not fire on its own terms — a normalizer *was* found, so this is not a research
+negative. It is a **judgement that the normalizer found is not one this app should adopt**, on three
+grounds, in the order that settles the matter:
+
+1. **The denominator does not match, and no published conversion exists.** Both instruments divide
+   by total spending; `committedOutflow` is the unskippable subset. The gap varies per person with
+   their discretionary share. Nothing published closes it.
+2. **Licensing.** The Toolkit is "all rights reserved" and its publisher requires a licence for use
+   of the Score in software. This app is software.
+3. **Validation.** No peer-reviewed psychometric validation of the FinHealth Score was found. The
+   app's other instruments carry one. Adding an unvalidated normalizer to gain one more bar is a
+   worse trade than the honest line of text already shipped.
+
+**What would reopen it, and nothing else:** a published figure for the non-discretionary share of
+Thai household spending (round 10's unanswered Q2.4). That is the only missing quantity that would
+make the FinHealth bands applicable to our number, and it would still leave obstacles 2 and 3.
+
+**What did NOT need changing: the user-facing text.** The Finance page reads "no published
+distribution says what a given number of months is worth". Round 11 *confirmed* that — kill
+criterion 2 is a NOT FOUND. A point table published by an instrument is not a distribution, and the
+findings above keep that distinction. The v70 wording survived scrutiny exactly as written, so no
+string changed, no `th.js` key moved, and no version was bumped.
 
 ---
 

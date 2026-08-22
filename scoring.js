@@ -252,15 +252,23 @@ export function savingsAmountFrom(rate, income) {
 // values (6mo+ = 100, 3-5mo = 75, 1-2mo = 50, 1-3wk = 25, <1wk = 0). Round 10
 // looked in the Pulse report; the weighting is in the Toolkit.
 //
-// It is still not applied here, for two reasons that are decisions rather than
-// research gaps. First, BOTH published instruments divide by TOTAL spending,
-// while committedOutflow is deliberately the unskippable subset — so our months
-// are always larger than the months those bands describe, and borrowing the
-// table would overstate everyone. Second, the Toolkit is "all rights reserved"
-// and its own publisher requires a licence for use of the Score in software.
+// IT IS DELIBERATELY NOT APPLIED, AND THAT IS NOW PERMANENT — decided
+// 2026-08-22, not deferred. Three reasons, in the order that settles it:
 //
-// See docs/research/round-11-runway-normalizer.md. Until those two are settled,
-// inventing a divisor here would repeat the mistake v69 spent a release fixing.
+//   1. BOTH published instruments divide by TOTAL spending, while
+//      committedOutflow is deliberately the unskippable subset. Our months are
+//      therefore always larger than the months those bands describe, by a
+//      factor that varies per person with their discretionary share. The two
+//      numbers are not interchangeable and no published conversion exists.
+//   2. The Toolkit is "all rights reserved" and its publisher requires a
+//      licence for use of the Score in software. This is software.
+//   3. No peer-reviewed psychometric validation of the FinHealth Score was
+//      found. The app's other instruments carry one; this would not.
+//
+// So the honest thing to report is the number itself, which is what happens.
+// Do not reopen this without new evidence on (1) — a published Thai
+// non-discretionary spending share is the only thing that would change it.
+// See docs/research/round-11-runway-normalizer.md.
 //
 // NULL means "no runway is defined", and it is returned when committed outflow
 // is zero or absent — not zero months. Someone who genuinely owes nothing each

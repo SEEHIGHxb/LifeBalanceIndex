@@ -92,7 +92,7 @@ export const TH = {
   "Weekly activity, body composition, sleep, and nutrition.": "กิจกรรมรายสัปดาห์ องค์ประกอบร่างกาย การนอน และโภชนาการ",
   "Well-being (WHO-5) and stress resilience (Thai DMH ST-5).": "สุขภาวะ (WHO-5) และความทนทานต่อความเครียด (ST-5 กรมสุขภาพจิต)",
   "Social network strength, loneliness, and romantic satisfaction.": "ความแข็งแรงของเครือข่ายสังคม ความเหงา และความพึงพอใจในความรัก",
-  "Self-efficacy and active learning habits.": "การรับรู้ความสามารถของตนเอง และนิสัยการเรียนรู้",
+  "Goal progress, self-efficacy, and active learning habits.": "ความคืบหน้าตามเป้าหมาย การรับรู้ความสามารถของตนเอง และนิสัยการเรียนรู้",
   "Giving, volunteering, and prosocial habits.": "การให้ การอาสา และพฤติกรรมเพื่อสังคม",
   "Plastic footprint and everyday green behavior.": "การใช้พลาสติกและพฤติกรรมรักษ์โลกในชีวิตประจำวัน",
   "Future skills, future orientation, and maintaining what lasts.": "ทักษะแห่งอนาคต การมองการณ์ไกล และการดูแลรักษาสิ่งที่อยู่ได้นาน",
@@ -232,10 +232,10 @@ export const TH = {
     "40% เครือข่ายสังคม (LSNS-6) + 30% ความเหงาต่ำ (UCLA-3) + 30% ความพึงพอใจในความสัมพันธ์ (RAS เฉพาะคู่รัก) คนโสดกระจายน้ำหนักเป็น 50/50 — ความโสดไม่ถูกหักคะแนน",
   "Network size and felt loneliness measure different things; both matter, so neither dominates.":
     "ขนาดเครือข่ายกับความเหงาที่รู้สึกวัดคนละสิ่ง ทั้งคู่สำคัญจึงไม่ให้ด้านใดครอบงำ",
-  "Self-efficacy (GSE) and active learning (weekly study hours + self-rated digital literacy), in the same 40:30 proportion as before, renormalized after grit left the score. The in-depth section adds the full GSE-10 and Rosenberg self-esteem. Grit is still asked and still shown, but is no longer scored.":
-    "การรับรู้ความสามารถของตน (GSE) และการเรียนรู้ (ชั่วโมงเรียนต่อสัปดาห์ + ทักษะดิจิทัลที่ประเมินเอง) ในสัดส่วน 40:30 เท่าเดิม โดยปรับฐานใหม่หลังจากตัดความมุ่งมั่นออกจากคะแนน แบบประเมินเชิงลึกเพิ่ม GSE-10 และความภาคภูมิใจในตนเองของ Rosenberg ส่วนความมุ่งมั่นยังคงถามและแสดงผล แต่ไม่ถูกนำไปคิดคะแนน",
-  "Grit was dropped from the score because a 2017 meta-analysis of 66,807 people found it is almost the same thing as ordinary conscientiousness and adds under half a percent of new information. That makes it a personality trait rather than a life domain: it barely moves between yearly retests, and scoring it low reads as a verdict on who you are. Belief you can act, and actual learning time, are what remain.":
-    "ความมุ่งมั่นถูกตัดออกจากคะแนน เพราะงานวิเคราะห์อภิมานปี 2017 จากกลุ่มตัวอย่าง 66,807 คน พบว่ามันเกือบจะเป็นสิ่งเดียวกับความมีวินัยตามปกติ และเพิ่มข้อมูลใหม่ไม่ถึงครึ่งเปอร์เซ็นต์ นั่นทำให้มันเป็นลักษณะนิสัย ไม่ใช่ด้านหนึ่งของชีวิต มันแทบไม่เปลี่ยนระหว่างการประเมินแต่ละปี และการได้คะแนนต่ำก็เหมือนคำตัดสินว่าคุณเป็นคนอย่างไร สิ่งที่เหลืออยู่คือความเชื่อว่าทำได้ และเวลาเรียนรู้จริง",
+  "An equal third each: goal progress (CIT Accomplishment), self-efficacy (GSE), and active learning (weekly study hours + self-rated digital literacy). The in-depth section adds the full GSE-10 and Rosenberg self-esteem; goal progress is re-asked at every monthly check-in instead. Grit is still asked and still shown, but is no longer scored.":
+    "แบ่งเท่ากันสามส่วน: ความคืบหน้าตามเป้าหมาย (CIT Accomplishment), การรับรู้ความสามารถของตนเอง (GSE) และการเรียนรู้เชิงรุก (ชั่วโมงเรียนต่อสัปดาห์ + การประเมินทักษะดิจิทัลด้วยตนเอง) ส่วนเชิงลึกเพิ่ม GSE-10 ฉบับเต็มและแบบวัดการเห็นคุณค่าในตนเองของ Rosenberg ส่วนความคืบหน้าตามเป้าหมายจะถูกถามใหม่ทุกครั้งที่เช็คอินรายเดือนแทน ส่วนความมุ่งมั่น (Grit) ยังถามและยังแสดงผล แต่ไม่นำมาคิดคะแนนแล้ว",
+  "Until now this aspect measured how capable you feel and how much you study — not whether you are getting anywhere. Goal progress is the missing third, and it is the only part named after what the aspect is called. Three things to know about it. The equal weighting is our choice, not the instrument's: its authors publish no rule for combining their subscales, so we follow what they did when they built their own short form and weight the parts equally. It is a self-appraisal, not a record of what you did — your weekly pledges still earn XP and still change no score, because nothing published licenses scoring wellbeing from attainment you set yourself. And it is deliberately not ranked against a norm: the only published norms are American, and the instrument's own cross-national study found this subscale's wording shifts between countries. It also overlaps with life satisfaction more than most, so a low reading here and a low Mental score are not two independent findings. Grit left the score in 2017 for a different reason: a meta-analysis of 66,807 people found it nearly identical to ordinary conscientiousness, making it a personality trait rather than a life domain.":
+    "ที่ผ่านมาด้านนี้วัดว่าคุณรู้สึกว่าตนเองมีความสามารถแค่ไหนและเรียนรู้มากแค่ไหน — แต่ไม่ได้วัดว่าคุณกำลังไปถึงไหน ความคืบหน้าตามเป้าหมายคือส่วนที่สามที่ขาดหายไป และเป็นส่วนเดียวที่ตรงกับชื่อของด้านนี้ มีสามเรื่องที่ควรรู้ หนึ่ง การถ่วงน้ำหนักเท่ากันเป็นการตัดสินใจของเราเอง ไม่ใช่ของเครื่องมือ ผู้พัฒนาไม่ได้ตีพิมพ์กฎการรวมคะแนนย่อยไว้ เราจึงทำตามสิ่งที่พวกเขาทำจริงตอนสร้างแบบวัดฉบับสั้นของตนเอง คือให้น้ำหนักทุกส่วนเท่ากัน สอง นี่คือการประเมินตนเอง ไม่ใช่บันทึกสิ่งที่คุณทำ คำมั่นรายสัปดาห์ของคุณยังได้ XP และยังไม่เปลี่ยนคะแนนใด ๆ เพราะไม่มีงานตีพิมพ์ใดรองรับการให้คะแนนสุขภาวะจากเป้าหมายที่ตั้งเอง สาม เราตั้งใจไม่จัดอันดับเทียบเกณฑ์ เพราะเกณฑ์ที่ตีพิมพ์มีเฉพาะของสหรัฐฯ และงานวิจัยข้ามประเทศของเครื่องมือนี้เองพบว่าถ้อยคำของคะแนนย่อยนี้เปลี่ยนความหมายไปตามวัฒนธรรม อีกทั้งยังทับซ้อนกับความพึงพอใจในชีวิตมากกว่าส่วนอื่น ดังนั้นคะแนนต่ำตรงนี้กับคะแนนสุขภาพจิตที่ต่ำ ไม่ถือเป็นสองหลักฐานที่เป็นอิสระจากกัน ส่วนความมุ่งมั่น (Grit) ออกจากคะแนนในปี 2017 ด้วยเหตุผลอื่น: การวิเคราะห์อภิมานจาก 66,807 คนพบว่ามันแทบไม่ต่างจากความรับผิดชอบตามปกติ จึงเป็นลักษณะนิสัยมากกว่าจะเป็นด้านหนึ่งของชีวิต",
   "40% donations (frequency + amount vs income) + 40% action (volunteering hours + helping behavior) + 20% civic participation.":
     "40% การบริจาค (ความถี่ + จำนวนเทียบรายได้) + 40% การลงมือทำ (ชั่วโมงจิตอาสา + พฤติกรรมช่วยเหลือ) + 20% การมีส่วนร่วมทางสังคม",
   "Giving money and giving time are weighted equally; civic habits count but are the hardest to self-report accurately.":
@@ -305,6 +305,17 @@ export const TH = {
   "UCLA Loneliness Index": "แบบวัดความเหงา UCLA",
   "Relationship Assessment (couples only)": "แบบประเมินความสัมพันธ์ (เฉพาะคนมีคู่)",
   "GSE-6 Self-Efficacy Scale": "แบบวัดการรับรู้ความสามารถของตนเอง GSE-6",
+  "CIT Accomplishment": "แบบวัดความสำเร็จตามเป้าหมาย CIT",
+  // Round 12 flagged item 3 as the one to watch: "dreams" is aspirational in a
+  // way that does not carry evenly into Thai, and the instrument's own
+  // cross-national study had to free this subscale's marker item to reach
+  // partial scalar invariance. Kept concrete rather than poetic.
+  "I am achieving most of my goals": "ฉันบรรลุเป้าหมายส่วนใหญ่ของฉัน",
+  "I am fulfilling my ambitions": "ฉันกำลังทำสิ่งที่ตั้งใจไว้ให้สำเร็จ",
+  "I am on track to reach my dreams": "ฉันกำลังเดินหน้าไปสู่ความฝันของฉัน",
+  "Strongly Disagree": "ไม่เห็นด้วยอย่างยิ่ง",
+  "Neither Agree nor Disagree": "เฉย ๆ",
+  "Strongly Agree": "เห็นด้วยอย่างยิ่ง",
   "Grit-S (Perseverance)": "แบบวัดความมุ่งมั่น Grit-S",
   "Prosocial Tendencies (typical month)": "พฤติกรรมเพื่อสังคม (ในเดือนทั่วไป)",
   "Green Everyday Behavior": "พฤติกรรมรักษ์โลกในชีวิตประจำวัน",
@@ -660,6 +671,8 @@ export const TH = {
   "Romantic satisfaction (RAS)": "ความพึงพอใจในความรัก (RAS)",
   "Raw {n}/15 at baseline": "คะแนนดิบ {n}/15 ณ จุดเริ่มต้น",
   "Self-efficacy (GSE)": "การรับรู้ความสามารถของตนเอง (GSE)",
+  "Goal progress": "ความคืบหน้าตามเป้าหมาย",
+  "CIT Accomplishment, raw {n}/15 — not ranked against a norm": "CIT Accomplishment คะแนนดิบ {n}/15 — ไม่จัดอันดับเทียบเกณฑ์",
   "Raw {n}/24 at baseline": "คะแนนดิบ {n}/24 ณ จุดเริ่มต้น",
   "Active learning": "การเรียนรู้เชิงรุก",
   "{h}h/week study + digital skills {d}/100": "เรียน {h} ชม./สัปดาห์ + ทักษะดิจิทัล {d}/100",

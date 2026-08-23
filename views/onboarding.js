@@ -145,6 +145,7 @@ export function renderOnboarding(containerId, onComplete) {
       why: t("Self-efficacy and perseverance, plus your weekly learning habits."),
       body: `
         ${instrumentBlock("gse")}
+        ${instrumentBlock("citacc")}
         ${instrumentBlock("grit")}
         <div class="grid-2">
           ${numberField("onb-learning", t("Weekly Learning / Study Hours"), "", 'min="0" max="80" step="0.5"', { required: true, field: "weeklyLearningHours", placeholder: "0–80" })}
@@ -340,6 +341,7 @@ export function renderOnboarding(containerId, onComplete) {
         ucla: collectInstrument("ucla"),
         ras: collectInstrument("ras"),
         gse: collectInstrument("gse"),
+        citacc: collectInstrument("citacc"),
         grit: collectInstrument("grit"),
         ptm: collectInstrument("ptm"),
         geb: collectInstrument("geb"),

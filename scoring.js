@@ -113,6 +113,18 @@ export function gritScore(raw) {
   return ((raw - 4) / 16) * 100;
 }
 
+// CIT Accomplishment (3 items, each 1-5, raw 3-15). Su, Tay & Diener 2014,
+// doi:10.1111/aphw.12027, Dimension III (Mastery). The subscale is licensed for
+// standalone non-commercial use by the published instrument itself: "The CIT
+// subscales may be used alone or in combination with each other."
+//
+// The floor is 3, not 0 -- all three items are answered or none are, so a sum
+// below 3 means the instrument was never taken. personalGoalsComposite reads
+// that as ABSENT rather than as a reading of zero.
+export function citAccScore(raw) {
+  return ((raw - 3) / 12) * 100;
+}
+
 // --- PROFILE-DERIVED SUB-SCORES ---
 
 // IPAQ MET-minutes/week from the weekly activity fields.
@@ -340,8 +352,41 @@ export function relationshipsComposite(lsnsRaw, uclaRaw, rasRaw) {
 // The two surviving weights are the old 0.4 and 0.3 RENORMALIZED over 0.7,
 // not re-picked. So this change is grit's removal and nothing else — the
 // relative emphasis of self-efficacy against learning is exactly as it was.
-export function personalGoalsComposite(profile, gseRaw) {
-  return ((0.4 * gseScore(gseRaw)) + (0.3 * learningScore(profile))) / 0.7;
+//
+// v72 adds a THIRD term and re-weights all three to EQUAL THIRDS. Round 12
+// closed on the finding that the aspect contained no measure of goals at all;
+// the CIT Accomplishment subscale is that measure.
+//
+// Why thirds and not something argued from the aspect's name: the CIT publishes
+// NO aggregation rule across its subscales -- the round's source-retrieval
+// addendum searched the paper for one and recorded its absence, which is why
+// this weight is disclosed as INFERRED. What the authors did do, when they
+// built a composite of this instrument themselves, was weight the BIT's ten
+// facets equally with none privileged. Equal thirds follows their practice; it
+// does not quote a rule, and the methodology page says so.
+//
+// A baseline with no Accomplishment sum keeps the pre-v72 0.4/0.3-over-0.7
+// weighting and therefore its exact previous score. Substituting a midpoint
+// would fabricate an answer to a question the user was never asked -- the same
+// fabrication the sleep-duration branch exists to prevent -- and re-weighting
+// without the third term would move every old score for no measured reason.
+export function hasAccomplishment(citRaw) {
+  return Number.isFinite(Number(citRaw)) && Number(citRaw) >= 3;
+}
+
+// The learning term's weight, which differs across that fallback. Exported as
+// one function because it is read in three places (here and the two shift
+// calculators); the v64 grit removal showed what happens when a weight chain
+// lives as a bare literal in more than one file.
+export function learningWeight(citRaw) {
+  return hasAccomplishment(citRaw) ? 1 / 3 : 0.3 / 0.7;
+}
+
+export function personalGoalsComposite(profile, gseRaw, citRaw) {
+  if (!hasAccomplishment(citRaw)) {
+    return ((0.4 * gseScore(gseRaw)) + (0.3 * learningScore(profile))) / 0.7;
+  }
+  return (gseScore(gseRaw) + citAccScore(Number(citRaw)) + learningScore(profile)) / 3;
 }
 
 // --- THE EIGHT ASPECT CALCULATORS (onboarding: answers -> 0-100 score) ---
@@ -445,9 +490,11 @@ export function calculateRelationshipsScore(profile, lsnsAnswers, uclaAnswers, r
 }
 
 // `gritAnswers` is no longer a parameter: grit is collected and displayed but
-// not scored (see personalGoalsComposite).
-export function calculatePersonalGoalsScore(profile, gseAnswers) {
-  return clampScore(personalGoalsComposite(profile, rawSum(gseAnswers)));
+// not scored (see personalGoalsComposite). `citAnswers` is optional so that
+// callers replaying a pre-v72 save reach the two-term fallback.
+export function calculatePersonalGoalsScore(profile, gseAnswers, citAnswers) {
+  const citRaw = citAnswers ? rawSum(citAnswers) : null;
+  return clampScore(personalGoalsComposite(profile, rawSum(gseAnswers), citRaw));
 }
 
 export function calculateSocialContributionScore(profile, ptmAnswers) {
@@ -562,7 +609,7 @@ export function weeklyAspectShifts(oldProfile, newProfile, baseline) {
   const deltas = {
     physical: calculatePhysicalScore(newProfile, jss) - calculatePhysicalScore(oldProfile, jss),
     finance: savingsBonus(newProfile) - savingsBonus(oldProfile),
-    personalGoals: (0.3 / 0.7) * (learningScore(newProfile) - learningScore(oldProfile)),
+    personalGoals: learningWeight(baseline && baseline.citacc) * (learningScore(newProfile) - learningScore(oldProfile)),
     socialContribution:
       (0.4 * 0.5) * (donationVolumeFactor(newProfile) - donationVolumeFactor(oldProfile))
       + (0.4 * 0.6) * (volunteerFactor(newProfile) - volunteerFactor(oldProfile)),
@@ -624,8 +671,10 @@ export function profileEditShifts(oldProfile, newProfile, baseline) {
     finance: calculateFinanceScore(newProfile, cfpb) - calculateFinanceScore(oldProfile, cfpb),
     // weight/height -> BMI (plus any behavioural field, unchanged here)
     physical: calculatePhysicalScore(newProfile, jss) - calculatePhysicalScore(oldProfile, jss),
-    // digital literacy (half of learningScore), (0.3/0.7)-weighted since v64
-    personalGoals: (0.3 / 0.7) * (learningScore(newProfile) - learningScore(oldProfile)),
+    // digital literacy (half of learningScore). The weight follows the
+    // composite: a third since v72, or the v64 0.3/0.7 for a baseline with no
+    // Accomplishment reading.
+    personalGoals: learningWeight(baseline && baseline.citacc) * (learningScore(newProfile) - learningScore(oldProfile)),
     // income moves the donation-to-income ratio, 0.4*0.5 into the aspect
     socialContribution: (0.4 * 0.5) * (donationVolumeFactor(newProfile) - donationVolumeFactor(oldProfile)),
     // Shared learning hours (futureStudy term, 0.25*0.5) are now the only future
@@ -701,9 +750,13 @@ export function deepAspectScore(aspectKey, profile, baseline, currentScore) {
     case "personalGoals": {
       // Swap GSE-6->GSE-10, then blend in Rosenberg self-esteem at 15%.
       //
-      // The GSE weight tracks the composite: 0.4/0.7 after grit's removal in
-      // v64, not the old flat 0.4. A deep swap has to be worth what the thing
-      // it replaces is worth, or the deep section quietly re-weights the aspect.
+      // The GSE weight tracks the composite: a third since v72, 0.4/0.7 for a
+      // baseline predating it. A deep swap has to be worth what the thing it
+      // replaces is worth, or the deep section quietly re-weights the aspect.
+      //
+      // Accomplishment has no deep form and needs none: it has no published
+      // long version, and the monthly check-in re-asks it, so it is the one
+      // term here already refreshed on its own cadence.
       //
       // The Grit-12 line is gone with it. Grit-12 is still offered and still
       // stored — it sharpens the grit READOUT, which is now the only thing grit
@@ -711,7 +764,8 @@ export function deepAspectScore(aspectKey, profile, baseline, currentScore) {
       // that no longer scores grit at all would have been the exact drift the
       // aspect-parity tests exist to catch.
       let score = currentScore;
-      if (has("gse10")) score += (0.4 / 0.7) * (DEEP_NORM.gse10(d.gse10) - gseScore(num(baseline.gse)));
+      const gseWeight = hasAccomplishment(baseline && baseline.citacc) ? 1 / 3 : 0.4 / 0.7;
+      if (has("gse10")) score += gseWeight * (DEEP_NORM.gse10(d.gse10) - gseScore(num(baseline.gse)));
       if (has("rses")) score = 0.85 * score + 0.15 * DEEP_NORM.rses(d.rses);
       return clampScore(score);
     }

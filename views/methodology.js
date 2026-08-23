@@ -21,6 +21,7 @@ const CITES = {
   ucla: { label: "Hughes et al. (2004), UCLA 3-item Loneliness Scale", url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC2394670/" },
   ras: { label: "Hendrick (1988), Relationship Assessment Scale", url: "https://doi.org/10.2307/352430" },
   gse: { label: "Schwarzer & Jerusalem (1995), General Self-Efficacy Scale", url: "https://userpage.fu-berlin.de/~health/faq_gse.pdf" },
+  citacc: { label: "Su, Tay & Diener (2014), Comprehensive Inventory of Thriving — Accomplishment subscale", url: "https://doi.org/10.1111/aphw.12027" },
   grit: { label: "Duckworth & Quinn (2009), Short Grit Scale (Grit-S)", url: "https://pubmed.ncbi.nlm.nih.gov/19205937/" },
   rses: { label: "Rosenberg (1965), Rosenberg Self-Esteem Scale", url: "https://socy.umd.edu/about-us/using-rosenberg-self-esteem-scale" },
   cfc: { label: "Strathman et al. (1994), Consideration of Future Consequences scale", url: "https://doi.org/10.1037/0022-3514.66.4.742" }
@@ -199,9 +200,9 @@ export function renderMethodology(containerId, state) {
       )}
       ${aspectSection(
         t("Personal Goals"),
-        t("Self-efficacy (GSE) and active learning (weekly study hours + self-rated digital literacy), in the same 40:30 proportion as before, renormalized after grit left the score. The in-depth section adds the full GSE-10 and Rosenberg self-esteem. Grit is still asked and still shown, but is no longer scored."),
-        t("Grit was dropped from the score because a 2017 meta-analysis of 66,807 people found it is almost the same thing as ordinary conscientiousness and adds under half a percent of new information. That makes it a personality trait rather than a life domain: it barely moves between yearly retests, and scoring it low reads as a verdict on who you are. Belief you can act, and actual learning time, are what remain."),
-        ["gse", "grit", "rses"]
+        t("An equal third each: goal progress (CIT Accomplishment), self-efficacy (GSE), and active learning (weekly study hours + self-rated digital literacy). The in-depth section adds the full GSE-10 and Rosenberg self-esteem; goal progress is re-asked at every monthly check-in instead. Grit is still asked and still shown, but is no longer scored."),
+        t("Until now this aspect measured how capable you feel and how much you study — not whether you are getting anywhere. Goal progress is the missing third, and it is the only part named after what the aspect is called. Three things to know about it. The equal weighting is our choice, not the instrument's: its authors publish no rule for combining their subscales, so we follow what they did when they built their own short form and weight the parts equally. It is a self-appraisal, not a record of what you did — your weekly pledges still earn XP and still change no score, because nothing published licenses scoring wellbeing from attainment you set yourself. And it is deliberately not ranked against a norm: the only published norms are American, and the instrument's own cross-national study found this subscale's wording shifts between countries. It also overlaps with life satisfaction more than most, so a low reading here and a low Mental score are not two independent findings. Grit left the score in 2017 for a different reason: a meta-analysis of 66,807 people found it nearly identical to ordinary conscientiousness, making it a personality trait rather than a life domain."),
+        ["citacc", "gse", "grit", "rses"]
       )}
       ${aspectSection(
         t("Social Contribution"),

@@ -17,6 +17,7 @@ import {
   uclaLowLoneliness,
   rasScore,
   gseScore,
+  citAccScore,
   gritScore,
   DEEP_NORM,
   calculateFinanceScore,
@@ -56,6 +57,7 @@ const ONBOARDING_NORMALIZERS = {
   ucla: { fn: uclaLowLoneliness, direction: "inverted" },
   ras: { fn: rasScore, direction: "positive" },
   gse: { fn: gseScore, direction: "positive" },
+  citacc: { fn: citAccScore, direction: "positive" },
   grit: { fn: gritScore, direction: "positive" },
   ptm: null, // scored inside calculateSocialContributionScore (per-item, no sum normalizer)
   geb: null, // scored inside calculateEnvironmentScore (per-item, no sum normalizer)

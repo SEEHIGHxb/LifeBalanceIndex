@@ -24,6 +24,7 @@ import {
   uclaLowLoneliness,
   rasScore,
   gseScore,
+  citAccScore,
   gritScore,
   metMinutes,
   activityScore,
@@ -54,7 +55,7 @@ export const ASPECT_META = {
   physical: { label: "Physical", blurb: "Weekly activity, body composition, sleep, and nutrition." },
   mental: { label: "Mental", blurb: "Well-being (WHO-5) and stress resilience (Thai DMH ST-5)." },
   relationships: { label: "Relationships", blurb: "Social network strength, loneliness, and romantic satisfaction." },
-  personalGoals: { label: "Personal Goals", blurb: "Self-efficacy and active learning habits." },
+  personalGoals: { label: "Personal Goals", blurb: "Goal progress, self-efficacy, and active learning habits." },
   socialContribution: { label: "Social Contribution", blurb: "Giving, volunteering, and prosocial habits." },
   environment: { label: "Environment", blurb: "Plastic footprint and everyday green behavior." },
   humanityFuture: { label: "Humanity's Future", blurb: "Future skills, future orientation, and maintaining what lasts." }
@@ -93,6 +94,7 @@ export const COMPONENT_COVERAGE = {
   },
   personalGoals: {
     gse: { instruments: ["gse"] },
+    accomplishment: { instruments: ["citacc"] },
     grit: { instruments: ["grit"] },
     learning: { fields: ["weeklyLearningHours", "digitalLiteracy"] }
   },
@@ -296,6 +298,11 @@ function personalGoalsComponents(p, b) {
   const items = [];
   if (b && Number.isFinite(b.gse)) {
     items.push({ key: "gse", label: t("Self-efficacy (GSE)"), value: clamp100(gseScore(b.gse)), detail: tp("Raw {n}/24 at baseline", { n: b.gse }) });
+  }
+  // Goal progress, the only term that measures the thing the aspect is named
+  // after (v72). Scored, but never ranked -- see the citacc note in surveys.js.
+  if (b && Number.isFinite(b.citacc)) {
+    items.push({ key: "accomplishment", label: t("Goal progress"), value: clamp100(citAccScore(b.citacc)), detail: tp("CIT Accomplishment, raw {n}/15 — not ranked against a norm", { n: b.citacc }) });
   }
   // Shown but NOT scored since v64. The bar deliberately stays: grit is worth
   // knowing about yourself, it just isn't a life domain (see

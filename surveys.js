@@ -91,6 +91,19 @@ const AGREE_4 = [
   { v: 4, l: "Exactly true" }
 ];
 
+// CIT agreement scale, as published for the whole Comprehensive Inventory of
+// Thriving: "Participants were instructed to respond to each item on a scale of
+// 1 ('Strongly Disagree') to 5 ('Strongly Agree')." Five points, not the four of
+// AGREE_4 -- the GSE and the CIT are different instruments with different
+// published scales, and collapsing one onto the other would forfeit the norms.
+const AGREE_5 = [
+  { v: 1, l: "Strongly Disagree" },
+  { v: 2, l: "Disagree" },
+  { v: 3, l: "Neither Agree nor Disagree" },
+  { v: 4, l: "Agree" },
+  { v: 5, l: "Strongly Agree" }
+];
+
 const LIKE_ME_5 = [
   { v: 1, l: "Not like me at all" },
   { v: 2, l: "Not much like me" },
@@ -188,6 +201,27 @@ export const INSTRUMENTS = {
       { text: "Thanks to my resourcefulness, I know how to handle unforeseen situations.", options: AGREE_4, def: 3 },
       { text: "I can solve most problems if I invest the necessary effort.", options: AGREE_4, def: 3 },
       { text: "I can usually handle whatever comes my way.", options: AGREE_4, def: 3 }
+    ]
+  },
+  citacc: {
+    // CIT Accomplishment, Su/Tay/Diener 2014 (doi:10.1111/aphw.12027),
+    // Dimension III (Mastery). Verbatim from Appendix A of the published paper.
+    // Adopted whole: dropping an item would forfeit the published alpha (.88 to
+    // .95 across five samples) and the published factor structure.
+    //
+    // Item 1 is the Accomplishment item the authors themselves selected for the
+    // 10-item Brief Inventory of Thriving.
+    //
+    // Not benchmarked. The instrument's own cross-national study (Wiese et al.
+    // 2018) had to free item 1's intercept to reach partial scalar invariance,
+    // which is exactly the property that breaks mean comparison across
+    // cultures, and the only published norms are American. The subscale is
+    // SCORED and shown; it is never given a percentile.
+    title: "CIT Accomplishment",
+    items: [
+      { text: "I am achieving most of my goals", options: AGREE_5, def: 3 },
+      { text: "I am fulfilling my ambitions", options: AGREE_5, def: 3 },
+      { text: "I am on track to reach my dreams", options: AGREE_5, def: 3 }
     ]
   },
   grit: {

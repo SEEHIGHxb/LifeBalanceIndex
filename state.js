@@ -732,6 +732,7 @@ export class GameStateManager {
       st5: rawSum(surveyData.st5),
       ucla: rawSum(surveyData.ucla),
       gse: rawSum(surveyData.gse),
+      citacc: rawSum(surveyData.citacc),
       ras: p.relationshipStatus === "Single" ? null : rawSum(surveyData.ras)
     };
     const since = this.lastCalibrationDate();
@@ -742,7 +743,7 @@ export class GameStateManager {
     const targets = {
       mental: mentalComposite(sums.who5, sums.st5),
       relationships: relationshipsComposite(b.lsns, sums.ucla, sums.ras),
-      personalGoals: personalGoalsComposite(p, sums.gse)
+      personalGoals: personalGoalsComposite(p, sums.gse, sums.citacc)
     };
 
     // One consistent week of measurement ≈ one bonus point, capped.
@@ -758,12 +759,18 @@ export class GameStateManager {
 
     // Refresh the stored raw sums so benchmarks track the latest reading, and
     // mark the re-asked instruments as answered so Phase 2 confidence upgrades:
-    // a deepened score should stop reading as "Estimated". Only who5/st5/ucla/gse
-    // (+ras when coupled) are re-asked here — lsns/grit keep their captured
-    // coverage, so relationships/personalGoals may honestly stay "Partial".
-    const answered = { ...(b.answered || {}), who5: true, st5: true, ucla: true, gse: true };
+    // a deepened score should stop reading as "Estimated". who5/st5/ucla/gse/
+    // citacc (+ras when coupled) are re-asked here — lsns/grit keep their
+    // captured coverage, so relationships may honestly stay "Partial".
+    //
+    // Accomplishment is re-asked every month deliberately (v72). It is the one
+    // term in Personal Goals that measures the thing the aspect is named after,
+    // and its published four-month test-retest is .78 — stable, but far from
+    // fixed, so freezing it at onboarding would leave the aspect responding
+    // only through self-efficacy and learning.
+    const answered = { ...(b.answered || {}), who5: true, st5: true, ucla: true, gse: true, citacc: true };
     if (sums.ras !== null) answered.ras = true;
-    this.state.baseline = { ...b, who5: sums.who5, st5: sums.st5, ucla: sums.ucla, gse: sums.gse, ras: sums.ras ?? b.ras, answered };
+    this.state.baseline = { ...b, who5: sums.who5, st5: sums.st5, ucla: sums.ucla, gse: sums.gse, citacc: sums.citacc, ras: sums.ras ?? b.ras, answered };
 
     this.state.checkins.push({ date: new Date().toISOString(), sums, shifts });
     if (this.state.checkins.length > CHECKIN_LIMIT) {
@@ -890,6 +897,7 @@ export class GameStateManager {
       ucla: rawSum(surveyData.ucla),
       ras: p.relationshipStatus === "Single" ? null : rawSum(surveyData.ras),
       gse: rawSum(surveyData.gse),
+      citacc: rawSum(surveyData.citacc),
       grit: rawSum(surveyData.grit),
       ptm: rawSum(surveyData.ptm),
       geb: rawSum(surveyData.geb),
@@ -934,7 +942,7 @@ export class GameStateManager {
     aspects.physical = calculatePhysicalScore(p, surveyData.jss);
     aspects.mental = calculateMentalScore(p, surveyData.st5, surveyData.who5);
     aspects.relationships = calculateRelationshipsScore(p, surveyData.lsns, surveyData.ucla, surveyData.ras);
-    aspects.personalGoals = calculatePersonalGoalsScore(p, surveyData.gse);
+    aspects.personalGoals = calculatePersonalGoalsScore(p, surveyData.gse, surveyData.citacc);
     aspects.socialContribution = calculateSocialContributionScore(p, surveyData.ptm);
     aspects.environment = calculateEnvironmentScore(p, surveyData.geb);
     aspects.humanityFuture = calculateHumanityFutureScore(p, surveyData.lfis);

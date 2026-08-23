@@ -36,6 +36,7 @@ export function renderCheckin(containerId, state, onComplete) {
         ${instrumentBlock("ucla")}
         ${isCoupled ? instrumentBlock("ras") : ""}
         ${instrumentBlock("gse")}
+        ${instrumentBlock("citacc")}
         <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px;">${t("Complete Re-assessment")}</button>
       </form>
       <p id="checkin-error" class="d-none" style="color: var(--color-crimson); margin-top: 12px; font-weight: 600;"></p>
@@ -59,7 +60,8 @@ export function renderCheckin(containerId, state, onComplete) {
         st5: collectInstrument("st5"),
         ucla: collectInstrument("ucla"),
         ras: isCoupled ? collectInstrument("ras") : null,
-        gse: collectInstrument("gse")
+        gse: collectInstrument("gse"),
+        citacc: collectInstrument("citacc")
       });
       onComplete(shifts);
     } catch (err) {

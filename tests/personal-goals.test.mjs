@@ -33,6 +33,7 @@ import assert from "node:assert/strict";
 
 import {
   citAccScore,
+  citLearnScore,
   gseScore,
   learningScore,
   personalGoalsComposite,
@@ -133,4 +134,70 @@ test("the profile-edit learning delta tracks the composite on both sides too", (
 
   const withoutCit = profileEditShifts(older, newer, { cfpb: 10, jss: 4, gse: GSE_RAW });
   assert.equal(withoutCit.personalGoals, 13);
+});
+
+// --- v73: CIT Learning replaces the digital-literacy slider -----------------
+//
+// learningScore was 0.5 x study hours + 0.5 x a 0-100 self-rated slider with no
+// instrument behind it. The slider half is now the CIT Learning subscale (same
+// paper, same licence as citacc). Four claims are pinned:
+//
+//   1. citLearnScore has the same shape and the same floor-of-3 as citAccScore.
+//   2. When a Learning sum exists it REPLACES the slider outright - a stored
+//      digitalLiteracy value must stop affecting the score entirely, or old
+//      saves would be scored on two answers to the same question.
+//   3. When it does not exist, the slider still runs and reproduces the
+//      pre-v73 score EXACTLY. Same no-migration rule as v72.
+//   4. Learning carries one SIXTH of the aspect - half of the learning third.
+//      That is the decision the release was built on, and the number nothing
+//      else in the codebase states out loud.
+
+const CIT_LEARN_RAW = 9;
+
+test("citLearnScore normalises the three-item 1-5 subscale to 0-100", () => {
+  assert.equal(citLearnScore(3), 0, "raw 3 is the FLOOR, not zero items answered");
+  assert.equal(citLearnScore(15), 100);
+  assert.equal(citLearnScore(9), 50);
+  assert.equal(citLearnScore(6), citAccScore(6), "same paper, same shape, same floor");
+});
+
+test("a Learning sum replaces the digital-literacy slider outright", () => {
+  const slid = { ...PROFILE, digitalLiteracy: 0 };
+  const unslid = { ...PROFILE, digitalLiteracy: 100 };
+  assert.equal(
+    learningScore(slid, CIT_LEARN_RAW),
+    learningScore(unslid, CIT_LEARN_RAW),
+    "the retired slider must not still be scoring alongside the instrument"
+  );
+  // 3h/5h study = 60, Learning at the midpoint = 50.
+  assert.equal(learningScore(PROFILE, CIT_LEARN_RAW), 0.5 * 60 + 0.5 * 50);
+});
+
+test("the behavioural half survives the swap", () => {
+  // The reason Learning takes a sixth and not a third: study hours are the only
+  // term in the whole aspect that is not a self-appraisal, so they must still
+  // move the score on their own.
+  const more = { ...PROFILE, weeklyLearningHours: 5 };
+  assert.equal(learningScore(more, CIT_LEARN_RAW) - learningScore(PROFILE, CIT_LEARN_RAW), 20);
+});
+
+test("without a Learning sum the slider still runs, reproducing the pre-v73 score", () => {
+  for (const missing of [undefined, null, NaN, ""]) {
+    assert.equal(
+      learningScore(PROFILE, missing),
+      0.5 * 60 + 0.5 * 60,
+      `pre-v73 saves must not move (${String(missing)})`
+    );
+  }
+});
+
+test("an absent Learning sum is not silently treated as the scale floor", () => {
+  assert.notEqual(learningScore(PROFILE, null), learningScore(PROFILE, 3));
+});
+
+test("CIT Learning carries exactly one sixth of the aspect, measured", () => {
+  const base = personalGoalsComposite(PROFILE, GSE_RAW, CIT_RAW, CIT_LEARN_RAW);
+  // Midpoint to ceiling: +50 points of subscale, half of a third of the aspect.
+  const lifted = personalGoalsComposite(PROFILE, GSE_RAW, CIT_RAW, 15);
+  assert.ok(Math.abs((lifted - base) - (50 / 6)) < 1e-9);
 });

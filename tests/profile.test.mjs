@@ -46,13 +46,26 @@ test("a weight change moves physical through BMI", () => {
   assert.ok(Object.hasOwn(shifts, "physical"), "BMI feeds the physical score");
 });
 
-test("digital literacy moves personalGoals by (0.3/0.7) x the learning-score delta", () => {
+test("digital literacy still moves personalGoals on the LEGACY path", () => {
   // learningScore = 0.5*study + 0.5*digital; study(2h)=40. 50->100 gives +25;
   // aspect delta = (0.3/0.7) * 25 = 10.71 -> 11. The weight is 0.3/0.7 rather
   // than a flat 0.3 because grit left the composite in v64 and the two
   // surviving weights were renormalized over 0.7 rather than re-picked.
+  //
+  // v73 note: BASELINE has no Accomplishment and no Learning sum, i.e. a save
+  // written before v72. Reaching this branch through the UI is no longer
+  // possible — the Profile page stopped offering the slider — but the
+  // calculator must keep honouring it, because an old save's stored
+  // digitalLiteracy is still the second half of its learning score.
   const shifts = profileEditShifts(BASE_PROFILE, { ...BASE_PROFILE, digitalLiteracy: 100 }, BASELINE);
   assert.equal(shifts.personalGoals, 11);
+});
+
+test("a Learning sum takes over from the slider, so slider edits stop moving the score", () => {
+  // The same edit against a v73 baseline: digitalLiteracy is no longer read at
+  // all, so the delta is zero and the shift is dropped rather than reported.
+  const shifts = profileEditShifts(BASE_PROFILE, { ...BASE_PROFILE, digitalLiteracy: 100 }, { ...BASELINE, citacc: 9, citlearn: 9 });
+  assert.equal(Object.hasOwn(shifts, "personalGoals"), false);
 });
 
 // INVERTED IN v64. This used to assert that ticking the pension box lifted
@@ -147,11 +160,13 @@ test("editing profile facts awards no XP", () => {
 });
 
 test("aspect deltas are applied and clamped to 0-100", () => {
-  // Uses digital literacy rather than the pension, which stopped shifting any
-  // aspect in v64. personalGoals gains (0.3/0.7)*0.5*(100-50) ~= 11, so a start
-  // of 95 must clamp rather than reach 106.
+  // Uses income rather than digital literacy, which stopped being an editable
+  // field in v73 when the CIT Learning subscale replaced it (and rather than
+  // the pension, which stopped shifting any aspect in v64). A large raise lifts
+  // finance well past the 5 points left below the ceiling, so a start of 95
+  // must clamp rather than overshoot.
   const m = seededManager();
-  m.state.aspects.personalGoals = 95;
-  m.updateProfile({ digitalLiteracy: "100" });
-  assert.ok(m.state.aspects.personalGoals > 95 && m.state.aspects.personalGoals <= 100);
+  m.state.aspects.finance = 95;
+  m.updateProfile({ income: "200000" });
+  assert.ok(m.state.aspects.finance > 95 && m.state.aspects.finance <= 100);
 });

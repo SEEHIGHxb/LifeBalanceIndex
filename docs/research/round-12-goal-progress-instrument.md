@@ -405,10 +405,48 @@ stated rule. It is recorded at that strength and must be disclosed at that stren
   observed pledge attainment (Q4). Pledges stay XP.
 - **Newly raised, not pursued:** `learningScore` is now the only term in the aspect not drawn from a
   published instrument — half of it is an unvalidated self-rated slider — and the CIT publishes a
-  **Learning** subscale under the same licence (α .79–.82) that would replace it. Note that its first
-  item is item 25, one of the CIT's freed intercepts, so it carries the same do-not-benchmark
-  property. Deliberately deferred to a release after the Accomplishment addition, because it changes
-  an existing score rather than adding one.
+  **Learning** subscale under the same licence that would replace it. Note that its first item is
+  item 25, one of the CIT's freed intercepts, so it carries the same do-not-benchmark property.
+  Deliberately deferred to a release after the Accomplishment addition, because it changes an
+  existing score rather than adding one. **Taken up and shipped as v73 — see the closing note.**
+
+### Closing note — 2026-08-23, written while implementing v73
+
+The deferred Learning item above was implemented. Reading Appendix A and Tables 3-6 again, for the
+Learning subscale this time rather than Accomplishment, **corrected two figures this record had
+wrong and surfaced one finding it never had**:
+
+| Claim | This record said | Primary source says |
+|---|---|---|
+| α across the five samples | .79–.82 | **.76–.82** (.79 / .82 / .79 / .76 / .80, Table 4) |
+| Four-month test–retest | not recorded | **.66** (Table 5 diagonal) — the lower half of the instrument, against Accomplishment's .78 |
+
+The three items, verbatim from Appendix A: *I learned something new yesterday* · *Learning new things
+is important to me* · *I always learn something everyday*. None carries the BIT asterisk, so unlike
+Accomplishment this subscale contributed no item to the Brief Inventory.
+
+**The finding this round never had, and it cuts both ways.** Su et al. single Learning out by name:
+with Community, it is the only subscale showing merely modest relationships to existing well-being
+measures, and they conclude both "may be peripheral rather than central" to psychological
+well-being. Its correlation with the SWLS is **.20**, the weakest of any positively-worded subscale
+in the instrument.
+
+Read one way that argues against giving it weight. Read the other way it is exactly the property
+§3 of the addendum wished Accomplishment had: Learning **cannot** double-count against Mental. It is
+the cleanest term the aspect contains, and it replaced a slider with no validation at all — so the
+comparison that mattered was never "validated versus ideal", it was "validated versus nothing".
+
+**How v73 resolved that.** CIT Learning took only the slider's half of `learningScore`, so it carries
+**one sixth** of the aspect rather than a third; weekly study hours keep the other half as the only
+non-appraisal evidence anywhere in Personal Goals. The peripherality is disclosed on the methodology
+page rather than buried, alongside one further limitation this record should have stated outright:
+after v73 the aspect's three terms are **moderately intercorrelated in the source data** —
+Accomplishment ↔ Self-Efficacy .62, Learning ↔ Self-Efficacy **.63**, Accomplishment ↔ Learning .50.
+Related readings, not three independent ones.
+
+Norms recorded and deliberately **not** wired, exactly as for Accomplishment: N = 1,090, M = 3.81,
+SD = 0.79, quartiles 3.33 / 4.00 / 4.33 — **70.25** on the app's 0–100 normaliser. Not ranked,
+because item 25 is one of the three intercepts the CIT's own seven-country test had to free.
 
 ---
 

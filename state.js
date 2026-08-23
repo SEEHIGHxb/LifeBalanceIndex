@@ -75,10 +75,13 @@ const PROFILE_EDIT_ENUMS = ["gender", "region", "employment", "relationshipStatu
 // than in the weekly review because they are slow-moving FACTS, not weekly
 // behaviour — and because the weekly review re-measures scores, which these
 // deliberately do not touch.
-const PROFILE_EDIT_NUMERIC = ["income", "weight", "height", "digitalLiteracy", "liquidSavings", "committedOutflow"];
+// digitalLiteracy left this list in v73 when the CIT Learning subscale
+// replaced it. The stored field, its sanitiser and its validator all remain so
+// that pre-v73 saves keep scoring; it simply has no input to arrive from.
+const PROFILE_EDIT_NUMERIC = ["income", "weight", "height", "liquidSavings", "committedOutflow"];
 // The numeric fields whose hand-entry should upgrade the confidence tier: a
 // value the user just typed is provided data, same as answering it at onboarding.
-const PROFILE_EDIT_PROVIDED = ["income", "weight", "height", "digitalLiteracy", "liquidSavings", "committedOutflow"];
+const PROFILE_EDIT_PROVIDED = ["income", "weight", "height", "liquidSavings", "committedOutflow"];
 const AGE_MIN = 15;
 const AGE_MAX = 100;
 
@@ -166,8 +169,7 @@ export class GameStateManager {
 
   // Apply a hand edit from the Profile page. `edits` is a partial map of the
   // slow-moving fields (name, age, gender, region, employment,
-  // relationshipStatus, income, weight, height, digitalLiteracy,
-  // longTermInvestments). Score-affecting fields are re-measured through the
+  // relationshipStatus, income, weight, height, longTermInvestments). Score-affecting fields are re-measured through the
   // SAME formulas onboarding uses and applied as deltas (profileEditShifts) so
   // accumulated check-in/deep/weekly adjustments are preserved. No XP: editing
   // your own facts is a correction, not an achievement — and can't be farmed.
@@ -733,6 +735,7 @@ export class GameStateManager {
       ucla: rawSum(surveyData.ucla),
       gse: rawSum(surveyData.gse),
       citacc: rawSum(surveyData.citacc),
+      citlearn: rawSum(surveyData.citlearn),
       ras: p.relationshipStatus === "Single" ? null : rawSum(surveyData.ras)
     };
     const since = this.lastCalibrationDate();
@@ -743,7 +746,7 @@ export class GameStateManager {
     const targets = {
       mental: mentalComposite(sums.who5, sums.st5),
       relationships: relationshipsComposite(b.lsns, sums.ucla, sums.ras),
-      personalGoals: personalGoalsComposite(p, sums.gse, sums.citacc)
+      personalGoals: personalGoalsComposite(p, sums.gse, sums.citacc, sums.citlearn)
     };
 
     // One consistent week of measurement ≈ one bonus point, capped.
@@ -760,17 +763,18 @@ export class GameStateManager {
     // Refresh the stored raw sums so benchmarks track the latest reading, and
     // mark the re-asked instruments as answered so Phase 2 confidence upgrades:
     // a deepened score should stop reading as "Estimated". who5/st5/ucla/gse/
-    // citacc (+ras when coupled) are re-asked here — lsns/grit keep their
-    // captured coverage, so relationships may honestly stay "Partial".
+    // citacc/citlearn (+ras when coupled) are re-asked here — lsns/grit keep
+    // their captured coverage, so relationships may honestly stay "Partial".
     //
-    // Accomplishment is re-asked every month deliberately (v72). It is the one
-    // term in Personal Goals that measures the thing the aspect is named after,
-    // and its published four-month test-retest is .78 — stable, but far from
-    // fixed, so freezing it at onboarding would leave the aspect responding
-    // only through self-efficacy and learning.
-    const answered = { ...(b.answered || {}), who5: true, st5: true, ucla: true, gse: true, citacc: true };
+    // Both CIT subscales are re-asked every month deliberately. Accomplishment
+    // (v72) is the one term measuring the thing the aspect is named after, and
+    // its published four-month test-retest is .78 — stable, but far from fixed.
+    // Learning (v73) is re-asked for the opposite reason: its retest is .66,
+    // the lower half of the instrument, so a reading frozen at onboarding would
+    // be the least trustworthy number in the aspect within a few months.
+    const answered = { ...(b.answered || {}), who5: true, st5: true, ucla: true, gse: true, citacc: true, citlearn: true };
     if (sums.ras !== null) answered.ras = true;
-    this.state.baseline = { ...b, who5: sums.who5, st5: sums.st5, ucla: sums.ucla, gse: sums.gse, citacc: sums.citacc, ras: sums.ras ?? b.ras, answered };
+    this.state.baseline = { ...b, who5: sums.who5, st5: sums.st5, ucla: sums.ucla, gse: sums.gse, citacc: sums.citacc, citlearn: sums.citlearn, ras: sums.ras ?? b.ras, answered };
 
     this.state.checkins.push({ date: new Date().toISOString(), sums, shifts });
     if (this.state.checkins.length > CHECKIN_LIMIT) {
@@ -898,6 +902,7 @@ export class GameStateManager {
       ras: p.relationshipStatus === "Single" ? null : rawSum(surveyData.ras),
       gse: rawSum(surveyData.gse),
       citacc: rawSum(surveyData.citacc),
+      citlearn: rawSum(surveyData.citlearn),
       grit: rawSum(surveyData.grit),
       ptm: rawSum(surveyData.ptm),
       geb: rawSum(surveyData.geb),
@@ -942,7 +947,7 @@ export class GameStateManager {
     aspects.physical = calculatePhysicalScore(p, surveyData.jss);
     aspects.mental = calculateMentalScore(p, surveyData.st5, surveyData.who5);
     aspects.relationships = calculateRelationshipsScore(p, surveyData.lsns, surveyData.ucla, surveyData.ras);
-    aspects.personalGoals = calculatePersonalGoalsScore(p, surveyData.gse, surveyData.citacc);
+    aspects.personalGoals = calculatePersonalGoalsScore(p, surveyData.gse, surveyData.citacc, surveyData.citlearn);
     aspects.socialContribution = calculateSocialContributionScore(p, surveyData.ptm);
     aspects.environment = calculateEnvironmentScore(p, surveyData.geb);
     aspects.humanityFuture = calculateHumanityFutureScore(p, surveyData.lfis);

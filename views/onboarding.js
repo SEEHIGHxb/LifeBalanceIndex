@@ -20,7 +20,7 @@ import { t, tp } from "../i18n.js";
 // also carry data-field so validateScope range-checks them per step.
 const ONB_NUMERIC_IDS = {
   income: "onb-income", monthlySavings: "onb-savings",
-  liquidSavings: "onb-liquid", committedOutflow: "onb-outflow", digitalLiteracy: "onb-digital",
+  liquidSavings: "onb-liquid", committedOutflow: "onb-outflow",
   weeklyLearningHours: "onb-learning", weeklyVigorousDays: "onb-vig-days",
   weeklyVigorousMins: "onb-vig-mins", weeklyModerateDays: "onb-mod-days",
   weeklyModerateMins: "onb-mod-mins", weeklyWalkingDays: "onb-walk-days",
@@ -146,11 +146,9 @@ export function renderOnboarding(containerId, onComplete) {
       body: `
         ${instrumentBlock("gse")}
         ${instrumentBlock("citacc")}
+        ${instrumentBlock("citlearn")}
         ${instrumentBlock("grit")}
-        <div class="grid-2">
-          ${numberField("onb-learning", t("Weekly Learning / Study Hours"), "", 'min="0" max="80" step="0.5"', { required: true, field: "weeklyLearningHours", placeholder: "0–80" })}
-          ${numberField("onb-digital", t("Digital Literacy Self-Rating (0-100)"), "", 'min="0" max="100"', { required: true, field: "digitalLiteracy", placeholder: "0–100" })}
-        </div>`
+        ${numberField("onb-learning", t("Weekly Learning / Study Hours"), "", 'min="0" max="80" step="0.5"', { required: true, field: "weeklyLearningHours", placeholder: "0–80" })}`
     },
     {
       title: t("Step 6: Contribution, Environment & Future"),
@@ -329,7 +327,6 @@ export function renderOnboarding(containerId, onComplete) {
         weeklyWalkingDays: val("onb-walk-days"),
         weeklyWalkingMins: val("onb-walk-mins"),
         weeklyLearningHours: val("onb-learning"),
-        digitalLiteracy: val("onb-digital"),
         monthlyDonations: val("onb-donations"),
         volunteeringHours: val("onb-volunteer"),
         singleUsePlastics: val("onb-plastics"),
@@ -342,6 +339,7 @@ export function renderOnboarding(containerId, onComplete) {
         ras: collectInstrument("ras"),
         gse: collectInstrument("gse"),
         citacc: collectInstrument("citacc"),
+        citlearn: collectInstrument("citlearn"),
         grit: collectInstrument("grit"),
         ptm: collectInstrument("ptm"),
         geb: collectInstrument("geb"),

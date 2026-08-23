@@ -96,7 +96,7 @@ export const COMPONENT_COVERAGE = {
     gse: { instruments: ["gse"] },
     accomplishment: { instruments: ["citacc"] },
     grit: { instruments: ["grit"] },
-    learning: { fields: ["weeklyLearningHours", "digitalLiteracy"] }
+    learning: { fields: ["weeklyLearningHours"], instruments: ["citlearn"] }
   },
   socialContribution: {
     giving: { fields: ["monthlyDonations"] },
@@ -312,8 +312,16 @@ function personalGoalsComponents(p, b) {
   if (b && Number.isFinite(b.grit)) {
     items.push({ key: "grit", scored: false, label: t("Grit (perseverance)"), value: clamp100(gritScore(b.grit)), detail: tp("Not scored — shown for information. Perseverance facet only, {g}/5 vs the ~3.4 full-scale reference.", { g: (b.grit / 4).toFixed(1) }) });
   }
-  const digital = Math.max(0, Math.min(100, parseFloat(p.digitalLiteracy || 0)));
-  items.push({ key: "learning", label: t("Active learning"), value: clamp100(learningScore(p)), detail: tp("{h}h/week study + digital skills {d}/100", { h: p.weeklyLearningHours || 0, d: digital }) });
+  // v73: the second half of this bar is the CIT Learning subscale. A baseline
+  // written before v73 has no sum, and the bar then reads the retired
+  // digital-literacy slider exactly as it did before — same detail line, so an
+  // old save is never described in terms of a question it was not asked.
+  if (b && Number.isFinite(b.citlearn)) {
+    items.push({ key: "learning", label: t("Active learning"), value: clamp100(learningScore(p, b.citlearn)), detail: tp("{h}h/week study + CIT Learning {n}/15 — not ranked against a norm", { h: p.weeklyLearningHours || 0, n: b.citlearn }) });
+  } else {
+    const digital = Math.max(0, Math.min(100, parseFloat(p.digitalLiteracy || 0)));
+    items.push({ key: "learning", label: t("Active learning"), value: clamp100(learningScore(p)), detail: tp("{h}h/week study + digital skills {d}/100", { h: p.weeklyLearningHours || 0, d: digital }) });
+  }
   return items;
 }
 

@@ -192,12 +192,41 @@ export function plasticScore(profile) {
   return 0;
 }
 
-// Active learning: weekly study hours (5h maxes it) blended with self-rated
-// digital literacy. Feeds Personal Goals.
-export function learningScore(profile) {
+// CIT Learning (3 items, each 1-5, raw 3-15). Same paper, same licence, same
+// normaliser shape as citAccScore -- and the same floor of 3 rather than 0,
+// meaning "never taken" rather than "answered at the bottom".
+export function citLearnScore(raw) {
+  return ((raw - 3) / 12) * 100;
+}
+
+export function hasLearning(citLearnRaw) {
+  return Number.isFinite(Number(citLearnRaw)) && Number(citLearnRaw) >= 3;
+}
+
+// Active learning: weekly study hours (5h maxes it) blended with the CIT
+// Learning subscale. Feeds Personal Goals.
+//
+// v73 replaced the second half. It used to be a "digital literacy" self-rating
+// slider -- 0 to 100, no instrument, no validation, no norm -- and it was the
+// last unvalidated term left in the aspect after v72. CIT Learning measures the
+// same idea with a published three-item scale.
+//
+// The BEHAVIOURAL half deliberately stays. Every other term in Personal Goals
+// (GSE, Accomplishment, and now Learning) is a self-appraisal; weekly study
+// hours is the only thing in the aspect a user could be wrong about in a
+// checkable direction. It is also why Learning carries a sixth of the aspect
+// rather than a third, which suits a subscale the paper's own authors call
+// possibly "peripheral rather than central" to well-being.
+//
+// A profile with NO Learning sum falls back to the digital-literacy slider, so
+// every baseline written before v73 keeps its exact previous score. The field
+// is still stored and still validated; it is simply no longer asked for.
+export function learningScore(profile, citLearnRaw) {
   const study = Math.min(100, (parseFloat(profile.weeklyLearningHours || 0) / 5) * 100);
-  const digital = Math.min(100, Math.max(0, parseFloat(profile.digitalLiteracy || 0)));
-  return 0.5 * study + 0.5 * digital;
+  const second = hasLearning(citLearnRaw)
+    ? citLearnScore(Number(citLearnRaw))
+    : Math.min(100, Math.max(0, parseFloat(profile.digitalLiteracy || 0)));
+  return 0.5 * study + 0.5 * second;
 }
 
 // Future-skills study time (4h/week maxes it — a stricter divisor than
@@ -382,11 +411,12 @@ export function learningWeight(citRaw) {
   return hasAccomplishment(citRaw) ? 1 / 3 : 0.3 / 0.7;
 }
 
-export function personalGoalsComposite(profile, gseRaw, citRaw) {
+export function personalGoalsComposite(profile, gseRaw, citRaw, citLearnRaw) {
+  const learning = learningScore(profile, citLearnRaw);
   if (!hasAccomplishment(citRaw)) {
-    return ((0.4 * gseScore(gseRaw)) + (0.3 * learningScore(profile))) / 0.7;
+    return ((0.4 * gseScore(gseRaw)) + (0.3 * learning)) / 0.7;
   }
-  return (gseScore(gseRaw) + citAccScore(Number(citRaw)) + learningScore(profile)) / 3;
+  return (gseScore(gseRaw) + citAccScore(Number(citRaw)) + learning) / 3;
 }
 
 // --- THE EIGHT ASPECT CALCULATORS (onboarding: answers -> 0-100 score) ---
@@ -492,9 +522,10 @@ export function calculateRelationshipsScore(profile, lsnsAnswers, uclaAnswers, r
 // `gritAnswers` is no longer a parameter: grit is collected and displayed but
 // not scored (see personalGoalsComposite). `citAnswers` is optional so that
 // callers replaying a pre-v72 save reach the two-term fallback.
-export function calculatePersonalGoalsScore(profile, gseAnswers, citAnswers) {
+export function calculatePersonalGoalsScore(profile, gseAnswers, citAnswers, citLearnAnswers) {
   const citRaw = citAnswers ? rawSum(citAnswers) : null;
-  return clampScore(personalGoalsComposite(profile, rawSum(gseAnswers), citRaw));
+  const citLearnRaw = citLearnAnswers ? rawSum(citLearnAnswers) : null;
+  return clampScore(personalGoalsComposite(profile, rawSum(gseAnswers), citRaw, citLearnRaw));
 }
 
 export function calculateSocialContributionScore(profile, ptmAnswers) {
@@ -609,7 +640,7 @@ export function weeklyAspectShifts(oldProfile, newProfile, baseline) {
   const deltas = {
     physical: calculatePhysicalScore(newProfile, jss) - calculatePhysicalScore(oldProfile, jss),
     finance: savingsBonus(newProfile) - savingsBonus(oldProfile),
-    personalGoals: learningWeight(baseline && baseline.citacc) * (learningScore(newProfile) - learningScore(oldProfile)),
+    personalGoals: learningWeight(baseline && baseline.citacc) * (learningScore(newProfile, baseline && baseline.citlearn) - learningScore(oldProfile, baseline && baseline.citlearn)),
     socialContribution:
       (0.4 * 0.5) * (donationVolumeFactor(newProfile) - donationVolumeFactor(oldProfile))
       + (0.4 * 0.6) * (volunteerFactor(newProfile) - volunteerFactor(oldProfile)),
@@ -645,7 +676,7 @@ export function ageBandShifts(profile, oldAge, newAge, baseline) {
 }
 
 // The per-aspect score deltas implied by a MANUAL profile edit (the Profile
-// page: demographics, income, body metrics, digital literacy, investments)
+// page: demographics, income, body metrics, investments)
 // changing score-affecting fields. Same delta philosophy as weeklyAspectShifts
 // and ageBandShifts: recompute through the SAME formulas onboarding uses, apply
 // the difference so accumulated check-in/deep/weekly adjustments survive.
@@ -671,10 +702,15 @@ export function profileEditShifts(oldProfile, newProfile, baseline) {
     finance: calculateFinanceScore(newProfile, cfpb) - calculateFinanceScore(oldProfile, cfpb),
     // weight/height -> BMI (plus any behavioural field, unchanged here)
     physical: calculatePhysicalScore(newProfile, jss) - calculatePhysicalScore(oldProfile, jss),
-    // digital literacy (half of learningScore). The weight follows the
-    // composite: a third since v72, or the v64 0.3/0.7 for a baseline with no
-    // Accomplishment reading.
-    personalGoals: learningWeight(baseline && baseline.citacc) * (learningScore(newProfile) - learningScore(oldProfile)),
+    // Since v73 the Profile page no longer edits ANY field inside
+    // learningScore -- the digital-literacy slider it used to edit was replaced
+    // by an instrument, and study hours are a weekly-review field. This term is
+    // therefore zero for every current edit and is kept deliberately: it is the
+    // path a re-added profile-level learning field would travel, and dropping
+    // it would silently reintroduce the v64 weight drift.
+    // The weight follows the composite: a third since v72, or the pre-v72
+    // 0.3/0.7 for a baseline with no Accomplishment reading.
+    personalGoals: learningWeight(baseline && baseline.citacc) * (learningScore(newProfile, baseline && baseline.citlearn) - learningScore(oldProfile, baseline && baseline.citlearn)),
     // income moves the donation-to-income ratio, 0.4*0.5 into the aspect
     socialContribution: (0.4 * 0.5) * (donationVolumeFactor(newProfile) - donationVolumeFactor(oldProfile)),
     // Shared learning hours (futureStudy term, 0.25*0.5) are now the only future

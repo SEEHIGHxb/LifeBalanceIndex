@@ -224,6 +224,41 @@ export const INSTRUMENTS = {
       { text: "I am on track to reach my dreams", options: AGREE_5, def: 3 }
     ]
   },
+  citlearn: {
+    // CIT Learning, same paper and same licence as citacc above. Dimension III
+    // (Mastery). Verbatim from Appendix A. Adopted whole for the same reason.
+    //
+    // This subscale REPLACED the "digital literacy" self-rating slider in v73.
+    // The slider was the last term in Personal Goals with no published
+    // instrument behind it; alpha here is .76 to .82 across the same five
+    // samples.
+    //
+    // Two properties the adopting release had to disclose rather than bury:
+    //
+    // 1. Test-retest over four months is .66 -- lower than Accomplishment's
+    //    .78, and outside the paper's five most stable subscales. It is still
+    //    re-asked monthly, alongside citacc, because a learning habit is
+    //    genuinely expected to move.
+    //
+    // 2. The authors name Learning (with Community) as the only subscales
+    //    showing merely modest relationships to existing well-being measures,
+    //    and conclude both "may be peripheral rather than central" to
+    //    psychological well-being. That is a real caution AND the reason this
+    //    term cannot double-count against Mental the way Accomplishment can:
+    //    Learning correlates .20 with the SWLS, the weakest of any
+    //    positively-worded subscale in the instrument.
+    //
+    // Not benchmarked, for a different reason than citacc: item 1 here is item
+    // 25 of the CIT, one of the three intercepts the instrument's own
+    // seven-country invariance test had to free. Scored and shown, never given
+    // a percentile.
+    title: "CIT Learning",
+    items: [
+      { text: "I learned something new yesterday", options: AGREE_5, def: 3 },
+      { text: "Learning new things is important to me", options: AGREE_5, def: 3 },
+      { text: "I always learn something everyday", options: AGREE_5, def: 3 }
+    ]
+  },
   grit: {
     // Canonical Grit wording. Items 1 and 3 used to carry a merged second
     // clause ("...I don't give up easily.", "...I never give up."), which was

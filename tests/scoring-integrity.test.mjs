@@ -18,6 +18,7 @@ import {
   rasScore,
   gseScore,
   citAccScore,
+  citLearnScore,
   gritScore,
   DEEP_NORM,
   calculateFinanceScore,
@@ -58,6 +59,7 @@ const ONBOARDING_NORMALIZERS = {
   ras: { fn: rasScore, direction: "positive" },
   gse: { fn: gseScore, direction: "positive" },
   citacc: { fn: citAccScore, direction: "positive" },
+  citlearn: { fn: citLearnScore, direction: "positive" },
   grit: { fn: gritScore, direction: "positive" },
   ptm: null, // scored inside calculateSocialContributionScore (per-item, no sum normalizer)
   geb: null, // scored inside calculateEnvironmentScore (per-item, no sum normalizer)

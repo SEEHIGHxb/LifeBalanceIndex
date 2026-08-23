@@ -51,7 +51,7 @@ export const FIELD_CONSTRAINTS = {
 // The 12 onboarding instruments, in the order state.js stores their sums.
 export const INSTRUMENT_KEYS = [
   "cfpb", "jss", "st5", "who5", "lsns", "ucla",
-  "ras", "gse", "citacc", "grit", "ptm", "geb", "lfis"
+  "ras", "gse", "citacc", "citlearn", "grit", "ptm", "geb", "lfis"
 ];
 
 export const NUMERIC_FIELD_KEYS = Object.keys(FIELD_CONSTRAINTS);

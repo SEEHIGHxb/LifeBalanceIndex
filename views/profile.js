@@ -2,7 +2,7 @@
 //
 // One place to hand-edit the SLOW-MOVING facts about the user — name, age,
 // gender, region, employment, relationship status, income, body metrics,
-// digital literacy, long-term investments, and birthday. The fast,
+// long-term investments, and birthday. The fast,
 // behaviour-driven quantities (sleep, water, activity, plastics, donations...)
 // are deliberately NOT here: those are measured once a week in the Weekly
 // Review, not typed in on demand.
@@ -43,7 +43,7 @@ const AGE_MAX = 100;
 // its inline <span class="field-error"> in the DOM.
 const ERR_IDS = {
   income: "pf-income-err", weight: "pf-weight-err", height: "pf-height-err",
-  digitalLiteracy: "pf-digital-err", age: "pf-age-err", birthday: "pf-birthday-err",
+  age: "pf-age-err", birthday: "pf-birthday-err",
   liquidSavings: "pf-liquid-err", committedOutflow: "pf-outflow-err"
 };
 
@@ -209,7 +209,6 @@ export function renderProfile(containerId, state, onSaved) {
           ${numberField("pf-height", t("Height (cm)"), p.height, 'min="100" max="250"')}
           ${numberField("pf-weight", t("Weight (kg)"), p.weight, 'min="25" max="300"')}
         </div>
-        ${numberField("pf-digital", t("Digital Literacy Self-Rating (0-100)"), p.digitalLiteracy, 'min="0" max="100"')}
         <div class="grid-2">
           ${numberField("pf-liquid", t("Liquid Savings You Could Reach This Week (THB)"), p.liquidSavings, 'min="0"')}
           ${numberField("pf-outflow", t("Committed Monthly Outflow (THB)"), p.committedOutflow, 'min="0"')}
@@ -277,7 +276,7 @@ export function renderProfile(containerId, state, onSaved) {
     // Numeric fields validated against the shared FIELD_CONSTRAINTS.
     const { errors: numErrors } = validateProfile({
       income: val("pf-income"), weight: val("pf-weight"),
-      height: val("pf-height"), digitalLiteracy: val("pf-digital"),
+      height: val("pf-height"),
       liquidSavings: val("pf-liquid"), committedOutflow: val("pf-outflow")
     });
     Object.assign(errors, numErrors);
@@ -316,7 +315,6 @@ export function renderProfile(containerId, state, onSaved) {
       gender: val("pf-gender"), region: val("pf-region"),
       employment: val("pf-employment"), relationshipStatus: val("pf-relationship"),
       income: val("pf-income"), weight: val("pf-weight"), height: val("pf-height"),
-      digitalLiteracy: val("pf-digital"),
       liquidSavings: val("pf-liquid"), committedOutflow: val("pf-outflow")
     });
     // Birthday rides its own mutator (re-anchors level-ups safely).

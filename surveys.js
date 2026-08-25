@@ -331,12 +331,46 @@ export const INSTRUMENTS = {
   // alongside the sum and every reader scales by it. Old sums are NOT rescaled
   // — multiplying a 14/20 by 1.2 would invent an answer to a question that
   // user was never asked.
+  // ITEM 3 REWORDED IN v74, and it is the first change here driven by an
+  // OVERLAP audit rather than by a floor effect. It used to read "I support or
+  // donate to causes addressing future generations' well-being" -- a giving
+  // question, and giving is already scored at 0.4 of Social Contribution
+  // through PTM item 1 and `monthlyDonations`. The overlap was CONDITIONAL
+  // rather than structural: whether one donation was paid once or twice
+  // depended on where it went, so it hit hardest the users this aspect exists
+  // to credit.
+  //
+  // Rewording it was harder than it looks, and the difficulty is the finding.
+  // Every other act in the "offering toward the future" space is already
+  // scored somewhere: money -> Social Contribution's donation terms, time ->
+  // its volunteering term, helping people -> its two prosocial items, local or
+  // civic action -> its civic items, green consumption -> Environment. Remove
+  // all of those and what is left is teaching (item 5) and legacy (item 2),
+  // which this instrument already asks. OFFERING, MINUS MONEY, COLLAPSES INTO
+  // THE ITEMS LFIS ALREADY HAS.
+  //
+  // So the new item measures the one future-directed behaviour nothing in the
+  // app scores: RESTRAINT with a beneficiary who does not exist yet. Not
+  // consumption efficiency -- GEB items 4-6 cover energy habits and eco-product
+  // choices, which are about using well, not using less for someone later. Not
+  // upkeep either; that is item 6, which keeps a thing in good order rather
+  // than leaving more of it.
+  //
+  // Anyone can answer it. That was the binding constraint: the conditional
+  // phrasings considered first ("when I give, I choose causes that...") floor
+  // every user who has nothing to give, which is the exact failure round 7
+  // rewrote this instrument to remove.
+  //
+  // Same position, same count, same FREQ_5 scale, so stored `lfis` sums stay
+  // valid and need no migration -- the same reasoning as the v64 rewordings
+  // above. The audit is recorded in
+  // docs/research/round-13-lfis-overlap-audit.md.
   lfis: {
     title: "Long-Term Future Index",
     items: [
       { text: "I actively learn or practise skills that will still matter in ten years, whatever work I do.", options: FREQ_5, def: 3 },
       { text: "I do things intended to leave a positive legacy beyond my own life.", options: FREQ_5, def: 2 },
-      { text: "I support or donate to causes addressing future generations' well-being.", options: FREQ_5, def: 2 },
+      { text: "I use less of something now so more of it is left for the people who come after me.", options: FREQ_5, def: 2 },
       { text: "I plan my finances with a horizon of 10 years or more.", options: FREQ_5, def: 3 },
       { text: "I teach or pass on skills and knowledge to younger or less experienced people.", options: FREQ_5, def: 2 },
       { text: "I maintain, repair or care for things meant to last — a home, tools, land, animals, or something shared in my community.", options: FREQ_5, def: 3 }

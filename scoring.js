@@ -586,10 +586,18 @@ export function calculateHumanityFutureScore(profile, lfisAnswers) {
   // Legacy (Q2)
   const S_legacy = qValues[1] * 25;
 
-  // Offering (Q3 giving to future generations & Q5 passing skills on). Q5 used
-  // to ask about global existential-risk causes; since v64 it asks about
-  // teaching and handing on what you know, which is the generative act
-  // available to someone with no money to give.
+  // Offering (Q3 & Q5). Q5 used to ask about global existential-risk causes;
+  // since v64 it asks about teaching and handing on what you know, which is the
+  // generative act available to someone with no money to give.
+  //
+  // Q3 stopped asking about donations in v74. It was the app's only genuine
+  // DOUBLE-COUNT: giving is scored at 0.4 of Social Contribution, so a donation
+  // aimed at a future-facing cause was paid in two aspects while an identical
+  // donation aimed at a present need was paid in one. It now asks about using
+  // less of something so more is left for the people who come after -- restraint
+  // toward an unborn beneficiary, which nothing else in the app scores. The
+  // weights are UNCHANGED: this release fixes what a question measures, not how
+  // much it counts.
   const S_offering = ((qValues[2] + qValues[4]) / 8) * 100;
 
   // Security (Q4 only). THE PENSION LEFT THIS TERM IN v64. `longTermInvestments`

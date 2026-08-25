@@ -381,7 +381,10 @@ export const TH = {
   "I actively learn or practise skills that will still matter in ten years, whatever work I do.":
     "ฉันเรียนรู้หรือฝึกฝนทักษะที่จะยังสำคัญในอีกสิบปีข้างหน้าอย่างจริงจัง ไม่ว่าฉันจะทำงานอะไร",
   "I do things intended to leave a positive legacy beyond my own life.": "ฉันทำสิ่งที่ตั้งใจให้เป็นมรดกที่ดีเกินอายุขัยของตัวเอง",
-  "I support or donate to causes addressing future generations' well-being.": "ฉันสนับสนุนหรือบริจาคให้ประเด็นที่ดูแลความเป็นอยู่ของคนรุ่นหลัง",
+  // v74: the English deliberately avoids both "give" and "save" — the first
+  // would re-collide with Social Contribution, the second reads as money in
+  // Thai. "ใช้...น้อยลง / ยังเหลือไว้" keeps it about using less of a thing.
+  "I use less of something now so more of it is left for the people who come after me.": "ฉันใช้บางสิ่งให้น้อยลงในวันนี้ เพื่อให้ยังเหลือไว้มากขึ้นสำหรับคนรุ่นหลัง",
   "I plan my finances with a horizon of 10 years or more.": "ฉันวางแผนการเงินโดยมองไกล 10 ปีขึ้นไป",
   "I teach or pass on skills and knowledge to younger or less experienced people.":
     "ฉันสอนหรือถ่ายทอดทักษะและความรู้ให้คนรุ่นหลังหรือผู้ที่มีประสบการณ์น้อยกว่า",

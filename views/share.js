@@ -7,6 +7,26 @@
 // navigator.share(), and says in one line that Instagram has to be picked from
 // the system share sheet. Promising the one-tap would just fail silently on
 // the user's phone.
+//
+// EXCLUDED FROM THE COVERAGE GATE, on purpose, with the reason here rather
+// than only in package.json where a comment cannot go.
+//
+// Everything below `openShareSheet` writes an HTML string and then reads its
+// own elements back out of the live document (`overlay.querySelectorAll`),
+// draws to a real 2D context, and hands a File to navigator.share(). The unit
+// suite's stub document has no parser, so the toggles it wrote can never be
+// found again; covering this file with unit tests would mean adding happy-dom
+// or jsdom, which this project has deliberately never had.
+//
+// It is NOT untested. tests/e2e.mjs flow 4 drives this sheet in a real browser
+// and asserts the strong facts a stub could not: the preview is exactly
+// 1080x1920, the exported PNG is over 5KB (a blank canvas still encodes to a
+// valid PNG, so the size is the proof it drew something), changing either
+// toggle changes the image data, and the chosen prefs survive in localStorage.
+//
+// So the exclusion moves this file to the check that actually covers it. It
+// does not stop covering it. If a future change adds pure logic here, test it
+// and narrow this exclusion rather than inheriting the exemption.
 
 import { t } from "../i18n.js";
 import { openDialog } from "./helpers.js";

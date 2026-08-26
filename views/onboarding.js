@@ -12,8 +12,16 @@ import {
   numberField, instrumentBlock, collectInstrument, validateScope
 } from "./instrument-forms.js";
 import { scrollIntoViewGently } from "./helpers.js";
+import { applyDraft, saveDraft, clearDraft, instrumentsIn } from "../draft.js";
 import { savingsRateFrom } from "../scoring.js";
 import { t, tp } from "../i18n.js";
+
+// The form is long enough that losing it hurts: six steps, 64 radio groups and
+// a dozen numeric fields. draft.js keeps a scratch copy under this name so a
+// reload resumes instead of restarting. Cleared the moment the baseline is
+// accepted -- from then on state.js is the record, and a draft would be a stale
+// second copy of assessment data.
+const DRAFT_KEY = "onboarding";
 
 // Maps each validated numeric field (validation.js FIELD_CONSTRAINTS keys) to
 // its onboarding input id — used for reading and coverage tracking. The inputs
@@ -180,6 +188,10 @@ export function renderOnboarding(containerId, onComplete) {
         </div>
         <div class="onb-progress-track"><div class="onb-progress-fill" id="onb-progress-fill"></div></div>
       </div>
+      <div id="onb-resume" class="onb-resume d-none">
+        <span>${t("Picked up where you left off. Your answers were saved on this device.")}</span>
+        <button type="button" class="btn btn-sm" id="onb-resume-clear">${t("Start over")}</button>
+      </div>
       <form id="onboarding-form">
         ${pages.map((page, i) => `
           <div class="survey-page ${i === 0 ? "" : "d-none"}" id="onb-page-${i}">
@@ -213,7 +225,12 @@ export function renderOnboarding(containerId, onComplete) {
     if (time) time.textContent = t("About 5 minutes total");
   };
 
+  // Recorded so a draft can put the user back on the step they left, rather
+  // than on step 1 with five steps of answers they have to page past.
+  let currentStep = 0;
+
   const showPage = (idx) => {
+    currentStep = idx;
     pages.forEach((_, i) => {
       document.getElementById(`onb-page-${i}`).classList.toggle("d-none", i !== idx);
     });
@@ -242,9 +259,13 @@ export function renderOnboarding(containerId, onComplete) {
   // Couple-only questions appear only once "Coupled" is chosen (blank/Single
   // keep the RAS block hidden, so validateScope skips it).
   const relationshipSelect = document.getElementById("onb-relationship");
-  relationshipSelect.addEventListener("change", () => {
+  // Extracted because a restore has to run it too: setting `.value` from script
+  // fires no change event, so without this a restored "Coupled" answer would
+  // leave the RAS block hidden and the user would never be asked those items.
+  const syncCoupleBlock = () => {
     document.getElementById("ras-block").classList.toggle("d-none", relationshipSelect.value !== "Coupled");
-  });
+  };
+  relationshipSelect.addEventListener("change", syncCoupleBlock);
 
   updateProgress(0);
 
@@ -274,6 +295,48 @@ export function renderOnboarding(containerId, onComplete) {
     if (match) touchedInstruments.add(match[1]);
     clearControlError(e.target);
   });
+
+  // --- draft restore, then autosave ------------------------------------
+  //
+  // ORDER MATTERS. The restore runs AFTER `touchedFields` and
+  // `touchedInstruments` exist, because it seeds them directly: applyDraft sets
+  // `.checked` and `.value` from script, which fires no input or change event,
+  // so the two listeners above see nothing. Skipping that bookkeeping would
+  // leave a fully answered assessment recorded as never answered, and every
+  // aspect page would show the "estimated" confidence tier over real answers.
+  const restored = applyDraft(DRAFT_KEY, form);
+  if (restored) {
+    for (const id of restored.restoredIds) {
+      const field = idToField[id];
+      if (field) touchedFields.add(field);
+    }
+    for (const key of instrumentsIn(restored.restoredNames)) touchedInstruments.add(key);
+    syncCoupleBlock();
+    document.getElementById("onb-resume").classList.remove("d-none");
+    if (Number.isInteger(restored.step) && restored.step > 0 && restored.step < totalSteps) {
+      showPage(restored.step);
+    }
+  }
+
+  // Start over: drop the draft and put the form back to the blank-first state
+  // the markup was rendered in. form.reset() is exactly right here BECAUSE of
+  // that policy -- every control ships empty, so resetting to defaults is the
+  // same thing as clearing. The coverage sets have to be emptied with it, or a
+  // discarded draft would keep counting as answered.
+  document.getElementById("onb-resume-clear").addEventListener("click", () => {
+    clearDraft(DRAFT_KEY);
+    form.reset();
+    touchedFields.clear();
+    touchedInstruments.clear();
+    syncCoupleBlock();
+    document.getElementById("onb-resume").classList.add("d-none");
+    hideError();
+    showPage(0);
+  });
+
+  const save = () => saveDraft(DRAFT_KEY, form, { step: currentStep });
+  form.addEventListener("input", save);
+  form.addEventListener("change", save);
 
   // Build the survey payload from the DOM and submit. By the time this runs
   // every step has passed validateScope, so no field is blank or out of range.
@@ -352,6 +415,10 @@ export function renderOnboarding(containerId, onComplete) {
       };
       // express is always false now: a baseline is always completed in full.
       stateManager.submitOnboarding(surveyData, false, coverage);
+      // The baseline is accepted and state.js is now the record. A surviving
+      // draft would be a stale second copy of assessment data, and on a retake
+      // it would repopulate the form with the previous run.
+      clearDraft(DRAFT_KEY);
       onComplete();
     } catch (err) {
       console.error("Onboarding submission failed:", err);

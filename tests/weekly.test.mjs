@@ -42,9 +42,25 @@ test("plastics 3/day -> 0/day raises environment by exactly the published weight
   assert.deepEqual(shifts, { environment: 10 });
 });
 
-test("savings rate 0% -> 20% adds exactly the +10 finance bonus", () => {
+test("v76: a changed savings rate shifts nothing, because nothing scores it", () => {
+  // Until v75 this produced { finance: 10 }. Round 14 removed the bonus, so the
+  // weekly review still ASKS for the monthly saving - it updates the figure on
+  // the Finance page and the savings goal - but no term in
+  // calculateFinanceScore reads it, and inventing a shift here would be
+  // re-adding the bonus through the back door.
   const shifts = weeklyAspectShifts(BASE, { ...BASE, savingsRate: 20 }, JSS_BASELINE);
-  assert.deepEqual(shifts, { finance: 10 });
+  assert.deepEqual(shifts, {});
+});
+
+test("finance is absent from weeklyAspectShifts for EVERY weekly input", () => {
+  // Stronger than the test above: nothing a weekly review can change may
+  // produce a finance shift, not merely the savings rate.
+  const changed = {
+    ...BASE, savingsRate: 40, income: 90000, singleUsePlastics: 0,
+    weeklyLearningHours: 10, monthlyDonations: 5000, volunteeringHours: 8
+  };
+  const shifts = weeklyAspectShifts(BASE, changed, JSS_BASELINE);
+  assert.equal(shifts.finance, undefined, "finance shifted by " + shifts.finance);
 });
 
 test("learning hours feed personalGoals ((0.3/0.7) x learningScore) and humanityFuture (0.125 x futureStudy)", () => {

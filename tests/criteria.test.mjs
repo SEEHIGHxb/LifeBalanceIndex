@@ -288,9 +288,16 @@ test("AVERAGE_ASPECT_SCORES moved only where v46 and v64 intended", () => {
   // used to overrule bad CFPB answers; tests/finance-scale.test.mjs pins that
   // case with the two real people it came from.
   //
+  // v76 moved finance a fourth time, 54 -> 49, when round 14 removed the
+  // savings bonus. FIVE POINTS, and the arithmetic is exact rather than
+  // emergent: the reference profile saves 10% of income, the deleted term paid
+  // (10/20)*100/10 = 5 points for exactly that, and 54 - 5 = 49. A term that
+  // moved the typical person by a flat 5 points regardless of anything else
+  // about their finances is a fair description of what was wrong with it.
+  //
   // Asserting the whole object is what proves the other five did NOT drift.
   assert.deepEqual({ ...AVERAGE_ASPECT_SCORES }, {
-    finance: 54, physical: 62, mental: 69, relationships: 70,
+    finance: 49, physical: 62, mental: 69, relationships: 70,
     personalGoals: 57, socialContribution: 32, environment: 50, humanityFuture: 50
   });
 });
@@ -300,10 +307,14 @@ test("the Balance Index and the at-or-above-average standing move only with the 
     finance: 60, physical: 55, mental: 70, relationships: 65,
     personalGoals: 50, socialContribution: 40, environment: 45, humanityFuture: 35
   };
-  // 47 from v39 through v63; 46 from v64. balanceIndex scores each aspect
-  // RELATIVE to AVERAGE_ASPECT_SCORES, so the two averages that moved above
-  // move this too. Criteria still leak nothing into it, which is the point.
-  assert.equal(balanceIndex(aspects), 46);
+  // 47 from v39 through v63; 46 from v64; 47 again from v76. balanceIndex
+  // scores each aspect RELATIVE to AVERAGE_ASPECT_SCORES, so every average that
+  // moves above moves this too. The v76 direction is worth stating because it
+  // reads backwards at first glance: deleting the savings bonus LOWERED the
+  // finance average to 49, and this fixture holds finance at 60, so the same
+  // score now sits further above typical than it did. Criteria still leak
+  // nothing into it, which is the point.
+  assert.equal(balanceIndex(aspects), 47);
   assert.deepEqual(aspectsAtOrAboveAverage(aspects), { count: 3, total: 8 });
 });
 

@@ -21,12 +21,13 @@ const isBangkok = p => p.region === "Bangkok";
 // components.
 const RULES = {
   finance: {
-    savings: (p) => ({
-      title: "Grow your savings rate",
-      text: p.employment === "Student" || p.employment === "Unemployed"
-        ? "Even 5% of any money that comes in counts — set it aside the day you receive it, before spending."
-        : "Automate a transfer on payday so saving happens before spending — 15-20% of income maxes this component."
-    }),
+    // NO `savings` RULE, since v76. Rules are looked up by COMPONENT key below,
+    // and round 14 moved saving out of the components list when it removed the
+    // term that scored it — so a rule here could never fire, and one that reads
+    // "15-20% of income maxes this component" would be advertising a component
+    // that no longer exists. The app still nudges saving through the Savings
+    // pledge in goals.js, which is a target the user sets rather than one the
+    // score implies.
     income: (p) => ({
       title: "Raise your earning power",
       text: {

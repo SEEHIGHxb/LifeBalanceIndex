@@ -181,18 +181,39 @@ test("clampScore never returns 100, and never returns below 0", () => {
   assert.equal(SCORE_MAX, 99);
 });
 
-test("a maximal finance profile still cannot reach 100", () => {
+test("finance can no longer reach the app-wide cap at ANY age", () => {
   // The fixture is age 75 since v69, and the reason is worth reading. The CFPB
   // conversion table tops out at 82 for everyone under 70 and at 90 from 70 up.
   // At the old 0.6/0.4 weights the income term was large enough to push any age
   // past the cap; at 0.15/0.85 only the 70+ band still reaches it. So this test
   // needs an over-70 profile to exercise the clamp at all — which is itself the
   // finding recorded in the next test.
-  const rich = { income: 10000000, region: "Bangkok", savingsRate: 100, age: 75 };
-  assert.equal(calculateFinanceScore(rich, [4, 4, 4, 4, 4]), SCORE_MAX);
+  //
+  // v76 UPDATE: this fixture no longer exercises the clamp either. With the
+  // savings bonus gone the ceiling is 0.15(100) + 0.85(cfpb_max), so 85 under
+  // 70 and 92 from 70 up, and nothing reaches 99. That is the largest
+  // consequence of round 14, pinned here rather than smoothed over. It is NOT a
+  // bug: the bonus was what used to close the gap, and it closed it with points
+  // no instrument ever published.
+  const rich = { income: 10000000, region: "Bangkok", savingsRate: 100 };
+  assert.equal(calculateFinanceScore({ ...rich, age: 75 }, [4, 4, 4, 4, 4]), 92);
+  assert.equal(calculateFinanceScore({ ...rich, age: 40 }, [4, 4, 4, 4, 4]), 85);
+  assert.ok(92 < SCORE_MAX, "and neither reaches the app-wide cap");
 });
 
-test("v69 CONSEQUENCE: finance now tops out at 95 for anyone under 70", () => {
+test("the savings rate no longer moves the finance score by a single point", () => {
+  // The load-bearing assertion of round 14. One profile, the savings rate swept
+  // across its whole legal range, one score throughout.
+  const base = { income: 30000, region: "Provinces", age: 40 };
+  const answers = [2, 2, 2, 2, 2];
+  const expected = calculateFinanceScore({ ...base, savingsRate: 0 }, answers);
+  for (const savingsRate of [0, 1, 5, 10, 15, 20, 25, 50, 100]) {
+    assert.equal(calculateFinanceScore({ ...base, savingsRate }, answers), expected,
+      "savingsRate " + savingsRate + " moved the score");
+  }
+});
+
+test("v76 CONSEQUENCE: finance tops out at 85 for anyone under 70", () => {
   // Not a bug, not hidden, and — measured — not costly. Finance is now
   // dominated by an instrument whose own converted maximum is 82, so a flawless
   // finance profile reaches 0.15(100) + 0.85(82) + 10 = 94.7 -> 95 while every
@@ -211,8 +232,8 @@ test("v69 CONSEQUENCE: finance now tops out at 95 for anyone under 70", () => {
   // about. If it is ever addressed it must be addressed openly, and this test
   // will be the thing that fails.
   const best = { income: 10000000, region: "Bangkok", savingsRate: 100, age: 40 };
-  assert.equal(calculateFinanceScore(best, [4, 4, 4, 4, 4]), 95);
-  assert.ok(95 < SCORE_MAX, "and it therefore never reaches the app-wide cap");
+  assert.equal(calculateFinanceScore(best, [4, 4, 4, 4, 4]), 85);
+  assert.ok(85 < SCORE_MAX, "and it therefore never reaches the app-wide cap");
 });
 
 test("the Balance Index is capped too", () => {

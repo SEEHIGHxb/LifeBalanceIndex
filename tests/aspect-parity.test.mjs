@@ -23,7 +23,6 @@ import assert from "node:assert/strict";
 import { getAspectDetail } from "../aspects.js";
 import {
   clamp100,
-  savingsHabitScore,
   activityScore,
   metMinutes,
   bmiScore,
@@ -91,8 +90,11 @@ const PROFILES = {
   "long night (10h)": { sleepHours: 10 },
 
   // --- the three rows that had not yet drifted, held to the same rule.
+  // Savings left this sweep in v76 (it is a fact now, not a bar), but the
+  // profiles stay: they still exercise every other finance row against a
+  // varying rate.
   "no savings": { savingsRate: 0 },
-  "savings above the 20% cap": { savingsRate: 45 },
+  "savings well above the old 20% cap": { savingsRate: 45 },
   "no volunteering": { volunteeringHours: 0 },
   "volunteering above the 4h cap": { volunteeringHours: 12 },
   "nutrition above both caps": { vegetablePortions: 9, waterLiters: 6 },
@@ -106,9 +108,6 @@ const PROFILES = {
 // component key -> the scoring.js expression it must equal, given (profile,
 // baseline). A formula returning null means "this row must be absent".
 const EXPECTED = {
-  finance: {
-    savings: p => savingsHabitScore(p)
-  },
   physical: {
     activity: p => activityScore(metMinutes(p)),
     body: p => bmiScore(p),

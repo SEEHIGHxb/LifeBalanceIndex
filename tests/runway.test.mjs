@@ -111,10 +111,11 @@ test("hostile and string inputs coerce rather than throw", () => {
 
 test("the Finance page carries runway as a fact with no 0-100 value", () => {
   const detail = getAspectDetail(makeState({ liquidSavings: 60000, committedOutflow: 12000 }), "finance");
-  assert.equal(detail.facts.length, 1);
-
-  const runway = detail.facts[0];
-  assert.equal(runway.key, "runway");
+  // Two facts since v76: saving joined runway here when round 14 removed the
+  // term that scored it. Found by key rather than by position, so adding a
+  // third never silently re-points this test at the wrong row.
+  const runway = detail.facts.find(f => f.key === "runway");
+  assert.ok(runway, "runway is missing from the facts list");
   assert.match(runway.display, /5 months|5 เดือน/);
   // A fact has NO `value`. The aspect view reads `value` to size the bar, so an
   // absent value is what structurally prevents runway from ever rendering as
@@ -135,13 +136,23 @@ test("runway never appears among the scored components", () => {
 
 test("no committed outflow on file means no runway row at all", () => {
   const detail = getAspectDetail(makeState(), "finance");
-  assert.deepEqual(detail.facts, []);
+  assert.equal(detail.facts.find(f => f.key === "runway"), undefined);
+});
+
+test("v76: the savings fact is omitted rather than shown as 0% with no income", () => {
+  // Same contract as runway, and as bmiScore before it: an undefined figure is
+  // left out, never printed as a zero the user could mistake for a measurement.
+  const noIncome = getAspectDetail(makeState({ income: 0, savingsRate: 10 }), "finance");
+  assert.equal(noIncome.facts.find(f => f.key === "savings"), undefined);
+  const noSaving = getAspectDetail(makeState({ income: 30000, savingsRate: 0 }), "finance");
+  assert.equal(noSaving.facts.find(f => f.key === "savings"), undefined);
 });
 
 test("only Finance has facts; the other seven aspects carry an empty list", () => {
   // Not an accident of the current data — the bundle always has the key, so a
   // view can render it unconditionally without a presence check.
   const state = makeState({ liquidSavings: 60000, committedOutflow: 12000 });
+  assert.ok(getAspectDetail(state, "finance").facts.length >= 1, "finance has facts");
   for (const key of ["physical", "mental", "relationships", "personalGoals", "socialContribution", "environment", "humanityFuture"]) {
     assert.deepEqual(getAspectDetail(state, key).facts, [], `${key} has no facts`);
   }

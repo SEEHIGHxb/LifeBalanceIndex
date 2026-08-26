@@ -210,17 +210,24 @@ test("age changes the mental percentile and nothing score-based", () => {
   // personalGoals, the pension left humanityFuture), and balanceIndex scores
   // relative to those averages — so a change there moves it by design. Both
   // ages still produce the same number, which is the actual assertion.
-  assert.equal(balanceIndex(aspects), 46);
+  // 47 since v76, and the reason is the same one the paragraph above gives for
+  // 46: balanceIndex scores each aspect RELATIVE to its reference average, and
+  // round 14 moved the finance average 54 -> 49 by deleting the savings bonus.
+  // This fixture holds finance at 60, so a lower average means it now sits
+  // further above typical, not less far. Both ages still produce the same
+  // number, which remains the actual assertion.
+  assert.equal(balanceIndex(aspects), 47);
   assert.deepEqual(aspectsAtOrAboveAverage(aspects), { count: 3, total: 8 });
   // finance re-pinned 55 -> 53 in v46 (income magnitude scale) and 53 -> 54 in
   // v69 (income weight 0.6 -> 0.15); personalGoals 59 -> 57 and humanityFuture
   // 44 -> 50 in v64 (grit and the pension left their composites). The other
   // five are untouched, which is the point of asserting the whole object here.
-  // Note that balanceIndex above still reads 46: a one-point move in one
-  // reference average is not enough to shift it, so this release changes the
-  // typical person's standing not at all.
+  // finance moved once more in v76, 54 -> 49, when round 14 deleted the savings
+  // bonus - a flat 5 points the reference profile had been collecting for a 10%
+  // savings rate. Unlike v69's one-point nudge, that IS enough to move
+  // balanceIndex above, which is why it now reads 47.
   assert.deepEqual({ ...AVERAGE_ASPECT_SCORES }, {
-    finance: 54, physical: 62, mental: 69, relationships: 70,
+    finance: 49, physical: 62, mental: 69, relationships: 70,
     personalGoals: 57, socialContribution: 32, environment: 50, humanityFuture: 50
   });
   // Comparison codes encode the scores, so v2 codes stay valid across this

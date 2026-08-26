@@ -37,7 +37,6 @@ import {
   learningScore,
   futureStudyScore,
   savingsAmountFrom,
-  savingsHabitScore,
   runwayMonths,
   donationVolumeFactor,
   volunteerFactor,
@@ -225,16 +224,11 @@ function financeComponents(p, b, benchmark) {
   if (b && Number.isFinite(b.cfpb)) {
     items.push({ key: "cfpb", label: t("Financial well-being (CFPB)"), value: clamp100(cfpbScore(b.cfpb, p.age)), detail: tp("Raw {n}/20 — converted with the CFPB's official scoring table (self-administered)", { n: b.cfpb }) });
   }
-  items.push({
-    key: "savings",
-    label: t("Savings habit"),
-    value: clamp100(savingsHabitScore(p)),
-    // Both figures: the baht is what they entered, the rate is what is scored.
-    detail: tp("Saving {thb} THB/mo = {rate}% of income (20%+ maxes this)", {
-      thb: savingsAmountFrom(p.savingsRate, p.income).toLocaleString(),
-      rate: Math.round(parseFloat(p.savingsRate || 0) * 10) / 10
-    })
-  });
+  // Saving used to occupy a bar here. It moved to aspectFacts in v76, when
+  // round 14 removed the term that scored it -- a bar that looks exactly like
+  // the two above it and counts for nothing is the failure mode the grit row
+  // documents, and unlike grit this one had no published divisor to rank
+  // against either.
   return items;
 }
 
@@ -392,11 +386,32 @@ function humanityFutureComponents(p, b) {
 // with no bar cannot silently acquire a weight.
 function aspectFacts(aspectKey, p) {
   if (aspectKey !== "finance") return [];
+  const facts = [];
+
+  // Saving, reported since v76. Both figures the user can check: the baht they
+  // entered and the share of income it works out to. No bar and no target,
+  // because round 14 found the 20% the old bar divided by was a trade-paperback
+  // budgeting rule rather than a published threshold. Omitted rather than shown
+  // as 0% when there is no income to divide by — same contract as runway.
+  const rate = parseFloat(p.savingsRate || 0);
+  if (rate > 0 && parseFloat(p.income || 0) > 0) {
+    facts.push({
+      key: "savings",
+      label: t("Monthly saving"),
+      display: tp("{thb} THB/mo", {
+        thb: savingsAmountFrom(p.savingsRate, p.income).toLocaleString()
+      }),
+      detail: tp("{rate}% of your income. Not scored — the CFPB questions already ask whether you have money left over at the end of the month, and no published source says what savings rate is good enough to count.", {
+        rate: Math.round(rate * 10) / 10
+      })
+    });
+  }
+
   const months = runwayMonths(p);
   // null = no committed outflow on file, so no runway is defined. Omitted
   // rather than printed as zero or as infinity — same contract as bmiScore.
-  if (months === null) return [];
-  return [{
+  if (months === null) return facts;
+  facts.push({
     key: "runway",
     label: t("Runway"),
     // One decimal: the inputs are self-reported round numbers, and a second
@@ -406,7 +421,8 @@ function aspectFacts(aspectKey, p) {
       savings: Math.round(parseFloat(p.liquidSavings || 0)).toLocaleString(),
       outflow: Math.round(parseFloat(p.committedOutflow || 0)).toLocaleString()
     })
-  }];
+  });
+  return facts;
 }
 
 // Full detail bundle for one aspect page.

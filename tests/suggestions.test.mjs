@@ -106,9 +106,20 @@ test("suggestions are ordered weakest component first", () => {
 });
 
 test("healthy components (>=70) produce no suggestion", () => {
-  const state = makeState({ profile: { savingsRate: 25 } });
-  const finance = getAspectSuggestions(state, "finance");
-  assert.ok(!finance.some(s => s.componentKey === "savings"), "healthy savings must not be suggested");
+  // Re-pointed in v76. This used to prove the rule by feeding it a healthy
+  // savings rate — but saving stopped being a component in that release, so the
+  // assertion became true for the wrong reason and would have passed even if
+  // the threshold had been deleted outright. Plastics is a live component with
+  // the same shape: 0 pieces/day scores 100, comfortably over the 70 cutoff.
+  const state = makeState({ profile: { singleUsePlastics: 0 } });
+  const environment = getAspectSuggestions(state, "environment");
+  assert.ok(!environment.some(s => s.componentKey === "plastic"),
+    "a healthy component must not be suggested");
+  // And the guard against a vacuous pass: the same component IS suggested when
+  // it is genuinely weak, so the assertion above is about the threshold.
+  const weak = makeState({ profile: { singleUsePlastics: 10 } });
+  assert.ok(getAspectSuggestions(weak, "environment").some(s => s.componentKey === "plastic"),
+    "a weak component must still be suggested");
 });
 
 test("activity advice adapts to region", () => {

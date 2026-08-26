@@ -238,17 +238,39 @@ export function futureStudyScore(profile) {
   return Math.min(100, (parseFloat(profile.weeklyLearningHours || 0) / 4) * 100);
 }
 
-// Savings habit as a 0-100 component (a 20% rate maxes it). This is what the
-// aspect page's "Savings habit" bar shows.
-export function savingsHabitScore(profile) {
-  return Math.min(100, (parseFloat(profile.savingsRate || 0) / 20) * 100);
-}
-
-// The same curve scaled to its contribution on the finance score (max +10), so
-// the bar and the bonus cannot drift apart.
-export function savingsBonus(profile) {
-  return savingsHabitScore(profile) / 10;
-}
+// --- SAVINGS RATE: MEASURED, DELIBERATELY NOT SCORED (v76) ---
+//
+// Until v75 this file exported savingsHabitScore (savingsRate / 20, capped at
+// 100) and savingsBonus (that / 10), and calculateFinanceScore added the bonus
+// to a composite whose weights already summed to 1.0 -- up to +10 points on top
+// of 100, then clamped.
+//
+// Round 14 closed 2026-08-26 and removed it. Three findings, each independently
+// sufficient (docs/research/round-14-savings-bonus.md):
+//
+//   1. IT WAS DOUBLE-COUNTED. CFPB item 4 is "I have money left over at the end
+//      of the month". savingsRate is derived in connections.js from
+//      (income - expenses) / income: the money left over at the end of the
+//      month. The same fact was scored subjectively inside the 0.85 term and
+//      again objectively as a bonus outside the weighting.
+//   2. THE STRUCTURE IS UNPRECEDENTED. No validated index adds an un-normalized
+//      term outside its composite -- checked against FinHealth, CFPB,
+//      OECD/INFE and the World Bank capability frameworks, all of which
+//      normalize every input inside the weights. Sitting outside them and then
+//      clamping also compresses the top of the range: two people whose CFPB
+//      answers genuinely differ come out of the clamp identical.
+//   3. THE 20% DIVISOR WAS NEVER PUBLISHED. It traces to the 50/30/20 rule
+//      (Warren & Tyagi, All Your Worth, 2005) -- a trade paperback, not
+//      research. No central bank or peer-reviewed source sets 20% of monthly
+//      flow as a wellbeing threshold, and Thai median net saving across income
+//      deciles 1-6 runs 0-5%, so the cap paid the top of the distribution a
+//      second time for the income it was already scored on.
+//
+// THE RATE IS STILL COLLECTED AND STILL SHOWN. It sets the savings goal target
+// (goals.js), pre-fills the weekly review, and is reported on the Finance page
+// as a FACT rather than a bar -- the same treatment as runway below, and for
+// the same reason: there is no published divisor, so a bar would have to invent
+// one. Finding 3 is precisely that the old bar had invented it.
 
 // The forms ASK for a baht amount and store a RATE. Asking for a percentage
 // made the user do the division, and people who do not know their rate off the
@@ -469,8 +491,10 @@ export function calculateFinanceScore(profile, cfpbAnswers) {
   // and still the denominator of the savings rate. It stopped being four times
   // louder than the evidence supports.
   //
-  // Savings rate modifier (max 10 bonus points) is unchanged.
-  return clampScore((0.15 * S_income) + (0.85 * S_wellbeing) + savingsBonus(profile));
+  // The savings bonus that used to be added here was removed in v76 -- see the
+  // SAVINGS RATE block above. These two weights now sum to exactly 1.0, which
+  // is what every validated composite the app has been measured against does.
+  return clampScore((0.15 * S_income) + (0.85 * S_wellbeing));
 }
 
 export function calculatePhysicalScore(profile, jssAnswers) {
@@ -643,11 +667,17 @@ export function calculateHumanityFutureScore(profile, lfisAnswers) {
 // same formulas onboarding runs uncapped, the inputs are range-validated, and
 // each non-physical delta is structurally bounded by its weight product. The
 // ±15 cap belongs to the survey re-assessment, where retake noise is real.
+//
+// FINANCE HAS NO ENTRY, since v76. Its only weekly-measured input was the
+// savings rate, and round 14 removed the term that scored it. The weekly review
+// still ASKS for the monthly saving -- it updates the figure on the Finance
+// page and the savings goal -- but nothing in calculateFinanceScore reads it,
+// so there is no honest delta to report. Reporting one would mean re-adding the
+// bonus through the back door.
 export function weeklyAspectShifts(oldProfile, newProfile, baseline) {
   const jss = [Number(baseline && baseline.jss) || 0];
   const deltas = {
     physical: calculatePhysicalScore(newProfile, jss) - calculatePhysicalScore(oldProfile, jss),
-    finance: savingsBonus(newProfile) - savingsBonus(oldProfile),
     personalGoals: learningWeight(baseline && baseline.citacc) * (learningScore(newProfile, baseline && baseline.citlearn) - learningScore(oldProfile, baseline && baseline.citlearn)),
     socialContribution:
       (0.4 * 0.5) * (donationVolumeFactor(newProfile) - donationVolumeFactor(oldProfile))

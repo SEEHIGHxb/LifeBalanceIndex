@@ -169,8 +169,14 @@ test("finance components include the benchmark-based income standing", () => {
   const d = getAspectDetail(makeState(), "finance");
   const income = d.components.find(c => c.label === "Income standing");
   assert.ok(income && income.value >= 1 && income.value <= 99);
-  const savings = d.components.find(c => c.label === "Savings habit");
-  assert.equal(savings.value, 50); // 10% of the 20% target
+  // v76: saving is no longer a scored bar. It moved to `facts`, alongside
+  // runway, when round 14 removed the term that scored it - so its absence
+  // from `components` is the assertion, and the fact carries no 0-100 value.
+  assert.equal(d.components.find(c => c.key === "savings"), undefined,
+    "the savings bar outlived the term that scored it");
+  const savings = d.facts.find(f => f.key === "savings");
+  assert.ok(savings, "saving is still reported, just not ranked");
+  assert.equal(savings.value, undefined, "a fact must carry no bar value");
 });
 
 // --- CONFIDENCE (Phase 2a) ---

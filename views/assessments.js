@@ -12,6 +12,7 @@ import {
   validateScope
 } from "./instrument-forms.js";
 import { scrollIntoViewGently } from "./helpers.js";
+import { applyDraft, saveDraft, clearDraft } from "../draft.js";
 
 // 2c. RENDER THE MONTHLY MINI RE-ASSESSMENT (#/checkin)
 export function renderCheckin(containerId, state, onComplete) {
@@ -30,6 +31,9 @@ export function renderCheckin(containerId, state, onComplete) {
       <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin-bottom: 20px;">
         ${t("Answer for the recent weeks, not how you felt at onboarding. Scores shift by at most ±15 points per re-assessment, and consistent weekly reviews since the last one add a small bonus. Reward: +40 points.")}
       </p>
+      <div id="checkin-resume" class="onb-resume d-none">
+        <span>${t("Picked up where you left off. Your answers were saved on this device.")}</span>
+      </div>
       <form id="checkin-form">
         ${instrumentBlock("who5")}
         ${instrumentBlock("st5")}
@@ -43,6 +47,20 @@ export function renderCheckin(containerId, state, onComplete) {
       <p id="checkin-error" class="d-none" style="color: var(--color-crimson); margin-top: 12px; font-weight: 600;"></p>
     </div>
   `;
+
+  // Draft persistence, same contract as onboarding. Shorter form, same failure:
+  // seven instruments answered on a phone, one interruption, all of it gone.
+  //
+  // No coverage bookkeeping to seed here -- unlike onboarding, the check-in
+  // reads every instrument straight off the DOM at submit time and tracks no
+  // "touched" sets, so restoring the controls is the whole job.
+  const checkinForm = document.getElementById("checkin-form");
+  if (applyDraft("checkin", checkinForm)) {
+    document.getElementById("checkin-resume").classList.remove("d-none");
+  }
+  const saveCheckin = () => saveDraft("checkin", checkinForm, {});
+  checkinForm.addEventListener("input", saveCheckin);
+  checkinForm.addEventListener("change", saveCheckin);
 
   document.getElementById("checkin-form").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -65,6 +83,7 @@ export function renderCheckin(containerId, state, onComplete) {
         citacc: collectInstrument("citacc"),
         citlearn: collectInstrument("citlearn")
       });
+      clearDraft("checkin");
       onComplete(shifts);
     } catch (err) {
       console.error("Check-in submission failed:", err);
@@ -122,6 +141,14 @@ export function renderDeepAssessment(containerId, state, onComplete) {
   `;
 
   container.querySelectorAll(".deep-form").forEach(form => {
+    // One draft per aspect section, because each is submitted independently:
+    // finishing Mental must not discard a half-finished Finance section.
+    const draftKey = `deep-${form.dataset.aspect}`;
+    applyDraft(draftKey, form);
+    const saveDeep = () => saveDraft(draftKey, form, {});
+    form.addEventListener("input", saveDeep);
+    form.addEventListener("change", saveDeep);
+
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const errorEl = document.getElementById("deep-error");
@@ -142,6 +169,7 @@ export function renderDeepAssessment(containerId, state, onComplete) {
         // reconstruct the full-length sum.
         keys.forEach(k => { deepData[k] = collectDeepInstrument(k, deepAskIndices(k, state.baseline)); });
         const result = stateManager.submitDeepAssessment(aspect, deepData);
+        clearDraft(draftKey);
         if (result && result.flagged) {
           errorEl.textContent = t("Some answers all sat on the same option, so that questionnaire was not counted. Vary your answers to reflect your real experience and save again.");
           errorEl.classList.remove("d-none");

@@ -179,6 +179,8 @@ export const TH = {
   // round 9 established it never should. Its three Thai keys go with it;
   // leaving them here would fail tests/i18n-orphans.test.mjs.
   "Back": "ย้อนกลับ",
+  "Picked up where you left off. Your answers were saved on this device.": "กลับมาต่อจากที่ค้างไว้ คำตอบของคุณถูกบันทึกไว้ในเครื่องนี้",
+  "Start over": "เริ่มใหม่",
   "Next": "ถัดไป",
   "Complete Assessment": "ทำแบบประเมินให้เสร็จ",
   "Assessment Error: ": "แบบประเมินผิดพลาด: ",

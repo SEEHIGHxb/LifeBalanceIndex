@@ -1568,6 +1568,31 @@ header {
   border: 0;
 }
 
+/* --- Resumed draft notice (onboarding + check-in) --- */
+/* Deliberately quiet. It reports something good that already happened, so it
+   is an information strip, not a warning: the eye should land on the question
+   the user is being asked, not on this. .btn-sm is defined here rather than as
+   a global utility because this is the only small button in the app. */
+.onb-resume {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  border-radius: 8px;
+  background: var(--color-track);
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+}
+.onb-resume .btn-sm {
+  padding: 4px 12px;
+  font-size: var(--text-sm);
+  min-height: 44px; /* touch target stays WCAG-sized even though the text is small */
+}
+
 /* --- Onboarding: progress, rationale, express path --- */
 .onb-progress {
   margin-bottom: 22px;

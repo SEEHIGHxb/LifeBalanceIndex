@@ -353,6 +353,25 @@ function physicalBenchmark(profile) {
       : "BMI {bmi} — at or above the WHO Asia-Pacific overweight line of 23.0, which is lower than the global 25 because risk rises earlier in Asian populations. For reference, {share}% of Thai adults are at BMI 25 or above.", { bmi: bmi.toFixed(1), share: overweightShare }));
   }
 
+  // ONE published number is doing all the work here: ~71% of Thai adults meet
+  // the 600 MET-min guideline. That single share genuinely fixes ONE point on
+  // the curve — the 29th percentile at 600 MET-min — and nothing else. Both
+  // segments around it are this app's own shape: below the guideline it assumes
+  // the inactive 29% are spread evenly from 0, and above it a linear ramp
+  // saturating at the 95th. Neither is published, and the second one ranks
+  // occupational and agricultural activity, which is most of Thai MVPA.
+  //
+  // Environment lost its rank in v77 for having only an anchor and no
+  // distribution. This aspect keeps one because its anchor is a PREVALENCE — a
+  // real split of the population at a cited threshold — which is enough to
+  // place a person on the correct side of it, and the guideline itself is a
+  // criterion (criteria.js) rather than a norm. What the anchor cannot support
+  // is the precision of the number around it, so as of v77 the card says so
+  // instead of leaving it in a code comment where no user could read it.
+  notes.push(met >= MET_GUIDELINE
+    ? t("You are above the WHO guideline, which ~71% of Thai adults also meet — that part is published. How far above is this app's own estimate: no per-person distribution of Thai activity minutes exists.")
+    : t("You are below the WHO guideline, which ~29% of Thai adults also are — that part is published. Your position inside that 29% is this app's own estimate: no per-person distribution of Thai activity minutes exists."));
+
   return {
     percentile: toPercentile(p01),
     method: "estimate",
@@ -850,7 +869,15 @@ const GENEROUS_GIVING_SHARE = 0.05;
 
 function socialContributionBenchmark(profile, baseline) {
   const donations = parseFloat(profile.monthlyDonations || 0);
-  const income = parseFloat(profile.monthlyIncome || 0);
+  // `profile.income` — NOT the connector-only monthly-income key, which is a
+  // Midori payload field (connections.js) and has never existed on a profile.
+  // Reading it made `income` 0 for every user, so `share` below was always null
+  // and the
+  // 0.4-weighted giving-magnitude half of stage 2 never once executed: PTM
+  // alone drove every placement. Fixed in v77; the comment describing the blend
+  // had been describing dead code since the two-stage design shipped, and the
+  // only test covering it set the wrong key in its own fixture, so it passed.
+  const income = parseFloat(profile.income || 0);
   const donates = donations > 0;
   const volunteers = parseFloat(profile.volunteeringHours || 0) > 0;
 
@@ -914,22 +941,59 @@ const PLASTIC_BANDS = [
   { max: Infinity, floor: 2, ceil: 13, fallback: 10 }
 ];
 
+// THE RANK IS GONE (v77). IT WAS A CURVE INVENTED AROUND A SINGLE NUMBER.
+//
+// This aspect returned a 2-99 percentile built from exactly one published
+// figure: a post-ban Thai average of ~3 single-use pieces per day. There is no
+// published per-person distribution of plastic use in Thailand — the comment
+// below said so, while the code above it produced a seven-band ladder anyway.
+// The bands were not derived from the anchor either; each midpoint was
+// reverse-engineered to reproduce the fixed percentiles this used to return
+// (90, 78, 64, 50, 34, 20, 10), so the numbers came first and the justification
+// second. A mean is not a distribution, and one point cannot say whether a
+// person using two pieces a day is at the 60th percentile or the 85th.
+//
+// A second problem the rank hid: anchoring a right-skewed count variable's MEAN
+// at the 50th percentile assumes mean = median, which for counts like this is
+// false — most people cluster low and a heavy tail pulls the average up.
+//
+// This follows relationshipsBenchmark and humanityFutureBenchmark: measure it,
+// show every real number, refuse the rank. The plastic count, the GEB reading
+// and the comparison against the ~3/day average are all real and all still
+// shown — the population POSITION was the part that was not.
+//
+// PLASTIC_BANDS is kept: it still names which side of the Thai average a person
+// falls on, which is a band placement the single anchor genuinely supports.
+function plasticBandLabel(pieces) {
+  if (pieces <= 1) return "far below the ~3/day Thai average";
+  if (pieces <= 2) return "below the ~3/day Thai average";
+  if (pieces <= 3) return "around the ~3/day Thai average";
+  if (pieces <= 5) return "above the ~3/day Thai average";
+  return "far above the ~3/day Thai average";
+}
+
 function environmentBenchmark(profile, baseline) {
   const pieces = parseInt(profile.singleUsePlastics || 0);
-  const { floor, ceil, fallback } = PLASTIC_BANDS.find(b => pieces <= b.max);
-  // STAGE 2 (this app's own): the six GEB items — recycling, single-use
-  // avoidance, transit, energy habits, eco-product choice. Plastic count alone
-  // said nothing about any of them.
-  const intensity = intensityOf((baseline || {}).geb, 24);
+  const notes = [
+    tp("You report {pieces} single-use plastic pieces/day — {band}.",
+      { pieces, band: t(plasticBandLabel(pieces)) }),
+    t("Banded around the post-plastic-ban Thai average; per-person distribution data is not published.")
+  ];
+  // The six GEB items — recycling, single-use avoidance, transit, energy
+  // habits, eco-product choice — are still measured and still scored. They are
+  // this app's own items on a frequency scale, with no population distribution
+  // behind them either, so they cannot rescue the rank.
+  const geb = (baseline || {}).geb;
+  if (Number.isFinite(geb)) {
+    notes.push(tp("Green everyday behavior {n}/24 across six habits — this app's own items, which have no published population distribution.", { n: geb }));
+  }
   return {
-    percentile: positionInBand(floor, ceil, intensity, fallback),
+    percentile: null,
+    unranked: t("The only published Thai figure here is an average — about three single-use plastic pieces per person per day. An average can say which side of it you are on; it cannot say what share of people you are ahead of, because no per-person distribution of plastic use is published. Until v77 this aspect turned that one number into a percentile anyway. Your plastic count and your green-habit score are real measurements; the population ranking was the part that was not."),
     method: "estimate",
-    population: t("Thai adults"),
-    summary: tp("{pieces} single-use plastic pieces/day vs the ~3/day Thai average", { pieces }),
-    notes: [
-      t("Banded around the post-plastic-ban Thai average; per-person distribution data is not published."),
-      TWO_STAGE_NOTE()
-    ],
+    population: null,
+    summary: t("Single-use plastics and green habits — measured, not ranked"),
+    notes,
     sources: [SOURCES.thaiPlastic]
   };
 }

@@ -49,14 +49,14 @@ const FIELD_IDS = {
 // new translations and the two forms can never phrase the same field two ways.
 const FIELD_LABELS = {
   weeklyVigorousDays: "Vigorous Exercise (Days/Week)",
-  weeklyVigorousMins: "Vigorous Minutes per Day",
+  weeklyVigorousMins: "Vigorous Minutes on Each of Those Days",
   weeklyModerateDays: "Moderate Exercise (Days/Week)",
-  weeklyModerateMins: "Moderate Minutes per Day",
+  weeklyModerateMins: "Moderate Minutes on Each of Those Days",
   weeklyWalkingDays: "Walking (Days/Week)",
-  weeklyWalkingMins: "Walking Minutes per Day",
+  weeklyWalkingMins: "Walking Minutes on Each of Those Days",
   sleepHours: "Average Nightly Sleep (Hours)",
   waterLiters: "Water Intake per Day (Liters)",
-  vegetablePortions: "Vegetable/Fruit Portions per Day",
+  vegetablePortions: "Vegetable Portions per Day",
   weeklyLearningHours: "Weekly Learning / Study Hours",
   singleUsePlastics: "Single-Use Plastic Items per Day",
   monthlySavings: "Monthly Savings (THB)",

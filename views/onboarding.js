@@ -113,21 +113,21 @@ export function renderOnboarding(containerId, onComplete) {
         </div>
         <div class="grid-2">
           ${numberField("onb-sleep", t("Average Nightly Sleep (Hours)"), "", 'min="0" max="16" step="0.5"', { required: true, field: "sleepHours", placeholder: "0–16" })}
-          ${numberField("onb-veg", t("Vegetable/Fruit Portions per Day"), "", 'min="0" max="15"', { required: true, field: "vegetablePortions", placeholder: "0–15" })}
+          ${numberField("onb-veg", t("Vegetable Portions per Day"), "", 'min="0" max="15"', { required: true, field: "vegetablePortions", placeholder: "0–15", note: t("One portion ≈ 80 g — about one handful, or half a plate of cooked greens. Vegetables only: the guideline check behind this field counts vegetables, not fruit.") })}
         </div>
         ${numberField("onb-water", t("Water Intake per Day (Liters)"), "", 'min="0" max="10" step="0.1"', { required: true, field: "waterLiters", placeholder: "0–10" })}
         <p class="instrument-title">${t("Weekly Physical Activity (IPAQ)")}</p>
         <div class="grid-2">
           ${numberField("onb-vig-days", t("Vigorous Exercise (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyVigorousDays", placeholder: "0–7" })}
-          ${numberField("onb-vig-mins", t("Vigorous Minutes per Day"), "", 'min="0" max="600"', { required: true, field: "weeklyVigorousMins", placeholder: "0–600" })}
+          ${numberField("onb-vig-mins", t("Vigorous Minutes on Each of Those Days"), "", 'min="0" max="600"', { required: true, field: "weeklyVigorousMins", placeholder: "0–600", note: t("Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.") })}
         </div>
         <div class="grid-2">
           ${numberField("onb-mod-days", t("Moderate Exercise (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyModerateDays", placeholder: "0–7" })}
-          ${numberField("onb-mod-mins", t("Moderate Minutes per Day"), "", 'min="0" max="600"', { required: true, field: "weeklyModerateMins", placeholder: "0–600" })}
+          ${numberField("onb-mod-mins", t("Moderate Minutes on Each of Those Days"), "", 'min="0" max="600"', { required: true, field: "weeklyModerateMins", placeholder: "0–600" })}
         </div>
         <div class="grid-2">
           ${numberField("onb-walk-days", t("Walking (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyWalkingDays", placeholder: "0–7" })}
-          ${numberField("onb-walk-mins", t("Walking Minutes per Day"), "", 'min="0" max="600"', { required: true, field: "weeklyWalkingMins", placeholder: "0–600" })}
+          ${numberField("onb-walk-mins", t("Walking Minutes on Each of Those Days"), "", 'min="0" max="600"', { required: true, field: "weeklyWalkingMins", placeholder: "0–600" })}
         </div>
         ${instrumentBlock("jss")}`
     },

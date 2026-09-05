@@ -19,6 +19,8 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { APP_VERSION } from "../version.js";
+import { lfisWeight, FINANCE_INCOME_WEIGHT, FINANCE_WELLBEING_WEIGHT } from "../scoring.js";
+import { getAllBenchmarks } from "../benchmarks.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -99,4 +101,66 @@ test("the service worker precaches every module in the graph", () => {
     .map(f => f.split("\\").join("/"))
     .filter(f => !shell.includes(`"./${f}"`));
   assert.deepEqual(missing, [], `sw.js APP_SHELL is missing: ${missing.join(", ")}`);
+});
+
+// --- v77: THREE STALE CONSTANTS THAT NO TEST COULD SEE -------------------
+//
+// Each of these was a weight or a field name left behind by an earlier release.
+// All three survived every existing test, because each test either exercised a
+// different code path or manufactured the shape the broken code expected. They
+// are pinned here together, as one class of defect: a number that must agree
+// with another number in a different file.
+
+test("the deep CFPB-10 swap uses the SAME well-being weight as the composite", () => {
+  // v69 reweighted finance to 0.15/0.85. deepAssessmentScore kept the pre-v69
+  // 0.4 until v77, so completing the full 10-item CFPB -- the app's own
+  // "Verified" tier -- moved the score by less than half of what the same
+  // instrument moves at onboarding. More evidence counted for less.
+  const src = readFileSync(join(root, "scoring.js"), "utf8");
+  const composite = src.match(/\(FINANCE_INCOME_WEIGHT \* S_income\) \+ \(FINANCE_WELLBEING_WEIGHT \* S_wellbeing\)/);
+  assert.ok(composite, "the composite must read its weights from the named constants");
+  const deep = src.match(/currentScore \+ FINANCE_WELLBEING_WEIGHT \* \(DEEP_NORM\.cfpb10/);
+  assert.ok(deep, "the deep swap must read the SAME constant, never a literal");
+  assert.equal(FINANCE_INCOME_WEIGHT + FINANCE_WELLBEING_WEIGHT, 1,
+    "the two finance weights must sum to 1.0");
+});
+
+test("humanityFuture deltas use the same per-term weight as the composite", () => {
+  // v65 added the sixth LFIS item and moved the per-term weight from 0.25 to
+  // 0.2. Both delta sites kept 0.25, overstating every post-v65 user's weekly
+  // and profile-edit shifts on this aspect by 25%. scoring.js carries a comment
+  // warning about exactly this ("the v64 grit removal showed what happens when
+  // a weight chain lives as a bare literal in more than one file") -- and then
+  // contained the bug it warned about, for twelve versions.
+  assert.equal(lfisWeight(6), 0.2, "a v65+ baseline is on five terms at 0.2");
+  assert.equal(lfisWeight(5), 0.25, "a pre-v65 baseline is on four terms at 0.25");
+  assert.equal(lfisWeight(undefined), 0.25, "a baseline with no stored count predates v65");
+
+  const src = readFileSync(join(root, "scoring.js"), "utf8");
+  assert.equal(src.match(/\(0\.25 \* 0\.5\) \* \(futureStudyScore/g), null,
+    "no delta site may hardcode the pre-v65 0.25 again");
+  assert.equal((src.match(/lfisWeight\(baseline && baseline\.lfisItems\) \* 0\.5/g) || []).length, 2,
+    "both delta sites must route through lfisWeight");
+});
+
+test("the giving-share term reads a field that profiles actually carry", () => {
+  // socialContributionBenchmark read `profile.monthlyIncome` -- a Midori
+  // connector payload key that has never existed on a profile -- so `share` was
+  // always null and the 0.4-weighted giving-magnitude half of stage 2 never ran
+  // for any real user. The one test covering it set monthlyIncome in its own
+  // fixture, manufacturing the field and passing on a shape production never
+  // produces. This asserts against the real field name.
+  const src = readFileSync(join(root, "benchmarks.js"), "utf8");
+  assert.equal(src.match(/profile\.monthlyIncome/g), null,
+    "benchmarks.js must not read the connector-only monthlyIncome key");
+
+  const profile = {
+    income: 20000, region: "Provinces", volunteeringHours: 0,
+    singleUsePlastics: 3, longTermInvestments: false
+  };
+  const baseline = { ptm: 10, geb: 12, lfis: 10 };
+  const token = getAllBenchmarks({ profile: { ...profile, monthlyDonations: 50 }, baseline });
+  const generous = getAllBenchmarks({ profile: { ...profile, monthlyDonations: 1500 }, baseline });
+  assert.ok(generous.socialContribution.percentile > token.socialContribution.percentile,
+    "giving magnitude must move the standing when income is on the profile");
 });

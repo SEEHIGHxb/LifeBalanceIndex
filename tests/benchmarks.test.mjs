@@ -84,7 +84,7 @@ test("ordinal renders English suffixes including the 11-13 exceptions", () => {
 // `humanityFuture` because no Thai norm for purpose or generativity is
 // published at all, and the pension checkbox it used to rank on was an income
 // proxy (v64). Every OTHER aspect must still produce a percentile.
-const UNRANKED_ASPECTS = ["relationships", "humanityFuture"];
+const UNRANKED_ASPECTS = ["relationships", "humanityFuture", "environment"];
 const RANKED_ASPECTS = ALL_ASPECTS.filter(k => !UNRANKED_ASPECTS.includes(k));
 
 test("getAllBenchmarks returns an entry per aspect with percentile, method, sources", () => {
@@ -350,10 +350,39 @@ test("the cited CAF rates are the 2024 edition, read in the right columns", () =
   assert.match(label, /2023 data/, "the collection year is part of the claim, not just the edition");
 });
 
-test("environment percentile puts the ~3/day Thai average at the 50th", () => {
-  assert.equal(getAllBenchmarks(makeState({ singleUsePlastics: 3 })).environment.percentile, 50);
-  assert.equal(getAllBenchmarks(makeState({ singleUsePlastics: 0 })).environment.percentile, 90);
-  assert.equal(getAllBenchmarks(makeState({ singleUsePlastics: 12 })).environment.percentile, 10);
+// THE INVERSE OF THE TEST THIS REPLACES. Until v77 this asserted that 3
+// pieces/day WAS the 50th percentile, 0 was the 90th and 12 the 10th — a whole
+// 2-99 ladder derived from one published average, with no per-person
+// distribution behind any rung. The average is real; the ranking was not.
+test("environment is measured but carries no percentile, no range and no grade", () => {
+  const b = getAllBenchmarks(makeState({ singleUsePlastics: 3 })).environment;
+  assert.ok(b, "the aspect still produces a benchmark — it is measured, just not ranked");
+  assert.equal(b.percentile, null, "no percentile");
+  assert.equal(b.range, null, "no margin around a number that does not exist");
+  assert.equal(b.population, null, "no population is claimed");
+  assert.match(b.unranked, /average/, "the reason names the mean-is-not-a-distribution problem");
+  assert.equal(gradeForBenchmark(b), null, "and therefore no letter grade");
+});
+
+test("environment still reports the plastic count and which side of the average it falls", () => {
+  const light = getAllBenchmarks(makeState({ singleUsePlastics: 0 })).environment;
+  const heavy = getAllBenchmarks(makeState({ singleUsePlastics: 12 })).environment;
+  assert.match(light.notes.join(" "), /0 single-use plastic pieces\/day/);
+  assert.match(light.notes.join(" "), /far below/, "a light user is placed below the average");
+  assert.match(heavy.notes.join(" "), /far above/, "a heavy user is placed above it");
+  // The band placement is ORDERED even though it is not a rank: a heavier user
+  // can never be described as lighter than a lighter one.
+  const bandOf = n => getAllBenchmarks(makeState({ singleUsePlastics: n }))
+    .environment.notes[0].match(/— (.*?)\.$/)[1];
+  assert.deepEqual([0, 1, 2, 3, 4, 6, 20].map(bandOf), [
+    "far below the ~3/day Thai average",
+    "far below the ~3/day Thai average",
+    "below the ~3/day Thai average",
+    "around the ~3/day Thai average",
+    "above the ~3/day Thai average",
+    "far above the ~3/day Thai average",
+    "far above the ~3/day Thai average"
+  ], "the placement is monotone: a heavier user is never described as lighter");
 });
 
 // THE INVERSE OF THE TEST THIS REPLACES. Until v64 this asserted that holding a
@@ -578,14 +607,17 @@ const bench = (profileOverrides, instruments) =>
 
 // Was "the outward three" until v64, when humanityFuture stopped being ranked
 // and left the two-stage set. Its instrument sensitivity is covered above.
-test("the outward two respond to their instruments, not just to a checkbox", () => {
+// Was "the outward two" until v77, when environment stopped being ranked and
+// left the two-stage set as well. Social contribution is the last member: it is
+// the only one of the three whose stage 1 is a published PARTICIPATION RATE
+// (CAF's 67% donate / 24% volunteer) rather than a bare average, and a rate is
+// a distribution over two outcomes, which is enough to place a band.
+test("the last outward aspect responds to its instrument, not just to a checkbox", () => {
   // Same profile, opposite instrument answers: the percentile must move.
-  const low = bench({ monthlyDonations: 200, longTermInvestments: true, singleUsePlastics: 2 }, { ptm: 0, geb: 0 });
-  const high = bench({ monthlyDonations: 200, longTermInvestments: true, singleUsePlastics: 2 }, { ptm: 20, geb: 24 });
+  const low = bench({ monthlyDonations: 200 }, { ptm: 0 });
+  const high = bench({ monthlyDonations: 200 }, { ptm: 20 });
   assert.ok(high.socialContribution.percentile > low.socialContribution.percentile,
     "PTM answers must move the social-contribution standing");
-  assert.ok(high.environment.percentile > low.environment.percentile,
-    "GEB answers must move the environment standing");
 });
 
 test("band lock: measured intensity can never cross a cited participation boundary", () => {
@@ -602,10 +634,9 @@ test("band lock: measured intensity can never cross a cited participation bounda
   // guarded — it is exactly the farmer-below-every-pension-holder guarantee.
   // Its replacement is "a pension cannot move it" above.
 
-  const bestHeavyPlastic = bench({ singleUsePlastics: 10 }, { geb: 24 }).environment.percentile;
-  const worstLightPlastic = bench({ singleUsePlastics: 0 }, { geb: 0 }).environment.percentile;
-  assert.ok(bestHeavyPlastic < worstLightPlastic,
-    `10 pieces/day (${bestHeavyPlastic}) outranked 0 pieces/day (${worstLightPlastic})`);
+  // The environment band lock went the same way in v77, and for the same
+  // reason the humanityFuture one did: there is no cited band left to lock.
+  // Its replacement is "environment is measured but carries no percentile".
 });
 
 test("an unanswered instrument returns the exact pre-two-stage percentile", () => {
@@ -618,10 +649,11 @@ test("an unanswered instrument returns the exact pre-two-stage percentile", () =
   assert.equal(bench({ ...noGiving, monthlyDonations: 100 }, null).socialContribution.percentile, 62);
   assert.equal(bench({ ...noGiving, volunteeringHours: 5 }, null).socialContribution.percentile, 82);
   assert.equal(bench({ monthlyDonations: 100, volunteeringHours: 5 }, null).socialContribution.percentile, 88);
-  assert.deepEqual(
-    [0, 1, 2, 3, 4, 6, 10].map(p => bench({ singleUsePlastics: p }, null).environment.percentile),
-    [90, 78, 64, 50, 34, 20, 10]
-  );
+  // environment had a [90, 78, 64, 50, 34, 20, 10] plastic ladder here. Every
+  // rung came from one published average, so v77 removed the rank outright
+  // rather than keeping a fallback to a number that was never measured.
+  assert.equal(bench({ singleUsePlastics: 0 }, null).environment.percentile, null);
+  assert.equal(bench({ singleUsePlastics: 10 }, null).environment.percentile, null);
   // humanityFuture had a 70/30 pre-two-stage fallback here, driven by the same
   // pension checkbox. With no baseline it now returns null outright rather than
   // a fabricated standing.
@@ -632,17 +664,24 @@ test("an unanswered instrument returns the exact pre-two-stage percentile", () =
 test("giving as a share of income positions within the donor band", () => {
   // Participation alone said a 50 THB donor and a 5,000 THB donor were
   // identical. Magnitude is exactly what CAF's yes/no rate cannot capture.
-  const token = bench({ monthlyIncome: 20000, monthlyDonations: 50 }, { ptm: 10 }).socialContribution.percentile;
-  const generous = bench({ monthlyIncome: 20000, monthlyDonations: 1500 }, { ptm: 10 }).socialContribution.percentile;
+  // `income`, NOT `monthlyIncome`. This test used to set monthlyIncome, which
+  // is a Midori connector key that no profile has ever carried — so the fixture
+  // manufactured the field the production code was (wrongly) reading, and the
+  // test passed while the feature was dead for every real user. Fixed with the
+  // benchmark itself in v77.
+  const token = bench({ income: 20000, monthlyDonations: 50 }, { ptm: 10 }).socialContribution.percentile;
+  const generous = bench({ income: 20000, monthlyDonations: 1500 }, { ptm: 10 }).socialContribution.percentile;
   assert.ok(generous > token, `a 7.5%-of-income donor (${generous}) must outrank a 0.25% donor (${token})`);
 });
 
 test("every outward aspect discloses that the band is cited and the position is not", () => {
   const set = bench({ monthlyDonations: 100 }, {});
-  for (const key of ["socialContribution", "environment"]) {
-    assert.ok(set[key].notes.some(n => /can never move you into a different band/i.test(n)),
-      `${key} does not disclose the two-stage design`);
-  }
+  assert.ok(set.socialContribution.notes.some(n => /can never move you into a different band/i.test(n)),
+    "socialContribution does not disclose the two-stage design");
+  // environment must NOT carry it any more, for the same reason humanityFuture
+  // must not: as of v77 it has no cited band left to disclose.
+  assert.ok(!set.environment.notes.some(n => /can never move you into a different band/i.test(n)),
+    "an unranked aspect must not advertise a two-stage band");
   // humanityFuture must NOT carry that note any more: it has no cited band left
   // to disclose, and saying it did would be a claim about a rank that is gone.
   assert.ok(!set.humanityFuture.notes.some(n => /can never move you into a different band/i.test(n)),

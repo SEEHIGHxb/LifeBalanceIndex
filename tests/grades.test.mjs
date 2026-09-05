@@ -86,7 +86,11 @@ test("survey aspects are ungraded until a baseline exists", () => {
   // HAS a benchmark, that benchmark simply carries no percentile since v64, so
   // there is nothing to grade. Two routes to null, both correct.
   assert.equal(grades.humanityFuture, null, "an unranked aspect is never graded");
-  for (const key of ["finance", "physical", "socialContribution", "environment"]) {
+  // environment joined it in v77: its percentile came from a single published
+  // average with no distribution behind it, so the rank -- and with it the
+  // letter grade -- was removed rather than re-based.
+  assert.equal(grades.environment, null, "an unranked aspect is never graded");
+  for (const key of ["finance", "physical", "socialContribution"]) {
     assert.ok(grades[key] && grades[key].grade, `${key} should be gradeable from the profile alone`);
   }
 });

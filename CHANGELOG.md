@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `71`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `77`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,154 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.26.0] — 2026-09-05 (APP_VERSION 77)
+
+Round 15 asks a question the first fourteen rounds never did. Every previous
+round asked **"who am I comparing this user to?"** — norm sourcing. None asked
+**"am I asking the question the instrument asks?"** — instrument fidelity. This
+release is the first pass of answers, plus three stale constants that no test
+could see.
+
+Scores move for existing users. That is the point: each change below corrects a
+measurement, and a corrected measurement is worth more than a stable number.
+
+### Fixed — instrument fidelity
+
+- **ST-5 now asks the DMH's questions again.** `scoring.js` scores this
+  instrument against the Thai Department of Mental Health's own published
+  cut-offs (≤4 / 5–7 / 8–9 / 10+). Those bands were established against the
+  DMH's exact Thai wording, so an item asking something else is scored on bands
+  that do not describe it. Two of the five had drifted:
+
+  - **Item 1** asked about trouble sleeping *"because of worry"* — an added
+    causal attribution the original does not make — and had **dropped
+    hypersomnia** (`หรือนอนมาก`), which is half of the published item. Someone
+    who oversleeps under stress scored 0 on the item written to catch exactly
+    them. Restored to `มีปัญหาการนอน นอนไม่หลับหรือนอนมาก`.
+  - **Item 4** appended `ท้อแท้` (dejected) to the published `รู้สึกเบื่อ เซ็ง`,
+    a heavier third state. Removed.
+
+  The English items had been authored *from* the drifted Thai, so both languages
+  moved. Items 2, 3 and 5 already matched and are now pinned.
+
+- **UCLA-3 "How often do you feel left out?" asked a different construct in
+  Thai.** It rendered as `ถูกทิ้งไว้ข้างหลัง` — left *behind*, which in Thai
+  reads as falling behind others in life or status. That is social comparison,
+  not loneliness. The composite is placed against England Community Life Survey
+  bands collected on the exclusion reading, so the mismatch reached the
+  benchmark as well as the item. Now `ถูกกีดกัน ไม่ได้เป็นส่วนหนึ่งของกลุ่ม`.
+
+- **The Relationship Assessment Scale gets its published per-item anchors.**
+  Hendrick labels positions A, C and E *differently for every item*; the app
+  applied one generic `Very poorly … Extremely well` set to all of them. Three
+  items were unanswerable as written, in both languages: *"In general, how
+  satisfied are you with your relationship?"* was answered with **"Very
+  poorly"**, and *"How much do you love your partner?"* with **"Extremely
+  well"**. Five anchor sets now carry Hendrick's own A/C/E labels; the
+  unlabelled B and D positions are filled plainly and marked as ours. Values
+  stay 1–5 ascending, so **no stored raw sum moves**.
+
+- **"Vigorous/Moderate/Walking Minutes per Day" is now "… on Each of Those
+  Days".** `criteria.js` multiplies days × minutes for the WHO 150-minute
+  check, so the field always meant "minutes on a day you did it" — but the label
+  read as minutes per calendar day. Someone walking 30 minutes on 3 days
+  entered either 30 or 13, **a 2.3× swing straight into a guideline check**,
+  and at the extremes the error reaches 7×. IPAQ's own wording is "time you
+  usually spend on one of those days". A worked example now sits under the
+  field.
+
+- **The vegetable field said "Vegetable/Fruit", the criterion behind it counts
+  vegetables only.** `criteria.js` builds its check on the explicit premise
+  that "this app asks only about vegetables, so the check is a strict one",
+  while the label invited fruit and the aspect page said "veg portions" — three
+  surfaces, two different questions. Label is now "Vegetable Portions per Day"
+  and defines a portion (≈80 g).
+
+### Fixed — three stale constants no test could see
+
+Each is a number that must agree with a number in another file. All three
+survived every existing test.
+
+- **The deep CFPB-10 swap applied the pre-v69 weight.** v69 reweighted finance
+  to 0.15/0.85; `deepAssessmentScore` kept **0.4**. Completing the full 10-item
+  CFPB — the app's own *Verified* confidence tier — moved the score by less than
+  half of what the same instrument moves at onboarding, so **the more evidence a
+  user gave, the less it counted**. Both sites now read
+  `FINANCE_WELLBEING_WEIGHT`.
+
+- **Humanity's Future deltas applied the pre-v65 weight.** v65 added the sixth
+  LFIS item and moved the per-term weight from 0.25 to 0.2. Both delta sites
+  kept 0.25, **overstating every post-v65 user's weekly-review and profile-edit
+  shifts on this aspect by 25%**. `scoring.js` carries a comment warning about
+  exactly this failure mode — "the v64 grit removal showed what happens when a
+  weight chain lives as a bare literal in more than one file" — and then
+  contained the bug it warned about. New `lfisWeight()` helper, mirroring the
+  existing `learningWeight()`, now serves the composite and both delta sites.
+
+- **The giving-magnitude term was dead code.** `socialContributionBenchmark`
+  read a connector-only monthly-income key that has never existed on a profile,
+  so `share` was always `null` and the 0.4-weighted half of stage 2 **never once
+  executed for any real user** — PTM alone drove every placement. The one test
+  covering it set that key in its own fixture, manufacturing the field and
+  passing on a shape production never produces.
+
+### Changed — Environment is measured, not ranked
+
+**The Environment percentile is removed.** It returned a 2–99 scale built from
+exactly one published figure: a post-ban Thai average of ~3 single-use pieces
+per day. No per-person distribution of Thai plastic use is published — the code
+comment said so, directly above a seven-band ladder. The bands were not derived
+from the anchor either: each midpoint was reverse-engineered to reproduce the
+fixed percentiles the aspect used to return (90, 78, 64, 50, 34, 20, 10), so the
+numbers came first and the justification second. Anchoring a right-skewed count
+variable's *mean* at the 50th percentile also assumes mean = median, which for
+this variable is false.
+
+This follows `relationships` (v41) and `humanityFuture` (v64): **measure it,
+show every real number, refuse the rank.** The plastic count, the GEB reading
+and which side of the ~3/day average a person falls on are all still shown. The
+aspect no longer carries a letter grade.
+
+**Physical keeps its rank, and now says what part of it is an estimate.** Its
+anchor is a *prevalence* — ~71% of Thai adults meet the 600 MET-min guideline —
+which is a real split of the population at a cited threshold, enough to place a
+person on the correct side of it. What one prevalence cannot support is the
+precision of the curve around it: below the guideline the app assumes the
+inactive 29% are spread evenly from zero, and above it a linear ramp saturating
+at the 95th. Neither is published. That disclosure was a code comment where no
+user could read it; it is now on the card.
+
+### Added
+
+- `tests/instrument-fidelity.test.mjs` — the standing guard the app did not
+  have. Checks administered item wording and response scales against their
+  published sources, in both languages, rather than checking scoring.
+- Regression pins in `tests/consistency.test.mjs` for all three stale constants
+  above, written as one class of defect: a number that must agree with a number
+  in another file.
+
+### Known, not fixed in this pass
+
+- **ST-5's response anchors** still share `Sometimes` / `Often` with three other
+  scales, so the DMH's `เป็นบางครั้ง` cannot be expressed — `i18n.js` keys the
+  dictionary on canonical English, so an instrument-specific anchor needs a
+  unique English key. The item wording was the substantive break; this is the
+  remainder.
+- **The Thai instrument wordings are the app's own translations**, including for
+  four instruments where a published Thai version exists (WHO-5 Saipanish 2009,
+  PSS-10 and RSES Wongpakaran, GSE Sukmak 2002). `round-0-thai-norms.md` has
+  recorded this since the first round; no user-facing screen discloses it.
+- **`INCOME_LOG_SIGMA = 0.65`** implies a Gini of 0.354 against a published Thai
+  figure in the mid-0.4s (σ ≈ 0.85), so it understates inequality: the income
+  rank saturates at 99 from ~52,900 THB upward, and every user above that shares
+  one percentile and one grade.
+- **The Finance letter grade still runs on income at weight 1.0** while the
+  score runs it at 0.15, because grades derive from percentiles and the finance
+  percentile is income alone.
+- **The monthly check-in adds up to +3 points for having logged reviews**
+  (`state.js`), which the methodology page's "never by flat per-log bonuses"
+  does not cover.
 
 ## [2.20.1] — 2026-08-19 (APP_VERSION 71)
 

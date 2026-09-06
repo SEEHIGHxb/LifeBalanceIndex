@@ -110,6 +110,16 @@ test("the service worker precaches every module in the graph", () => {
 // different code path or manufactured the shape the broken code expected. They
 // are pinned here together, as one class of defect: a number that must agree
 // with another number in a different file.
+//
+// THESE ARE DRIFT GUARDS, NOT THE PRIMARY TESTS. A regex over source text
+// cannot tell a right weight from a wrong one — it only proves the two sites
+// still read the same named constant. The behaviour is asserted where it
+// belongs, and those are the tests that would fail on a wrong number:
+//   * the CFPB-10 weight -> tests/deep-carry.test.mjs
+//   * the lfisWeight delta -> tests/weekly.test.mjs
+//   * the giving-share field -> tests/benchmarks.test.mjs
+// Keep both: the behavioural test catches a wrong value, this catches the
+// literal creeping back in beside the constant.
 
 test("the deep CFPB-10 swap uses the SAME well-being weight as the composite", () => {
   // v69 reweighted finance to 0.15/0.85. deepAssessmentScore kept the pre-v69

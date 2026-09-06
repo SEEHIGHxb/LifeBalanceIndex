@@ -69,7 +69,14 @@ test("UCLA-3 'left out' asks about EXCLUSION, not falling behind", () => {
   // reading, so the mismatch reached the benchmark as well as the item.
   const th = thaiOf("ucla", 1);
   assert.doesNotMatch(th, /ทิ้งไว้ข้างหลัง/, "not 'left behind' — that is social comparison");
-  assert.match(th, /กีดกัน|ไม่ได้เป็นส่วนหนึ่ง/, "exclusion from a group");
+  assert.match(th, /ไม่ได้เป็นส่วนหนึ่ง/, "not being part of the group");
+  // SINGLE-BARRELLED. A first pass at this fix used
+  // "ถูกกีดกัน ไม่ได้เป็นส่วนหนึ่งของกลุ่ม", which had two faults: ถูกกีดกัน carries an
+  // active-barring / discrimination sense (cf. กีดกันทางเพศ) far stronger than
+  // UCLA's mild "left out", and pairing it with a second clause made the item
+  // double-barrelled — the exact defect removed from ST-5 item 4 in the same
+  // release. One clause, matched in register to the original.
+  assert.doesNotMatch(th, /กีดกัน/, "no discrimination connotation, and no second barrel");
 });
 
 // --- RAS, Hendrick -------------------------------------------------------
@@ -126,9 +133,29 @@ test("WHO-5 keeps all five published items on the 0-5 scale", () => {
 
 // --- Every instrument ----------------------------------------------------
 test("no instrument item is missing its Thai translation", () => {
-  for (const [key, inst] of Object.entries(INSTRUMENTS)) {
-    for (const [i, item] of inst.items.entries()) {
-      assert.ok(TH[item.text], `${key} item ${i} has no Thai: "${item.text}"`);
+  // BOTH banks. An earlier version of this test walked INSTRUMENTS only, which
+  // left the deep bank uncovered — including ras7, whose items the same release
+  // edited. A fidelity guard that skips half the instruments is not a guard.
+  for (const [bank, set] of [["INSTRUMENTS", INSTRUMENTS], ["DEEP_INSTRUMENTS", DEEP_INSTRUMENTS]]) {
+    for (const [key, inst] of Object.entries(set)) {
+      for (const [i, item] of inst.items.entries()) {
+        assert.ok(TH[item.text], `${bank}.${key} item ${i} has no Thai: "${item.text}"`);
+      }
+    }
+  }
+});
+
+test("every instrument option label is translated, in both banks", () => {
+  // The RAS split added five new anchor sets. A missing anchor renders as raw
+  // English inside an otherwise-Thai form, which is how a respondent ends up
+  // answering a question on a scale they cannot read.
+  for (const set of [INSTRUMENTS, DEEP_INSTRUMENTS]) {
+    for (const [key, inst] of Object.entries(set)) {
+      for (const item of inst.items) {
+        for (const opt of item.options) {
+          assert.ok(TH[opt.l], `${key}: option "${opt.l}" has no Thai`);
+        }
+      }
     }
   }
 });

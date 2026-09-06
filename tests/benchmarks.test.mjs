@@ -741,3 +741,29 @@ test("the sigma a Gini would imply is NOT the sigma this model uses", () => {
   // the arithmetic that converts it. See docs/research/round-15-income-dispersion.md.
   assert.ok(giniFor(0.85) > 0.44, "a mid-0.4s Gini would need sigma near 0.85");
 });
+
+test("reporting your income can never LOWER your social-contribution standing", () => {
+  // When v77 fixed the field name, this term ran for the first time and
+  // immediately inverted: a non-donor with an income on file got share = 0 and
+  // lost 40% of their measured intensity, while the same person with no income
+  // kept all of it. A volunteer who gives time but not money scored 90 with an
+  // income and 99 without.
+  //
+  // It was also a double count: not giving money already decided the BAND in
+  // stage 1, so charging it again inside the band paid one fact twice.
+  const withIncome = { income: 15000, volunteeringHours: 5, monthlyDonations: 0 };
+  const noIncome = { ...withIncome, income: 0 };
+  const b = p => bench(p, { ptm: 20 }).socialContribution.percentile;
+  assert.equal(b(withIncome), b(noIncome),
+    "a volunteer who donates nothing must not be penalised for having an income");
+
+  const neither = { income: 15000, volunteeringHours: 0, monthlyDonations: 0 };
+  assert.equal(b(neither), b({ ...neither, income: 0 }),
+    "nor must a non-participant");
+
+  // And the term still does the job it was written for: magnitude positions
+  // DONORS inside their band.
+  const donorProfile = share => ({ income: 20000, volunteeringHours: 0, monthlyDonations: share });
+  assert.ok(b(donorProfile(1500)) > b(donorProfile(50)),
+    "a 7.5%-of-income donor must still outrank a 0.25% donor");
+});

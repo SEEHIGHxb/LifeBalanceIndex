@@ -59,7 +59,10 @@ export function scoreStability(state) {
 // below rather than raw strings, so every translatable string in this table is
 // a LITERAL t() call the i18n coverage test can see — a t(variable) would be
 // invisible to it and would silently ship untranslated.
-const COMPARISON_SAMPLES = [
+// Exported for the copy-vs-code guard in tests/methodology.test.mjs: a row
+// claiming a rank the benchmark no longer produces is exactly the defect v77
+// shipped twice (this table, and the two-stage paragraph below).
+export const COMPARISON_SAMPLES = [
   { aspect: "Finance", sample: "Thai worker wages (Labour Force Survey via Bank of Thailand)", where: "thWorking", rank: "ranked" },
   { aspect: "Physical", sample: "Thai adults meeting the WHO activity guideline; Thai NHES for BMI", where: "thAdults", rank: "ranked" },
   // The one row read straight out of a published percentile table rather than
@@ -71,7 +74,11 @@ const COMPARISON_SAMPLES = [
   { aspect: "Relationships", sample: "UCLA-3: US Health and Retirement Study, ages 57-85. LSNS-6: European over-65s. Band placement only: Community Life Survey 2024/25 (DCMS), England, adults 16+, base 160,755 — Tables A3a and A3b.", where: "wrongAgePlusEngland", rank: "noneBanded" },
   { aspect: "Personal Goals", sample: "General Self-Efficacy Scale, 25-country pooled norms (N=19,120)", where: "multi", rank: "ranked" },
   { aspect: "Social Contribution", sample: "CAF World Giving Index — Thai donating and volunteering rates", where: "thAdults", rank: "band" },
-  { aspect: "Environment", sample: "Thai single-use plastic use per person per day", where: "thAdults", rank: "band" },
+  // v77: was `band` on the ~3/day Thai plastic average. `band` means "placed
+  // AND ranked inside the band" (see RANK_LABELS), and that second half rested
+  // on a 2-99 ladder derived from that single average with no per-person
+  // distribution behind it. The placement is real and stays; the rank is gone.
+  { aspect: "Environment", sample: "Thai single-use plastic use per person per day — placement only, no published distribution", where: "thAdults", rank: "noneBanded" },
   // v64: was `band` on Thai retirement-savings coverage. That statistic is real
   // but it measures financial security, and banding this aspect on it ranked
   // income rather than contribution. No Thai norm for purpose or generativity
@@ -275,7 +282,7 @@ export function renderMethodology(containerId, state) {
       <p class="aspect-blurb">${t("Every score carries a confidence tier: High (you answered everything), Partial, Estimated (defaults stood in), or Verified (you completed the full-length in-depth instruments).")}</p>
       <p class="aspect-blurb">${t("Society percentiles are honest approximations against cited published statistics — each benchmark names its method and sources, and the band around it is an indicative range, not a statistical confidence interval.")}</p>
       <p class="aspect-blurb">${t("Mental well-being is ranked differently from the rest, and better. Its study publishes a full percentile table broken down by age band, so your standing is looked up in that table directly rather than estimated from an average and a spread — and it is read from the row for people your own age, because the same well-being score is common at 70 and uncommon at 30. Nothing is interpolated: every score this app can produce is a printed row. The sample is still German, and being compared with Germans your age is more precise but no more relevant to life in Thailand — that limitation has not gone away.")}</p>
-      <p class="aspect-blurb">${t("Three aspects — social contribution, environment and humanity's future — have no published distribution to sit on, because the sources publish participation rates and averages (“67% of Thais donated money”) rather than a curve. Their percentile is therefore built in two stages: the cited rate decides which band you are in, and your own answers decide where inside that band you sit. The second stage can never move you across a boundary the first stage set — the strongest possible non-donor still ranks below the weakest donor. This is what lets those standings respond to everything you answered instead of to a single yes/no field, while leaving the published claim exactly as published. Where an aspect's questionnaire has not been answered, the percentile falls back to the plain participation placement.")}</p>
+      <p class="aspect-blurb">${t("Social contribution has no published distribution to sit on, because its source publishes participation rates (“67% of Thais donated money”) rather than a curve. Its percentile is therefore built in two stages: the published rate fixes which band you are in, and your own answers position you inside that band and can never move you out of it. Environment and humanity's future used to be described here too. Neither is ranked any more — their sources publish a single average and nothing at all respectively, and one number cannot say what share of people you are ahead of, so those two aspects show their measurements and withhold the rank.")}</p>
       <p class="aspect-blurb">${t("The dashed outline on the dashboard radar is a derived population average: a reference person assembled from the same cited statistics (median income, typical activity levels, published questionnaire means) is scored through the exact formulas that score you.")}</p>
       <p class="aspect-blurb">${t("Behavior-driven aspects are re-measured by the weekly review: the quantities you report replace last week's values inside the same formulas, so a score moves exactly as much as the measured change implies — never by flat per-log bonuses.")}</p>
       <p class="aspect-blurb">${t("Answer quality is checked: a questionnaire answered with the same option on every row (despite reverse-worded questions) is not counted as a confirmed measurement until re-answered.")}</p>

@@ -181,6 +181,111 @@ primary source, and round 8's rule forbids citing a secondary summary for a
 displayed figure. `docs/research/round-15-income-dispersion.md` records the
 arithmetic, the confound and what data would settle it.
 
+### Fixed — defects found by independent review of this release
+
+An independent reviewer was given the diff with instructions to treat the commit
+messages and code comments as advertising rather than evidence. It confirmed the
+ST-5, RAS and `lfisWeight` fixes against primary sources, confirmed the
+Environment demotion is handled correctly by every consumer, and confirmed no
+test was weakened to pass. It also found the following, all now fixed.
+
+- **The Finance aspect page printed a flat self-contradiction.** The grade card
+  used the shared copy — "{band} of {population}, from the population comparison
+  below" — so a 3,000 THB earner saw **"Grade B — Top 30% of Thai workers, from
+  the population comparison below"** four lines above **"Ahead of about 1% of
+  Thai workers"**. The methodology page was updated when Finance moved onto its
+  score; this far more prominent surface was not.
+
+- **`GRADE_BANDS` labels are population claims, and Finance's new axis has no
+  population behind it.** "Top 10%" / "Bottom 10%" are only true of a percentile
+  against a cited distribution. The Finance grade is computed against
+  `AVERAGE_ASPECT_SCORES.finance` — one synthetic reference person — so the app
+  was making a *stronger* population claim on an axis with **zero** published
+  anchors than the one it stripped from Environment for having only one. The
+  reviewer was right that the two changes applied opposite standards.
+
+  Score-based grades now have their own vocabulary — **Strong / Above typical /
+  Typical / Below typical / Weak** — with the same letters and cutoffs. Every
+  grade carries a `basis` field, `percentile` is `null` whenever the basis is
+  `score`, and both render sites branch on it.
+
+- **The grade tooltip printed a score as a percentile.** `gradeBadge` read
+  `grade.percentile` unconditionally, so the dashboard showed "Top 30% of people
+  like you (percentile 74)" to a user whose finance percentile is 1.
+
+- **Reporting your income lowered your Social Contribution standing.** Switching
+  on the dead giving-share term inverted it on its first run: a non-donor with
+  an income on file got `share = 0` and lost 40% of measured intensity, while
+  the same person with no income got `share = null` and kept all of it. A
+  volunteer who gives time but not money scored **90 with an income and 99
+  without**. It was also a double count — not giving money already decided the
+  band in stage 1. The share now applies to donors only, which is what it was
+  written to do. The v77 release notes described this change as switching on a
+  dead term and said nothing about the penalty, because nothing tested the
+  non-donor case; it is tested now.
+
+- **The methodology page still said Environment was ranked**, in two places: the
+  provenance table row (`rank: "band"`, documented as "placed *and* ranked
+  inside the band") and the two-stage paragraph naming three aspects when only
+  one still qualifies. A new test cross-checks every provenance row against what
+  `getAllBenchmarks` actually returns, which is the guard that would have caught
+  this.
+
+- **`PLASTIC_BANDS` was dead code under a comment claiming it was live**, and
+  the replacement's cut-points silently differ from it. Deleted.
+
+- **`t(plasticBandLabel(pieces))` was a `t(variable)` call**, which
+  `tests/i18n-coverage.test.mjs` documents as invisible to the i18n guard — a
+  sixth band would have shipped untranslated with the suite green. Now literal
+  `t()` calls.
+
+- **The justification for not fixing the Finance ceiling had become false.**
+  `tests/finance-scale.test.mjs` argued the 85 ceiling was harmless because
+  "grades are unaffected entirely, since `gradeForBenchmark` reads the income
+  PERCENTILE and never the score". This release invalidated that and left it
+  standing. A stale reason for not fixing something is worse than none, because
+  it reads as a decision someone already made.
+
+- **`AVERAGE_ASPECT_SCORES.finance` became grade-bearing under a ±15 test
+  tolerance** — enough drift to move a grade boundary silently. Its real value
+  is 49; `averages.js` documented 54 and the test expected 53, both written
+  before v76 removed the savings bonus. Corrected, and finance is now pinned
+  separately to ±2.
+
+- **The IPAQ clarification note reached one of six field instances.** Moderate,
+  Walking, and all three fields in the *weekly review* — where they are
+  re-entered every week — had none.
+
+- **The UCLA-3 Thai fix was itself double-barrelled.** `ถูกกีดกัน ไม่ได้เป็นส่วนหนึ่งของกลุ่ม`
+  paired two states in one item — the exact defect removed from ST-5 item 4 in
+  the same release — and `ถูกกีดกัน` carries an active-discrimination sense much
+  stronger than "left out". Now the single clause `ไม่ได้เป็นส่วนหนึ่งของกลุ่ม`.
+
+- **The unranked explainer gave Environment the Relationships rationale**
+  ("the published norms come from the wrong population"). Environment's figure
+  is Thai; its problem is the absence of a distribution.
+
+- **Both headline "stale constant" fixes had no behavioural test** — only
+  regexes over source text, which cannot tell a right weight from a wrong one.
+  Real assertions added in `tests/deep-carry.test.mjs` and
+  `tests/weekly.test.mjs`; the regexes are kept but demoted in their own comment
+  to drift guards.
+
+### Known, still not fixed
+
+- **Values stored under the old "Minutes per Day" label mean something
+  different from values entered under the new one**, in the same column, with no
+  migration. A user who re-reads the clarified label and enters a per-session
+  figure where they previously entered a weekly average will produce a real
+  ~2.3× jump in MET-minutes that the app scores, awards and charts as genuine
+  improvement. Accepted deliberately under this release's "change freely, note
+  it" rule; noted here because nothing in the app tells the user.
+- **`gradeForFinance(0)` returns F rather than "not graded"**, because
+  `DEFAULT_STATE.aspects.finance` is `0` and therefore finite, while the other
+  seven aspects yield `null` from a missing basis. No reachable state was found
+  where a real profile still has a finance score of 0, so this is a contract
+  weakness rather than a demonstrated bug.
+
 ### Added
 
 - `docs/research/round-15-income-dispersion.md` — the first round to ask an
@@ -201,10 +306,15 @@ no longer true of Finance.
 ### Known, not fixed in this pass
 
 - **ST-5's response anchors** still share `Sometimes` / `Often` with three other
-  scales, so the DMH's `เป็นบางครั้ง` cannot be expressed — `i18n.js` keys the
-  dictionary on canonical English, so an instrument-specific anchor needs a
-  unique English key. The item wording was the substantive break; this is the
-  remainder.
+  scales, so the DMH's `เป็นบางครั้ง` cannot be expressed verbatim. The reason
+  first given here — that `i18n.js` keys on canonical English, so this needs a
+  unique English key — was true but was not a blocker, and an independent review
+  called it correctly: the same release did exactly that for the RAS, five times
+  over, a hundred lines away in the same file. The honest reason to defer it is
+  that the residual is close to cosmetic: the shipped Thai
+  (`แทบไม่มี / ไม่มีเลย`, `บางครั้ง`, `บ่อยครั้ง`, `เป็นประจำ`) is already
+  semantically equivalent to the DMH's. It is a wording polish, not the
+  remainder of a substantive break, and it was described as the latter.
 - **The Thai instrument wordings are the app's own translations**, including for
   four instruments where a published Thai version exists (WHO-5 Saipanish 2009,
   PSS-10 and RSES Wongpakaran, GSE Sukmak 2002). `round-0-thai-norms.md` has

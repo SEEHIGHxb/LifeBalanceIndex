@@ -47,6 +47,16 @@ const FIELD_IDS = {
 
 // The onboarding label strings are reused verbatim so the review form needs no
 // new translations and the two forms can never phrase the same field two ways.
+// Per-field clarifications, shown under the input. Only where the QUESTION is
+// ambiguous rather than the value hard to recall: criteria.js multiplies days
+// by minutes, so these three mean "minutes on a day you did it", and reading
+// them as a weekly average is a 2.3x-7x error inside the WHO guideline check.
+const FIELD_NOTES = {
+  weeklyVigorousMins: "Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.",
+  weeklyModerateMins: "Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.",
+  weeklyWalkingMins: "Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes."
+};
+
 const FIELD_LABELS = {
   weeklyVigorousDays: "Vigorous Exercise (Days/Week)",
   weeklyVigorousMins: "Vigorous Minutes on Each of Those Days",
@@ -143,12 +153,19 @@ function reviewField(field, profile, prefills = {}) {
   // The chip names the app in the label, so the source is visible before the
   // number is read. SOURCE_NAMES are our own literals, never payload text.
   const chip = pre ? ` <span class="prefill-chip">${SOURCE_NAMES[pre.source]}</span>` : "";
+  // The clarification note travels with the field, not just with onboarding.
+  // These three are re-entered EVERY week, so the week-average-vs-per-session
+  // ambiguity that the v77 relabel fixed bites here more often than it does at
+  // onboarding, where it is read once. When a connected source prefilled the
+  // box, both notes are shown: the provenance and the unit are different facts.
+  const own_note = FIELD_NOTES[field] ? t(FIELD_NOTES[field]) : "";
+  const note = [pre ? prefillNote(pre) : "", own_note].filter(Boolean).join(" ");
   return numberField(
     FIELD_IDS[field],
     `${t(FIELD_LABELS[field])}${chip}`,
     pre ? pre.value : own,
     `min="${c.min}" max="${c.max}"${step}`,
-    pre ? { note: prefillNote(pre) } : {}
+    note ? { note } : {}
   );
 }
 

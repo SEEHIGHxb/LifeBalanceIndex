@@ -135,9 +135,15 @@ export function gradeBadge(grade, unrankedReason = null) {
   if (!grade) {
     return `<span class="grade-badge grade-none" title="${escapeHtml(t("Answer this aspect's questionnaires to unlock its grade."))}">${t("Not graded")}</span>`;
   }
-  const title = tp("Grade {letter} — {band} of people like you (percentile {pct}).", {
-    letter: grade.grade, band: t(grade.label), pct: grade.percentile
-  });
+  // A score-based grade (finance) has no percentile, and printing its
+  // `standing` in that slot would state a population share nothing supports.
+  const title = grade.basis === "score"
+    ? tp("Grade {letter} — {band} for this aspect (score {score} of 100).", {
+        letter: grade.grade, band: t(grade.label), score: grade.score
+      })
+    : tp("Grade {letter} — {band} of people like you (percentile {pct}).", {
+        letter: grade.grade, band: t(grade.label), pct: grade.percentile
+      });
   return `<span class="grade-badge grade-${grade.grade.toLowerCase()}" title="${escapeHtml(title)}">${escapeHtml(grade.grade)}</span>`;
 }
 

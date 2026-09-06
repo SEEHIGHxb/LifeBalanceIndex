@@ -932,10 +932,31 @@ function socialContributionBenchmark(profile, baseline) {
 
   // STAGE 2 (this app's own). The five PTM items carry helping, civic and
   // local behaviour; giving share carries magnitude, which the participation
-  // rate deliberately ignores. Falls back to PTM alone when income is unknown,
-  // and to the band midpoint when the instrument was never answered.
+  // rate deliberately ignores. Falls back to PTM alone when the share does not
+  // apply, and to the band midpoint when the instrument was never answered.
+  //
+  // THE SHARE APPLIES TO DONORS ONLY, and `donations > 0` is why. When v77
+  // fixed the field name this term read for the first time, and on its first
+  // run it did something nobody intended: a NON-donor with an income on file
+  // got share = 0, losing 40% of their measured intensity, while the identical
+  // person with no income on file got share = null and kept all of it. A
+  // volunteer who gives time but not money scored 90 with an income and 99
+  // without. Reporting your income lowered your standing.
+  //
+  // That was also a double count. Not giving money is ALREADY priced, in stage
+  // 1: it is what put this person in the volunteers-only or neither band
+  // instead of a donor band. Charging it again inside the band paid the same
+  // fact twice, which is the defect round 13 exists to catch.
+  //
+  // So the share now positions donors WITHIN their band by magnitude, which is
+  // what it was written to do, and is silent for everyone else. A remaining
+  // asymmetry is deliberate and much smaller: among donors, a token giver who
+  // reports income does rank below one who does not, because magnitude is the
+  // thing this term measures and without income it cannot be measured.
   const ptm = intensityOf((baseline || {}).ptm, 20);
-  const share = income > 0 ? Math.min(1, (donations / income) / GENEROUS_GIVING_SHARE) : null;
+  const share = (income > 0 && donations > 0)
+    ? Math.min(1, (donations / income) / GENEROUS_GIVING_SHARE)
+    : null;
   const intensity = ptm === null ? null
     : share === null ? ptm
     : (0.6 * ptm) + (0.4 * share);
@@ -971,15 +992,6 @@ function socialContributionBenchmark(profile, baseline) {
 // return (90, 78, 64, 50, 34, 20, 10), so the calibration is unchanged.
 // `fallback` is the fixed percentile each band returned before the two-stage
 // design, used when GEB was never answered.
-const PLASTIC_BANDS = [
-  { max: 0, floor: 86, ceil: 99, fallback: 90 },
-  { max: 1, floor: 72, ceil: 85, fallback: 78 },
-  { max: 2, floor: 58, ceil: 71, fallback: 64 },
-  { max: 3, floor: 44, ceil: 57, fallback: 50 }, // ~ Thai average of ~3/day
-  { max: 5, floor: 28, ceil: 43, fallback: 34 },
-  { max: 7, floor: 14, ceil: 27, fallback: 20 },
-  { max: Infinity, floor: 2, ceil: 13, fallback: 10 }
-];
 
 // THE RANK IS GONE (v77). IT WAS A CURVE INVENTED AROUND A SINGLE NUMBER.
 //
@@ -1002,21 +1014,31 @@ const PLASTIC_BANDS = [
 // and the comparison against the ~3/day average are all real and all still
 // shown — the population POSITION was the part that was not.
 //
-// PLASTIC_BANDS is kept: it still names which side of the Thai average a person
-// falls on, which is a band placement the single anchor genuinely supports.
+// PLASTIC_BANDS WAS DELETED, not kept. An earlier draft of this change said it
+// "is kept: it still names which side of the Thai average a person falls on",
+// which was false twice over: nothing referenced the constant any more, and the
+// five bands below use their own cut-points (1/2/3/5) rather than its seven
+// (0/1/2/3/5/7/inf). Leaving a comment claiming a dead constant was live is the
+// same kind of stale copy this release exists to remove.
+//
+// Five bands, placed around the one published figure they can honestly rest on.
+// The labels are LITERAL t() calls, not t(variable): tests/i18n-coverage.test.mjs
+// scans for literal keys, so a band whose label is looked up dynamically would
+// ship untranslated with the suite green (the rule is stated in
+// views/methodology.js and in the coverage test's own header).
 function plasticBandLabel(pieces) {
-  if (pieces <= 1) return "far below the ~3/day Thai average";
-  if (pieces <= 2) return "below the ~3/day Thai average";
-  if (pieces <= 3) return "around the ~3/day Thai average";
-  if (pieces <= 5) return "above the ~3/day Thai average";
-  return "far above the ~3/day Thai average";
+  if (pieces <= 1) return t("far below the ~3/day Thai average");
+  if (pieces <= 2) return t("below the ~3/day Thai average");
+  if (pieces <= 3) return t("around the ~3/day Thai average");
+  if (pieces <= 5) return t("above the ~3/day Thai average");
+  return t("far above the ~3/day Thai average");
 }
 
 function environmentBenchmark(profile, baseline) {
   const pieces = parseInt(profile.singleUsePlastics || 0);
   const notes = [
     tp("You report {pieces} single-use plastic pieces/day — {band}.",
-      { pieces, band: t(plasticBandLabel(pieces)) }),
+      { pieces, band: plasticBandLabel(pieces) }),
     t("Banded around the post-plastic-ban Thai average; per-person distribution data is not published.")
   ];
   // The six GEB items — recycling, single-use avoidance, transit, energy

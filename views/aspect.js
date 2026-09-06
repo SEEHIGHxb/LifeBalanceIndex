@@ -68,14 +68,18 @@ export function renderAspectPage(containerId, state, aspectKey) {
       </div>
     </div>
 
-    ${grade ? `
+    ${grade && grade.basis === "score" ? `
+      <div class="card grade-explainer">
+        <p><strong>${tp("Grade {letter}", { letter: grade.grade })}</strong> — ${tp("{band} for this aspect, from your score of {score}.", { band: t(grade.label), score: grade.score })}</p>
+        <p class="grade-explainer-note">${t("This grade comes from the aspect score, not from the percentile below. The percentile here ranks your income alone, and grading on it would grade your income rather than your financial life — someone on a small income with no debt and no money worry was being shown an F. The letters describe where this score sits against a typical one, not what share of people you are ahead of.")}</p>
+      </div>` : grade ? `
       <div class="card grade-explainer">
         <p><strong>${tp("Grade {letter}", { letter: grade.grade })}</strong> — ${tp("{band} of {population}, from the population comparison below.", { band: t(grade.label), population: b.population || t("people like you") })}</p>
         <p class="grade-explainer-note">${t("Grades come from the cited percentile, not from the 0-100 score — the score is this app's own composite, while the percentile is the part that compares you with real published data.")}</p>
       </div>` : unranked ? `
       <div class="card grade-explainer">
         <p><strong>${t("Not ranked — on purpose.")}</strong> ${escapeHtml(unranked)}</p>
-        <p class="grade-explainer-note">${t("A grade is a rank against a population. Where the published norms come from the wrong population, this app shows your measurements and withholds the rank rather than printing one it cannot stand behind.")}</p>
+        <p class="grade-explainer-note">${t("A grade is a rank against a population. Where there is no population this app can honestly rank you against — because the published norms describe the wrong people, or because the source publishes a single average rather than a distribution — it shows your measurements and withholds the rank rather than printing one it cannot stand behind.")}</p>
       </div>` : `
       <div class="card grade-explainer">
         <p><strong>${t("Not graded yet.")}</strong> ${t("This aspect is graded from its population comparison, which needs its questionnaires answered first.")}${

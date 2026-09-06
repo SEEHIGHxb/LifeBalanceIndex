@@ -22,7 +22,8 @@ globalThis.document = {
   })
 };
 
-const { scoreStability, renderMethodology } = await import("../views/methodology.js");
+const { scoreStability, renderMethodology, COMPARISON_SAMPLES } = await import("../views/methodology.js");
+const { getAllBenchmarks } = await import("../benchmarks.js");
 const { methodTag } = await import("../views/helpers.js");
 
 // methodTag falls back to `return tags[method] || method`, so a benchmark
@@ -153,4 +154,43 @@ test("the stability line reports count and average once check-ins exist", () => 
     checkins: [{ date: "2026-01-01", sums: {}, shifts: { mental: 3, personalGoals: -5 } }]
   });
   assert.match(captured.html, /shifted by an average of 4 points/, "average |3|,|−5| = 4");
+});
+
+// --- v77: THE PROVENANCE TABLE MUST AGREE WITH WHAT THE CODE RETURNS -----
+
+test("no provenance row claims a rank the benchmark does not produce", () => {
+  // The defect this exists to catch shipped in v77 itself. Environment's rank
+  // was removed from benchmarks.js, and this table went on saying "Band
+  // placement" — which RANK_LABELS documents as "placed AND ranked inside the
+  // band" — while the aspect page next to it said "Not ranked against a
+  // population". Copy asserting a rank the code no longer produces is the same
+  // class of defect the release was about, one file over.
+  const state = {
+    profile: {
+      income: 15000, region: "Provinces", gender: "male", weight: 60, height: 170,
+      weeklyWalkingDays: 3, weeklyWalkingMins: 20, monthlyDonations: 100,
+      volunteeringHours: 2, singleUsePlastics: 3, longTermInvestments: false, age: 40
+    },
+    baseline: {
+      cfpb: 10, jss: 6, st5: 4, who5: 15, lsns: 17, ucla: 4, ras: 9,
+      gse: 18, grit: 24, ptm: 10, geb: 12, lfis: 10, lfisItems: 6,
+      citacc: 12, citlearn: 9
+    }
+  };
+  const benchmarks = getAllBenchmarks(state);
+  const RANKED = new Set(["ranked", "table", "band"]);
+  const KEY = {
+    Finance: "finance", Physical: "physical", Mental: "mental",
+    Relationships: "relationships", "Personal Goals": "personalGoals",
+    "Social Contribution": "socialContribution", Environment: "environment",
+    "Humanity's Future": "humanityFuture"
+  };
+  for (const row of COMPARISON_SAMPLES) {
+    const key = KEY[row.aspect];
+    assert.ok(key, `provenance row "${row.aspect}" does not map to an aspect key`);
+    const ranks = Number.isFinite((benchmarks[key] || {}).percentile);
+    assert.equal(RANKED.has(row.rank), ranks,
+      `provenance says "${row.rank}" for ${row.aspect}, but its benchmark `
+      + `${ranks ? "does" : "does not"} return a percentile`);
+  }
 });

@@ -284,7 +284,13 @@ test("with nothing connected the form is exactly the form it always was", () => 
   const html = render();
 
   assert.ok(!html.includes("prefill-chip"), "no chip may appear");
-  assert.ok(!html.includes("field-note"), "no caption may appear");
+  // TIGHTENED in v77, not relaxed. This asserted `!html.includes("field-note")`,
+  // using the CSS class as a proxy for "no prefill caption" — which held only
+  // while prefill provenance was the sole user of that class. The three IPAQ
+  // minutes fields now carry a permanent unit clarification in the same slot,
+  // so the class is no longer a proxy for anything. The assertion now names the
+  // thing it was always about: no PROVENANCE caption, i.e. no "From <app> —".
+  assert.ok(!/From (Midori|Runaway) —/.test(html), "no provenance caption may appear");
   assert.ok(!html.includes("conn-banner"), "no banner may appear");
   // savingsRate 10 of 15000 income = 1500, derived exactly as before.
   assert.equal(fieldValue(html, "rev-monthlySavings"), "1500");

@@ -116,7 +116,9 @@ export function renderDashboard(containerId, state, onExportBackup) {
   const pace = seasonPace(p.season);
   const benchmarks = getAllBenchmarks(state);
   const benchmarkSources = collectSources(benchmarks);
-  const grades = gradeAllAspects(benchmarks);
+  // state.aspects is passed because finance grades off its composite score,
+  // not off its income percentile (see gradeForFinance).
+  const grades = gradeAllAspects(benchmarks, state.aspects);
   const index = balanceIndex(state.aspects);
   const indexBand = balanceBand(index);
   const weakest = weakestAspect(state.aspects);

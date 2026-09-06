@@ -6,7 +6,7 @@ import { renderTrendChart } from "../chart.js";
 import { getAspectDetail } from "../aspects.js";
 import { getAspectSuggestions, getMentalHealthNotice } from "../suggestions.js";
 import { t, tp } from "../i18n.js";
-import { gradeForBenchmark } from "../grades.js";
+import { gradeForAspect } from "../grades.js";
 import { criteriaForAspect } from "../criteria.js";
 import {
   escapeHtml, confidenceBadge, componentConfidenceChip, gradeBadge,
@@ -34,7 +34,9 @@ export function renderAspectPage(containerId, state, aspectKey) {
   if (!detail) return;
 
   const b = detail.benchmark;
-  const grade = gradeForBenchmark(b);
+  // gradeForAspect, not gradeForBenchmark: finance grades off its composite
+  // score rather than its income-only percentile (see gradeForFinance).
+  const grade = gradeForAspect(aspectKey, b, (state.aspects || {})[aspectKey]);
   // Set only when the aspect HAS a benchmark but that benchmark declines to
   // rank it (no defensible population). Distinct from `!b`, which means the
   // questionnaires were never answered.

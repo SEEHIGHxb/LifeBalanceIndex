@@ -9,7 +9,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   GRADE_BANDS, GRADE_PRIORITY, BALANCE_BANDS,
-  gradeForPercentile, gradeForBenchmark, gradeAllAspects,
+  gradeForPercentile, gradeForBenchmark, gradeForFinance, gradeAllAspects,
   isBottomGrade, balanceIndex, balanceBand, weakestAspect, relativeToPopulation,
   aspectsAtOrAboveAverage
 } from "../grades.js";
@@ -22,7 +22,8 @@ import { AVERAGE_ASPECT_SCORES } from "../averages.js";
 // is the scale the Balance Index now runs on.
 const rawForRelative = (rel, avg) =>
   rel <= 50 ? (rel * avg) / 50 : avg + ((rel - 50) * (100 - avg)) / 50;
-import { getAllBenchmarks } from "../benchmarks.js";
+import { getAllBenchmarks, incomePercentile } from "../benchmarks.js";
+import { calculateFinanceScore } from "../scoring.js";
 import { getMentalHealthNotice } from "../suggestions.js";
 
 const uniform = value => Object.fromEntries(ASPECT_KEYS.map(k => [k, value]));
@@ -90,9 +91,14 @@ test("survey aspects are ungraded until a baseline exists", () => {
   // average with no distribution behind it, so the rank -- and with it the
   // letter grade -- was removed rather than re-based.
   assert.equal(grades.environment, null, "an unranked aspect is never graded");
-  for (const key of ["finance", "physical", "socialContribution"]) {
+  for (const key of ["physical", "socialContribution"]) {
     assert.ok(grades[key] && grades[key].grade, `${key} should be gradeable from the profile alone`);
   }
+  // finance is a third route to null: since v77 it grades off its COMPOSITE
+  // SCORE rather than its income percentile, and no score was passed here.
+  assert.equal(grades.finance, null, "finance without a score is ungraded, not graded on income");
+  assert.ok(gradeAllAspects(getAllBenchmarks(state), { finance: 73 }).finance.grade,
+    "given the score, it grades");
 });
 
 test("gradeAllAspects tolerates a missing benchmark set", () => {
@@ -257,4 +263,75 @@ test("aspectsAtOrAboveAverage reports 0 of 8 without softening, and tolerates ju
   assert.deepEqual(aspectsAtOrAboveAverage({}), { count: 0, total: 8 });
   assert.deepEqual(aspectsAtOrAboveAverage(null), { count: 0, total: 8 });
   assert.deepEqual(aspectsAtOrAboveAverage(uniform(100)), { count: 8, total: 8 });
+});
+
+// --- v77: FINANCE GRADES OFF ITS SCORE, NOT ITS INCOME PERCENTILE --------
+
+test("round 10's own worked example is no longer graded F", () => {
+  // The example from docs/research/round-10-finance-composition.md: 3,000 THB
+  // a month, no debt, no money worry. Round 10 used it to argue income should
+  // not dominate the finance SCORE, and cut income 0.6 -> 0.15. The GRADE kept
+  // running on the income percentile alone, so this person scored 73 and was
+  // told they were in the bottom 10% of the country.
+  const profile = { income: 3000, region: "Provinces", age: 40 };
+  const score = calculateFinanceScore(profile, [4, 4, 4, 4, 4]);
+  assert.equal(score, 73, "a calm, debt-free low earner scores 73");
+  assert.equal(incomePercentile(3000, "Provinces"), 1, "their income really is the 1st percentile");
+  assert.equal(gradeForFinance(score).grade, "B", "but their finances are not an F");
+});
+
+test("the income percentile is still computed and still shown", () => {
+  // The rank did not go away — it stopped being the grade. A card that dropped
+  // it would lose the one genuinely Thai-sourced comparison in the aspect.
+  const b = getAllBenchmarks({
+    profile: { income: 3000, region: "Provinces", age: 40 }, baseline: null
+  }).finance;
+  assert.equal(b.percentile, 1, "the income comparison is intact");
+  assert.match(b.summary, /3,000 THB/);
+});
+
+test("ACCEPTED CONSEQUENCE: finance cannot reach an A for anyone under 70", () => {
+  // Pinned, not fixed, and pinned openly — the same treatment v76 gave the
+  // ceiling itself. calculateFinanceScore tops out at 85 under 70 (and 92 at
+  // 70+) because the CFPB conversion's own maximum is 82, and 85 maps to the
+  // 85th population-relative standing, which is a B.
+  //
+  // Accepted on the grounds that the A this replaces was mostly measuring
+  // income: under the old basis ANY income at or above ~52,900 THB scored A
+  // regardless of debt, savings or financial distress, because incomePercentile
+  // saturates at 99 there. Trading an unreachable A for a grade that responds
+  // to the CFPB instrument is the better of the two.
+  //
+  // Fixing it would mean rescaling a published conversion table so a number
+  // looks rounder. If it is ever addressed it must be addressed openly, and
+  // this test will be the thing that fails.
+  const best = { income: 10000000, region: "Bangkok", savingsRate: 100, age: 40 };
+  assert.equal(calculateFinanceScore(best, [4, 4, 4, 4, 4]), 85);
+  assert.equal(gradeForFinance(85).grade, "B", "the ceiling lands on B");
+  assert.equal(gradeForFinance(91).grade, "A", "the A band itself is intact — nothing reaches it");
+
+  // At 70+ the CFPB band shifts and the ceiling rises, but not past 90 either.
+  const older = { ...best, age: 75 };
+  assert.ok(calculateFinanceScore(older, [4, 4, 4, 4, 4]) <= 92);
+});
+
+test("a high earner in real distress no longer outranks a calm low earner", () => {
+  // The inversion the old basis guaranteed, stated as a test. Both are graded
+  // on the same basis now, so the CFPB instrument decides.
+  const rich = { income: 200000, region: "Bangkok", age: 40 };
+  const poor = { income: 6000, region: "Provinces", age: 40 };
+  const richDistressed = calculateFinanceScore(rich, [0, 0, 0, 0, 0]);
+  const poorCalm = calculateFinanceScore(poor, [4, 4, 4, 4, 4]);
+  // Under the OLD basis: the distressed high earner graded A and the calm low
+  // earner graded F, on income alone.
+  // Under the OLD basis income alone decided: the high earner in real distress
+  // graded A, the calm low earner D.
+  assert.equal(gradeForPercentile(incomePercentile(200000, "Bangkok")).grade, "A");
+  assert.equal(gradeForPercentile(incomePercentile(6000, "Provinces")).grade, "D");
+  // Under the NEW basis the CFPB instrument decides, and the order inverts.
+  assert.ok(poorCalm > richDistressed,
+    `calm low earner ${poorCalm} should score above distressed high earner ${richDistressed}`);
+  assert.equal(gradeForFinance(poorCalm).grade, "B", "calm and low-income reads as B");
+  assert.equal(gradeForFinance(richDistressed).grade, "C",
+    "distressed and high-income reads as C — the income no longer buys the A");
 });

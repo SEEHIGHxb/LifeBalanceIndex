@@ -133,6 +133,40 @@ inactive 29% are spread evenly from zero, and above it a linear ramp saturating
 at the 95th. Neither is published. That disclosure was a code comment where no
 user could read it; it is now on the card.
 
+### Changed — Finance is graded on its score, not on income alone
+
+**The Finance letter grade ran on income at weight 1.0.** Grades derive from
+percentiles, and `financeBenchmark.percentile` is the income rank and nothing
+else — so while round 10 cut income from 0.6 to 0.15 of the finance *score*, the
+number users actually read still ran on income alone. The app's two finance
+numbers contradicted each other by construction, and round 10's own worked
+example (3,000 THB/month, no debt, no money worry) scored **73 and was graded
+F**. A zero-income retiree or homemaker got the same F, by construction.
+
+Finance now grades off its composite score, mapped through
+`relativeToPopulation` so the average person sits at 50 on the same axis the
+grade bands read. The income percentile is unchanged and still on the card — it
+has stopped being the answer to "how is my financial life going", which is the
+question a letter grade is read as answering. Every other aspect still grades on
+its percentile.
+
+| profile | score | grade before | grade now |
+| --- | --- | --- | --- |
+| round-10 example: 3,000 THB, no worry | 73 | **F** | **B** |
+| zero income, calm (retiree, homemaker, carer) | 70 | **F** | **B** |
+| 200,000 THB, worst possible CFPB | 30 | **A** | **C** |
+| 60,000 THB, good CFPB | 64 | A | C |
+| median 12,900 THB, mid CFPB | 49 | C | C |
+
+**Accepted consequence: nobody under 70 can reach an A in Finance.** The score
+tops out at 85 (92 at 70+) because the CFPB conversion's own maximum is 82, and
+85 maps to a B. This is pinned openly rather than fixed, the same treatment v76
+gave the ceiling itself — fixing it would mean rescaling a published conversion
+table so a number looks rounder. It is accepted on the grounds that the A it
+replaces was mostly measuring income: under the old basis *any* income at or
+above ~52,900 THB graded A regardless of debt, savings or distress, because
+`incomePercentile` saturates at 99 from there up.
+
 ### Added
 
 - `tests/instrument-fidelity.test.mjs` — the standing guard the app did not
@@ -141,6 +175,12 @@ user could read it; it is now on the card.
 - Regression pins in `tests/consistency.test.mjs` for all three stale constants
   above, written as one class of defect: a number that must agree with a number
   in another file.
+- Grade tests covering round-10's worked example, the income/distress inversion,
+  and the accepted Finance A ceiling.
+
+The methodology page's grading paragraph is updated in both languages: it
+claimed grades come from the percentile "never from its 0-100 score", which is
+no longer true of Finance.
 
 ### Known, not fixed in this pass
 
@@ -157,9 +197,6 @@ user could read it; it is now on the card.
   figure in the mid-0.4s (σ ≈ 0.85), so it understates inequality: the income
   rank saturates at 99 from ~52,900 THB upward, and every user above that shares
   one percentile and one grade.
-- **The Finance letter grade still runs on income at weight 1.0** while the
-  score runs it at 0.15, because grades derive from percentiles and the finance
-  percentile is income alone.
 - **The monthly check-in adds up to +3 points for having logged reviews**
   (`state.js`), which the methodology page's "never by flat per-log bonuses"
   does not cover.

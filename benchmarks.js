@@ -229,8 +229,40 @@ export function ordinal(n) {
 // --- FINANCE: income vs Thai worker earnings ---
 // Lognormal approximation calibrated so the mean matches the LFS average
 // wage (~15,972 THB/mo); Bangkok median scaled up by the SES household
-// income ratio (39,100 / 29,000 ~ 1.35). sigma 0.65 is a typical wage
-// dispersion; this is an estimate, not published decile data.
+// income ratio (39,100 / 29,000 ~ 1.35).
+//
+// WHERE sigma ACTUALLY COMES FROM (corrected note, v77). The old comment here
+// called 0.65 "a typical wage dispersion... an estimate", which UNDERSTATED it
+// and caused a review to read it as a free parameter. It is not free. For a
+// lognormal, mean = median * exp(sigma^2 / 2), so fixing the median at 12,900
+// and the mean at the published 15,972 DETERMINES sigma:
+//
+//     sigma = sqrt(2 * ln(15972 / 12900)) = 0.6536,  which is the 0.65 below.
+//
+// So the pair reproduces the one published anchor exactly, and any change to
+// sigma alone silently breaks that match — 0.85 would imply a mean of 18,513
+// against a published 15,972. incomeMeanMatchesPublishedWage() in
+// tests/benchmarks.test.mjs now guards this.
+//
+// THE REAL WEAKNESS IS THE MEDIAN, NOT sigma. Only ONE of the two is
+// independently published: the LFS mean. INCOME_MEDIAN_NATIONAL has no cited
+// source anywhere in this repo, and given the identity above it can only have
+// been derived from the mean and an assumed sigma (or vice versa) — one
+// published number and one free parameter wearing two names.
+//
+// A second published anchor would close it, and the natural one is Thailand's
+// income Gini, since for a lognormal Gini = 2*Phi(sigma/sqrt(2)) - 1. That
+// would pin sigma directly and let the median be DERIVED from the published
+// mean rather than assumed. It is deliberately not done here: no Thai income
+// Gini could be verified against a primary source, and this project does not
+// cite secondary summaries for a figure it displays (round 8's sourcing rule).
+// The arithmetic, the candidate figures and what would settle it are written up
+// in docs/research/round-15-income-dispersion.md.
+//
+// Note also that the tension may not be resolvable inside this model at all:
+// the sigma implied by the mean/median pair (0.65) and the sigma implied by any
+// mid-0.4s Gini (~0.85) cannot both hold, which would say the lognormal FAMILY
+// understates the Thai upper tail rather than that one parameter is misset.
 const INCOME_MEDIAN_NATIONAL = 12900;
 const INCOME_MEDIAN_BANGKOK = 17400;
 const INCOME_LOG_SIGMA = 0.65;
@@ -238,6 +270,14 @@ const INCOME_LOG_SIGMA = 0.65;
 // RANK. "How many earners are below me" — and a rank is SUPPOSED to saturate
 // in a long right tail, because almost everyone really is below a top earner.
 // This drives the benchmark card and the finance grade, and nothing else.
+// Exposed for the calibration guard in tests/benchmarks.test.mjs. Returns the
+// mean this lognormal actually implies, which must stay on the published LFS
+// average wage; see the note above for why sigma cannot be changed alone.
+export function impliedIncomeMean(region) {
+  const median = region === "Bangkok" ? INCOME_MEDIAN_BANGKOK : INCOME_MEDIAN_NATIONAL;
+  return median * Math.exp((INCOME_LOG_SIGMA * INCOME_LOG_SIGMA) / 2);
+}
+
 export function incomePercentile(income, region) {
   const inc = parseFloat(income || 0);
   if (!(inc > 0)) return 1;

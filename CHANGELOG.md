@@ -167,8 +167,24 @@ replaces was mostly measuring income: under the old basis *any* income at or
 above ~52,900 THB graded A regardless of debt, savings or distress, because
 `incomePercentile` saturates at 99 from there up.
 
+### Fixed — a code comment that understated its own rigour
+
+`INCOME_LOG_SIGMA` carried the note "a typical wage dispersion; this is an
+estimate, not published decile data", which describes a *derived* quantity as an
+assumption. A review reasonably read σ as free and proposed raising it to ~0.85
+to match a mid-0.4s Gini — which would have broken the model's match to the one
+genuinely published number in it. The note now shows the identity, and
+`impliedIncomeMean()` plus two tests make the calibration impossible to break
+silently. No distribution parameter changed: no Thai **income** Gini (as
+distinct from the consumption Gini usually quoted) could be verified against a
+primary source, and round 8's rule forbids citing a secondary summary for a
+displayed figure. `docs/research/round-15-income-dispersion.md` records the
+arithmetic, the confound and what data would settle it.
+
 ### Added
 
+- `docs/research/round-15-income-dispersion.md` — the first round to ask an
+  instrument-fidelity question rather than a norm-sourcing one.
 - `tests/instrument-fidelity.test.mjs` — the standing guard the app did not
   have. Checks administered item wording and response scales against their
   published sources, in both languages, rather than checking scoring.
@@ -193,10 +209,16 @@ no longer true of Finance.
   four instruments where a published Thai version exists (WHO-5 Saipanish 2009,
   PSS-10 and RSES Wongpakaran, GSE Sukmak 2002). `round-0-thai-norms.md` has
   recorded this since the first round; no user-facing screen discloses it.
-- **`INCOME_LOG_SIGMA = 0.65`** implies a Gini of 0.354 against a published Thai
-  figure in the mid-0.4s (σ ≈ 0.85), so it understates inequality: the income
-  rank saturates at 99 from ~52,900 THB upward, and every user above that shares
-  one percentile and one grade.
+- **The income distribution rests on one published number and one free
+  parameter.** Not the defect it was reported as, and a worse one. See
+  `docs/research/round-15-income-dispersion.md` and the corrected note in
+  `benchmarks.js`: σ is *derived*, not assumed — σ = √(2·ln(15972/12900)) =
+  0.6536 — so the median/σ pair reproduces the published LFS average wage
+  exactly, and raising σ to 0.85 alone would have implied a mean of 18,513
+  against a published 15,972. What is actually unanchored is
+  `INCOME_MEDIAN_NATIONAL = 12900`, which has no cited source anywhere in the
+  repo. The rank still saturates at 99 from ~52,900 THB upward; v77 at least
+  removes the letter grade from that saturation.
 - **The monthly check-in adds up to +3 points for having logged reviews**
   (`state.js`), which the methodology page's "never by flat per-log bonuses"
   does not cover.

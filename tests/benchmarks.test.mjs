@@ -1,7 +1,7 @@
 // Tests for population benchmark percentiles (node --test)
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { normalCdf, ordinal, getAllBenchmarks, collectSources, percentileRange, percentileBand, incomePercentile, clsAgeRow } from "../benchmarks.js";
+import { normalCdf, ordinal, getAllBenchmarks, collectSources, percentileRange, percentileBand, incomePercentile, impliedIncomeMean, clsAgeRow } from "../benchmarks.js";
 import { gradeForBenchmark } from "../grades.js";
 import { GameStateManager } from "../state.js";
 
@@ -699,4 +699,45 @@ test("income uses one shared cited model — the benchmark card matches incomePe
   // the on-page finance card is driven by the same function, not a second model
   const card = getAllBenchmarks(makeState({ income: 25000, region: "Provinces" })).finance;
   assert.equal(card.percentile, incomePercentile(25000, "Provinces"));
+});
+
+// --- v77: THE INCOME CALIBRATION IS AN IDENTITY, NOT A FREE PARAMETER ----
+
+test("the income lognormal still reproduces the published LFS average wage", () => {
+  // mean = median * exp(sigma^2 / 2). The published anchor is the LFS average
+  // wage, 15,972 THB/mo (SOURCES.botWage), and the median/sigma pair exists to
+  // reproduce it. A reviewer reading the old comment ("sigma 0.65 is a typical
+  // wage dispersion... an estimate") reasonably concluded sigma was free and
+  // proposed raising it to ~0.85 to match a mid-0.4s Gini. That would have
+  // moved the implied mean to 18,513 against a published 15,972 -- breaking the
+  // only genuinely sourced number in the model to fix an unsourced one.
+  //
+  // This test is what makes that impossible to do silently. If sigma or the
+  // median changes, the other must move with it, or a new anchor must be cited
+  // and this assertion updated deliberately.
+  const PUBLISHED_LFS_MEAN_WAGE = 15972;
+  assert.ok(Math.abs(impliedIncomeMean("Provinces") - PUBLISHED_LFS_MEAN_WAGE) < 60,
+    `national lognormal implies a mean of ${Math.round(impliedIncomeMean("Provinces"))}, `
+    + `which no longer matches the published ${PUBLISHED_LFS_MEAN_WAGE}`);
+
+  // Bangkok is the same distribution scaled by the SES household ratio, so its
+  // implied mean must land on the scaled wage, not the national one.
+  const RATIO = 39100 / 29000;
+  assert.ok(Math.abs(impliedIncomeMean("Bangkok") - PUBLISHED_LFS_MEAN_WAGE * RATIO) < 120,
+    "the Bangkok median must stay the national one scaled by the published SES ratio");
+});
+
+test("the sigma a Gini would imply is NOT the sigma this model uses", () => {
+  // Documented so the conflict is visible in the suite rather than only in a
+  // comment: these two calibration targets cannot both hold for a lognormal,
+  // which is a statement about the model FAMILY, not a misset constant.
+  // Gini = 2*Phi(sigma/sqrt(2)) - 1.
+  const giniFor = sigma => 2 * normalCdf(sigma / Math.SQRT2, 0, 1) - 1;
+  const sigmaHere = Math.sqrt(2 * Math.log(15972 / 12900));
+  assert.ok(Math.abs(sigmaHere - 0.65) < 0.01, "the model's sigma is ~0.65");
+  assert.ok(giniFor(sigmaHere) < 0.36,
+    "and it implies a Gini around 0.35 — well below any published Thai income Gini");
+  // If a Thai income Gini is ever verified against a primary source, this is
+  // the arithmetic that converts it. See docs/research/round-15-income-dispersion.md.
+  assert.ok(giniFor(0.85) > 0.44, "a mid-0.4s Gini would need sigma near 0.85");
 });

@@ -50,7 +50,7 @@ function promptCard({ variant = "checkin-banner", title, body, extra = "", actio
 // than in the template so that "what is the next step" is one readable list:
 // the weekly review is the app's actual loop, a due re-assessment is stale
 // scores, and an un-backed-up browser is the only one that can lose data.
-function actionPrompts({ reviewDue, checkinDue, needsBackup, askBirthday, deepDone, deepTotal, daysSinceExport }) {
+function actionPrompts({ reviewDue, checkinDue, needsBackup, askBirthday, daysSinceExport }) {
   const prompts = [];
 
   if (reviewDue) {
@@ -92,19 +92,37 @@ function actionPrompts({ reviewDue, checkinDue, needsBackup, askBirthday, deepDo
     }));
   }
 
-  if (deepDone < deepTotal) {
-    prompts.push(promptCard({
-      variant: "deep-banner",
-      title: t("Go deeper for more accurate scores."),
-      body: t("An optional in-depth assessment uses the full-length validated questionnaires to sharpen your estimates and tighten each percentile band."),
-      extra: deepDone > 0
-        ? `<p class="deep-progress">${tp("In-depth sections completed: {done}/{total}", { done: deepDone, total: deepTotal })}</p>`
-        : "",
-      actions: `<a href="#/deep" class="btn btn-primary">${deepDone > 0 ? t("Continue in-depth") : t("Start in-depth assessment")}</a>`
-    }));
-  }
-
   return prompts.length ? `<div class="prompt-stack">${prompts.join("")}</div>` : "";
+}
+
+// The in-depth assessment offer. Rendered BELOW the scores, not above them.
+//
+// It used to be the last card in the prompt stack, which put it in the top
+// 540px of a 375x812 phone alongside the mental-health banner. Measured on
+// that viewport, the first screen of this dashboard then contained: a crisis
+// notice, this offer, and the reader's own name -- and NOT ONE SCORE. The
+// Balance Index figure started at y=762, on the fold line itself; the first
+// aspect row at y=2113.
+//
+// The sentence is "go deeper for more ACCURATE SCORES", which is an argument
+// about numbers the reader has not been shown yet. Asking someone to answer
+// eighty more questions before they have seen what the first eighty produced
+// inverts the order of the trade being offered. Below the radar and the aspect
+// list, the same words land against something real.
+//
+// It is not demoted, hidden or collapsed -- same card, same copy, same button,
+// forty lines further down.
+function deepAssessmentPrompt({ deepDone, deepTotal }) {
+  if (deepDone >= deepTotal) return "";
+  return `<div class="prompt-stack prompt-stack-trailing">${promptCard({
+    variant: "deep-banner",
+    title: t("Go deeper for more accurate scores."),
+    body: t("An optional in-depth assessment uses the full-length validated questionnaires to sharpen your estimates and tighten each percentile band."),
+    extra: deepDone > 0
+      ? `<p class="deep-progress">${tp("In-depth sections completed: {done}/{total}", { done: deepDone, total: deepTotal })}</p>`
+      : "",
+    actions: `<a href="#/deep" class="btn btn-primary">${deepDone > 0 ? t("Continue in-depth") : t("Start in-depth assessment")}</a>`
+  })}</div>`;
 }
 
 // 2. RENDER THE MAIN DASHBOARD
@@ -143,11 +161,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
 
   container.innerHTML = `
     ${mentalHealthNotice(getMentalHealthNotice(state))}
-    ${actionPrompts({
-      reviewDue, checkinDue, needsBackup, askBirthday, daysSinceExport,
-      deepDone: ASPECT_KEYS.filter(k => isAspectDeepVerified(state, k)).length,
-      deepTotal: ASPECT_KEYS.length
-    })}
+    ${actionPrompts({ reviewDue, checkinDue, needsBackup, askBirthday, daysSinceExport })}
     ${state.profile.assessmentComplete === false ? `
       <div class="quickstart-note">
         <p><strong>${t("Quick-start results.")}</strong> ${t("Aspects beyond your first sections use baseline estimates. Submit a Weekly Review to shape them, and monthly re-assessments refine your survey scores over time.")}</p>
@@ -281,6 +295,10 @@ export function renderDashboard(containerId, state, onExportBackup) {
         </div>
       </div>
     </div>
+    ${deepAssessmentPrompt({
+      deepDone: ASPECT_KEYS.filter(k => isAspectDeepVerified(state, k)).length,
+      deepTotal: ASPECT_KEYS.length
+    })}
   `;
 
   renderRadarChart("radar-chart-container", state.aspects, { average: AVERAGE_ASPECT_SCORES });

@@ -2649,15 +2649,27 @@ header {
   /* Default first, so a card added later without an order class lands at the
      end of the page rather than jumping to the very top — which is what an
      unset `order: 0` would otherwise do. (Caught exactly that way: the Recent
-     Reviews card had no class and sorted above the radar.) */
+     Reviews card had no class and sorted above the radar.)
+
+     EVERY SELECTOR BELOW IS SCOPED TO .dashboard-grid, and that is not
+     decoration. The fallback was written as `.dashboard-grid .card` (0,2,0)
+     while the six specific rules were bare single classes (0,1,0), so the
+     fallback out-specified all of them: every card resolved to order 90, they
+     all tied, and flex fell back to DOM order. The reordering this block exists
+     to perform has therefore never actually run on a phone since it was
+     written. Measured at 375px: the identity card led the page at y=376 and the
+     radar — "the point of the app" — sat at y=861, below the fold, which is
+     the exact layout the comment above says was being fixed.
+
+     Matching the specificity is the whole fix. Keep them matched. */
   .dashboard-grid .card { order: 90; }
 
-  .dash-radar    { order: 1; }
-  .dash-index    { order: 2; }
-  .dash-scores   { order: 3; }
-  .dash-suggest  { order: 4; }
-  .dash-activity { order: 5; }
-  .dash-identity { order: 6; }
+  .dashboard-grid .dash-radar    { order: 1; }
+  .dashboard-grid .dash-index    { order: 2; }
+  .dashboard-grid .dash-scores   { order: 3; }
+  .dashboard-grid .dash-suggest  { order: 4; }
+  .dashboard-grid .dash-activity { order: 5; }
+  .dashboard-grid .dash-identity { order: 6; }
 
   /* Aspect Scores, collapsed to one statement per aspect.
      ---------------------------------------------------

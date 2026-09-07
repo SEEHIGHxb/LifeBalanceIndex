@@ -38,6 +38,7 @@ import {
   futureStudyScore,
   savingsAmountFrom,
   runwayMonths,
+  totalCommittedOutflow,
   donationVolumeFactor,
   volunteerFactor,
   DEEP_NORM
@@ -385,6 +386,7 @@ function humanityFutureComponents(p, b) {
 // would mean inventing the very divisor the app is refusing to invent. A fact
 // with no bar cannot silently acquire a weight.
 function aspectFacts(aspectKey, p) {
+  if (aspectKey === "socialContribution") return socialContributionFacts(p);
   if (aspectKey !== "finance") return [];
   const facts = [];
 
@@ -419,10 +421,58 @@ function aspectFacts(aspectKey, p) {
     display: tp("{n} months", { n: Math.round(months * 10) / 10 }),
     detail: tp("{savings} THB you could reach this week ÷ {outflow} THB/mo you cannot skip. Not scored — no published distribution says what a given number of months is worth, so this is reported to you rather than ranked.", {
       savings: Math.round(parseFloat(p.liquidSavings || 0)).toLocaleString(),
-      outflow: Math.round(parseFloat(p.committedOutflow || 0)).toLocaleString()
+      // The denominator is committed outflow PLUS family support (v78). Both
+      // halves are named in the line below when the second one is non-zero, so
+      // the arithmetic on screen adds up to the number printed here.
+      outflow: Math.round(totalCommittedOutflow(p)).toLocaleString()
     })
   });
+  const family = Math.round(parseFloat(p.familySupport || 0));
+  if (family > 0) {
+    facts.push({
+      key: "familySupport",
+      label: t("Of which, family support"),
+      display: tp("{thb} THB/mo", { thb: family.toLocaleString() }),
+      detail: t("Counted in the runway above, because it does not stop when income does. It is also reported on your Social Contribution page, where it is giving rather than a bill.")
+    });
+  }
   return facts;
+}
+
+// --- FAMILY SUPPORT: MEASURED, DELIBERATELY NOT RANKED (v78) ---
+//
+// Until v78 this app asked for "committed monthly outflow — rent, loan
+// repayments, family support, bills", and money sent to parents entered the
+// model in exactly one place: as a number that shortens a runway. Meanwhile
+// Social Contribution scored donations to charity and volunteering hours. So
+// for a reader practising กตัญญู, the single largest transfer they make to
+// another household counted as an obligation in the finance section and as
+// nothing at all in the section about giving.
+//
+// It is now asked for on its own and reported HERE, on the aspect where giving
+// lives. It is deliberately NOT added to the socialContribution SCORE, and the
+// reason is the same one that unranked Environment in v77 rather than the one
+// that would be convenient: the published giving indices this aspect is
+// benchmarked against — the participation rates behind
+// socialContributionBenchmark — measure donations to organisations and formal
+// volunteering. None of them counts intra-family transfers. Folding family
+// support into a score built on those rates would move a reader up a ranking
+// whose population was never asked the question, which is the precise error
+// this app spends most of its comments avoiding.
+//
+// So: shown, named as giving, and not ranked. A fact, not a component — no
+// bar, no weight, no percentile. If a published Thai distribution of family
+// remittances is ever found, this becomes a scoring question and gets its own
+// round; it is not one today.
+function socialContributionFacts(p) {
+  const family = Math.round(parseFloat(p.familySupport || 0));
+  if (!(family > 0)) return [];
+  return [{
+    key: "familySupport",
+    label: t("Family support"),
+    display: tp("{thb} THB/mo", { thb: family.toLocaleString() }),
+    detail: t("Money you send to your family. Not scored — every published giving statistic this page ranks you against counts donations to organisations and formal volunteering, and none of them asks about supporting your parents. Ranking you on a measure the population was never asked about would be inventing the comparison. It is shown here because it is giving, whatever those surveys count.")
+  }];
 }
 
 // Full detail bundle for one aspect page.

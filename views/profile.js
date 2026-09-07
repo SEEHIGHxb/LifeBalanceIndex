@@ -44,7 +44,8 @@ const AGE_MAX = 100;
 const ERR_IDS = {
   income: "pf-income-err", weight: "pf-weight-err", height: "pf-height-err",
   age: "pf-age-err", birthday: "pf-birthday-err",
-  liquidSavings: "pf-liquid-err", committedOutflow: "pf-outflow-err"
+  liquidSavings: "pf-liquid-err", committedOutflow: "pf-outflow-err",
+  familySupport: "pf-family-err"
 };
 
 // A labelled <select> prefilled to `current`. options: [{ value, label }].
@@ -212,6 +213,7 @@ export function renderProfile(containerId, state, onSaved) {
         <div class="grid-2">
           ${numberField("pf-liquid", t("Liquid Savings You Could Reach This Week (THB)"), p.liquidSavings, 'min="0"')}
           ${numberField("pf-outflow", t("Committed Monthly Outflow (THB)"), p.committedOutflow, 'min="0"')}
+          ${numberField("pf-family", t("Money You Send to Family (THB/month)"), p.familySupport, 'min="0"')}
         </div>
         <p class="profile-note">${t("These two give your runway on the Finance page. They change nothing about your score — no published distribution says what a given number of months is worth, so the app reports the figure rather than ranking it.")}</p>
 
@@ -277,7 +279,8 @@ export function renderProfile(containerId, state, onSaved) {
     const { errors: numErrors } = validateProfile({
       income: val("pf-income"), weight: val("pf-weight"),
       height: val("pf-height"),
-      liquidSavings: val("pf-liquid"), committedOutflow: val("pf-outflow")
+      liquidSavings: val("pf-liquid"), committedOutflow: val("pf-outflow"),
+      familySupport: val("pf-family")
     });
     Object.assign(errors, numErrors);
 
@@ -315,7 +318,8 @@ export function renderProfile(containerId, state, onSaved) {
       gender: val("pf-gender"), region: val("pf-region"),
       employment: val("pf-employment"), relationshipStatus: val("pf-relationship"),
       income: val("pf-income"), weight: val("pf-weight"), height: val("pf-height"),
-      liquidSavings: val("pf-liquid"), committedOutflow: val("pf-outflow")
+      liquidSavings: val("pf-liquid"), committedOutflow: val("pf-outflow"),
+      familySupport: val("pf-family")
     });
     // Birthday rides its own mutator (re-anchors level-ups safely).
     if (birthdayChange) stateManager.setBirthday(birthdayChange.birthMonth, birthdayChange.birthDay);

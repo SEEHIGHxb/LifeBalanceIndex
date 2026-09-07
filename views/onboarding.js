@@ -29,6 +29,7 @@ const DRAFT_KEY = "onboarding";
 const ONB_NUMERIC_IDS = {
   income: "onb-income", monthlySavings: "onb-savings",
   liquidSavings: "onb-liquid", committedOutflow: "onb-outflow",
+  familySupport: "onb-family",
   weeklyLearningHours: "onb-learning", weeklyVigorousDays: "onb-vig-days",
   weeklyVigorousMins: "onb-vig-mins", weeklyModerateDays: "onb-mod-days",
   weeklyModerateMins: "onb-mod-mins", weeklyWalkingDays: "onb-walk-days",
@@ -100,7 +101,20 @@ export function renderOnboarding(containerId, onComplete) {
           ${numberField("onb-liquid", t("Liquid Savings You Could Reach This Week (THB)"), "", 'min="0"', { required: true, field: "liquidSavings", placeholder: t("e.g. 50,000") })}
           ${numberField("onb-outflow", t("Committed Monthly Outflow (THB)"), "", 'min="0"', { required: true, field: "committedOutflow", placeholder: t("e.g. 12,000") })}
         </div>
-        <p class="onb-why">${t("The second box is what you cannot skip in a month — rent, loan repayments, family support, bills. Together these two give your runway: how long you could cover the unskippable if income stopped. It is shown on your Finance page and is deliberately not scored, because no published distribution says what a given number of months is worth.")}</p>
+        <p class="onb-why">${t("The second box is what you cannot skip in a month — rent, loan repayments, bills. Together these two give your runway: how long you could cover the unskippable if income stopped. It is shown on your Finance page and is deliberately not scored, because no published distribution says what a given number of months is worth.")}</p>
+        <!-- Asked separately since v78. It used to be one of the examples in
+             the box above ("rent, loan repayments, family support, bills"),
+             which meant the money a reader sends to their parents entered this
+             app in exactly one place: as a number that shortens a runway. It
+             belongs in the runway — it does not stop when income stops — but it
+             is not only a bill, and folding it into one made it invisible
+             everywhere else. Optional, because plenty of people send nothing
+             and a required field would make them type a zero to say so. -->
+        ${numberField("onb-family", t("Money You Send to Family (THB/month)"), "", 'min="0"', {
+          field: "familySupport",
+          placeholder: t("e.g. 5,000 — leave blank if none"),
+          note: t("Counted in your runway with the box above, and shown on your Social Contribution page as giving. It is never subtracted from a score.")
+        })}
         ${instrumentBlock("cfpb")}`
     },
     {
@@ -378,6 +392,7 @@ export function renderOnboarding(containerId, onComplete) {
         // stock over an outflow is a ratio the app prints rather than stores.
         liquidSavings: val("onb-liquid"),
         committedOutflow: val("onb-outflow"),
+        familySupport: val("onb-family"),
         height: val("onb-height"),
         weight: val("onb-weight"),
         sleepHours: val("onb-sleep"),

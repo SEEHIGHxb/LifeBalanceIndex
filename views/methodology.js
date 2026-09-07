@@ -215,7 +215,7 @@ export function renderMethodology(containerId, state) {
       ${aspectSection(
         t("Social Contribution"),
         t("40% donations (frequency + amount vs income) + 40% action (volunteering hours + helping behavior) + 20% civic participation."),
-        t("Giving money and giving time are weighted equally; civic habits count but are the hardest to self-report accurately."),
+        t("Giving money and giving time are weighted equally; civic habits count but are the hardest to self-report accurately. Money you send to your family is shown on this page and is deliberately not part of the score. Until v78 the app did not ask about it separately at all: it was one of the examples under “committed monthly outflow”, so for a reader supporting their parents the largest transfer they make to another household counted as a bill in the finance section and as nothing whatsoever in the section about giving. It is now asked for on its own. It is still not scored, and that is not an oversight — every published giving statistic behind the percentile on this page measures donations to organisations and formal volunteering, and none of them asks about supporting parents. Adding it to a score built on those rates would move you up a ranking whose population was never asked the question. So it is reported, named as giving, and left unranked, the same way this app treats every other measurement it has no honest population for."),
         []
       )}
       ${aspectSection(

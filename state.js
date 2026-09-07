@@ -78,10 +78,10 @@ const PROFILE_EDIT_ENUMS = ["gender", "region", "employment", "relationshipStatu
 // digitalLiteracy left this list in v73 when the CIT Learning subscale
 // replaced it. The stored field, its sanitiser and its validator all remain so
 // that pre-v73 saves keep scoring; it simply has no input to arrive from.
-const PROFILE_EDIT_NUMERIC = ["income", "weight", "height", "liquidSavings", "committedOutflow"];
+const PROFILE_EDIT_NUMERIC = ["income", "weight", "height", "liquidSavings", "committedOutflow", "familySupport"];
 // The numeric fields whose hand-entry should upgrade the confidence tier: a
 // value the user just typed is provided data, same as answering it at onboarding.
-const PROFILE_EDIT_PROVIDED = ["income", "weight", "height", "liquidSavings", "committedOutflow"];
+const PROFILE_EDIT_PROVIDED = ["income", "weight", "height", "liquidSavings", "committedOutflow", "familySupport"];
 const AGE_MIN = 15;
 const AGE_MAX = 100;
 
@@ -872,6 +872,7 @@ export class GameStateManager {
     // an absent or zero committedOutflow simply leaves the runway undefined.
     p.liquidSavings = parseFloat(surveyData.liquidSavings || 0);
     p.committedOutflow = parseFloat(surveyData.committedOutflow || 0);
+    p.familySupport = parseFloat(surveyData.familySupport || 0);
     p.digitalLiteracy = parseFloat(surveyData.digitalLiteracy || 50);
     p.weeklyLearningHours = parseFloat(surveyData.weeklyLearningHours || 0);
     p.weeklyVigorousDays = parseInt(surveyData.weeklyVigorousDays || 0);

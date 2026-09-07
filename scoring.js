@@ -342,8 +342,24 @@ export function savingsAmountFrom(rate, income) {
 // Zero or negative savings against a real outflow IS zero months, and says so.
 // Negative is reachable from a connector reporting net of debt, never from the
 // form, which floors at 0.
+// The denominator of the runway: everything that leaves each month and cannot
+// be skipped. Split across two stored fields since v78 and summed here, so the
+// runway is unchanged for a save written before the split (familySupport
+// defaults to 0 and the old single field already carried the total).
+//
+// Family support is in this sum because the runway question is "how long could
+// I cover what I cannot stop paying", and for someone supporting their parents
+// that money does not stop. Being IN the sum is not the same as being a
+// liability, which is why it is also reported on its own, on the aspect that
+// deals in giving. See aspectFacts() in aspects.js.
+export function totalCommittedOutflow(profile) {
+  const committed = parseFloat(profile.committedOutflow || 0);
+  const family = parseFloat(profile.familySupport || 0);
+  return (committed > 0 ? committed : 0) + (family > 0 ? family : 0);
+}
+
 export function runwayMonths(profile) {
-  const outflow = parseFloat(profile.committedOutflow || 0);
+  const outflow = totalCommittedOutflow(profile);
   if (!(outflow > 0)) return null;
   const savings = parseFloat(profile.liquidSavings || 0);
   // NaN floors to zero months rather than propagating: `parseFloat("abc")` is

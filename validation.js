@@ -30,6 +30,7 @@ export const FIELD_CONSTRAINTS = {
   // garbage number reaching the runway line would be a wrong number on screen.
   liquidSavings: { min: 0, max: 10000000 },
   committedOutflow: { min: 0, max: 10000000 },
+  familySupport: { min: 0, max: 10000000 },
   digitalLiteracy: { min: 0, max: 100 },
   weeklyLearningHours: { min: 0, max: 168 },
   weeklyVigorousDays: { min: 0, max: 7 },

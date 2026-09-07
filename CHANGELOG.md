@@ -39,12 +39,13 @@ large it shows it, and in what order.
   Maitree:Sarabun in Thai is the pairing that Source Serif 4:Inter is in Latin.
   Because both faces are subsetted by `unicode-range`, one stack serves both
   scripts and resolves correctly inside a mixed run.
-- **The first `[lang="th"]` rules in this stylesheet.** Leading goes to 1.75,
-  because Thai stacks vowels above the base consonant and tone marks above
-  those, and at 1.55 those marks sat in the descenders of the line above.
-  Negative and positive tracking tuned by eye against Latin is reset to
-  `normal` — including the `-0.01em` that `.brand h1` was applying to the app's
-  own name. Chips get the line-height to clear a tone mark.
+- **The first `[lang="th"]` rules in this stylesheet.** Leading goes to 1.75
+  on `body` and on the twelve prose rules that declare their own, because Thai
+  stacks vowels above the base consonant and tone marks above those, and at
+  1.55 those marks sat in the descenders of the line above. Headings go to 1.6
+  — looser than the Latin default, tighter than the Thai body. All thirteen
+  rules that track for Latin are reset to `normal`, including the `-0.01em`
+  that `.brand h1` was applying to the app's own name.
 - **`familySupport`**, its own profile field. See below.
 
 ### Changed — the phone fold
@@ -58,13 +59,18 @@ large it shows it, and in what order.
   y=376, and now sits entirely inside the first screen.
 - **The in-depth assessment offer moved below the scores**, from y=376 to
   y=2842. Its sentence is "go deeper for more accurate scores", which above the
-  scores is an argument about numbers the reader has not been shown yet. Same
-  card, same copy, same button, further down.
+  scores is an argument about numbers the reader has not been shown yet. It is
+  now the only card in its stack, so on a phone it renders at full height
+  (161px) rather than demoted to the 77px compact row it got when it sat behind
+  another prompt — at the foot of the page there is nothing for it to compete
+  with.
 - **The assistant's speech bubble folds away on a phone** after a 9s dwell that
   starts when the sentence finishes arriving, and returns on a tap. It is
   `position: fixed` and full-width there, so it sat permanently on top of
   whatever was scrolled under it — measured at y=645..734, covering the level
-  badge, the points bar and the name. The artwork, the character and the
+  badge, the points bar and the name. Widening the viewport after a fold
+  un-folds it on the next tip, so a resized window cannot strand a hidden
+  bubble for the rest of the session. The artwork, the character and the
   dialogue are untouched.
 - The mental-health banner is deliberately **unchanged**. It renders only when
   WHO-5 or ST-5 crosses the concern threshold, and for that reader hotlines
@@ -83,10 +89,11 @@ large it shows it, and in what order.
   glyph drops the chip's fill, border and pill — a 30px filled green block
   would read as a trophy, which is the one thing a population comparison must
   not look like.
-- **The percentile's indicative range is drawn on the gauge** rather than
-  stated as "typical range 55–79" in 12px grey underneath it, with an
-  `aria-valuetext` so a screen reader gets both facts too. The range says how
-  precise the estimate is, and it was the smallest text in the block.
+- **The percentile's indicative range is now drawn**, as a bracket under the
+  gauge rail, with an `aria-valuetext` so a screen reader gets it too. The
+  range says how precise the estimate is, and in text form it was the smallest
+  thing in the block. The numeric line underneath is unchanged — this is an
+  addition, not a replacement.
 
 ### Changed — family support is no longer filed as a bill
 
@@ -134,6 +141,70 @@ smaller than a sourced figure; that family support moves no score; and that the
 committed-outflow question never files family support as a bill again.
 
 595 tests pass, up from 568.
+
+### Fixed after independent review
+
+The four changes above were reviewed by an agent briefed to distrust this
+release's own commit messages. It found nine real defects; all are fixed here,
+and the claims it disproved are corrected above rather than quietly dropped.
+
+- **The range bracket used to paint over the fill.** `.gauge-range` was
+  absolutely positioned and `.gauge-fill` was not, so per CSS painting order
+  the band landed **on top of** the fill and visually truncated the reader's
+  own bar at `range.low` — a ten-percentile-point understatement on every
+  `estimate` benchmark, on the one page whose purpose is reading that number
+  correctly. It now hangs below the rail, where it cannot occlude anything.
+- **The Thai leading reached no text at all.** It was declared on `html`, and
+  `body` **declares** 1.55 — a declared value beats an inherited one whatever
+  the ancestor's specificity. Moved to `body`, plus the prose rules that set
+  their own. The heading rule was also making things *worse*: those headings
+  inherited 1.55 and the first draft set them to 1.45.
+- **A dead block with a false comment.** The "chips get room for a tone mark"
+  rule re-declared the `line-height: 1.5` all five selectors already had.
+  Deleted, with its comment.
+- **The tracking reset missed `.confidence-badge`** — it shares a declaration
+  with `.component-confidence` and only the second was listed, leaving the
+  trust chip tracked to a Latin eye. There were thirteen such rules, not twelve.
+- **The share card still drew Thai in the sans.** `story-card.js` repeats the
+  serif stack by hand (canvas cannot read a custom property) and was still on
+  the pre-v78 one, so the app's only outward-facing artefact contradicted the
+  release.
+- **Existing users could double-count family support.** v77 told people to put
+  it *inside* committed outflow; v78 showed them an empty box and said nothing.
+  The Profile page now warns, in both languages, to take it out of the box
+  above first. "A save keeps its runway to the baht" was true only until the
+  user touched the feature the release is about.
+- **Family support could not be cleared once set.** Blank means "leave
+  unchanged" for every numeric profile edit, which is right for income and
+  wrong for the app's first optional money field — whose own placeholder says
+  "leave blank if none". Someone who stops sending money home can now say so.
+- **A folded bubble stayed folded on desktop.** The gate was phone-only; the
+  state was global.
+- **The `aria-valuetext` bypassed `percentileLabel()`**, so a screen reader
+  heard "99 percentile" where the page printed "99th percentile", and in Thai
+  lost the ordinal prefix the string is written around.
+
+Also: `.prompt-stack-trailing` was dead and is gone; a `package-lock.json`
+committed by accident is untracked and ignored (CI installs Playwright with
+`--no-save` on purpose); and the profile page no longer puts three fields in a
+two-column grid under a caption reading "These two".
+
+Unrelated to the four changes and pre-existing: `tests/e2e.mjs` flow 2 waited
+on `#tab-dashboard`, which is the tab **button** and is in the DOM the whole
+time — so it waited for nothing and raced `renderDashboard`. It failed about
+one run in three on this release and on v77 alike (measured 2 of 4 on v77, 1 of
+3 on HEAD), which is the kind of intermittent red that trains people to re-run
+CI instead of reading it. It now waits for a card the dashboard actually
+renders. Five consecutive green runs.
+
+**Six guards were rewritten because they were fake.** Four asserted on this
+release's own source formatting — one of them required a *comment* to be
+present, with the `//` load-bearing — and would have passed however the code
+behaved. They now drive the real mutator, render the real view, or compare
+structural facts; the three new CSS guards were each verified to fail against
+the defect they describe. One of them had the same class of bug as the code it
+checks: a comma-only selector split silently dropped the first selector of
+every commented rule, which is exactly the selector it was written to catch.
 
 ## [2.26.0] — 2026-09-05 (APP_VERSION 77)
 

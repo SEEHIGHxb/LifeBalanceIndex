@@ -155,14 +155,54 @@ test("the committed-outflow question no longer files family support as a bill", 
     "onboarding must ask for family support on its own");
 });
 
-test("the field survives a round trip through the profile editor", () => {
-  const state = read("state.js");
-  assert.match(state, /PROFILE_EDIT_NUMERIC = \[[^\]]*"familySupport"/);
-  assert.match(state, /PROFILE_EDIT_PROVIDED = \[[^\]]*"familySupport"/);
-  assert.match(state, /p\.familySupport = parseFloat\(surveyData\.familySupport \|\| 0\)/);
-  assert.match(read("views/profile.js"), /familySupport: val\("pf-family"\)/);
-  // Range-checked like every other imported number, so a garbage value cannot
-  // reach the runway line.
+test("the field survives a round trip through the profile editor", async () => {
+  // An earlier version of this test was named for a round trip and consisted
+  // entirely of regexes over source text — it would have passed if
+  // updateProfile silently dropped the value. An independent review called it
+  // out. This one actually drives the mutator.
+  const { GameStateManager } = await import("../state.js");
+  const mgr = new GameStateManager();
+  mgr.state = structuredClone({
+    ...DEFAULT_STATE, onboarded: true,
+    profile: profile({ income: 30000, liquidSavings: 120000, committedOutflow: 15000 })
+  });
+
+  mgr.updateProfile({ familySupport: "5000" });
+  assert.equal(mgr.state.profile.familySupport, 5000, "the edit must be stored");
+  assert.equal(runwayMonths(mgr.state.profile), 6, "and must reach the runway");
+
+  // Blank means ZERO for this field, not "leave unchanged". It is the app's
+  // only optional money field and its own placeholder says "leave blank if
+  // none", so someone who stops sending money home has to be able to say so.
+  // Without this they would be stuck with a permanently shortened runway and a
+  // Social Contribution page reporting money they no longer send.
+  mgr.updateProfile({ familySupport: "" });
+  assert.equal(mgr.state.profile.familySupport, 0, "an emptied box must clear the field");
+  assert.equal(runwayMonths(mgr.state.profile), 8, "and the runway must recover");
+
+  // Blank still means "unchanged" for the fields that have no meaningful zero.
+  mgr.updateProfile({ income: "" });
+  assert.equal(mgr.state.profile.income, 30000, "a blank income must not zero someone's income");
+});
+
+test("editing family support reports no score change, because nothing scores it", async () => {
+  // A "your scores shifted" toast on an edit that cannot move a score would be
+  // the app contradicting its own model on screen.
+  const { GameStateManager } = await import("../state.js");
+  const mgr = new GameStateManager();
+  mgr.state = structuredClone({
+    ...DEFAULT_STATE, onboarded: true,
+    profile: profile({ income: 30000, liquidSavings: 120000, committedOutflow: 15000 })
+  });
+  const before = { ...mgr.state.aspects };
+  const result = mgr.updateProfile({ familySupport: "9000" });
+  const shifts = (result && result.shifts) || {};
+  assert.deepEqual(shifts, {}, "reporting family support must shift no aspect");
+  assert.deepEqual(mgr.state.aspects, before, "and must move no aspect score");
+});
+
+test("the field is range-checked on import as well as on entry", () => {
+  // The form floors at 0; a backup file does not. Both paths are guarded.
   assert.match(read("sanitize.js"), /familySupport: \[0, \d+\]/);
   assert.match(read("validation.js"), /familySupport: \{ min: 0, max: \d+ \}/);
 });

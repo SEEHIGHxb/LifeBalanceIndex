@@ -63,6 +63,10 @@ test("the dashboard order rules out-specify their own fallback", () => {
   }
 });
 
+// NOTE: this test passes against the pre-v78 stylesheet too, because the order
+// integers were always right — the bug was that the fallback out-specified
+// them, which is what the test above catches. Kept as a statement of intent:
+// it is the reason the integers are the values they are.
 test("the radar is ordered ahead of the identity card on a phone", () => {
   // The intent, stated as an assertion rather than left in a comment: the
   // reader's scores come before the reader's name.
@@ -101,10 +105,31 @@ test("the in-depth offer renders below the scores, not in the top prompt stack",
   );
 });
 
-test("the offer still disappears once every aspect is deep-verified", () => {
-  // The move must not turn a conditional card into a permanent one.
-  const css = read("views/dashboard.js");
-  assert.match(css, /if \(deepDone >= deepTotal\) return "";/);
+test("the offer still disappears once every aspect is deep-verified", async () => {
+  // The move must not turn a conditional card into a permanent one. Rendered,
+  // not grepped: an earlier version of this test asserted that dashboard.js
+  // contained the line that had just been written into it, which would pass
+  // however the function behaved.
+  const { renderDashboard } = await import("../views/dashboard.js");
+  const { ASPECT_KEYS } = await import("../aspects.js");
+  const verified = {
+    ...STATE,
+    baseline: {
+      ...STATE.baseline,
+      deepDone: Object.fromEntries(ASPECT_KEYS.map(k => [k, true]))
+    }
+  };
+  const dom = installDom();
+  renderDashboard(MAIN, verified, () => {});
+  const html = dom.html[MAIN] || "";
+  // Guard the guard: if this fixture does not actually reach deep-verified,
+  // the assertion below would pass for the wrong reason.
+  const { isAspectDeepVerified } = await import("../aspects.js");
+  assert.ok(
+    ASPECT_KEYS.every(k => isAspectDeepVerified(verified, k)),
+    "fixture must be deep-verified on every aspect or this test proves nothing"
+  );
+  assert.ok(!html.includes("deep-banner"), "the offer must not render once there is nothing left to deepen");
 });
 
 // --- The floating assistant's fixed bubble ---------------------------------
@@ -144,22 +169,46 @@ test("the assistant's phone breakpoint matches the stylesheet's", () => {
   );
 });
 
-test("tapping the avatar brings a folded bubble back", () => {
-  // Folding it away is only acceptable because it is one tap from returning.
+// The three tests above this line and the two below it were, in their first
+// version, regexes over app.js source: one of them pinned a brace-and-newline
+// arrangement and another REQUIRED A COMMENT to be present — the `\/\/` was
+// load-bearing. An independent review called them out, correctly. A guard that
+// asserts on its author's formatting proves the author did not change their
+// formatting.
+//
+// These are structural facts about the module graph instead, which is as far
+// as a node test can honestly reach into a browser-only file: app.js imports
+// from the DOM at load, so it cannot be imported here. The BEHAVIOUR is
+// covered where it can actually be observed — tests/e2e.mjs drives the fold,
+// the dwell and the tap in a real browser.
+
+test("folding the bubble is paired with a way to get it back", () => {
+  // Folding it away is only acceptable because it is one tap from returning,
+  // so the two must exist together. Asserted as a relationship between
+  // functions, not as a formatting pattern.
   const js = read("app.js");
-  assert.match(js, /const activate = \(\) => \{\s*\n\s*showBubble\(\);/,
-    "avatar activation must un-fold the bubble before writing to it");
-  assert.match(js, /function showBubble\(\)[\s\S]*?classList\.remove\("d-none"\)/);
+  assert.match(js, /function showBubble\(\)[\s\S]*?classList\.remove\("d-none"\)/,
+    "showBubble must actually un-hide the bubble");
+  assert.match(js, /function dismissBubbleLater\(\)[\s\S]*?classList\.add\("d-none"\)/,
+    "dismissBubbleLater must actually hide it");
+  // Every hide has to be reachable by a show: the avatar handler is the one
+  // route back, so it must call showBubble.
+  const activate = js.match(/const activate = \(\) =>[\s\S]{0,300}?\};/);
+  assert.ok(activate, "the avatar must still have an activation handler");
+  assert.ok(activate[0].includes("showBubble()"),
+    "avatar activation must un-fold the bubble, or a folded bubble is unreachable");
 });
 
-test("the dwell starts only once the tip has finished arriving", () => {
-  // Starting it at trigger time would spend the reading window on the
-  // typewriter animation and fold the bubble mid-sentence.
+test("a wide viewport can never be left holding a folded bubble", () => {
+  // The gate on folding is phone-only; the folded STATE is global. Widening
+  // the window after a fold used to leave the bubble hidden for the rest of
+  // the session, with every later tip typed into a display:none element.
   const js = read("app.js");
-  const typed = js.match(/lumiTypewriterInterval = null;\s*\n\s*\/\/[\s\S]{0,200}?dismissBubbleLater\(\);/);
-  assert.ok(typed, "the typewriter's completion branch must start the dwell");
-  const reduced = js.match(/prefersReducedMotion\(\)\) \{\s*\n\s*bubble\.textContent = message;\s*\n\s*dismissBubbleLater\(\);/);
-  assert.ok(reduced, "the reduced-motion branch prints at once, so it must start the dwell too");
+  assert.match(js, /if \(!isPhoneViewport\(\)\) showBubble\(\);/,
+    "triggerLumiMessage must un-fold on any viewport that would not fold it");
+  // And the fold itself must stay gated, or it starts happening on desktop.
+  assert.match(js, /function dismissBubbleLater\(\)[\s\S]*?if \(!isPhoneViewport\(\)\) return;/,
+    "the dwell must not arm on a viewport wider than the phone breakpoint");
 });
 
 // A fully-onboarded save, same shape as views-render.test.mjs.

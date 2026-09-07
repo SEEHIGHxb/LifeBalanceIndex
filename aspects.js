@@ -471,7 +471,7 @@ function socialContributionFacts(p) {
     key: "familySupport",
     label: t("Family support"),
     display: tp("{thb} THB/mo", { thb: family.toLocaleString() }),
-    detail: t("Money you send to your family. Not scored — every published giving statistic this page ranks you against counts donations to organisations and formal volunteering, and none of them asks about supporting your parents. Ranking you on a measure the population was never asked about would be inventing the comparison. It is shown here because it is giving, whatever those surveys count.")
+    detail: t("Money you send to your family. Not scored — the two published participation rates this page's percentile is built on count donating money to an organisation and formal volunteering, and neither asks about supporting your parents. Ranking you on a measure that population was never asked about would be inventing the comparison. It is shown here because it is giving, whatever those two surveys count.")
   }];
 }
 

@@ -635,6 +635,14 @@ function triggerLumiMessage(message, { announce = false } = {}) {
   const bubble = document.getElementById("assistant-speech-bubble");
   if (!bubble) return;
 
+  // The GATE on folding is phone-only; the folded STATE was not. A reader who
+  // let the bubble fold on a phone and then widened the window — a rotated
+  // tablet, a resized desktop window, a re-docked laptop — kept a hidden
+  // bubble for the rest of the session, and every later tip was typed into a
+  // display:none element. Un-fold whenever a tip arrives on a viewport that
+  // was never supposed to fold it.
+  if (!isPhoneViewport()) showBubble();
+
   if (announce) {
     const sr = document.getElementById("assistant-sr");
     if (sr) sr.textContent = message;

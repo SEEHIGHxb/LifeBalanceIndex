@@ -114,7 +114,7 @@ function actionPrompts({ reviewDue, checkinDue, needsBackup, askBirthday, daysSi
 // forty lines further down.
 function deepAssessmentPrompt({ deepDone, deepTotal }) {
   if (deepDone >= deepTotal) return "";
-  return `<div class="prompt-stack prompt-stack-trailing">${promptCard({
+  return `<div class="prompt-stack">${promptCard({
     variant: "deep-banner",
     title: t("Go deeper for more accurate scores."),
     body: t("An optional in-depth assessment uses the full-length validated questionnaires to sharpen your estimates and tighten each percentile band."),

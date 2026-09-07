@@ -110,10 +110,24 @@ test("the stylesheet carries rules scoped to Thai", () => {
   const css = read("index.css");
   const rules = [...css.matchAll(/html\[lang="th"\]/g)].length;
   assert.ok(rules >= 4, `expected Thai-scoped rules in index.css, found ${rules}`);
+
+  // ON BODY, NOT ON html. `body` DECLARES line-height 1.55, and a declared
+  // value beats an inherited one whatever the specificity of the ancestor that
+  // set it — so the first version of this block set 1.75 on <html> and reached
+  // no text whatsoever. The bare selector is now a failure, not a pass.
   assert.match(
-    css, /html\[lang="th"\][\s\S]{0,400}?line-height:\s*1\.7/,
-    "the Thai block must set a leading that clears stacked tone marks"
+    css, /html\[lang="th"\] body \{[^}]*line-height:\s*1\.7/,
+    "the Thai leading must be declared on body; on html it is inherited and " +
+    "loses to body's own declaration"
   );
+  const bareRoot = css.match(/html\[lang="th"\] \{([^}]*)\}/);
+  if (bareRoot) {
+    assert.ok(
+      !/line-height/.test(bareRoot[1]),
+      "a line-height on the bare html[lang=\"th\"] selector is inert — body " +
+      "declares its own and wins"
+    );
+  }
   assert.match(
     css, /html\[lang="th"\][\s\S]*?letter-spacing:\s*normal/,
     "the Thai block must reset the Latin-tuned letter-spacing"
@@ -201,5 +215,75 @@ test("the percentile's range is drawn on the rail, not only stated in small text
   // A screen reader gets the same two facts the sighted reader now gets.
   assert.match(aspect, /aria-valuetext=/,
     "the gauge must speak its range, not just draw it");
+});
+
+test("every letter-spacing rule in the sheet is reset for Thai", () => {
+  // The enumeration is hand-maintained and invites exactly one kind of miss:
+  // two selectors sharing a declaration, only one of which gets listed. That
+  // is what happened — .confidence-badge and .component-confidence share a
+  // rule and only the second was reset, leaving the trust chip tracked to a
+  // Latin eye. Counted rather than trusted from here on.
+  const css = readFileSync(join(root, "index.css"), "utf8");
+  const thaiBlockEnd = css.indexOf("Reserve the scrollbar's column");
+  const latin = css.slice(thaiBlockEnd);
+  const reset = new Set(
+    [...css.slice(0, thaiBlockEnd).matchAll(/html\[lang="th"\] (\.[a-z0-9-]+)/g)].map(m => m[1])
+  );
+  const missing = [];
+  for (const m of latin.matchAll(/([^{}]+)\{([^}]*letter-spacing:\s*-?[\d.]+em[^}]*)\}/g)) {
+    // Split on newlines as well as commas: [^{}]+ swallows the comment and
+    // blank lines that precede a rule, so a comma-only split silently drops
+    // the FIRST selector of every commented rule — which is precisely the
+    // selector (.confidence-badge) this test was written to catch.
+    for (const sel of m[1].split(/[,\n]/)) {
+      const cls = sel.trim().match(/^(\.[a-z0-9-]+)$/);
+      if (cls && !reset.has(cls[1])) missing.push(cls[1]);
+    }
+  }
+  assert.deepEqual(
+    missing, [],
+    `these rules set letter-spacing for Latin but are not reset for Thai: ${missing.join(", ")}`
+  );
+});
+
+test("the range band cannot paint over the percentile fill", () => {
+  // THE DEFECT THIS EXISTS FOR. The first version drew the range inside the
+  // track as a full-height absolutely-positioned band. .gauge-fill is not
+  // positioned, so per CSS painting order the band landed ON TOP of the fill
+  // and visually truncated it at range.low — on an `estimate` benchmark that
+  // is a ten-percentile-point understatement of the reader's own standing, on
+  // the one page whose entire purpose is reading that number correctly.
+  const css = readFileSync(join(root, "index.css"), "utf8");
+  const range = css.match(/\.gauge-range \{([^}]*)\}/);
+  assert.ok(range, "index.css must style .gauge-range");
+  const body = range[1];
+  const positioned = /position:\s*absolute/.test(body);
+  const fullHeight = /height:\s*100%/.test(body);
+  const fill = css.match(/\.gauge-fill \{([^}]*)\}/);
+  const fillPositioned = fill && /position:\s*(relative|absolute)/.test(fill[1]);
+  assert.ok(
+    !(positioned && fullHeight && !fillPositioned),
+    "an absolutely-positioned full-height .gauge-range paints over the " +
+    "unpositioned .gauge-fill and truncates the reader's own bar at range.low"
+  );
+});
+
+test("the share card draws Thai in the same serif as the app", () => {
+  // Canvas cannot read a CSS custom property, so story-card.js repeats the
+  // stack by hand — and it was still on the pre-v78 stack, so Thai headings on
+  // the shared PNG rendered in the sans while the same heading in the app
+  // rendered in the serif. The card is the only part of this app anyone else
+  // sees.
+  const token = readFileSync(join(root, "index.css"), "utf8").match(/--font-serif:\s*([^;]+);/)[1];
+  const card = readFileSync(join(root, "story-card.js"), "utf8").match(/const SERIF = "([^"]+)"/);
+  assert.ok(card, "story-card.js must name its serif stack in one place");
+  for (const family of new Set(thaiFaces().map(f => f.family))) {
+    if (!token.includes(`'${family}'`)) continue;
+    assert.ok(
+      card[1].includes(`'${family}'`),
+      `--font-serif resolves Thai to ${family}, but the share card's stack ` +
+      `(${card[1]}) does not name it`
+    );
+  }
 });
 

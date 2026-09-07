@@ -76,7 +76,13 @@ export const THEMES = {
 
 // Font stacks carry Sarabun in second place so Thai falls through to it
 // instead of rendering as tofu. Canvas honours a stack exactly like CSS.
-const SERIF = "'Source Serif 4', 'Sarabun', Georgia, serif";
+// Must track --font-serif in index.css. Canvas cannot read a CSS custom
+// property, so this is the one place the stack is repeated by hand — and it
+// was still on the pre-v78 stack, which meant Thai headings on the shared
+// PNG rendered in Sarabun, the sans, while the same heading in the app
+// rendered in Maitree. The card is the only thing about this app anyone
+// else sees. tests/typography.test.mjs pins the two together.
+const SERIF = "'Source Serif 4', 'Maitree', Georgia, serif";
 const SANS = "'Inter', 'Sarabun', system-ui, sans-serif";
 
 // Baselines, all inside the safe band. Kept constant across detail levels so

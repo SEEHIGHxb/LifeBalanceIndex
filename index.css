@@ -130,11 +130,19 @@ body {
  *    labels lose the one signal that made them read as labels. They keep their
  *    size and colour; only the tracking that no longer helps is dropped.
  */
-html[lang="th"] {
+/* ON BODY, NOT ON html. The first version of this set line-height on <html>
+   and inherited nothing: `body` DECLARES line-height 1.55, and a declared
+   value beats an inherited one whatever the specificity of the ancestor that
+   set it. The 1.75 reached no text at all. */
+html[lang="th"] body {
   line-height: 1.75;
 }
 
-/* Headings can be tighter than body copy but never as tight as Latin. */
+/* Headings can be tighter than body copy but never as tight as Latin — and
+   never tighter than what they already had. These inherited 1.55 before any
+   Thai rule existed; an earlier draft of this block set 1.45 and so made the
+   commonest heading in the app WORSE for the readers it was written for.
+   1.6 is looser than the Latin default and tighter than the Thai body. */
 html[lang="th"] h1,
 html[lang="th"] h2,
 html[lang="th"] h3,
@@ -142,13 +150,35 @@ html[lang="th"] h4,
 html[lang="th"] .card-header,
 html[lang="th"] .brand h1 {
   letter-spacing: normal;
-  line-height: 1.45;
+  line-height: 1.6;
 }
 
-/* The twelve rules in this sheet that set letter-spacing for Latin. Listed
+/* Prose that declares its own leading, and so never sees the body rule above.
+   Only rules carrying running sentences are listed — a chip or a table cell
+   holding two words gains nothing from more leading and would only get taller. */
+html[lang="th"] .care-banner-text,
+html[lang="th"] .onb-why,
+html[lang="th"] .prompt-text p,
+html[lang="th"] .deep-banner p,
+html[lang="th"] .suggestion-text,
+html[lang="th"] .gauge-note,
+html[lang="th"] .gauge-summary,
+html[lang="th"] .field-note,
+html[lang="th"] .profile-note,
+html[lang="th"] .benchmark-disclaimer,
+html[lang="th"] .grade-explainer p,
+html[lang="th"] .balance-index-caption {
+  line-height: 1.75;
+}
+
+/* The thirteen rules in this sheet that set letter-spacing for Latin. Listed
    explicitly rather than reset with a wildcard: a wildcard would also flatten
    the Latin runs — source names, instrument acronyms, currency codes — that
-   sit inside Thai copy and still want their tracking. */
+   sit inside Thai copy and still want their tracking.
+   .confidence-badge and .component-confidence share one declaration; both are
+   named, because listing only the second is exactly the kind of miss this
+   enumeration invites — it left the trust chip tracked to a Latin eye. */
+html[lang="th"] .confidence-badge,
 html[lang="th"] .holo-badge,
 html[lang="th"] .criterion-chip,
 html[lang="th"] .prefill-chip,
@@ -164,15 +194,6 @@ html[lang="th"] .balance-band {
   letter-spacing: normal;
 }
 
-/* Thai has no ascender-free line, so a chip sized to Latin clips its tone
-   marks. Room for the stack, without moving the chip's own box. */
-html[lang="th"] .percentile-band,
-html[lang="th"] .grade-badge,
-html[lang="th"] .balance-band,
-html[lang="th"] .confidence-badge,
-html[lang="th"] .component-confidence {
-  line-height: 1.5;
-}
 
 /* Reserve the scrollbar's column whether or not a scrollbar is present.
    Without this the centered .app-container shifts sideways by the scrollbar
@@ -1178,21 +1199,27 @@ header {
   background: var(--color-track);
   border: 1px solid var(--color-card-border);
   overflow: visible;
-  margin: 8px 0 6px;
+  /* Bottom margin clears the .gauge-range bracket that hangs below the rail. */
+  margin: 8px 0 16px;
 }
 
-/* The indicative range, drawn ON the rail instead of stated as "typical range
-   55–79" in --text-xs grey underneath it. The range is the honest half of a
-   percentile — it is how precise the estimate is — and it was the smallest
-   text in the block. Sits under the fill and the marker so the point estimate
-   still reads first. */
+/* The indicative range, drawn under the rail as a bracket. The range is the
+   honest half of a percentile — it says how precise the estimate is — and in
+   text form it was the smallest thing in the block.
+   IT IS A SEPARATE BAR, NOT AN OVERLAY, and that is the whole design. The
+   first version of this drew the band inside the track: .gauge-range is
+   positioned and .gauge-fill is not, so per CSS painting order the band landed
+   ON TOP of the fill and visually truncated it at range.low — a reader on an
+   `estimate` benchmark saw their own bar cut ten percentile points short.
+   Hanging it below the rail cannot occlude anything, needs no z-index, and
+   shows the WHOLE range rather than only the part above the marker.
+   .gauge-track already sets overflow: visible for the marker. */
 .gauge-range {
   position: absolute;
-  top: 0;
-  height: 100%;
-  border-radius: 6px;
+  bottom: -8px;
+  height: 3px;
+  border-radius: 2px;
   background: var(--color-card-border);
-  opacity: 0.85;
 }
 
 .gauge-fill {

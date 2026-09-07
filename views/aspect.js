@@ -5,7 +5,7 @@ import { stateManager } from "../state.js";
 import { renderTrendChart } from "../chart.js";
 import { getAspectDetail } from "../aspects.js";
 import { getAspectSuggestions, getMentalHealthNotice } from "../suggestions.js";
-import { t, tp } from "../i18n.js";
+import { t, tp, percentileLabel } from "../i18n.js";
 import { gradeForAspect } from "../grades.js";
 import { criteriaForAspect } from "../criteria.js";
 import {
@@ -123,7 +123,17 @@ export function renderAspectPage(containerId, state, aspectKey) {
           ${b ? `
             ${Number.isFinite(b.percentile) ? `
               <div class="gauge-track" role="progressbar" aria-label="${t("Percentile vs society")}" aria-valuenow="${b.percentile}" aria-valuemin="1" aria-valuemax="99"
-                   aria-valuetext="${tp("{pct} percentile, typical range {low} to {high}", { pct: b.percentile, low: b.range.low, high: b.range.high })}">
+                   aria-valuetext="${tp("{pct} percentile, typical range {low} to {high}", {
+                     // Through percentileLabel like every other percentile in
+                     // the app: it supplies the English ordinal (93rd, not 93)
+                     // and, in Thai, the "ที่ " prefix the template is written
+                     // to sit flush against. Passing the raw integers here
+                     // spoke a different number format to a screen reader than
+                     // the one printed two lines below it.
+                     pct: percentileLabel(b.percentile),
+                     low: percentileLabel(b.range.low),
+                     high: percentileLabel(b.range.high)
+                   })}">
                 <div class="gauge-range" style="left: ${b.range.low}%; width: ${Math.max(0, b.range.high - b.range.low)}%;"></div>
                 <div class="gauge-fill" style="width: ${b.percentile}%;"></div>
                 <div class="gauge-marker" style="left: ${b.percentile}%;"></div>

@@ -14,3 +14,9 @@ docs/research/*.docx
 # this repo is public and the articles are copyrighted. The verified numbers live
 # in docs/research/*.md; the DOIs there are the citable record.
 docs/article/
+
+# npm writes this when Playwright is installed for the browser tests. CI
+# installs Playwright with --no-save (see .github/workflows/ci.yml) precisely so
+# the project stays dependency-free; a committed lockfile pins a version the
+# workflow does not use and drifts from package.json on every release.
+package-lock.json

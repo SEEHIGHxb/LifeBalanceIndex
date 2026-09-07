@@ -145,28 +145,43 @@ export const TH = {
   "Committed Monthly Outflow (THB)": "รายจ่ายผูกพันต่อเดือน (บาท)",
   "e.g. 50,000": "เช่น 50,000",
   "e.g. 12,000": "เช่น 12,000",
-  "The second box is what you cannot skip in a month — rent, loan repayments, family support, bills. Together these two give your runway: how long you could cover the unskippable if income stopped. It is shown on your Finance page and is deliberately not scored, because no published distribution says what a given number of months is worth.":
-    "ช่องที่สองคือรายจ่ายที่คุณตัดออกไม่ได้ในแต่ละเดือน เช่น ค่าเช่า ค่าผ่อนชำระ เงินช่วยเหลือครอบครัว ค่าสาธารณูปโภค สองค่านี้รวมกันให้ “ระยะประคอง” ของคุณ คือระยะเวลาที่คุณจะครอบคลุมรายจ่ายที่ตัดไม่ได้หากรายได้หยุดลง ค่านี้แสดงบนหน้าการเงินและจงใจไม่นำไปคิดคะแนน เพราะไม่มีการกระจายตัวที่เผยแพร่ใดบอกว่าจำนวนเดือนเท่าใดมีค่าแค่ไหน",
+  "The second box is what you cannot skip in a month — rent, loan repayments, bills. Together these two give your runway: how long you could cover the unskippable if income stopped. It is shown on your Finance page and is deliberately not scored, because no published distribution says what a given number of months is worth.":
+    "ช่องที่สองคือรายจ่ายที่คุณตัดออกไม่ได้ในแต่ละเดือน เช่น ค่าเช่า ค่าผ่อนชำระ ค่าสาธารณูปโภค สองค่านี้รวมกันให้ “ระยะประคอง” ของคุณ คือระยะเวลาที่คุณจะครอบคลุมรายจ่ายที่ตัดไม่ได้หากรายได้หยุดลง ค่านี้แสดงบนหน้าการเงินและจงใจไม่นำไปคิดคะแนน เพราะไม่มีการกระจายตัวที่เผยแพร่ใดบอกว่าจำนวนเดือนเท่าใดมีค่าแค่ไหน",
+  "Money You Send to Family (THB/month)": "เงินที่คุณส่งให้ครอบครัว (บาท/เดือน)",
+  "e.g. 5,000 — leave blank if none": "เช่น 5,000 — เว้นว่างไว้หากไม่มี",
+  "Counted in your runway with the box above, and shown on your Social Contribution page as giving. It is never subtracted from a score.":
+    "นับรวมในระยะประคองพร้อมกับช่องด้านบน และแสดงบนหน้าการมีส่วนร่วมทางสังคมในฐานะการให้ ค่านี้ไม่เคยถูกนำไปหักออกจากคะแนนใด",
+  "Of which, family support": "ในจำนวนนี้ เป็นเงินช่วยเหลือครอบครัว",
+  "Counted in the runway above, because it does not stop when income does. It is also reported on your Social Contribution page, where it is giving rather than a bill.":
+    "นับรวมในระยะประคองด้านบน เพราะเงินก้อนนี้ไม่หยุดเมื่อรายได้หยุด และยังแสดงบนหน้าการมีส่วนร่วมทางสังคมของคุณด้วย ซึ่งที่นั่นถือเป็นการให้ ไม่ใช่ค่าใช้จ่าย",
+  "Family support": "เงินช่วยเหลือครอบครัว",
+  "Money you send to your family. Not scored — the two published participation rates this page's percentile is built on count donating money to an organisation and formal volunteering, and neither asks about supporting your parents. Ranking you on a measure that population was never asked about would be inventing the comparison. It is shown here because it is giving, whatever those two surveys count.":
+    "เงินที่คุณส่งให้ครอบครัว ไม่นำไปคิดคะแนน เพราะอัตราการมีส่วนร่วมที่เผยแพร่สองชุดซึ่งเป็นฐานของเปอร์เซ็นไทล์หน้านี้ นับการบริจาคเงินให้องค์กรและการเป็นอาสาสมัครอย่างเป็นทางการ และไม่มีชุดใดถามถึงการดูแลพ่อแม่ การจัดอันดับคุณด้วยมาตรวัดที่ไม่เคยถามประชากรกลุ่มนั้นเลย เท่ากับเป็นการสร้างการเปรียบเทียบขึ้นมาเอง ค่านี้แสดงไว้ตรงนี้เพราะมันคือการให้ ไม่ว่าแบบสำรวจสองชุดนั้นจะนับหรือไม่",
   "Measured, Not Scored": "วัดไว้ แต่ไม่คิดคะแนน",
   "Runway": "ระยะประคอง",
   "{n} months": "{n} เดือน",
   "{savings} THB you could reach this week ÷ {outflow} THB/mo you cannot skip. Not scored — no published distribution says what a given number of months is worth, so this is reported to you rather than ranked.":
     "เงินออมที่ถอนใช้ได้ภายในสัปดาห์นี้ {savings} บาท ÷ รายจ่ายที่ตัดไม่ได้ {outflow} บาท/เดือน ไม่คิดคะแนน เพราะไม่มีการกระจายตัวที่เผยแพร่ใดบอกว่าจำนวนเดือนเท่าใดมีค่าแค่ไหน ค่านี้จึงรายงานให้คุณทราบ ไม่ได้นำไปจัดอันดับ",
-  "These two give your runway on the Finance page. They change nothing about your score — no published distribution says what a given number of months is worth, so the app reports the figure rather than ranking it.":
-    "สองค่านี้ให้ “ระยะประคอง” ของคุณบนหน้าการเงิน และไม่เปลี่ยนแปลงคะแนนใด ๆ เพราะไม่มีการกระจายตัวที่เผยแพร่ใดบอกว่าจำนวนเดือนเท่าใดมีค่าแค่ไหน แอปจึงรายงานตัวเลขนี้แทนการจัดอันดับ",
+  "These three give your runway on the Finance page. They change nothing about your score — no published distribution says what a given number of months is worth, so the app reports the figure rather than ranking it. Money you send to your family is also shown on your Social Contribution page, where it is giving rather than a bill.":
+    "สามค่านี้ให้ “ระยะประคอง” ของคุณบนหน้าการเงิน และไม่เปลี่ยนแปลงคะแนนใด ๆ เพราะไม่มีการกระจายตัวที่เผยแพร่ใดบอกว่าจำนวนเดือนเท่าใดมีค่าแค่ไหน แอปจึงรายงานตัวเลขนี้แทนการจัดอันดับ ส่วนเงินที่คุณส่งให้ครอบครัวจะแสดงบนหน้าการมีส่วนร่วมทางสังคมด้วย ซึ่งที่นั่นถือเป็นการให้ ไม่ใช่ค่าใช้จ่าย",
+  "Rent, loan repayments, bills.": "ค่าเช่า ค่าผ่อนชำระ ค่าสาธารณูปโภค",
+  "Asked separately since v78. If you set up this profile earlier, this money was part of the box above — take it out of that figure before you enter it here, or it will be counted twice. Leave this blank or enter 0 if you send nothing.":
+    "แอปเริ่มถามแยกตั้งแต่ v78 หากคุณตั้งค่าโปรไฟล์ไว้ก่อนหน้านั้น เงินก้อนนี้เคยรวมอยู่ในช่องด้านบน กรุณาหักออกจากตัวเลขในช่องนั้นก่อนกรอกตรงนี้ มิฉะนั้นจะถูกนับซ้ำ หากคุณไม่ได้ส่งเงินให้ครอบครัว เว้นว่างไว้หรือกรอก 0",
   "Step 2: Physical Baseline": "ขั้นที่ 2: พื้นฐานร่างกาย",
   "Height (cm)": "ส่วนสูง (ซม.)",
   "Weight (kg)": "น้ำหนัก (กก.)",
   "Average Nightly Sleep (Hours)": "ชั่วโมงนอนเฉลี่ยต่อคืน",
-  "Vegetable/Fruit Portions per Day": "ผัก/ผลไม้ต่อวัน (ส่วน)",
+  "Vegetable Portions per Day": "ผักต่อวัน (ส่วน)",
+  "One portion ≈ 80 g — about one handful, or half a plate of cooked greens. Vegetables only: the guideline check behind this field counts vegetables, not fruit.": "หนึ่งส่วน ≈ 80 กรัม ประมาณหนึ่งกำมือ หรือครึ่งจานของผักสุก นับเฉพาะผัก เกณฑ์ที่ใช้ตรวจสอบข้อนี้นับเฉพาะผัก ไม่รวมผลไม้",
+  "Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.": "นับนาทีเฉพาะวันที่ทำจริง ไม่ใช่ค่าเฉลี่ยทั้งสัปดาห์ เช่น ออกกำลัง 30 นาที 3 วัน ให้กรอก 3 วัน และ 30 นาที",
   "Water Intake per Day (Liters)": "น้ำดื่มต่อวัน (ลิตร)",
   "Weekly Physical Activity (IPAQ)": "กิจกรรมทางกายรายสัปดาห์ (IPAQ)",
   "Vigorous Exercise (Days/Week)": "ออกกำลังหนัก (วัน/สัปดาห์)",
-  "Vigorous Minutes per Day": "นาทีที่ออกกำลังหนักต่อวัน",
+  "Vigorous Minutes on Each of Those Days": "นาทีต่อวัน เฉพาะวันที่ออกกำลังหนัก",
   "Moderate Exercise (Days/Week)": "ออกกำลังปานกลาง (วัน/สัปดาห์)",
-  "Moderate Minutes per Day": "นาทีที่ออกกำลังปานกลางต่อวัน",
+  "Moderate Minutes on Each of Those Days": "นาทีต่อวัน เฉพาะวันที่ออกกำลังปานกลาง",
   "Walking (Days/Week)": "เดิน (วัน/สัปดาห์)",
-  "Walking Minutes per Day": "นาทีที่เดินต่อวัน",
+  "Walking Minutes on Each of Those Days": "นาทีต่อวัน เฉพาะวันที่เดิน",
   "Step 3: Mental Well-Being": "ขั้นที่ 3: สุขภาพจิต",
   "Step 4: Relationships": "ขั้นที่ 4: ความสัมพันธ์",
   "Step 5: Goals & Learning": "ขั้นที่ 5: เป้าหมายและการเรียนรู้",
@@ -239,8 +254,8 @@ export const TH = {
     "ที่ผ่านมาด้านนี้วัดว่าคุณรู้สึกว่าตนเองมีความสามารถแค่ไหนและเรียนรู้มากแค่ไหน — แต่ไม่ได้วัดว่าคุณกำลังไปถึงไหน ความคืบหน้าตามเป้าหมายคือส่วนที่สามที่ขาดหายไป และเป็นส่วนเดียวที่ตรงกับชื่อของด้านนี้ มีสามเรื่องที่ควรรู้ หนึ่ง การถ่วงน้ำหนักเท่ากันเป็นการตัดสินใจของเราเอง ไม่ใช่ของเครื่องมือ ผู้พัฒนาไม่ได้ตีพิมพ์กฎการรวมคะแนนย่อยไว้ เราจึงทำตามสิ่งที่พวกเขาทำจริงตอนสร้างแบบวัดฉบับสั้นของตนเอง คือให้น้ำหนักทุกส่วนเท่ากัน สอง นี่คือการประเมินตนเอง ไม่ใช่บันทึกสิ่งที่คุณทำ คำมั่นรายสัปดาห์ของคุณยังได้ XP และยังไม่เปลี่ยนคะแนนใด ๆ เพราะไม่มีงานตีพิมพ์ใดรองรับการให้คะแนนสุขภาวะจากเป้าหมายที่ตั้งเอง สาม เราตั้งใจไม่จัดอันดับเทียบเกณฑ์ เพราะเกณฑ์ที่ตีพิมพ์มีเฉพาะของสหรัฐฯ และงานวิจัยข้ามประเทศของเครื่องมือนี้เองพบว่าถ้อยคำของคะแนนย่อยนี้เปลี่ยนความหมายไปตามวัฒนธรรม อีกทั้งยังทับซ้อนกับความพึงพอใจในชีวิตมากกว่าส่วนอื่น ดังนั้นคะแนนต่ำตรงนี้กับคะแนนสุขภาพจิตที่ต่ำ ไม่ถือเป็นสองหลักฐานที่เป็นอิสระจากกัน ส่วนครึ่งหลังของการเรียนรู้เคยเป็นแถบเลื่อน 0-100 ให้คุณประเมินทักษะดิจิทัลของตนเอง ซึ่งไม่มีเครื่องมือ ไม่มีเกณฑ์ และไม่มีอะไรให้ตรวจสอบได้ ตอนนี้เปลี่ยนเป็นแบบวัด Learning ของชุดเดียวกัน ซึ่งก็ไม่จัดอันดับเช่นกันด้วยเหตุผลเดียวกัน ผู้พัฒนาระบุเองว่าการเรียนรู้อาจอยู่รอบนอกของสุขภาวะมากกว่าจะเป็นแกนกลาง เราจึงคงชั่วโมงเรียนของคุณไว้เป็นอีกครึ่งหนึ่ง แทนที่จะให้คำถามประเมินตนเองสามข้อรับน้ำหนักทั้งส่วน ข้อจำกัดหนึ่งของทั้งด้านนี้: ทั้งสามส่วนมีความสัมพันธ์กันในระดับปานกลางตามงานวิจัยต้นทาง จึงเป็นการวัดที่เกี่ยวเนื่องกัน ไม่ใช่สามหลักฐานที่เป็นอิสระจากกัน ส่วนความมุ่งมั่น (Grit) ออกจากคะแนนในปี 2017 ด้วยเหตุผลอื่น: การวิเคราะห์อภิมานจาก 66,807 คนพบว่ามันแทบไม่ต่างจากความรับผิดชอบตามปกติ จึงเป็นลักษณะนิสัยมากกว่าจะเป็นด้านหนึ่งของชีวิต",
   "40% donations (frequency + amount vs income) + 40% action (volunteering hours + helping behavior) + 20% civic participation.":
     "40% การบริจาค (ความถี่ + จำนวนเทียบรายได้) + 40% การลงมือทำ (ชั่วโมงจิตอาสา + พฤติกรรมช่วยเหลือ) + 20% การมีส่วนร่วมทางสังคม",
-  "Giving money and giving time are weighted equally; civic habits count but are the hardest to self-report accurately.":
-    "การให้เงินกับการให้เวลาได้น้ำหนักเท่ากัน ส่วนกิจกรรมพลเมืองนับด้วยแต่รายงานเองได้แม่นยำยากที่สุด",
+  "Giving money and giving time are weighted equally; civic habits count but are the hardest to self-report accurately. Money you send to your family is shown on this page and is deliberately not part of the score. Until v78 the app did not ask about it separately at all: it was one of the examples under “committed monthly outflow”, so for a reader supporting their parents the largest transfer they make to another household counted as a bill in the finance section and as nothing whatsoever in the section about giving. It is now asked for on its own. It is still not scored, and that is not an oversight — the two published participation rates that fix the band for this percentile measure donating money to an organisation and formal volunteering, and neither asks about supporting parents. Adding it to a score whose band those rates decide would move you up a ranking whose population was never asked the question. So it is reported, named as giving, and left unranked, the same way this app treats every other measurement it has no honest population for.":
+    "การให้เงินกับการให้เวลาได้น้ำหนักเท่ากัน ส่วนกิจกรรมพลเมืองนับด้วยแต่รายงานเองได้แม่นยำยากที่สุด เงินที่คุณส่งให้ครอบครัวจะแสดงบนหน้านี้และจงใจไม่นับรวมในคะแนน ก่อน v78 แอปไม่ได้ถามเรื่องนี้แยกต่างหากเลย มันเป็นเพียงหนึ่งในตัวอย่างใต้หัวข้อ “รายจ่ายผูกพันต่อเดือน” ดังนั้นสำหรับผู้อ่านที่ดูแลพ่อแม่ เงินก้อนใหญ่ที่สุดที่ส่งไปยังอีกครัวเรือนหนึ่งจึงถูกนับเป็นค่าใช้จ่ายในส่วนการเงิน และไม่ถูกนับเลยในส่วนที่ว่าด้วยการให้ ตอนนี้แอปถามแยกแล้ว และยังคงไม่นำไปคิดคะแนน ซึ่งไม่ใช่ความหลงลืม เพราะอัตราการมีส่วนร่วมที่เผยแพร่สองชุดซึ่งกำหนดช่วงของเปอร์เซ็นไทล์นี้ วัดการบริจาคเงินให้องค์กรและการเป็นอาสาสมัครอย่างเป็นทางการ และไม่มีชุดใดถามถึงการดูแลพ่อแม่ การเพิ่มมันเข้าไปในคะแนนที่อัตราเหล่านั้นเป็นตัวกำหนดช่วง จะเลื่อนอันดับคุณขึ้นในการจัดอันดับที่ไม่เคยถามประชากรกลุ่มนั้นเลย ค่านี้จึงถูกรายงาน เรียกว่าการให้ และปล่อยไว้โดยไม่จัดอันดับ เช่นเดียวกับที่แอปนี้ปฏิบัติต่อทุกการวัดที่ไม่มีประชากรอ้างอิงอย่างซื่อตรง",
   "40% waste (daily single-use plastics vs the ~3/day Thai average + recycling habits) + 40% transit choices + 20% conservation habits.":
     "40% ขยะ (พลาสติกใช้ครั้งเดียวต่อวันเทียบค่าเฉลี่ยไทย ~3 ชิ้น/วัน + นิสัยแยกขยะ) + 40% การเลือกการเดินทาง + 20% นิสัยประหยัดพลังงาน",
   "Plastics and transport dominate the part of an individual Thai footprint that daily habits can actually change.":
@@ -282,8 +297,23 @@ export const TH = {
   "Five to eight": "5-8 คน",
   "Nine or more": "9 คนขึ้นไป",
   "Hardly ever or never": "แทบไม่เคยหรือไม่เคยเลย",
-  "Very poorly": "แย่มาก",
   "Poorly": "ค่อนข้างแย่",
+  // RAS per-item anchors (Hendrick labels A/C/E differently for every item).
+  "Slightly": "เล็กน้อย",
+  "Unsatisfied": "ไม่พึงพอใจ",
+  "Slightly satisfied": "พึงพอใจเล็กน้อย",
+  "Satisfied": "พึงพอใจ",
+  "Extremely satisfied": "พึงพอใจมากที่สุด",
+  "Poor": "แย่",
+  "Good": "ดี",
+  "Excellent": "ดีเยี่ยม",
+  "Hardly at all": "แทบไม่เลย",
+  "A little": "เล็กน้อย",
+  "Mostly": "เกือบทั้งหมด",
+  "Completely": "ทั้งหมด",
+  "Not much": "ไม่มากนัก",
+  "Much": "มาก",
+  "Very much": "มากที่สุด",
   "Average": "ปานกลาง",
   "Well": "ดี",
   "Extremely well": "ดีมาก",
@@ -339,10 +369,10 @@ export const TH = {
   "How often did you wake up during the night?": "คุณตื่นกลางดึกบ่อยแค่ไหน?",
   "How often did you wake up earlier than planned?": "คุณตื่นเช้ากว่าที่ตั้งใจบ่อยแค่ไหน?",
   "How often did you wake up feeling unrefreshed?": "คุณตื่นมาแล้วรู้สึกไม่สดชื่นบ่อยแค่ไหน?",
-  "How often did you have trouble sleeping because of worry?": "มีปัญหาการนอน นอนไม่หลับเพราะคิดมากหรือกังวลใจ บ่อยแค่ไหน?",
+  "How often did you have trouble sleeping — sleeping too little, or sleeping too much?": "มีปัญหาการนอน นอนไม่หลับหรือนอนมาก บ่อยแค่ไหน?",
   "How often did you have poor concentration?": "มีสมาธิน้อยลง บ่อยแค่ไหน?",
   "How often did you feel irritable, restless, or agitated?": "หงุดหงิด กระวนกระวาย ว้าวุ่นใจ บ่อยแค่ไหน?",
-  "How often did you feel bored or discouraged?": "รู้สึกเบื่อ เซ็ง ท้อแท้ บ่อยแค่ไหน?",
+  "How often did you feel bored or fed up?": "รู้สึกเบื่อ เซ็ง บ่อยแค่ไหน?",
   "How often did you not want to meet people?": "ไม่อยากพบปะผู้คน บ่อยแค่ไหน?",
   "I have felt cheerful and in good spirits.": "ฉันรู้สึกร่าเริงและอารมณ์ดี",
   "I have felt calm and relaxed.": "ฉันรู้สึกสงบและผ่อนคลาย",
@@ -356,7 +386,7 @@ export const TH = {
   "How many friends do you feel at ease with to talk about private matters?": "มีเพื่อนกี่คนที่คุณสบายใจพอจะคุยเรื่องส่วนตัวด้วย?",
   "How many friends do you feel close to such that you could call on them for help?": "มีเพื่อนกี่คนที่สนิทพอจะขอความช่วยเหลือได้?",
   "How often do you feel that you lack companionship?": "คุณรู้สึกขาดเพื่อนหรือคนใกล้ชิดบ่อยแค่ไหน?",
-  "How often do you feel left out?": "คุณรู้สึกถูกทิ้งไว้ข้างหลังบ่อยแค่ไหน?",
+  "How often do you feel left out?": "คุณรู้สึกว่าไม่ได้เป็นส่วนหนึ่งของกลุ่ม บ่อยแค่ไหน?",
   "How often do you feel isolated from others?": "คุณรู้สึกโดดเดี่ยวแปลกแยกจากคนอื่นบ่อยแค่ไหน?",
   "How well does your partner meet your needs?": "คู่ของคุณตอบสนองความต้องการของคุณได้ดีแค่ไหน?",
   "In general, how satisfied are you with your relationship?": "โดยรวมแล้วคุณพึงพอใจกับความสัมพันธ์ของคุณแค่ไหน?",
@@ -745,13 +775,33 @@ export const TH = {
   "no regular giving yet — 67% of Thais donated last month": "ยังไม่มีการให้เป็นประจำ — เดือนที่แล้ว 67% ของคนไทยบริจาค",
   "Mental well-being is ranked differently from the rest, and better. Its study publishes a full percentile table broken down by age band, so your standing is looked up in that table directly rather than estimated from an average and a spread — and it is read from the row for people your own age, because the same well-being score is common at 70 and uncommon at 30. Nothing is interpolated: every score this app can produce is a printed row. The sample is still German, and being compared with Germans your age is more precise but no more relevant to life in Thailand — that limitation has not gone away.":
     "ด้านสุขภาพจิตจัดอันดับด้วยวิธีที่ต่างจากด้านอื่น และดีกว่า งานวิจัยที่ใช้อ้างอิงเผยแพร่ตารางเปอร์เซ็นไทล์ฉบับเต็มที่แยกตามช่วงอายุ อันดับของคุณจึงมาจากการเปิดดูในตารางนั้นโดยตรง แทนที่จะประมาณจากค่าเฉลี่ยและค่าการกระจาย และอ่านจากแถวของคนที่อายุเท่ากับคุณ เพราะคะแนนความอยู่ดีมีสุขระดับเดียวกันเป็นเรื่องปกติเมื่ออายุ 70 แต่พบไม่บ่อยเมื่ออายุ 30 ไม่มีการประมาณค่าระหว่างช่วงใด ๆ ทั้งสิ้น เพราะทุกคะแนนที่แอปนี้คำนวณได้ตรงกับแถวที่พิมพ์ไว้พอดี อย่างไรก็ตามกลุ่มตัวอย่างยังเป็นชาวเยอรมัน การถูกเทียบกับชาวเยอรมันวัยเดียวกันแม่นยำขึ้นก็จริง แต่ไม่ได้เกี่ยวข้องกับชีวิตในประเทศไทยมากขึ้นแต่อย่างใด — ข้อจำกัดนั้นยังคงอยู่",
-  "Three aspects — social contribution, environment and humanity's future — have no published distribution to sit on, because the sources publish participation rates and averages (“67% of Thais donated money”) rather than a curve. Their percentile is therefore built in two stages: the cited rate decides which band you are in, and your own answers decide where inside that band you sit. The second stage can never move you across a boundary the first stage set — the strongest possible non-donor still ranks below the weakest donor. This is what lets those standings respond to everything you answered instead of to a single yes/no field, while leaving the published claim exactly as published. Where an aspect's questionnaire has not been answered, the percentile falls back to the plain participation placement.":
-    "สามด้าน — การมีส่วนร่วมทางสังคม สิ่งแวดล้อม และอนาคตของมนุษยชาติ — ไม่มีการกระจายตัวของประชากรที่เผยแพร่ให้อ้างอิง เพราะแหล่งข้อมูลเผยแพร่เป็นอัตราการมีส่วนร่วมและค่าเฉลี่ย (“คนไทย 67% บริจาคเงิน”) ไม่ใช่เส้นการกระจายตัว เปอร์เซ็นไทล์ของสามด้านนี้จึงคำนวณเป็นสองขั้น: อัตราที่มีการอ้างอิงเป็นตัวกำหนดว่าคุณอยู่ในช่วงใด และคำตอบของคุณเองเป็นตัวกำหนดตำแหน่งภายในช่วงนั้น ขั้นที่สองไม่มีทางทำให้คุณข้ามเส้นแบ่งที่ขั้นแรกกำหนดไว้ — คนที่ไม่บริจาคแม้จะทำได้ดีที่สุดก็ยังอยู่ต่ำกว่าคนที่บริจาคน้อยที่สุด นี่คือสิ่งที่ทำให้อันดับของสามด้านนี้ตอบสนองต่อทุกคำตอบของคุณ แทนที่จะขึ้นกับช่องใช่/ไม่ใช่เพียงช่องเดียว โดยที่ข้อมูลที่มีการเผยแพร่ยังคงเดิมทุกประการ หากยังไม่ได้ตอบแบบสอบถามของด้านนั้น เปอร์เซ็นไทล์จะย้อนกลับไปใช้การจัดตำแหน่งตามอัตราการมีส่วนร่วมเพียงอย่างเดียว",
   "The band comes from published participation data; where you sit inside it is this app's own composite of your answers, and can never move you into a different band.":
     "ช่วงอันดับมาจากข้อมูลอัตราการมีส่วนร่วมที่มีการเผยแพร่ ส่วนตำแหน่งภายในช่วงนั้นเป็นค่าประกอบที่แอปนี้คำนวณเองจากคำตอบของคุณ และไม่มีทางทำให้คุณข้ามไปอยู่ช่วงอื่นได้",
   "Participation-rate placement, not an exact rank — CAF publishes yes/no rates, not amounts.":
     "จัดวางตามอัตราการมีส่วนร่วม ไม่ใช่อันดับที่แน่นอน — CAF เผยแพร่เพียงอัตราใช่/ไม่ใช่ ไม่ใช่จำนวนเงิน",
-  "{pieces} single-use plastic pieces/day vs the ~3/day Thai average": "พลาสติกใช้ครั้งเดียว {pieces} ชิ้น/วัน เทียบค่าเฉลี่ยคนไทย ~3 ชิ้น/วัน",
+  "You are above the WHO guideline, which ~71% of Thai adults also meet — that part is published. How far above is this app's own estimate: no per-person distribution of Thai activity minutes exists.": "คุณอยู่เหนือเกณฑ์ของ WHO ซึ่งคนไทยราว 71% ก็ทำได้เช่นกัน — ส่วนนี้มีการเผยแพร่ ส่วนที่ว่าเหนือกว่ามากแค่ไหนเป็นการประมาณของแอปนี้เอง เพราะไม่มีข้อมูลการกระจายตัวของนาทีกิจกรรมทางกายรายบุคคลของคนไทย",
+  "You are below the WHO guideline, which ~29% of Thai adults also are — that part is published. Your position inside that 29% is this app's own estimate: no per-person distribution of Thai activity minutes exists.": "คุณอยู่ต่ำกว่าเกณฑ์ของ WHO ซึ่งคนไทยราว 29% ก็เป็นเช่นกัน — ส่วนนี้มีการเผยแพร่ ส่วนตำแหน่งของคุณภายใน 29% นั้นเป็นการประมาณของแอปนี้เอง เพราะไม่มีข้อมูลการกระจายตัวของนาทีกิจกรรมทางกายรายบุคคลของคนไทย",
+  "{band} for this aspect, from your score of {score}.": "{band} สำหรับด้านนี้ จากคะแนน {score} ของคุณ",
+  "This grade comes from the aspect score, not from the percentile below. The percentile here ranks your income alone, and grading on it would grade your income rather than your financial life — someone on a small income with no debt and no money worry was being shown an F. The letters describe where this score sits against a typical one, not what share of people you are ahead of.": "เกรดนี้มาจากคะแนนของด้านนี้ ไม่ได้มาจากเปอร์เซ็นไทล์ด้านล่าง เปอร์เซ็นไทล์ตรงนี้จัดอันดับเฉพาะรายได้ของคุณ การให้เกรดจากมันจึงเท่ากับให้เกรดจากรายได้ ไม่ใช่ชีวิตทางการเงิน คนที่มีรายได้น้อยแต่ไม่มีหนี้และไม่มีความกังวลเรื่องเงินเคยได้รับเกรด F ตัวอักษรนี้บอกว่าคะแนนของคุณอยู่ตรงไหนเมื่อเทียบกับคะแนนทั่วไป ไม่ได้บอกว่าคุณนำหน้าคนกี่เปอร์เซ็นต์",
+  "Grade {letter} — {band} for this aspect (score {score} of 100).": "เกรด {letter} — {band} สำหรับด้านนี้ (คะแนน {score} จาก 100)",
+  "Strong": "แข็งแรง",
+  "Above typical": "สูงกว่าทั่วไป",
+  "Typical": "ทั่วไป",
+  "Weak": "อ่อน",
+  "Social contribution has no published distribution to sit on, because its source publishes participation rates (“67% of Thais donated money”) rather than a curve. Its percentile is therefore built in two stages: the published rate fixes which band you are in, and your own answers position you inside that band and can never move you out of it. Environment and humanity's future used to be described here too. Neither is ranked any more — their sources publish a single average and nothing at all respectively, and one number cannot say what share of people you are ahead of, so those two aspects show their measurements and withhold the rank.":
+    "การมีส่วนร่วมต่อสังคมไม่มีการกระจายตัวที่เผยแพร่ให้อ้างอิง เพราะแหล่งข้อมูลเผยแพร่เป็นอัตราการมีส่วนร่วม (“คนไทย 67% เคยบริจาคเงิน”) ไม่ใช่เส้นโค้งการกระจายตัว เปอร์เซ็นไทล์ของด้านนี้จึงสร้างขึ้นสองขั้น: อัตราที่เผยแพร่กำหนดว่าคุณอยู่ในช่วงใด และคำตอบของคุณกำหนดตำแหน่งภายในช่วงนั้น โดยไม่สามารถย้ายคุณออกจากช่วงได้ ก่อนหน้านี้ข้อความนี้เคยกล่าวถึงด้านสิ่งแวดล้อมและอนาคตของมนุษยชาติด้วย ทั้งสองด้านไม่ถูกจัดอันดับอีกต่อไป เพราะแหล่งข้อมูลเผยแพร่เพียงค่าเฉลี่ยค่าเดียวและไม่มีข้อมูลเลยตามลำดับ ตัวเลขเดียวบอกไม่ได้ว่าคุณนำหน้าคนกี่เปอร์เซ็นต์ ทั้งสองด้านจึงแสดงผลการวัดและไม่จัดอันดับ",
+  "Thai single-use plastic use per person per day — placement only, no published distribution": "ปริมาณการใช้พลาสติกใช้ครั้งเดียวต่อคนต่อวันของคนไทย — ระบุช่วงเท่านั้น ไม่มีการกระจายตัวที่เผยแพร่",
+  "A grade is a rank against a population. Where there is no population this app can honestly rank you against — because the published norms describe the wrong people, or because the source publishes a single average rather than a distribution — it shows your measurements and withholds the rank rather than printing one it cannot stand behind.":
+    "เกรดคือการจัดอันดับเทียบกับประชากร เมื่อไม่มีประชากรที่แอปนี้จัดอันดับให้คุณได้อย่างซื่อตรง — ไม่ว่าจะเพราะข้อมูลอ้างอิงที่เผยแพร่มาจากคนละกลุ่มประชากร หรือเพราะแหล่งข้อมูลเผยแพร่เพียงค่าเฉลี่ยค่าเดียวแทนที่จะเป็นการกระจายตัว — แอปจะแสดงผลการวัดของคุณและไม่จัดอันดับ ดีกว่าแสดงอันดับที่ยืนยันไม่ได้",
+  "far below the ~3/day Thai average": "ต่ำกว่าค่าเฉลี่ยคนไทยที่ ~3 ชิ้น/วัน อยู่มาก",
+  "below the ~3/day Thai average": "ต่ำกว่าค่าเฉลี่ยคนไทยที่ ~3 ชิ้น/วัน",
+  "around the ~3/day Thai average": "ใกล้เคียงค่าเฉลี่ยคนไทยที่ ~3 ชิ้น/วัน",
+  "above the ~3/day Thai average": "สูงกว่าค่าเฉลี่ยคนไทยที่ ~3 ชิ้น/วัน",
+  "far above the ~3/day Thai average": "สูงกว่าค่าเฉลี่ยคนไทยที่ ~3 ชิ้น/วัน อยู่มาก",
+  "You report {pieces} single-use plastic pieces/day — {band}.": "คุณรายงานการใช้พลาสติกใช้ครั้งเดียว {pieces} ชิ้น/วัน — {band}",
+  "Green everyday behavior {n}/24 across six habits — this app's own items, which have no published population distribution.": "พฤติกรรมรักษ์โลกในชีวิตประจำวัน {n}/24 จากหกพฤติกรรม — เป็นข้อคำถามของแอปนี้เอง ซึ่งไม่มีการเผยแพร่การกระจายตัวในระดับประชากร",
+  "Single-use plastics and green habits — measured, not ranked": "พลาสติกใช้ครั้งเดียวและพฤติกรรมรักษ์โลก — วัดผล ไม่จัดอันดับ",
+  "The only published Thai figure here is an average — about three single-use plastic pieces per person per day. An average can say which side of it you are on; it cannot say what share of people you are ahead of, because no per-person distribution of plastic use is published. Until v77 this aspect turned that one number into a percentile anyway. Your plastic count and your green-habit score are real measurements; the population ranking was the part that was not.": "ตัวเลขไทยที่มีการเผยแพร่ในด้านนี้มีเพียงค่าเฉลี่ย — ประมาณสามชิ้นต่อคนต่อวัน ค่าเฉลี่ยบอกได้ว่าคุณอยู่ฝั่งไหนของมัน แต่บอกไม่ได้ว่าคุณนำหน้าคนกี่เปอร์เซ็นต์ เพราะไม่มีการเผยแพร่การกระจายตัวการใช้พลาสติกรายบุคคล ก่อนเวอร์ชัน 77 ด้านนี้แปลงตัวเลขเดียวนั้นเป็นเปอร์เซ็นไทล์อยู่ดี จำนวนพลาสติกและคะแนนพฤติกรรมรักษ์โลกของคุณเป็นการวัดผลจริง ส่วนที่ไม่จริงคือการจัดอันดับเทียบประชากร",
   "Banded around the post-plastic-ban Thai average; per-person distribution data is not published.":
     "จัดช่วงรอบค่าเฉลี่ยคนไทยหลังมาตรการงดถุงพลาสติก; ไม่มีข้อมูลการแจกแจงรายบุคคลที่เผยแพร่",
   // v64: this aspect is measured but no longer ranked. The keys that used to
@@ -936,6 +986,7 @@ export const TH = {
   // {pct}/{low}/{high} arrive from percentileLabel() already prefixed with
   // "ที่ " in Thai, so the template adds no space before them.
   "{pct} percentile · typical range {low}–{high}": "เปอร์เซ็นไทล์{pct} · ช่วงทั่วไป{low}–{high}",
+  "{pct} percentile, typical range {low} to {high}": "เปอร์เซ็นไทล์{pct} ช่วงทั่วไป{low} ถึง {high}",
   "in-depth verified": "ยืนยันเชิงลึกแล้ว",
   "“Percentile” = the share of people you're ahead of, so higher is better. The range shows how precise this estimate is, not a statistical confidence interval.":
     "“เปอร์เซ็นไทล์” = สัดส่วนของคนที่คุณนำหน้า ยิ่งสูงยิ่งดี ส่วนช่วงบอกว่าค่าประมาณนี้แม่นแค่ไหน ไม่ใช่ช่วงความเชื่อมั่นทางสถิติ",
@@ -1000,8 +1051,8 @@ export const TH = {
   "You are at or above the population average in {count} of {total} aspects.":
     "คุณอยู่ในระดับเท่ากับหรือสูงกว่าค่าเฉลี่ยของประชากร {count} จาก {total} ด้าน",
   "Lifting {aspect} would move it most.": "การยกระดับด้าน{aspect}จะทำให้ค่านี้ขยับมากที่สุด",
-  "A letter grade (A-F) comes from an aspect's population percentile, never from its 0-100 score: A is the top 10%, B the top 30%, C the typical middle (30th-69th), D below typical, and F the bottom 10%. The percentile is the part of an aspect that compares you with published data, so it is the only part worth grading. An aspect whose questionnaires you have not answered is shown as “not graded” — never as an F, because missing data is not a failing result.":
-    "เกรด (A-F) มาจากเปอร์เซ็นไทล์เทียบประชากรของแต่ละด้าน ไม่ได้มาจากคะแนน 0-100: A คือ 10% แรก, B คือ 30% แรก, C คือช่วงกลางทั่วไป (เปอร์เซ็นไทล์ที่ 30-69), D คือต่ำกว่าทั่วไป และ F คือ 10% ล่าง เปอร์เซ็นไทล์คือส่วนของคะแนนที่เทียบคุณกับข้อมูลที่เผยแพร่จริง จึงเป็นส่วนเดียวที่ควรนำมาให้เกรด ด้านที่คุณยังไม่ได้ตอบแบบสอบถามจะแสดงว่า “ยังไม่ให้เกรด” ไม่ใช่ F เพราะการไม่มีข้อมูลไม่ใช่ผลลัพธ์ที่ล้มเหลว",
+  "A letter grade (A-F) comes from an aspect's population percentile rather than its 0-100 score: A is the top 10%, B the top 30%, C the typical middle (30th-69th), D below typical, and F the bottom 10%. The percentile is the part of an aspect that compares you with published data, so it is normally the only part worth grading. Finance is the one exception: its percentile is your income standing and nothing else, so grading on it would grade your income alone — a person on a small income with no debt and no money worry was being shown an F. Finance is therefore graded on its whole score, which weights the financial well-being questions far more heavily than income. Your income percentile is still shown on the card. An aspect whose questionnaires you have not answered is shown as “not graded” — never as an F, because missing data is not a failing result.":
+    "เกรด (A-F) มาจากเปอร์เซ็นไทล์เทียบประชากรของแต่ละด้าน มากกว่าจะมาจากคะแนน 0-100 โดยตรง: A คือ 10% แรก, B คือ 30% แรก, C คือช่วงกลางทั่วไป (30-69), D คือต่ำกว่าทั่วไป และ F คือ 10% ท้าย เปอร์เซ็นไทล์คือส่วนที่เทียบคุณกับข้อมูลที่มีการเผยแพร่ จึงเป็นส่วนที่ควรให้เกรดตามปกติ ด้านการเงินเป็นข้อยกเว้นเดียว เพราะเปอร์เซ็นไทล์ของด้านนี้คือระดับรายได้ของคุณเพียงอย่างเดียว การให้เกรดจากมันจึงเท่ากับให้เกรดจากรายได้ล้วน ๆ คนที่มีรายได้น้อยแต่ไม่มีหนี้และไม่มีความกังวลเรื่องเงินเคยได้รับเกรด F ด้านการเงินจึงให้เกรดจากคะแนนรวมทั้งหมด ซึ่งให้น้ำหนักกับคำถามความอยู่ดีมีสุขทางการเงินมากกว่ารายได้มาก เปอร์เซ็นไทล์รายได้ของคุณยังคงแสดงอยู่บนการ์ด ส่วนด้านที่คุณยังไม่ได้ทำแบบสอบถามจะแสดงว่า “ยังไม่ให้เกรด” ไม่ใช่ F เพราะการไม่มีข้อมูลไม่ใช่ผลลัพธ์ที่ล้มเหลว",
   "The Balance Index is this app's own summary figure, not a published or validated measure — unlike the eight aspect scores and their percentiles, no research proposes it and nothing outside this app uses it. Before they are combined, each aspect is rescaled against its population average so that being typical scores 50, whether that aspect's average sits at 32 or 70 — the same population comparison the grades use. That way an aspect the whole population scores low on (like social contribution) no longer anchors your balance down for being merely average. The index is then the harmonic mean of those eight relative standings, so your weakest one pulls it down hardest: eight standings of 50 give an index of 50, while seven near 57 with one collapsed give a far lower number, even though both average 50. That is deliberate — a single number that rewarded a high average would reward neglecting an aspect entirely, and this app is about balance.":
     "ดัชนีสมดุลเป็นตัวเลขสรุปที่แอปนี้สร้างขึ้นเอง ไม่ใช่มาตรวัดที่มีการเผยแพร่หรือผ่านการตรวจสอบความตรง ต่างจากคะแนนทั้งแปดด้านและเปอร์เซ็นไทล์ของมัน ไม่มีงานวิจัยใดเสนอค่านี้ และไม่มีที่ใดนอกแอปนี้ใช้มัน ก่อนนำมารวมกัน แต่ละด้านจะถูกปรับมาตราส่วนเทียบกับค่าเฉลี่ยประชากรของด้านนั้น เพื่อให้การอยู่ในระดับทั่วไปได้ 50 คะแนน ไม่ว่าค่าเฉลี่ยของด้านนั้นจะอยู่ที่ 32 หรือ 70 — เป็นการเทียบกับประชากรแบบเดียวกับที่เกรดใช้ ด้วยวิธีนี้ ด้านที่ประชากรทั้งหมดได้คะแนนต่ำ (เช่น การมีส่วนร่วมต่อสังคม) จะไม่ดึงสมดุลของคุณลงเพียงเพราะคุณอยู่ในระดับทั่วไป จากนั้นดัชนีคือค่าเฉลี่ยฮาร์มอนิกของทั้งแปดสถานะเชิงเปรียบเทียบนี้ ด้านที่อ่อนที่สุดจึงดึงค่านี้ลงแรงที่สุด: แปดสถานะที่ 50 ได้ดัชนี 50 ขณะที่เจ็ดด้านราว 57 กับอีกหนึ่งด้านที่พังลงได้ตัวเลขที่ต่ำกว่ามาก ทั้งที่ค่าเฉลี่ยเท่ากับ 50 เหมือนกัน นี่เป็นความตั้งใจ เพราะตัวเลขเดียวที่ให้รางวัลกับค่าเฉลี่ยสูง ย่อมให้รางวัลกับการละเลยบางด้านไปเลย และแอปนี้ว่าด้วยเรื่องสมดุล",
   "Because the index is dominated by your weakest aspect, raising a below-average score moves it far more than raising an already-strong one. The dashed population-average line on your dashboard radar is the 50 mark: sit on it on every aspect and your index is 50. Treat it as a prompt about where attention is missing, not as a verdict on your life.":
@@ -1324,8 +1375,6 @@ export const TH = {
     "ในการสำรวจนั้น ผู้ใหญ่อายุ {band} ปี จำนวน {pct}% ได้คะแนนอยู่ในช่วงนี้",
   "Three bands can say which band you are in. They cannot say where you rank, because that would mean guessing your position inside a band.":
     "สามช่วงบอกได้ว่าคุณอยู่ช่วงใด แต่บอกไม่ได้ว่าคุณอยู่อันดับใด เพราะการบอกอันดับต้องเดาตำแหน่งของคุณภายในช่วงนั้น",
-  "A grade is a rank against a population. Where the published norms come from the wrong population, this app shows your measurements and withholds the rank rather than printing one it cannot stand behind.":
-    "เกรดคือการจัดอันดับเทียบกับประชากรกลุ่มหนึ่ง เมื่อเกณฑ์อ้างอิงที่ตีพิมพ์มาจากประชากรผิดกลุ่ม แอปนี้จะแสดงผลการวัดของคุณและงดแสดงอันดับ แทนที่จะแสดงตัวเลขที่ยืนยันไม่ได้",
 
   // Methodology — the comparison-provenance table.
   "Who you are actually compared with": "คุณถูกเปรียบเทียบกับใครกันแน่",

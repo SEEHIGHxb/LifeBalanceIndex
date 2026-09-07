@@ -247,3 +247,50 @@ test("the assistant falls back rather than rendering an empty tip", async () => 
   const tip = getLumiTip({ notAnAspect: 5 });
   assert.ok(tip.length > 0, "an unknown aspect produced an empty tip");
 });
+
+// --- v77: A SCORE-BASED GRADE MUST NOT SPEAK IN POPULATION TERMS ---------
+
+test("the Finance grade card does not contradict the percentile beside it", async () => {
+  // The defect this pins shipped in v77's own second commit. Finance moved onto
+  // its composite score, but the grade-explainer card kept the shared copy —
+  // "{band} of {population}, from the population comparison below" — so the page
+  // printed "Grade B — Top 30% of Thai workers, from the population comparison
+  // below" four lines above "Ahead of about 1% of Thai workers". Both from the
+  // same render, for a 3,000 THB earner.
+  const { renderAspectPage } = await import("../views/aspect.js");
+  const state = {
+    ...STATE,
+    profile: { ...STATE.profile, income: 3000, region: "Provinces", age: 40 },
+    aspects: { ...STATE.aspects, finance: 73 }
+  };
+  const html = render(() => renderAspectPage(MAIN, state, "finance"));
+  const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+
+  assert.match(text, /Grade B/, "the grade still renders");
+  assert.match(text, /from your score of 73/, "and says where it came from");
+  assert.doesNotMatch(text, /Top 30% of/,
+    "a score-based grade must not claim a share of the population");
+  assert.doesNotMatch(text, /from the population comparison below/,
+    "and must not point at a percentile it was not computed from");
+  // The income percentile is still shown — it just is not the grade any more.
+  assert.match(text, /1st percentile/, "the income rank is still on the card");
+});
+
+test("no grade badge prints a score in the percentile slot", async () => {
+  // gradeBadge built its tooltip from grade.percentile unconditionally. A
+  // score-based grade has no percentile, so whatever sat in that field was
+  // printed as one: "Top 30% of people like you (percentile 74)" for a user
+  // whose finance percentile is 1.
+  const { gradeBadge } = await import("../views/helpers.js");
+  const { gradeForFinance, gradeForPercentile } = await import("../grades.js");
+
+  const scoreGrade = gradeForFinance(73);
+  assert.equal(scoreGrade.percentile, null, "a score-based grade carries no percentile");
+  const badge = gradeBadge(scoreGrade);
+  assert.doesNotMatch(badge, /percentile/, "so its tooltip must not say 'percentile'");
+  assert.match(badge, /score 73 of 100/, "it names the score it actually used");
+
+  // The percentile-based path is unchanged.
+  const pctBadge = gradeBadge(gradeForPercentile(42));
+  assert.match(pctBadge, /percentile 42/, "a real percentile is still printed as one");
+});

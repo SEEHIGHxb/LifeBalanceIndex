@@ -229,8 +229,40 @@ export function ordinal(n) {
 // --- FINANCE: income vs Thai worker earnings ---
 // Lognormal approximation calibrated so the mean matches the LFS average
 // wage (~15,972 THB/mo); Bangkok median scaled up by the SES household
-// income ratio (39,100 / 29,000 ~ 1.35). sigma 0.65 is a typical wage
-// dispersion; this is an estimate, not published decile data.
+// income ratio (39,100 / 29,000 ~ 1.35).
+//
+// WHERE sigma ACTUALLY COMES FROM (corrected note, v77). The old comment here
+// called 0.65 "a typical wage dispersion... an estimate", which UNDERSTATED it
+// and caused a review to read it as a free parameter. It is not free. For a
+// lognormal, mean = median * exp(sigma^2 / 2), so fixing the median at 12,900
+// and the mean at the published 15,972 DETERMINES sigma:
+//
+//     sigma = sqrt(2 * ln(15972 / 12900)) = 0.6536,  which is the 0.65 below.
+//
+// So the pair reproduces the one published anchor exactly, and any change to
+// sigma alone silently breaks that match — 0.85 would imply a mean of 18,513
+// against a published 15,972. incomeMeanMatchesPublishedWage() in
+// tests/benchmarks.test.mjs now guards this.
+//
+// THE REAL WEAKNESS IS THE MEDIAN, NOT sigma. Only ONE of the two is
+// independently published: the LFS mean. INCOME_MEDIAN_NATIONAL has no cited
+// source anywhere in this repo, and given the identity above it can only have
+// been derived from the mean and an assumed sigma (or vice versa) — one
+// published number and one free parameter wearing two names.
+//
+// A second published anchor would close it, and the natural one is Thailand's
+// income Gini, since for a lognormal Gini = 2*Phi(sigma/sqrt(2)) - 1. That
+// would pin sigma directly and let the median be DERIVED from the published
+// mean rather than assumed. It is deliberately not done here: no Thai income
+// Gini could be verified against a primary source, and this project does not
+// cite secondary summaries for a figure it displays (round 8's sourcing rule).
+// The arithmetic, the candidate figures and what would settle it are written up
+// in docs/research/round-15-income-dispersion.md.
+//
+// Note also that the tension may not be resolvable inside this model at all:
+// the sigma implied by the mean/median pair (0.65) and the sigma implied by any
+// mid-0.4s Gini (~0.85) cannot both hold, which would say the lognormal FAMILY
+// understates the Thai upper tail rather than that one parameter is misset.
 const INCOME_MEDIAN_NATIONAL = 12900;
 const INCOME_MEDIAN_BANGKOK = 17400;
 const INCOME_LOG_SIGMA = 0.65;
@@ -238,6 +270,14 @@ const INCOME_LOG_SIGMA = 0.65;
 // RANK. "How many earners are below me" — and a rank is SUPPOSED to saturate
 // in a long right tail, because almost everyone really is below a top earner.
 // This drives the benchmark card and the finance grade, and nothing else.
+// Exposed for the calibration guard in tests/benchmarks.test.mjs. Returns the
+// mean this lognormal actually implies, which must stay on the published LFS
+// average wage; see the note above for why sigma cannot be changed alone.
+export function impliedIncomeMean(region) {
+  const median = region === "Bangkok" ? INCOME_MEDIAN_BANGKOK : INCOME_MEDIAN_NATIONAL;
+  return median * Math.exp((INCOME_LOG_SIGMA * INCOME_LOG_SIGMA) / 2);
+}
+
 export function incomePercentile(income, region) {
   const inc = parseFloat(income || 0);
   if (!(inc > 0)) return 1;
@@ -352,6 +392,25 @@ function physicalBenchmark(profile) {
       ? "BMI {bmi} — below the WHO Asia-Pacific overweight line of 23.0. For reference, {share}% of Thai adults are at BMI 25 or above."
       : "BMI {bmi} — at or above the WHO Asia-Pacific overweight line of 23.0, which is lower than the global 25 because risk rises earlier in Asian populations. For reference, {share}% of Thai adults are at BMI 25 or above.", { bmi: bmi.toFixed(1), share: overweightShare }));
   }
+
+  // ONE published number is doing all the work here: ~71% of Thai adults meet
+  // the 600 MET-min guideline. That single share genuinely fixes ONE point on
+  // the curve — the 29th percentile at 600 MET-min — and nothing else. Both
+  // segments around it are this app's own shape: below the guideline it assumes
+  // the inactive 29% are spread evenly from 0, and above it a linear ramp
+  // saturating at the 95th. Neither is published, and the second one ranks
+  // occupational and agricultural activity, which is most of Thai MVPA.
+  //
+  // Environment lost its rank in v77 for having only an anchor and no
+  // distribution. This aspect keeps one because its anchor is a PREVALENCE — a
+  // real split of the population at a cited threshold — which is enough to
+  // place a person on the correct side of it, and the guideline itself is a
+  // criterion (criteria.js) rather than a norm. What the anchor cannot support
+  // is the precision of the number around it, so as of v77 the card says so
+  // instead of leaving it in a code comment where no user could read it.
+  notes.push(met >= MET_GUIDELINE
+    ? t("You are above the WHO guideline, which ~71% of Thai adults also meet — that part is published. How far above is this app's own estimate: no per-person distribution of Thai activity minutes exists.")
+    : t("You are below the WHO guideline, which ~29% of Thai adults also are — that part is published. Your position inside that 29% is this app's own estimate: no per-person distribution of Thai activity minutes exists."));
 
   return {
     percentile: toPercentile(p01),
@@ -850,7 +909,15 @@ const GENEROUS_GIVING_SHARE = 0.05;
 
 function socialContributionBenchmark(profile, baseline) {
   const donations = parseFloat(profile.monthlyDonations || 0);
-  const income = parseFloat(profile.monthlyIncome || 0);
+  // `profile.income` — NOT the connector-only monthly-income key, which is a
+  // Midori payload field (connections.js) and has never existed on a profile.
+  // Reading it made `income` 0 for every user, so `share` below was always null
+  // and the
+  // 0.4-weighted giving-magnitude half of stage 2 never once executed: PTM
+  // alone drove every placement. Fixed in v77; the comment describing the blend
+  // had been describing dead code since the two-stage design shipped, and the
+  // only test covering it set the wrong key in its own fixture, so it passed.
+  const income = parseFloat(profile.income || 0);
   const donates = donations > 0;
   const volunteers = parseFloat(profile.volunteeringHours || 0) > 0;
 
@@ -865,10 +932,31 @@ function socialContributionBenchmark(profile, baseline) {
 
   // STAGE 2 (this app's own). The five PTM items carry helping, civic and
   // local behaviour; giving share carries magnitude, which the participation
-  // rate deliberately ignores. Falls back to PTM alone when income is unknown,
-  // and to the band midpoint when the instrument was never answered.
+  // rate deliberately ignores. Falls back to PTM alone when the share does not
+  // apply, and to the band midpoint when the instrument was never answered.
+  //
+  // THE SHARE APPLIES TO DONORS ONLY, and `donations > 0` is why. When v77
+  // fixed the field name this term read for the first time, and on its first
+  // run it did something nobody intended: a NON-donor with an income on file
+  // got share = 0, losing 40% of their measured intensity, while the identical
+  // person with no income on file got share = null and kept all of it. A
+  // volunteer who gives time but not money scored 90 with an income and 99
+  // without. Reporting your income lowered your standing.
+  //
+  // That was also a double count. Not giving money is ALREADY priced, in stage
+  // 1: it is what put this person in the volunteers-only or neither band
+  // instead of a donor band. Charging it again inside the band paid the same
+  // fact twice, which is the defect round 13 exists to catch.
+  //
+  // So the share now positions donors WITHIN their band by magnitude, which is
+  // what it was written to do, and is silent for everyone else. A remaining
+  // asymmetry is deliberate and much smaller: among donors, a token giver who
+  // reports income does rank below one who does not, because magnitude is the
+  // thing this term measures and without income it cannot be measured.
   const ptm = intensityOf((baseline || {}).ptm, 20);
-  const share = income > 0 ? Math.min(1, (donations / income) / GENEROUS_GIVING_SHARE) : null;
+  const share = (income > 0 && donations > 0)
+    ? Math.min(1, (donations / income) / GENEROUS_GIVING_SHARE)
+    : null;
   const intensity = ptm === null ? null
     : share === null ? ptm
     : (0.6 * ptm) + (0.4 * share);
@@ -904,32 +992,70 @@ function socialContributionBenchmark(profile, baseline) {
 // return (90, 78, 64, 50, 34, 20, 10), so the calibration is unchanged.
 // `fallback` is the fixed percentile each band returned before the two-stage
 // design, used when GEB was never answered.
-const PLASTIC_BANDS = [
-  { max: 0, floor: 86, ceil: 99, fallback: 90 },
-  { max: 1, floor: 72, ceil: 85, fallback: 78 },
-  { max: 2, floor: 58, ceil: 71, fallback: 64 },
-  { max: 3, floor: 44, ceil: 57, fallback: 50 }, // ~ Thai average of ~3/day
-  { max: 5, floor: 28, ceil: 43, fallback: 34 },
-  { max: 7, floor: 14, ceil: 27, fallback: 20 },
-  { max: Infinity, floor: 2, ceil: 13, fallback: 10 }
-];
+
+// THE RANK IS GONE (v77). IT WAS A CURVE INVENTED AROUND A SINGLE NUMBER.
+//
+// This aspect returned a 2-99 percentile built from exactly one published
+// figure: a post-ban Thai average of ~3 single-use pieces per day. There is no
+// published per-person distribution of plastic use in Thailand — the comment
+// below said so, while the code above it produced a seven-band ladder anyway.
+// The bands were not derived from the anchor either; each midpoint was
+// reverse-engineered to reproduce the fixed percentiles this used to return
+// (90, 78, 64, 50, 34, 20, 10), so the numbers came first and the justification
+// second. A mean is not a distribution, and one point cannot say whether a
+// person using two pieces a day is at the 60th percentile or the 85th.
+//
+// A second problem the rank hid: anchoring a right-skewed count variable's MEAN
+// at the 50th percentile assumes mean = median, which for counts like this is
+// false — most people cluster low and a heavy tail pulls the average up.
+//
+// This follows relationshipsBenchmark and humanityFutureBenchmark: measure it,
+// show every real number, refuse the rank. The plastic count, the GEB reading
+// and the comparison against the ~3/day average are all real and all still
+// shown — the population POSITION was the part that was not.
+//
+// PLASTIC_BANDS WAS DELETED, not kept. An earlier draft of this change said it
+// "is kept: it still names which side of the Thai average a person falls on",
+// which was false twice over: nothing referenced the constant any more, and the
+// five bands below use their own cut-points (1/2/3/5) rather than its seven
+// (0/1/2/3/5/7/inf). Leaving a comment claiming a dead constant was live is the
+// same kind of stale copy this release exists to remove.
+//
+// Five bands, placed around the one published figure they can honestly rest on.
+// The labels are LITERAL t() calls, not t(variable): tests/i18n-coverage.test.mjs
+// scans for literal keys, so a band whose label is looked up dynamically would
+// ship untranslated with the suite green (the rule is stated in
+// views/methodology.js and in the coverage test's own header).
+function plasticBandLabel(pieces) {
+  if (pieces <= 1) return t("far below the ~3/day Thai average");
+  if (pieces <= 2) return t("below the ~3/day Thai average");
+  if (pieces <= 3) return t("around the ~3/day Thai average");
+  if (pieces <= 5) return t("above the ~3/day Thai average");
+  return t("far above the ~3/day Thai average");
+}
 
 function environmentBenchmark(profile, baseline) {
   const pieces = parseInt(profile.singleUsePlastics || 0);
-  const { floor, ceil, fallback } = PLASTIC_BANDS.find(b => pieces <= b.max);
-  // STAGE 2 (this app's own): the six GEB items — recycling, single-use
-  // avoidance, transit, energy habits, eco-product choice. Plastic count alone
-  // said nothing about any of them.
-  const intensity = intensityOf((baseline || {}).geb, 24);
+  const notes = [
+    tp("You report {pieces} single-use plastic pieces/day — {band}.",
+      { pieces, band: plasticBandLabel(pieces) }),
+    t("Banded around the post-plastic-ban Thai average; per-person distribution data is not published.")
+  ];
+  // The six GEB items — recycling, single-use avoidance, transit, energy
+  // habits, eco-product choice — are still measured and still scored. They are
+  // this app's own items on a frequency scale, with no population distribution
+  // behind them either, so they cannot rescue the rank.
+  const geb = (baseline || {}).geb;
+  if (Number.isFinite(geb)) {
+    notes.push(tp("Green everyday behavior {n}/24 across six habits — this app's own items, which have no published population distribution.", { n: geb }));
+  }
   return {
-    percentile: positionInBand(floor, ceil, intensity, fallback),
+    percentile: null,
+    unranked: t("The only published Thai figure here is an average — about three single-use plastic pieces per person per day. An average can say which side of it you are on; it cannot say what share of people you are ahead of, because no per-person distribution of plastic use is published. Until v77 this aspect turned that one number into a percentile anyway. Your plastic count and your green-habit score are real measurements; the population ranking was the part that was not."),
     method: "estimate",
-    population: t("Thai adults"),
-    summary: tp("{pieces} single-use plastic pieces/day vs the ~3/day Thai average", { pieces }),
-    notes: [
-      t("Banded around the post-plastic-ban Thai average; per-person distribution data is not published."),
-      TWO_STAGE_NOTE()
-    ],
+    population: null,
+    summary: t("Single-use plastics and green habits — measured, not ranked"),
+    notes,
     sources: [SOURCES.thaiPlastic]
   };
 }

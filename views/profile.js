@@ -44,7 +44,8 @@ const AGE_MAX = 100;
 const ERR_IDS = {
   income: "pf-income-err", weight: "pf-weight-err", height: "pf-height-err",
   age: "pf-age-err", birthday: "pf-birthday-err",
-  liquidSavings: "pf-liquid-err", committedOutflow: "pf-outflow-err"
+  liquidSavings: "pf-liquid-err", committedOutflow: "pf-outflow-err",
+  familySupport: "pf-family-err"
 };
 
 // A labelled <select> prefilled to `current`. options: [{ value, label }].
@@ -211,9 +212,22 @@ export function renderProfile(containerId, state, onSaved) {
         </div>
         <div class="grid-2">
           ${numberField("pf-liquid", t("Liquid Savings You Could Reach This Week (THB)"), p.liquidSavings, 'min="0"')}
-          ${numberField("pf-outflow", t("Committed Monthly Outflow (THB)"), p.committedOutflow, 'min="0"')}
+          ${numberField("pf-outflow", t("Committed Monthly Outflow (THB)"), p.committedOutflow, 'min="0"', {
+            note: t("Rent, loan repayments, bills.")
+          })}
         </div>
-        <p class="profile-note">${t("These two give your runway on the Finance page. They change nothing about your score — no published distribution says what a given number of months is worth, so the app reports the figure rather than ranking it.")}</p>
+        <!-- Its own row, not a third cell in a two-column grid, where it would
+             sit alone on a half-width second line. The note is not decoration:
+             before v78 this app told people to put family support INSIDE the
+             box above, so anyone who filled that box on an earlier release and
+             now types a figure here would count the same money twice and lose
+             months off their runway with nothing about their life having
+             changed. The form is the only place that warning can be read in
+             time. -->
+        ${numberField("pf-family", t("Money You Send to Family (THB/month)"), p.familySupport, 'min="0"', {
+          note: t("Asked separately since v78. If you set up this profile earlier, this money was part of the box above — take it out of that figure before you enter it here, or it will be counted twice. Leave this blank or enter 0 if you send nothing.")
+        })}
+        <p class="profile-note">${t("These three give your runway on the Finance page. They change nothing about your score — no published distribution says what a given number of months is worth, so the app reports the figure rather than ranking it. Money you send to your family is also shown on your Social Contribution page, where it is giving rather than a bill.")}</p>
 
         <p id="profile-error" class="d-none" style="color: var(--color-crimson); margin-top: 12px; font-weight: 600;"></p>
         <button type="button" id="pf-save" class="btn btn-primary" style="margin-top: 8px;">${t("Save changes")}</button>
@@ -277,7 +291,8 @@ export function renderProfile(containerId, state, onSaved) {
     const { errors: numErrors } = validateProfile({
       income: val("pf-income"), weight: val("pf-weight"),
       height: val("pf-height"),
-      liquidSavings: val("pf-liquid"), committedOutflow: val("pf-outflow")
+      liquidSavings: val("pf-liquid"), committedOutflow: val("pf-outflow"),
+      familySupport: val("pf-family")
     });
     Object.assign(errors, numErrors);
 
@@ -315,7 +330,8 @@ export function renderProfile(containerId, state, onSaved) {
       gender: val("pf-gender"), region: val("pf-region"),
       employment: val("pf-employment"), relationshipStatus: val("pf-relationship"),
       income: val("pf-income"), weight: val("pf-weight"), height: val("pf-height"),
-      liquidSavings: val("pf-liquid"), committedOutflow: val("pf-outflow")
+      liquidSavings: val("pf-liquid"), committedOutflow: val("pf-outflow"),
+      familySupport: val("pf-family")
     });
     // Birthday rides its own mutator (re-anchors level-ups safely).
     if (birthdayChange) stateManager.setBirthday(birthdayChange.birthMonth, birthdayChange.birthDay);

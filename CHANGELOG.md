@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `71`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `78`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,513 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.27.0] — 2026-09-07 (APP_VERSION 78)
+
+Round 16 is the first release driven by a review of the app's **design** rather
+than its numbers. Four reviewers looked at the creative surface from four
+directions; where they agreed, they agreed that the design was arguing against
+the product. An app whose whole claim is care about what it knows was setting
+its one unsourced figure in the largest type it owns, and had never written a
+line of CSS for the language most of its readers use.
+
+Nothing here changes a score. Every change is about what the app shows, how
+large it shows it, and in what order.
+
+### Added — Thai typography
+
+- **A Thai serif.** `--font-serif` read `'Source Serif 4', 'Sarabun', Georgia,
+  serif`, and Source Serif 4 is subsetted to Latin — so every Thai heading
+  skipped it and landed on Sarabun, the same **sans** that `--font-sans`
+  resolves to. Both typographic roles were one role, and the serif/sans
+  contrast this design is built on was a Latin-only feature. Maitree now ships
+  alongside Sarabun (both Cadson Demak, designed to sit together), so
+  Maitree:Sarabun in Thai is the pairing that Source Serif 4:Inter is in Latin.
+  Because both faces are subsetted by `unicode-range`, one stack serves both
+  scripts and resolves correctly inside a mixed run.
+- **The first `[lang="th"]` rules in this stylesheet.** Leading goes to 1.75
+  on `body` and on the twelve prose rules that declare their own, because Thai
+  stacks vowels above the base consonant and tone marks above those, and at
+  1.55 those marks sat in the descenders of the line above. Headings go to 1.6
+  — looser than the Latin default, tighter than the Thai body. All thirteen
+  rules that track for Latin are reset to `normal`, including the `-0.01em`
+  that `.brand h1` was applying to the app's own name.
+- **`familySupport`**, its own profile field. See below.
+
+### Changed — the phone fold
+
+- **The mobile card reordering now actually runs.** It had a fallback rule at
+  specificity (0,2,0) and six specific rules at (0,1,0), so the fallback
+  out-specified every rule it was meant to back up: all six cards resolved to
+  `order: 90`, tied, and flex fell back to DOM order. The block comment
+  describes fixing exactly the layout the block was still producing. Measured
+  at 375×812, the radar — "the point of the app" — has moved from y=861 to
+  y=376, and now sits entirely inside the first screen.
+- **The in-depth assessment offer moved below the scores**, from y=376 to
+  y=2842. Its sentence is "go deeper for more accurate scores", which above the
+  scores is an argument about numbers the reader has not been shown yet. It is
+  now the only card in its stack, so on a phone it renders at full height
+  (161px) rather than demoted to the 77px compact row it got when it sat behind
+  another prompt — at the foot of the page there is nothing for it to compete
+  with.
+- **The assistant's speech bubble folds away on a phone** after a 9s dwell that
+  starts when the sentence finishes arriving, and returns on a tap. It is
+  `position: fixed` and full-width there, so it sat permanently on top of
+  whatever was scrolled under it — measured at y=645..734, covering the level
+  badge, the points bar and the name. Widening the viewport after a fold
+  un-folds it on the next tip, so a resized window cannot strand a hidden
+  bubble for the rest of the session. The artwork, the character and the
+  dialogue are untouched.
+- The mental-health banner is deliberately **unchanged**. It renders only when
+  WHO-5 or ST-5 crosses the concern threshold, and for that reader hotlines
+  above the fold is the right call.
+
+### Changed — the epistemic hierarchy
+
+- **The Balance Index is no longer the largest type in the product.** It held
+  `--text-4xl`, 2.6rem/41.6px, while the cited percentiles it is built from sat
+  at 12px grey. It is this app's own harmonic mean, captioned two lines below
+  as "not a published measure". Demoted to `--text-2xl`; `--text-4xl` is
+  deleted, having had no other user.
+- **The aspect header leads with the letter grade**, a `--text-3xl` serif glyph
+  with its band label under it, and the 0-100 composite is secondary beneath.
+  The letter is read off the cited percentile; the score is this app's own. The
+  glyph drops the chip's fill, border and pill — a 30px filled green block
+  would read as a trophy, which is the one thing a population comparison must
+  not look like.
+- **The percentile's indicative range is now drawn**, as a bracket under the
+  gauge rail, with an `aria-valuetext` so a screen reader gets it too. The
+  range says how precise the estimate is, and in text form it was the smallest
+  thing in the block. The numeric line underneath is unchanged — this is an
+  addition, not a replacement.
+
+### Changed — family support is no longer filed as a bill
+
+The committed-outflow question read *"what you cannot skip in a month — rent,
+loan repayments, **family support**, bills"*. So money a reader sends to their
+parents entered this model in exactly one place: inside a denominator that
+shortens a runway. Social Contribution, meanwhile, scored donations to charity
+and volunteering hours. For a reader practising กตัญญู, the largest transfer
+they make to another household was a bill in the finance section and did not
+exist at all in the section about giving.
+
+It was never *subtracted* from a score — `runwayMonths` is reported and not
+scored, and that has not changed. It was invisible.
+
+- `familySupport` is now asked separately and is optional.
+- The runway divides by `committedOutflow + familySupport`, because that money
+  does not stop when income stops. **Additive with no schema bump**: a save
+  written before the split keeps its runway to the baht.
+- Social Contribution reports it as a **fact** — a formatted line, no bar, no
+  weight, no percentile.
+- It is **not** added to the Social Contribution score. Every published giving
+  statistic behind that percentile measures donations to organisations and
+  formal volunteering; none asks about supporting parents. Scoring it would
+  move a reader up a ranking whose population was never asked the question.
+  Shown, named as giving, left unranked — the same call v77 made for
+  Environment.
+
+### Corrections to the review that prompted this release
+
+- There is **no dark mode** in this app and no gold accent; the palette is warm
+  paper, burgundy and navy. The `.text-gold` token is a leftover name.
+- The refusals are **not** delivered only through `title=` attributes.
+  `views/aspect.js` has carried a visible "Not ranked — on purpose" card, with
+  the aspect's own reason, since the refusals were introduced.
+- The mental-health banner is **271px**, not 540px.
+
+### Tests
+
+`tests/typography.test.mjs`, `tests/layout.test.mjs` and
+`tests/family-support.test.mjs` are new. Between them they pin: that the serif
+and sans stacks do not resolve Thai to the same face (verified to fail against
+the v77 stack); that every Thai face ships and is precached; that the order
+rules out-specify their own fallback; that the app's own composite is set
+smaller than a sourced figure; that family support moves no score; and that the
+committed-outflow question never files family support as a bill again.
+
+595 tests pass, up from 568.
+
+### Fixed after independent review
+
+The four changes above were reviewed by an agent briefed to distrust this
+release's own commit messages. It found nine real defects; all are fixed here,
+and the claims it disproved are corrected above rather than quietly dropped.
+
+- **The range bracket used to paint over the fill.** `.gauge-range` was
+  absolutely positioned and `.gauge-fill` was not, so per CSS painting order
+  the band landed **on top of** the fill and visually truncated the reader's
+  own bar at `range.low` — a ten-percentile-point understatement on every
+  `estimate` benchmark, on the one page whose purpose is reading that number
+  correctly. It now hangs below the rail, where it cannot occlude anything.
+- **The Thai leading reached no text at all.** It was declared on `html`, and
+  `body` **declares** 1.55 — a declared value beats an inherited one whatever
+  the ancestor's specificity. Moved to `body`, plus the prose rules that set
+  their own. The heading rule was also making things *worse*: those headings
+  inherited 1.55 and the first draft set them to 1.45.
+- **A dead block with a false comment.** The "chips get room for a tone mark"
+  rule re-declared the `line-height: 1.5` all five selectors already had.
+  Deleted, with its comment.
+- **The tracking reset missed `.confidence-badge`** — it shares a declaration
+  with `.component-confidence` and only the second was listed, leaving the
+  trust chip tracked to a Latin eye. There were thirteen such rules, not twelve.
+- **The share card still drew Thai in the sans.** `story-card.js` repeats the
+  serif stack by hand (canvas cannot read a custom property) and was still on
+  the pre-v78 one, so the app's only outward-facing artefact contradicted the
+  release.
+- **Existing users could double-count family support.** v77 told people to put
+  it *inside* committed outflow; v78 showed them an empty box and said nothing.
+  The Profile page now warns, in both languages, to take it out of the box
+  above first. "A save keeps its runway to the baht" was true only until the
+  user touched the feature the release is about.
+- **Family support could not be cleared once set.** Blank means "leave
+  unchanged" for every numeric profile edit, which is right for income and
+  wrong for the app's first optional money field — whose own placeholder says
+  "leave blank if none". Someone who stops sending money home can now say so.
+- **A folded bubble stayed folded on desktop.** The gate was phone-only; the
+  state was global.
+- **The `aria-valuetext` bypassed `percentileLabel()`**, so a screen reader
+  heard "99 percentile" where the page printed "99th percentile", and in Thai
+  lost the ordinal prefix the string is written around.
+
+Also: `.prompt-stack-trailing` was dead and is gone; a `package-lock.json`
+committed by accident is untracked and ignored (CI installs Playwright with
+`--no-save` on purpose); and the profile page no longer puts three fields in a
+two-column grid under a caption reading "These two".
+
+Unrelated to the four changes and pre-existing: `tests/e2e.mjs` flow 2 waited
+on `#tab-dashboard`, which is the tab **button** and is in the DOM the whole
+time — so it waited for nothing and raced `renderDashboard`. It failed about
+one run in three on this release and on v77 alike (measured 2 of 4 on v77, 1 of
+3 on HEAD), which is the kind of intermittent red that trains people to re-run
+CI instead of reading it. It now waits for a card the dashboard actually
+renders. Five consecutive green runs.
+
+**Six guards were rewritten because they were fake.** Four asserted on this
+release's own source formatting — one of them required a *comment* to be
+present, with the `//` load-bearing — and would have passed however the code
+behaved. They now drive the real mutator, render the real view, or compare
+structural facts; the three new CSS guards were each verified to fail against
+the defect they describe. One of them had the same class of bug as the code it
+checks: a comma-only selector split silently dropped the first selector of
+every commented rule, which is exactly the selector it was written to catch.
+
+## [2.26.0] — 2026-09-05 (APP_VERSION 77)
+
+Round 15 asks a question the first fourteen rounds never did. Every previous
+round asked **"who am I comparing this user to?"** — norm sourcing. None asked
+**"am I asking the question the instrument asks?"** — instrument fidelity. This
+release is the first pass of answers, plus three stale constants that no test
+could see.
+
+Scores move for existing users. That is the point: each change below corrects a
+measurement, and a corrected measurement is worth more than a stable number.
+
+### Fixed — instrument fidelity
+
+- **ST-5 now asks the DMH's questions again.** `scoring.js` scores this
+  instrument against the Thai Department of Mental Health's own published
+  cut-offs (≤4 / 5–7 / 8–9 / 10+). Those bands were established against the
+  DMH's exact Thai wording, so an item asking something else is scored on bands
+  that do not describe it. Two of the five had drifted:
+
+  - **Item 1** asked about trouble sleeping *"because of worry"* — an added
+    causal attribution the original does not make — and had **dropped
+    hypersomnia** (`หรือนอนมาก`), which is half of the published item. Someone
+    who oversleeps under stress scored 0 on the item written to catch exactly
+    them. Restored to `มีปัญหาการนอน นอนไม่หลับหรือนอนมาก`.
+  - **Item 4** appended `ท้อแท้` (dejected) to the published `รู้สึกเบื่อ เซ็ง`,
+    a heavier third state. Removed.
+
+  The English items had been authored *from* the drifted Thai, so both languages
+  moved. Items 2, 3 and 5 already matched and are now pinned.
+
+- **UCLA-3 "How often do you feel left out?" asked a different construct in
+  Thai.** It rendered as `ถูกทิ้งไว้ข้างหลัง` — left *behind*, which in Thai
+  reads as falling behind others in life or status. That is social comparison,
+  not loneliness. The composite is placed against England Community Life Survey
+  bands collected on the exclusion reading, so the mismatch reached the
+  benchmark as well as the item. Now `ถูกกีดกัน ไม่ได้เป็นส่วนหนึ่งของกลุ่ม`.
+
+- **The Relationship Assessment Scale gets its published per-item anchors.**
+  Hendrick labels positions A, C and E *differently for every item*; the app
+  applied one generic `Very poorly … Extremely well` set to all of them. Three
+  items were unanswerable as written, in both languages: *"In general, how
+  satisfied are you with your relationship?"* was answered with **"Very
+  poorly"**, and *"How much do you love your partner?"* with **"Extremely
+  well"**. Five anchor sets now carry Hendrick's own A/C/E labels; the
+  unlabelled B and D positions are filled plainly and marked as ours. Values
+  stay 1–5 ascending, so **no stored raw sum moves**.
+
+- **"Vigorous/Moderate/Walking Minutes per Day" is now "… on Each of Those
+  Days".** `criteria.js` multiplies days × minutes for the WHO 150-minute
+  check, so the field always meant "minutes on a day you did it" — but the label
+  read as minutes per calendar day. Someone walking 30 minutes on 3 days
+  entered either 30 or 13, **a 2.3× swing straight into a guideline check**,
+  and at the extremes the error reaches 7×. IPAQ's own wording is "time you
+  usually spend on one of those days". A worked example now sits under the
+  field.
+
+- **The vegetable field said "Vegetable/Fruit", the criterion behind it counts
+  vegetables only.** `criteria.js` builds its check on the explicit premise
+  that "this app asks only about vegetables, so the check is a strict one",
+  while the label invited fruit and the aspect page said "veg portions" — three
+  surfaces, two different questions. Label is now "Vegetable Portions per Day"
+  and defines a portion (≈80 g).
+
+### Fixed — three stale constants no test could see
+
+Each is a number that must agree with a number in another file. All three
+survived every existing test.
+
+- **The deep CFPB-10 swap applied the pre-v69 weight.** v69 reweighted finance
+  to 0.15/0.85; `deepAssessmentScore` kept **0.4**. Completing the full 10-item
+  CFPB — the app's own *Verified* confidence tier — moved the score by less than
+  half of what the same instrument moves at onboarding, so **the more evidence a
+  user gave, the less it counted**. Both sites now read
+  `FINANCE_WELLBEING_WEIGHT`.
+
+- **Humanity's Future deltas applied the pre-v65 weight.** v65 added the sixth
+  LFIS item and moved the per-term weight from 0.25 to 0.2. Both delta sites
+  kept 0.25, **overstating every post-v65 user's weekly-review and profile-edit
+  shifts on this aspect by 25%**. `scoring.js` carries a comment warning about
+  exactly this failure mode — "the v64 grit removal showed what happens when a
+  weight chain lives as a bare literal in more than one file" — and then
+  contained the bug it warned about. New `lfisWeight()` helper, mirroring the
+  existing `learningWeight()`, now serves the composite and both delta sites.
+
+- **The giving-magnitude term was dead code.** `socialContributionBenchmark`
+  read a connector-only monthly-income key that has never existed on a profile,
+  so `share` was always `null` and the 0.4-weighted half of stage 2 **never once
+  executed for any real user** — PTM alone drove every placement. The one test
+  covering it set that key in its own fixture, manufacturing the field and
+  passing on a shape production never produces.
+
+### Changed — Environment is measured, not ranked
+
+**The Environment percentile is removed.** It returned a 2–99 scale built from
+exactly one published figure: a post-ban Thai average of ~3 single-use pieces
+per day. No per-person distribution of Thai plastic use is published — the code
+comment said so, directly above a seven-band ladder. The bands were not derived
+from the anchor either: each midpoint was reverse-engineered to reproduce the
+fixed percentiles the aspect used to return (90, 78, 64, 50, 34, 20, 10), so the
+numbers came first and the justification second. Anchoring a right-skewed count
+variable's *mean* at the 50th percentile also assumes mean = median, which for
+this variable is false.
+
+This follows `relationships` (v41) and `humanityFuture` (v64): **measure it,
+show every real number, refuse the rank.** The plastic count, the GEB reading
+and which side of the ~3/day average a person falls on are all still shown. The
+aspect no longer carries a letter grade.
+
+**Physical keeps its rank, and now says what part of it is an estimate.** Its
+anchor is a *prevalence* — ~71% of Thai adults meet the 600 MET-min guideline —
+which is a real split of the population at a cited threshold, enough to place a
+person on the correct side of it. What one prevalence cannot support is the
+precision of the curve around it: below the guideline the app assumes the
+inactive 29% are spread evenly from zero, and above it a linear ramp saturating
+at the 95th. Neither is published. That disclosure was a code comment where no
+user could read it; it is now on the card.
+
+### Changed — Finance is graded on its score, not on income alone
+
+**The Finance letter grade ran on income at weight 1.0.** Grades derive from
+percentiles, and `financeBenchmark.percentile` is the income rank and nothing
+else — so while round 10 cut income from 0.6 to 0.15 of the finance *score*, the
+number users actually read still ran on income alone. The app's two finance
+numbers contradicted each other by construction, and round 10's own worked
+example (3,000 THB/month, no debt, no money worry) scored **73 and was graded
+F**. A zero-income retiree or homemaker got the same F, by construction.
+
+Finance now grades off its composite score, mapped through
+`relativeToPopulation` so the average person sits at 50 on the same axis the
+grade bands read. The income percentile is unchanged and still on the card — it
+has stopped being the answer to "how is my financial life going", which is the
+question a letter grade is read as answering. Every other aspect still grades on
+its percentile.
+
+| profile | score | grade before | grade now |
+| --- | --- | --- | --- |
+| round-10 example: 3,000 THB, no worry | 73 | **F** | **B** |
+| zero income, calm (retiree, homemaker, carer) | 70 | **F** | **B** |
+| 200,000 THB, worst possible CFPB | 30 | **A** | **C** |
+| 60,000 THB, good CFPB | 64 | A | C |
+| median 12,900 THB, mid CFPB | 49 | C | C |
+
+**Accepted consequence: nobody under 70 can reach an A in Finance.** The score
+tops out at 85 (92 at 70+) because the CFPB conversion's own maximum is 82, and
+85 maps to a B. This is pinned openly rather than fixed, the same treatment v76
+gave the ceiling itself — fixing it would mean rescaling a published conversion
+table so a number looks rounder. It is accepted on the grounds that the A it
+replaces was mostly measuring income: under the old basis *any* income at or
+above ~52,900 THB graded A regardless of debt, savings or distress, because
+`incomePercentile` saturates at 99 from there up.
+
+### Fixed — a code comment that understated its own rigour
+
+`INCOME_LOG_SIGMA` carried the note "a typical wage dispersion; this is an
+estimate, not published decile data", which describes a *derived* quantity as an
+assumption. A review reasonably read σ as free and proposed raising it to ~0.85
+to match a mid-0.4s Gini — which would have broken the model's match to the one
+genuinely published number in it. The note now shows the identity, and
+`impliedIncomeMean()` plus two tests make the calibration impossible to break
+silently. No distribution parameter changed: no Thai **income** Gini (as
+distinct from the consumption Gini usually quoted) could be verified against a
+primary source, and round 8's rule forbids citing a secondary summary for a
+displayed figure. `docs/research/round-15-income-dispersion.md` records the
+arithmetic, the confound and what data would settle it.
+
+### Fixed — defects found by independent review of this release
+
+An independent reviewer was given the diff with instructions to treat the commit
+messages and code comments as advertising rather than evidence. It confirmed the
+ST-5, RAS and `lfisWeight` fixes against primary sources, confirmed the
+Environment demotion is handled correctly by every consumer, and confirmed no
+test was weakened to pass. It also found the following, all now fixed.
+
+- **The Finance aspect page printed a flat self-contradiction.** The grade card
+  used the shared copy — "{band} of {population}, from the population comparison
+  below" — so a 3,000 THB earner saw **"Grade B — Top 30% of Thai workers, from
+  the population comparison below"** four lines above **"Ahead of about 1% of
+  Thai workers"**. The methodology page was updated when Finance moved onto its
+  score; this far more prominent surface was not.
+
+- **`GRADE_BANDS` labels are population claims, and Finance's new axis has no
+  population behind it.** "Top 10%" / "Bottom 10%" are only true of a percentile
+  against a cited distribution. The Finance grade is computed against
+  `AVERAGE_ASPECT_SCORES.finance` — one synthetic reference person — so the app
+  was making a *stronger* population claim on an axis with **zero** published
+  anchors than the one it stripped from Environment for having only one. The
+  reviewer was right that the two changes applied opposite standards.
+
+  Score-based grades now have their own vocabulary — **Strong / Above typical /
+  Typical / Below typical / Weak** — with the same letters and cutoffs. Every
+  grade carries a `basis` field, `percentile` is `null` whenever the basis is
+  `score`, and both render sites branch on it.
+
+- **The grade tooltip printed a score as a percentile.** `gradeBadge` read
+  `grade.percentile` unconditionally, so the dashboard showed "Top 30% of people
+  like you (percentile 74)" to a user whose finance percentile is 1.
+
+- **Reporting your income lowered your Social Contribution standing.** Switching
+  on the dead giving-share term inverted it on its first run: a non-donor with
+  an income on file got `share = 0` and lost 40% of measured intensity, while
+  the same person with no income got `share = null` and kept all of it. A
+  volunteer who gives time but not money scored **90 with an income and 99
+  without**. It was also a double count — not giving money already decided the
+  band in stage 1. The share now applies to donors only, which is what it was
+  written to do. The v77 release notes described this change as switching on a
+  dead term and said nothing about the penalty, because nothing tested the
+  non-donor case; it is tested now.
+
+- **The methodology page still said Environment was ranked**, in two places: the
+  provenance table row (`rank: "band"`, documented as "placed *and* ranked
+  inside the band") and the two-stage paragraph naming three aspects when only
+  one still qualifies. A new test cross-checks every provenance row against what
+  `getAllBenchmarks` actually returns, which is the guard that would have caught
+  this.
+
+- **`PLASTIC_BANDS` was dead code under a comment claiming it was live**, and
+  the replacement's cut-points silently differ from it. Deleted.
+
+- **`t(plasticBandLabel(pieces))` was a `t(variable)` call**, which
+  `tests/i18n-coverage.test.mjs` documents as invisible to the i18n guard — a
+  sixth band would have shipped untranslated with the suite green. Now literal
+  `t()` calls.
+
+- **The justification for not fixing the Finance ceiling had become false.**
+  `tests/finance-scale.test.mjs` argued the 85 ceiling was harmless because
+  "grades are unaffected entirely, since `gradeForBenchmark` reads the income
+  PERCENTILE and never the score". This release invalidated that and left it
+  standing. A stale reason for not fixing something is worse than none, because
+  it reads as a decision someone already made.
+
+- **`AVERAGE_ASPECT_SCORES.finance` became grade-bearing under a ±15 test
+  tolerance** — enough drift to move a grade boundary silently. Its real value
+  is 49; `averages.js` documented 54 and the test expected 53, both written
+  before v76 removed the savings bonus. Corrected, and finance is now pinned
+  separately to ±2.
+
+- **The IPAQ clarification note reached one of six field instances.** Moderate,
+  Walking, and all three fields in the *weekly review* — where they are
+  re-entered every week — had none.
+
+- **The UCLA-3 Thai fix was itself double-barrelled.** `ถูกกีดกัน ไม่ได้เป็นส่วนหนึ่งของกลุ่ม`
+  paired two states in one item — the exact defect removed from ST-5 item 4 in
+  the same release — and `ถูกกีดกัน` carries an active-discrimination sense much
+  stronger than "left out". Now the single clause `ไม่ได้เป็นส่วนหนึ่งของกลุ่ม`.
+
+- **The unranked explainer gave Environment the Relationships rationale**
+  ("the published norms come from the wrong population"). Environment's figure
+  is Thai; its problem is the absence of a distribution.
+
+- **Both headline "stale constant" fixes had no behavioural test** — only
+  regexes over source text, which cannot tell a right weight from a wrong one.
+  Real assertions added in `tests/deep-carry.test.mjs` and
+  `tests/weekly.test.mjs`; the regexes are kept but demoted in their own comment
+  to drift guards.
+
+### Known, still not fixed
+
+- **Values stored under the old "Minutes per Day" label mean something
+  different from values entered under the new one**, in the same column, with no
+  migration. A user who re-reads the clarified label and enters a per-session
+  figure where they previously entered a weekly average will produce a real
+  ~2.3× jump in MET-minutes that the app scores, awards and charts as genuine
+  improvement. Accepted deliberately under this release's "change freely, note
+  it" rule; noted here because nothing in the app tells the user.
+- **`gradeForFinance(0)` returns F rather than "not graded"**, because
+  `DEFAULT_STATE.aspects.finance` is `0` and therefore finite, while the other
+  seven aspects yield `null` from a missing basis. No reachable state was found
+  where a real profile still has a finance score of 0, so this is a contract
+  weakness rather than a demonstrated bug.
+
+### Added
+
+- `docs/research/round-15-income-dispersion.md` — the first round to ask an
+  instrument-fidelity question rather than a norm-sourcing one.
+- `tests/instrument-fidelity.test.mjs` — the standing guard the app did not
+  have. Checks administered item wording and response scales against their
+  published sources, in both languages, rather than checking scoring.
+- Regression pins in `tests/consistency.test.mjs` for all three stale constants
+  above, written as one class of defect: a number that must agree with a number
+  in another file.
+- Grade tests covering round-10's worked example, the income/distress inversion,
+  and the accepted Finance A ceiling.
+
+The methodology page's grading paragraph is updated in both languages: it
+claimed grades come from the percentile "never from its 0-100 score", which is
+no longer true of Finance.
+
+### Known, not fixed in this pass
+
+- **ST-5's response anchors** still share `Sometimes` / `Often` with three other
+  scales, so the DMH's `เป็นบางครั้ง` cannot be expressed verbatim. The reason
+  first given here — that `i18n.js` keys on canonical English, so this needs a
+  unique English key — was true but was not a blocker, and an independent review
+  called it correctly: the same release did exactly that for the RAS, five times
+  over, a hundred lines away in the same file. The honest reason to defer it is
+  that the residual is close to cosmetic: the shipped Thai
+  (`แทบไม่มี / ไม่มีเลย`, `บางครั้ง`, `บ่อยครั้ง`, `เป็นประจำ`) is already
+  semantically equivalent to the DMH's. It is a wording polish, not the
+  remainder of a substantive break, and it was described as the latter.
+- **The Thai instrument wordings are the app's own translations**, including for
+  four instruments where a published Thai version exists (WHO-5 Saipanish 2009,
+  PSS-10 and RSES Wongpakaran, GSE Sukmak 2002). `round-0-thai-norms.md` has
+  recorded this since the first round; no user-facing screen discloses it.
+- **The income distribution rests on one published number and one free
+  parameter.** Not the defect it was reported as, and a worse one. See
+  `docs/research/round-15-income-dispersion.md` and the corrected note in
+  `benchmarks.js`: σ is *derived*, not assumed — σ = √(2·ln(15972/12900)) =
+  0.6536 — so the median/σ pair reproduces the published LFS average wage
+  exactly, and raising σ to 0.85 alone would have implied a mean of 18,513
+  against a published 15,972. What is actually unanchored is
+  `INCOME_MEDIAN_NATIONAL = 12900`, which has no cited source anywhere in the
+  repo. The rank still saturates at 99 from ~52,900 THB upward; v77 at least
+  removes the letter grade from that saturation.
+- **The monthly check-in adds up to +3 points for having logged reviews**
+  (`state.js`), which the methodology page's "never by flat per-log bonuses"
+  does not cover.
 
 ## [2.20.1] — 2026-08-19 (APP_VERSION 71)
 

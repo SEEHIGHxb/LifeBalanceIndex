@@ -76,12 +76,56 @@ const UCLA_FREQ = [
   { v: 3, l: "Often" }
 ];
 
-const RAS_SCALE = [
-  { v: 1, l: "Very poorly" },
-  { v: 2, l: "Poorly" },
+// RELATIONSHIP ASSESSMENT SCALE — PER-ITEM ANCHORS.
+//
+// Hendrick's RAS labels only positions A, C and E, and it labels them
+// DIFFERENTLY FOR EVERY ITEM: item 2 runs Unsatisfied->Extremely satisfied,
+// item 3 runs Poor->Excellent, item 5 runs Hardly at all->Completely. Until now
+// this app applied one generic "Very poorly...Extremely well" set to all of
+// them, which made three items unanswerable as written: "In general, how
+// satisfied are you with your relationship?" was answered with "Very poorly",
+// and "How much do you love your partner?" with "Extremely well". The Thai
+// carried the same mismatch verbatim.
+//
+// The A/C/E labels below are the published ones. B and D are unlabelled on the
+// paper form, so the fills are ours and are deliberately plain — a respondent
+// reads them as "between A and C", which is what the blank positions mean.
+// Values are unchanged (1-5, higher = better), so no stored raw sum moves and
+// the 3-item and 7-item sums stay on their published ranges.
+const RAS_NEEDS = [
+  { v: 1, l: "Poorly" },
+  { v: 2, l: "Slightly" },
   { v: 3, l: "Average" },
   { v: 4, l: "Well" },
   { v: 5, l: "Extremely well" }
+];
+const RAS_SATISFIED = [
+  { v: 1, l: "Unsatisfied" },
+  { v: 2, l: "Slightly satisfied" },
+  { v: 3, l: "Average" },
+  { v: 4, l: "Satisfied" },
+  { v: 5, l: "Extremely satisfied" }
+];
+const RAS_COMPARED = [
+  { v: 1, l: "Poor" },
+  { v: 2, l: "Below average" },
+  { v: 3, l: "Average" },
+  { v: 4, l: "Good" },
+  { v: 5, l: "Excellent" }
+];
+const RAS_EXPECTATIONS = [
+  { v: 1, l: "Hardly at all" },
+  { v: 2, l: "A little" },
+  { v: 3, l: "Average" },
+  { v: 4, l: "Mostly" },
+  { v: 5, l: "Completely" }
+];
+const RAS_LOVE = [
+  { v: 1, l: "Not much" },
+  { v: 2, l: "A little" },
+  { v: 3, l: "Average" },
+  { v: 4, l: "Much" },
+  { v: 5, l: "Very much" }
 ];
 
 const AGREE_4 = [
@@ -146,10 +190,10 @@ export const INSTRUMENTS = {
     // "perfectly calm" 100. Confidence flagging still marks it as estimated.
     title: "ST-5 Stress Index (past 2-4 weeks)",
     items: [
-      { text: "How often did you have trouble sleeping because of worry?", options: ST5_FREQ, def: 1 },
+      { text: "How often did you have trouble sleeping — sleeping too little, or sleeping too much?", options: ST5_FREQ, def: 1 },
       { text: "How often did you have poor concentration?", options: ST5_FREQ, def: 1 },
       { text: "How often did you feel irritable, restless, or agitated?", options: ST5_FREQ, def: 1 },
-      { text: "How often did you feel bored or discouraged?", options: ST5_FREQ, def: 1 },
+      { text: "How often did you feel bored or fed up?", options: ST5_FREQ, def: 1 },
       { text: "How often did you not want to meet people?", options: ST5_FREQ, def: 1 }
     ]
   },
@@ -187,9 +231,9 @@ export const INSTRUMENTS = {
   ras: {
     title: "Relationship Assessment (couples only)",
     items: [
-      { text: "How well does your partner meet your needs?", options: RAS_SCALE, def: 3 },
-      { text: "In general, how satisfied are you with your relationship?", options: RAS_SCALE, def: 3 },
-      { text: "How good is your relationship compared to most?", options: RAS_SCALE, def: 3 }
+      { text: "How well does your partner meet your needs?", options: RAS_NEEDS, def: 3 },
+      { text: "In general, how satisfied are you with your relationship?", options: RAS_SATISFIED, def: 3 },
+      { text: "How good is your relationship compared to most?", options: RAS_COMPARED, def: 3 }
     ]
   },
   gse: {
@@ -581,12 +625,12 @@ export const DEEP_INSTRUMENTS = {
   ras7: {
     title: "Relationship Assessment Scale (full 7-item)",
     items: [
-      { text: "How well does your partner meet your needs?", options: RAS_SCALE, def: 3 },
-      { text: "In general, how satisfied are you with your relationship?", options: RAS_SCALE, def: 3 },
-      { text: "How good is your relationship compared to most?", options: RAS_SCALE, def: 3 },
+      { text: "How well does your partner meet your needs?", options: RAS_NEEDS, def: 3 },
+      { text: "In general, how satisfied are you with your relationship?", options: RAS_SATISFIED, def: 3 },
+      { text: "How good is your relationship compared to most?", options: RAS_COMPARED, def: 3 },
       { text: "How often do you wish you hadn't gotten into this relationship?", options: RAS_FREQ_REV, def: 3 },
-      { text: "To what extent has your relationship met your original expectations?", options: RAS_SCALE, def: 3 },
-      { text: "How much do you love your partner?", options: RAS_SCALE, def: 3 },
+      { text: "To what extent has your relationship met your original expectations?", options: RAS_EXPECTATIONS, def: 3 },
+      { text: "How much do you love your partner?", options: RAS_LOVE, def: 3 },
       { text: "How many problems are there in your relationship?", options: RAS_AMOUNT_REV, def: 3 }
     ]
   },

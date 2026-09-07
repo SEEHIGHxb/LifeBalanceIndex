@@ -4,11 +4,17 @@
 //
 //   GRADE         a letter (A-F) for one aspect, derived from that aspect's
 //                 PERCENTILE — the cited population comparison in
-//                 benchmarks.js — never from the raw 0-100 score. The score is
-//                 an app-internal composite; the percentile is the part that
-//                 means something about a person, so it is the only honest
-//                 thing to grade. Personal pages only: grades are deliberately
-//                 absent from the comparison board and the shareable code.
+//                 benchmarks.js — rather than from the raw 0-100 score. The
+//                 score is an app-internal composite; the percentile is the
+//                 part that means something about a person, so it is normally
+//                 the only honest thing to grade. Personal pages only: grades
+//                 are deliberately absent from the comparison board and the
+//                 shareable code.
+//
+//                 FINANCE IS THE ONE EXCEPTION, since v77. Its benchmark
+//                 percentile is the INCOME rank alone, so grading on it graded
+//                 income at weight 1.0 while the score behind it weighted
+//                 income 0.15 — see gradeForFinance for why that had to give.
 //
 //   BALANCE INDEX the HARMONIC mean of the eight aspect scores. This is the
 //                 app's OWN derived construct — not an instrument, not a cited
@@ -45,11 +51,30 @@ export const GRADE_PRIORITY = { F: 5, D: 4, C: 2, B: 1, A: 0 };
 // honest signal anyway: one collapsed aspect should dominate a BALANCE score.
 const MIN_SCORE = 1;
 
+// GRADE_BANDS' labels are POPULATION CLAIMS — "Top 10%", "Bottom 10%" — and
+// they are only true when the number behind them is a percentile against a
+// cited distribution. Finance is graded on its composite score (see
+// gradeForFinance), whose axis is this app's own reference average and not a
+// published distribution at all, so printing "Top 30%" off it would be exactly
+// the claim v77 removed from Environment for resting on too little.
+//
+// So a score-based grade gets its own vocabulary: the same A-F letters and the
+// same cutoffs, described in terms of this aspect's own range rather than a
+// share of the population. Every grade now carries `basis` so no consumer can
+// print one kind as the other — helpers.js and views/aspect.js both branch on
+// it, and grade.percentile is null whenever basis is "score".
+export const SCORE_GRADE_LABELS = {
+  A: "Strong", B: "Above typical", C: "Typical", D: "Below typical", F: "Weak"
+};
+
+function bandFor(value) {
+  return GRADE_BANDS.find(b => value >= b.min) || GRADE_BANDS[GRADE_BANDS.length - 1];
+}
+
 export function gradeForPercentile(percentile) {
   if (!Number.isFinite(percentile)) return null;
-  const band = GRADE_BANDS.find(b => percentile >= b.min)
-    || GRADE_BANDS[GRADE_BANDS.length - 1];
-  return { grade: band.grade, label: band.label, percentile };
+  const band = bandFor(percentile);
+  return { grade: band.grade, label: band.label, percentile, basis: "percentile" };
 }
 
 // Grade for one benchmark, or null when the aspect has no benchmark yet.
@@ -63,11 +88,63 @@ export function gradeForBenchmark(benchmark) {
   return gradeForPercentile(benchmark.percentile);
 }
 
-// {aspectKey: grade|null} for a whole benchmark set.
-export function gradeAllAspects(benchmarks) {
+// FINANCE IS GRADED OFF ITS COMPOSITE SCORE, NOT ITS PERCENTILE (v77).
+//
+// Every other aspect grades on the percentile, for the reason at the top of
+// this file: the score is an app-internal composite and the percentile is the
+// cited population comparison. Finance is the one aspect where that rule
+// produced the wrong answer, because `financeBenchmark.percentile` is the
+// INCOME rank and nothing else.
+//
+// Round 10 spent a whole round establishing that no validated instrument scores
+// raw income at any weight, and cut income from 0.6 to 0.15 of the finance
+// score. It never reached the grade. So the number the user reads ran on income
+// at weight 1.0 while the score behind it ran it at 0.15 — the app's two
+// finance numbers contradicting each other by construction. Round 10's own
+// worked example (3,000 THB, no debt, no worry) scored 73 and was graded F.
+//
+// The score is mapped through relativeToPopulation before grading, exactly as
+// the Balance Index maps every aspect: that puts the average person at 50 on
+// the same 0-100 axis the grade bands read, so the letters keep their
+// plain-language meaning instead of grading a raw composite as if it were a
+// percentile.
+//
+// The income percentile has NOT gone anywhere. It is still computed, still on
+// the card, still the honest answer to "where does my income sit" — it has just
+// stopped being the answer to "how is my financial life going", which is the
+// question a letter grade is read as answering.
+export function gradeForFinance(financeScore) {
+  if (!Number.isFinite(financeScore)) return null;
+  // `standing` is the score rescaled so the reference average sits at 50. It is
+  // NOT a percentile and is deliberately not exposed as one: nothing published
+  // says what share of Thai adults sits below a given finance composite.
+  const standing = Math.round(
+    relativeToPopulation(financeScore, AVERAGE_ASPECT_SCORES.finance));
+  const band = bandFor(standing);
+  return {
+    grade: band.grade,
+    label: SCORE_GRADE_LABELS[band.grade],
+    percentile: null,
+    score: Math.round(financeScore),
+    standing,
+    basis: "score"
+  };
+}
+
+// Grade for one aspect. Finance needs its own score (see gradeForFinance); the
+// other seven read their benchmark.
+export function gradeForAspect(aspectKey, benchmark, aspectScore) {
+  if (aspectKey === "finance") return gradeForFinance(aspectScore);
+  return gradeForBenchmark(benchmark);
+}
+
+// {aspectKey: grade|null} for a whole benchmark set. `aspects` is the aspect
+// SCORES (state.aspects); without it finance cannot be graded and comes back
+// null, the same as any aspect whose basis is missing.
+export function gradeAllAspects(benchmarks, aspects) {
   const out = {};
   for (const key of ASPECT_KEYS) {
-    out[key] = gradeForBenchmark((benchmarks || {})[key]);
+    out[key] = gradeForAspect(key, (benchmarks || {})[key], (aspects || {})[key]);
   }
   return out;
 }

@@ -76,9 +76,14 @@ const REFERENCE_ANSWERS = {
 const R = REFERENCE_PROFILE;
 const A = REFERENCE_ANSWERS;
 
-// Expected values (pinned within ±15 by tests/averages.test.mjs): finance 54,
+// Expected values (pinned within ±15 by tests/averages.test.mjs): finance 49,
 // physical 62, mental 69, relationships 70, personalGoals 57,
 // socialContribution 32, environment 50, humanityFuture 50.
+//
+// finance is pinned SEPARATELY and to ±2, because as of v77 it is the axis the
+// Finance letter grade is computed against (gradeForFinance) rather than only a
+// radar outline. The ±15 that suits the other seven would let this one drift a
+// whole grade boundary without failing anything.
 //
 // personalGoals moved 59 -> 57 and humanityFuture 44 -> 50 in v64, both by
 // SUBTRACTION: grit left the personal-goals composite, and the pension left
@@ -92,8 +97,13 @@ const A = REFERENCE_ANSWERS;
 // and the typical person earns the median, not the mean. On the new scale that
 // sits a little under the mean-anchored 50, which is exactly right.
 //
-// finance moved again in v69, 53 -> 54, when the income weight fell from 0.6 to
-// 0.15 (see calculateFinanceScore). A ONE-POINT move is the whole effect on the
+// finance moved again in v69, when the income weight fell from 0.6 to 0.15
+// (see calculateFinanceScore), and once more in v76 when the savings bonus was
+// removed (round 14) — it reads 49 today. This paragraph said "53 -> 54" and
+// the header said 54; both were written before v76 and neither was updated,
+// while the ±15 tolerance kept the suite green over a 5-point drift. Corrected
+// in v77, when this number stopped being decorative. A ONE-POINT move at v69 is
+// the whole effect of the reweight on the
 // typical person, and that is the point rather than a disappointment: this
 // profile earns the median and answers the CFPB items at the midpoint, so it
 // sits mid-scale on both terms and is nearly indifferent to which one leads.

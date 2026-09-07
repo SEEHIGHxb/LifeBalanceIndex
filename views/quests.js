@@ -52,7 +52,7 @@ export function renderQuests(containerId, state, onChange) {
   // from the same benchmarks the dashboard grades on. A bare state (no
   // profile, e.g. hostile-input tests) grades nothing, so the order is the
   // plain catalog order.
-  const grades = state.profile ? gradeAllAspects(getAllBenchmarks(state)) : {};
+  const grades = state.profile ? gradeAllAspects(getAllBenchmarks(state), state.aspects) : {};
   const availableIds = rankPledgesByGrade(
     Object.keys(GOAL_TEMPLATES).filter(id => !pledges.some(g => g.templateId === id)),
     grades

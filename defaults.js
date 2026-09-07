@@ -59,7 +59,14 @@ export const DEFAULT_STATE = {
     // derived from the other, because a stock and an outflow are independent
     // facts that no income edit can put in disagreement.
     liquidSavings: 0, // THB, cash you could reach this week
-    committedOutflow: 0, // THB/mo you cannot skip: rent, loans, family support
+    committedOutflow: 0, // THB/mo you cannot skip: rent, loans, bills
+    // Split out of committedOutflow in v78, which used to name "family
+    // support" as one more unskippable bill. For a large share of this app's
+    // readers it is not a bill — it is กตัญญู, and money sent to parents was
+    // the ONE kind of giving in this app that could only ever shorten a
+    // runway. It is additive and defaults to 0, so a save from before the
+    // split keeps whatever total it already had (see totalCommittedOutflow).
+    familySupport: 0, // THB/mo sent to parents or family
     digitalLiteracy: 50,
     weeklyLearningHours: 2,
     weeklyVigorousDays: 0,

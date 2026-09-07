@@ -15,7 +15,7 @@
 // nothing changed, so the bandwidth is negligible and the version can never
 // tear. Do NOT "optimise" this back to a plain fetch(req).
 
-const CACHE_NAME = "lifequest-v76";
+const CACHE_NAME = "lifequest-v78";
 
 const APP_SHELL = [
   "./",
@@ -61,7 +61,7 @@ const APP_SHELL = [
   "./i18n.js",
   "./th.js",
   "./manifest.webmanifest",
-  "./assets/lumi.png?v=76",
+  "./assets/lumi.png?v=78",
   "./assets/icon-192.png",
   "./assets/icon-512.png",
   // Self-hosted faces. Only the subsets the UI can actually render are
@@ -81,7 +81,10 @@ const APP_SHELL = [
   "./assets/fonts/sarabun-thai-400.woff2",
   "./assets/fonts/sarabun-thai-500.woff2",
   "./assets/fonts/sarabun-thai-600.woff2",
-  "./assets/fonts/sarabun-thai-700.woff2"
+  "./assets/fonts/sarabun-thai-700.woff2",
+  "./assets/fonts/maitree-thai-400.woff2",
+  "./assets/fonts/maitree-thai-600.woff2",
+  "./assets/fonts/maitree-thai-700.woff2"
 ];
 
 self.addEventListener("install", (event) => {

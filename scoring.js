@@ -342,8 +342,24 @@ export function savingsAmountFrom(rate, income) {
 // Zero or negative savings against a real outflow IS zero months, and says so.
 // Negative is reachable from a connector reporting net of debt, never from the
 // form, which floors at 0.
+// The denominator of the runway: everything that leaves each month and cannot
+// be skipped. Split across two stored fields since v78 and summed here, so the
+// runway is unchanged for a save written before the split (familySupport
+// defaults to 0 and the old single field already carried the total).
+//
+// Family support is in this sum because the runway question is "how long could
+// I cover what I cannot stop paying", and for someone supporting their parents
+// that money does not stop. Being IN the sum is not the same as being a
+// liability, which is why it is also reported on its own, on the aspect that
+// deals in giving. See aspectFacts() in aspects.js.
+export function totalCommittedOutflow(profile) {
+  const committed = parseFloat(profile.committedOutflow || 0);
+  const family = parseFloat(profile.familySupport || 0);
+  return (committed > 0 ? committed : 0) + (family > 0 ? family : 0);
+}
+
 export function runwayMonths(profile) {
-  const outflow = parseFloat(profile.committedOutflow || 0);
+  const outflow = totalCommittedOutflow(profile);
   if (!(outflow > 0)) return null;
   const savings = parseFloat(profile.liquidSavings || 0);
   // NaN floors to zero months rather than propagating: `parseFloat("abc")` is
@@ -433,6 +449,19 @@ export function learningWeight(citRaw) {
   return hasAccomplishment(citRaw) ? 1 / 3 : 0.3 / 0.7;
 }
 
+// Per-term weight inside calculateHumanityFutureScore, as a function of how
+// many LFIS answers the baseline actually holds: five terms at 0.20 since v65,
+// four at 0.25 for a save written before the maintaining item existed.
+//
+// Exists for the same reason learningWeight does. The two delta sites below
+// hardcoded 0.25 and were never updated when v65 added the sixth item, so every
+// post-v65 user's weekly-review and profile-edit shifts on this aspect were
+// overstated by 25%. `lfisItems` is the count stored with the baseline; a save
+// carrying none predates v65 and is on the five-item scale.
+export function lfisWeight(lfisItems) {
+  return Number(lfisItems || 5) >= 6 ? 0.2 : 0.25;
+}
+
 export function personalGoalsComposite(profile, gseRaw, citRaw, citLearnRaw) {
   const learning = learningScore(profile, citLearnRaw);
   if (!hasAccomplishment(citRaw)) {
@@ -442,6 +471,14 @@ export function personalGoalsComposite(profile, gseRaw, citRaw, citLearnRaw) {
 }
 
 // --- THE EIGHT ASPECT CALCULATORS (onboarding: answers -> 0-100 score) ---
+
+// FINANCE COMPOSITE WEIGHTS (round 10, v69). Named constants rather than bare
+// literals because this weight chain lives in TWO places -- the composite below
+// and the deep CFPB-10 swap in deepAssessmentScore -- and the second one sat at
+// the pre-v69 0.4 for seven versions without any test noticing. Same failure
+// mode the learningWeight() helper exists to prevent. They sum to 1.0.
+export const FINANCE_INCOME_WEIGHT = 0.15;
+export const FINANCE_WELLBEING_WEIGHT = 0.85;
 
 export function calculateFinanceScore(profile, cfpbAnswers) {
   // 1. Subjective CFPB Well-Being Score (5 items, each 0-4, raw 0-20),
@@ -494,7 +531,7 @@ export function calculateFinanceScore(profile, cfpbAnswers) {
   // The savings bonus that used to be added here was removed in v76 -- see the
   // SAVINGS RATE block above. These two weights now sum to exactly 1.0, which
   // is what every validated composite the app has been measured against does.
-  return clampScore((0.15 * S_income) + (0.85 * S_wellbeing));
+  return clampScore((FINANCE_INCOME_WEIGHT * S_income) + (FINANCE_WELLBEING_WEIGHT * S_wellbeing));
 }
 
 export function calculatePhysicalScore(profile, jssAnswers) {
@@ -601,7 +638,7 @@ export function calculateHumanityFutureScore(profile, lfisAnswers) {
   // actually present: five at 0.20 with maintaining, four at 0.25 without —
   // which is the v64 formula exactly, for a v64 save.
   const hasMaintaining = lfisAnswers.length >= 6;
-  const w = hasMaintaining ? 0.2 : 0.25;
+  const w = lfisWeight(lfisAnswers.length);
 
   // Future Skills (see the futureStudyScore note on the shared learning hours)
   const Q1_val = qValues[0] * 25;
@@ -683,7 +720,7 @@ export function weeklyAspectShifts(oldProfile, newProfile, baseline) {
       (0.4 * 0.5) * (donationVolumeFactor(newProfile) - donationVolumeFactor(oldProfile))
       + (0.4 * 0.6) * (volunteerFactor(newProfile) - volunteerFactor(oldProfile)),
     environment: (0.4 * 0.5) * (plasticScore(newProfile) - plasticScore(oldProfile)),
-    humanityFuture: (0.25 * 0.5) * (futureStudyScore(newProfile) - futureStudyScore(oldProfile))
+    humanityFuture: (lfisWeight(baseline && baseline.lfisItems) * 0.5) * (futureStudyScore(newProfile) - futureStudyScore(oldProfile))
   };
   const shifts = {};
   for (const [aspect, delta] of Object.entries(deltas)) {
@@ -751,9 +788,11 @@ export function profileEditShifts(oldProfile, newProfile, baseline) {
     personalGoals: learningWeight(baseline && baseline.citacc) * (learningScore(newProfile, baseline && baseline.citlearn) - learningScore(oldProfile, baseline && baseline.citlearn)),
     // income moves the donation-to-income ratio, 0.4*0.5 into the aspect
     socialContribution: (0.4 * 0.5) * (donationVolumeFactor(newProfile) - donationVolumeFactor(oldProfile)),
-    // Shared learning hours (futureStudy term, 0.25*0.5) are now the only future
-    // field on this page: the pension term left the aspect in v64.
-    humanityFuture: (0.25 * 0.5) * (futureStudyScore(newProfile) - futureStudyScore(oldProfile))
+    // Shared learning hours (futureStudy term, w*0.5) are now the only future
+    // field on this page: the pension term left the aspect in v64. The weight
+    // follows the composite via lfisWeight -- 0.2 since v65, 0.25 for a
+    // pre-v65 baseline -- rather than the bare 0.25 that sat here until v77.
+    humanityFuture: (lfisWeight(baseline && baseline.lfisItems) * 0.5) * (futureStudyScore(newProfile) - futureStudyScore(oldProfile))
   };
   const shifts = {};
   for (const [aspect, delta] of Object.entries(deltas)) {
@@ -794,10 +833,18 @@ export function deepAspectScore(aspectKey, profile, baseline, currentScore) {
 
   switch (aspectKey) {
     case "finance": {
-      // Swap CFPB-5 for CFPB-10 in the 0.4-weighted well-being term. Both
-      // sides use the official tables so the delta is metric-coherent.
+      // Swap CFPB-5 for CFPB-10 in the well-being term. Both sides use the
+      // official tables so the delta is metric-coherent.
+      //
+      // THE WEIGHT IS 0.85, AND IT HAS BEEN SINCE v69. This line carried 0.4
+      // until v77 -- the pre-v69 weight, left behind when round 10 reweighted
+      // the composite. The consequence was that completing the full 10-item
+      // CFPB, the app's own "Verified" confidence tier, moved the finance score
+      // by less than half of what the same instrument moves at onboarding: the
+      // more evidence a user gave, the less it counted. Both sites now read
+      // FINANCE_WELLBEING_WEIGHT so they cannot drift apart again.
       if (!has("cfpb10")) return null;
-      return clampScore(currentScore + 0.4 * (DEEP_NORM.cfpb10(d.cfpb10, profile.age) - cfpbScore(num(baseline.cfpb), profile.age)));
+      return clampScore(currentScore + FINANCE_WELLBEING_WEIGHT * (DEEP_NORM.cfpb10(d.cfpb10, profile.age) - cfpbScore(num(baseline.cfpb), profile.age)));
     }
     case "physical": {
       // Blend in sedentary/sleep-hygiene self-report at 15%.

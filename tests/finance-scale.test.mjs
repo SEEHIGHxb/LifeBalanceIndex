@@ -219,18 +219,27 @@ test("v76 CONSEQUENCE: finance tops out at 85 for anyone under 70", () => {
   // finance profile reaches 0.15(100) + 0.85(82) + 10 = 94.7 -> 95 while every
   // other aspect can still print 99.
   //
-  // MEASURED CONSEQUENCE: one point of Balance Index, for a person scoring 99
-  // on all eight aspects simultaneously. Grades are unaffected entirely, since
-  // gradeForBenchmark reads the income PERCENTILE and never the score. And
-  // balanceIndex runs on relativeToPopulation, which rescales each aspect
-  // against its own average precisely so aspects that cannot realistically top
-  // out are not punished for it (see the comment above balanceIndex).
+  // MEASURED CONSEQUENCE, AS OF v77: this ceiling now caps the Finance GRADE at
+  // B for everyone under 70.
   //
-  // So this is pinned rather than fixed on two grounds. It costs almost nothing,
-  // and fixing it would mean rescaling the CFPB conversion — editing a published
+  // The paragraph that stood here said "Grades are unaffected entirely, since
+  // gradeForBenchmark reads the income PERCENTILE and never the score", and
+  // that was the ground on which the ceiling was pinned rather than fixed. v77
+  // moved Finance onto its composite score (see gradeForFinance) and thereby
+  // invalidated the justification without removing it. Corrected here rather
+  // than left standing: a stale reason for not fixing something is worse than
+  // no reason, because it reads as a decision someone already made.
+  //
+  // The ceiling is still pinned rather than fixed, on the surviving ground:
+  // fixing it would mean rescaling the CFPB conversion — editing a published
   // table so a number looks rounder, which is the opposite of what round 10 was
-  // about. If it is ever addressed it must be addressed openly, and this test
-  // will be the thing that fails.
+  // about. What changed is the cost, which is now a letter grade rather than
+  // one point of Balance Index. See the accepted-consequence test in
+  // tests/grades.test.mjs, which pins the B ceiling directly.
+  //
+  // balanceIndex is genuinely unaffected: it runs on relativeToPopulation,
+  // which rescales each aspect against its own average precisely so aspects
+  // that cannot realistically top out are not punished for it.
   const best = { income: 10000000, region: "Bangkok", savingsRate: 100, age: 40 };
   assert.equal(calculateFinanceScore(best, [4, 4, 4, 4, 4]), 85);
   assert.ok(85 < SCORE_MAX, "and it therefore never reaches the app-wide cap");

@@ -29,6 +29,7 @@ const DRAFT_KEY = "onboarding";
 const ONB_NUMERIC_IDS = {
   income: "onb-income", monthlySavings: "onb-savings",
   liquidSavings: "onb-liquid", committedOutflow: "onb-outflow",
+  familySupport: "onb-family",
   weeklyLearningHours: "onb-learning", weeklyVigorousDays: "onb-vig-days",
   weeklyVigorousMins: "onb-vig-mins", weeklyModerateDays: "onb-mod-days",
   weeklyModerateMins: "onb-mod-mins", weeklyWalkingDays: "onb-walk-days",
@@ -100,7 +101,20 @@ export function renderOnboarding(containerId, onComplete) {
           ${numberField("onb-liquid", t("Liquid Savings You Could Reach This Week (THB)"), "", 'min="0"', { required: true, field: "liquidSavings", placeholder: t("e.g. 50,000") })}
           ${numberField("onb-outflow", t("Committed Monthly Outflow (THB)"), "", 'min="0"', { required: true, field: "committedOutflow", placeholder: t("e.g. 12,000") })}
         </div>
-        <p class="onb-why">${t("The second box is what you cannot skip in a month — rent, loan repayments, family support, bills. Together these two give your runway: how long you could cover the unskippable if income stopped. It is shown on your Finance page and is deliberately not scored, because no published distribution says what a given number of months is worth.")}</p>
+        <p class="onb-why">${t("The second box is what you cannot skip in a month — rent, loan repayments, bills. Together these two give your runway: how long you could cover the unskippable if income stopped. It is shown on your Finance page and is deliberately not scored, because no published distribution says what a given number of months is worth.")}</p>
+        <!-- Asked separately since v78. It used to be one of the examples in
+             the box above ("rent, loan repayments, family support, bills"),
+             which meant the money a reader sends to their parents entered this
+             app in exactly one place: as a number that shortens a runway. It
+             belongs in the runway — it does not stop when income stops — but it
+             is not only a bill, and folding it into one made it invisible
+             everywhere else. Optional, because plenty of people send nothing
+             and a required field would make them type a zero to say so. -->
+        ${numberField("onb-family", t("Money You Send to Family (THB/month)"), "", 'min="0"', {
+          field: "familySupport",
+          placeholder: t("e.g. 5,000 — leave blank if none"),
+          note: t("Counted in your runway with the box above, and shown on your Social Contribution page as giving. It is never subtracted from a score.")
+        })}
         ${instrumentBlock("cfpb")}`
     },
     {
@@ -113,21 +127,21 @@ export function renderOnboarding(containerId, onComplete) {
         </div>
         <div class="grid-2">
           ${numberField("onb-sleep", t("Average Nightly Sleep (Hours)"), "", 'min="0" max="16" step="0.5"', { required: true, field: "sleepHours", placeholder: "0–16" })}
-          ${numberField("onb-veg", t("Vegetable/Fruit Portions per Day"), "", 'min="0" max="15"', { required: true, field: "vegetablePortions", placeholder: "0–15" })}
+          ${numberField("onb-veg", t("Vegetable Portions per Day"), "", 'min="0" max="15"', { required: true, field: "vegetablePortions", placeholder: "0–15", note: t("One portion ≈ 80 g — about one handful, or half a plate of cooked greens. Vegetables only: the guideline check behind this field counts vegetables, not fruit.") })}
         </div>
         ${numberField("onb-water", t("Water Intake per Day (Liters)"), "", 'min="0" max="10" step="0.1"', { required: true, field: "waterLiters", placeholder: "0–10" })}
         <p class="instrument-title">${t("Weekly Physical Activity (IPAQ)")}</p>
         <div class="grid-2">
           ${numberField("onb-vig-days", t("Vigorous Exercise (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyVigorousDays", placeholder: "0–7" })}
-          ${numberField("onb-vig-mins", t("Vigorous Minutes per Day"), "", 'min="0" max="600"', { required: true, field: "weeklyVigorousMins", placeholder: "0–600" })}
+          ${numberField("onb-vig-mins", t("Vigorous Minutes on Each of Those Days"), "", 'min="0" max="600"', { required: true, field: "weeklyVigorousMins", placeholder: "0–600", note: t("Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.") })}
         </div>
         <div class="grid-2">
           ${numberField("onb-mod-days", t("Moderate Exercise (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyModerateDays", placeholder: "0–7" })}
-          ${numberField("onb-mod-mins", t("Moderate Minutes per Day"), "", 'min="0" max="600"', { required: true, field: "weeklyModerateMins", placeholder: "0–600" })}
+          ${numberField("onb-mod-mins", t("Moderate Minutes on Each of Those Days"), "", 'min="0" max="600"', { required: true, field: "weeklyModerateMins", placeholder: "0–600", note: t("Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.") })}
         </div>
         <div class="grid-2">
           ${numberField("onb-walk-days", t("Walking (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyWalkingDays", placeholder: "0–7" })}
-          ${numberField("onb-walk-mins", t("Walking Minutes per Day"), "", 'min="0" max="600"', { required: true, field: "weeklyWalkingMins", placeholder: "0–600" })}
+          ${numberField("onb-walk-mins", t("Walking Minutes on Each of Those Days"), "", 'min="0" max="600"', { required: true, field: "weeklyWalkingMins", placeholder: "0–600", note: t("Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.") })}
         </div>
         ${instrumentBlock("jss")}`
     },
@@ -378,6 +392,7 @@ export function renderOnboarding(containerId, onComplete) {
         // stock over an outflow is a ratio the app prints rather than stores.
         liquidSavings: val("onb-liquid"),
         committedOutflow: val("onb-outflow"),
+        familySupport: val("onb-family"),
         height: val("onb-height"),
         weight: val("onb-weight"),
         sleepHours: val("onb-sleep"),

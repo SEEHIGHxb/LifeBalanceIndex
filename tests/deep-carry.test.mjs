@@ -17,6 +17,10 @@ import {
   INSTRUMENTS, DEEP_INSTRUMENTS, DEEP_CARRY, deepAskIndices
 } from "../surveys.js";
 import { GameStateManager } from "../state.js";
+import {
+  deepAspectScore, calculateFinanceScore, cfpbScore, clampScore,
+  DEEP_NORM, FINANCE_WELLBEING_WEIGHT
+} from "../scoring.js";
 
 const optionValues = item => item.options.map(o => o.v).join(",");
 const rangeOf = items => items.reduce(([lo, hi], it) => {
@@ -168,4 +172,39 @@ test("a user who was single at onboarding answers all seven RAS items", () => {
   assert.equal(ask.length, 7);
   gs.submitDeepAssessment("relationships", { ras7: [5, 4, 3, 5, 4, 5, 2] });
   assert.equal(gs.state.baseline.deep.ras7, 28, "sum of all seven, nothing carried");
+});
+
+// --- v77: THE DEEP CFPB-10 SWAP APPLIES THE COMPOSITE'S OWN WEIGHT -------
+
+test("completing CFPB-10 moves finance at the SAME weight the instrument carries", () => {
+  // THE BEHAVIOURAL TEST FOR THE CFPB WEIGHT FIX. deepAspectScore applied 0.4 —
+  // the pre-v69 weight — while calculateFinanceScore carried 0.85, so
+  // completing the full 10-item CFPB (the app's own "Verified" tier) moved the
+  // score by less than half of what the same instrument moves at onboarding.
+  // The more evidence a user gave, the less it counted.
+  //
+  // The first guard written for this only grepped scoring.js for the constant
+  // name. That would pass against any wrong number as long as the identifier
+  // appeared, so it is replaced here by the arithmetic a real save produces.
+  const profile = { income: 15000, region: "Provinces", age: 40 };
+  const cfpb5Raw = 10;
+  const current = calculateFinanceScore(profile, [cfpb5Raw]);
+
+  // A CFPB-10 reading that converts ABOVE the 5-item one: the delta must arrive
+  // at 0.85 of the instrument difference, not 0.4 of it.
+  const baseline = { cfpb: cfpb5Raw, deep: { cfpb10: 30 } };
+  const deep = deepAspectScore("finance", profile, baseline, current);
+  assert.ok(Number.isFinite(deep), "a completed CFPB-10 produces a finance reading");
+
+  const short = cfpbScore(cfpb5Raw, 40);
+  const long = DEEP_NORM.cfpb10(30, 40);
+  const expected = clampScore(current + FINANCE_WELLBEING_WEIGHT * (long - short));
+  assert.equal(deep, expected, "the swap must use the composite's well-being weight");
+
+  // The concrete regression: the pre-v69 0.4 would land somewhere else entirely.
+  const wrong = clampScore(current + 0.4 * (long - short));
+  assert.notEqual(deep, wrong,
+    "applying the stale 0.4 must not produce the same answer as 0.85");
+  assert.ok(Math.abs(deep - current) > Math.abs(wrong - current),
+    "the corrected weight moves the score further, because the instrument counts for more");
 });

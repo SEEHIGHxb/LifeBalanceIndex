@@ -5,8 +5,8 @@ import { stateManager } from "../state.js";
 import { renderTrendChart } from "../chart.js";
 import { getAspectDetail } from "../aspects.js";
 import { getAspectSuggestions, getMentalHealthNotice } from "../suggestions.js";
-import { t, tp } from "../i18n.js";
-import { gradeForBenchmark } from "../grades.js";
+import { t, tp, percentileLabel } from "../i18n.js";
+import { gradeForAspect } from "../grades.js";
 import { criteriaForAspect } from "../criteria.js";
 import {
   escapeHtml, confidenceBadge, componentConfidenceChip, gradeBadge,
@@ -34,7 +34,9 @@ export function renderAspectPage(containerId, state, aspectKey) {
   if (!detail) return;
 
   const b = detail.benchmark;
-  const grade = gradeForBenchmark(b);
+  // gradeForAspect, not gradeForBenchmark: finance grades off its composite
+  // score rather than its income-only percentile (see gradeForFinance).
+  const grade = gradeForAspect(aspectKey, b, (state.aspects || {})[aspectKey]);
   // Set only when the aspect HAS a benchmark but that benchmark declines to
   // rank it (no defensible population). Distinct from `!b`, which means the
   // questionnaires were never answered.
@@ -59,21 +61,36 @@ export function renderAspectPage(containerId, state, aspectKey) {
             <span class="confidence-caption">${tp("{answered}/{total} inputs answered", { answered: detail.confidence.answered, total: detail.confidence.total })}</span>
           </p>` : ""}
       </div>
+      <!-- Grade first, score second. The letter is read off the cited
+           percentile (or, for finance, off the score, which the card below
+           says in as many words); the 0-100 figure is this app's own
+           composite. The sourced statement leads. Aspects with no grade — not
+           answered yet, or deliberately not ranked — keep the chip, because
+           there is no letter to set and a placeholder glyph would invent one. -->
       <div class="aspect-score-badge">
-        <span class="aspect-score-value">${detail.score}</span>
-        <span class="aspect-score-max">/100</span>
-        ${gradeBadge(grade, unranked)}
+        ${grade ? `
+          <span class="aspect-grade-glyph grade-${grade.grade.toLowerCase()}">${escapeHtml(grade.grade)}</span>
+          <span class="aspect-grade-band">${t(grade.label)}</span>
+        ` : gradeBadge(grade, unranked)}
+        <div>
+          <span class="aspect-score-value">${detail.score}</span>
+          <span class="aspect-score-max">/100</span>
+        </div>
       </div>
     </div>
 
-    ${grade ? `
+    ${grade && grade.basis === "score" ? `
+      <div class="card grade-explainer">
+        <p><strong>${tp("Grade {letter}", { letter: grade.grade })}</strong> — ${tp("{band} for this aspect, from your score of {score}.", { band: t(grade.label), score: grade.score })}</p>
+        <p class="grade-explainer-note">${t("This grade comes from the aspect score, not from the percentile below. The percentile here ranks your income alone, and grading on it would grade your income rather than your financial life — someone on a small income with no debt and no money worry was being shown an F. The letters describe where this score sits against a typical one, not what share of people you are ahead of.")}</p>
+      </div>` : grade ? `
       <div class="card grade-explainer">
         <p><strong>${tp("Grade {letter}", { letter: grade.grade })}</strong> — ${tp("{band} of {population}, from the population comparison below.", { band: t(grade.label), population: b.population || t("people like you") })}</p>
         <p class="grade-explainer-note">${t("Grades come from the cited percentile, not from the 0-100 score — the score is this app's own composite, while the percentile is the part that compares you with real published data.")}</p>
       </div>` : unranked ? `
       <div class="card grade-explainer">
         <p><strong>${t("Not ranked — on purpose.")}</strong> ${escapeHtml(unranked)}</p>
-        <p class="grade-explainer-note">${t("A grade is a rank against a population. Where the published norms come from the wrong population, this app shows your measurements and withholds the rank rather than printing one it cannot stand behind.")}</p>
+        <p class="grade-explainer-note">${t("A grade is a rank against a population. Where there is no population this app can honestly rank you against — because the published norms describe the wrong people, or because the source publishes a single average rather than a distribution — it shows your measurements and withholds the rank rather than printing one it cannot stand behind.")}</p>
       </div>` : `
       <div class="card grade-explainer">
         <p><strong>${t("Not graded yet.")}</strong> ${t("This aspect is graded from its population comparison, which needs its questionnaires answered first.")}${
@@ -105,7 +122,19 @@ export function renderAspectPage(containerId, state, aspectKey) {
           <h4 class="card-header">${t("Standing vs Society")}</h4>
           ${b ? `
             ${Number.isFinite(b.percentile) ? `
-              <div class="gauge-track" role="progressbar" aria-label="${t("Percentile vs society")}" aria-valuenow="${b.percentile}" aria-valuemin="1" aria-valuemax="99">
+              <div class="gauge-track" role="progressbar" aria-label="${t("Percentile vs society")}" aria-valuenow="${b.percentile}" aria-valuemin="1" aria-valuemax="99"
+                   aria-valuetext="${tp("{pct} percentile, typical range {low} to {high}", {
+                     // Through percentileLabel like every other percentile in
+                     // the app: it supplies the English ordinal (93rd, not 93)
+                     // and, in Thai, the "ที่ " prefix the template is written
+                     // to sit flush against. Passing the raw integers here
+                     // spoke a different number format to a screen reader than
+                     // the one printed two lines below it.
+                     pct: percentileLabel(b.percentile),
+                     low: percentileLabel(b.range.low),
+                     high: percentileLabel(b.range.high)
+                   })}">
+                <div class="gauge-range" style="left: ${b.range.low}%; width: ${Math.max(0, b.range.high - b.range.low)}%;"></div>
                 <div class="gauge-fill" style="width: ${b.percentile}%;"></div>
                 <div class="gauge-marker" style="left: ${b.percentile}%;"></div>
               </div>` : ""}

@@ -16,7 +16,7 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=76";
+} from "./ui.js?v=78";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -24,10 +24,20 @@ import { APP_VERSION } from "./version.js";
 const TOAST_DURATION_MS = 1600;
 const REWARD_DURATION_MS = 1900;
 const TYPEWRITER_SPEED_MS = 15;
+
+// How long the tip stays on screen after it has finished typing, before the
+// bubble folds back into the avatar. See dismissBubbleLater().
+const LUMI_DWELL_MS = 9000;
+// The phone breakpoint the stylesheet uses for the floating assistant. Kept in
+// sync with the @media (max-width: 640px) block in index.css by
+// tests/layout.test.mjs, because a drift here is invisible: the bubble simply
+// stops folding away on the viewport where it does the damage.
+const LUMI_PHONE_MAX_PX = 640;
 const TABS = ["dashboard", "review", "quests", "leaderboard"];
 const DEFAULT_TAB = "dashboard";
 
 let lumiTypewriterInterval = null;
+let lumiDwellTimeout = null;
 
 // --- ROUTING (hash-based so GitHub Pages and the back button both work) ---
 
@@ -561,7 +571,10 @@ function setupAssistant() {
     const newAvatar = avatar.cloneNode(true);
     avatar.parentNode.replaceChild(newAvatar, avatar);
 
-    const activate = () => triggerLumiMessage(t("Here to help. One short weekly review keeps your scores honest — about two minutes, once a week."), { announce: true });
+    const activate = () => {
+      showBubble();
+      triggerLumiMessage(t("Here to help. One short weekly review keeps your scores honest — about two minutes, once a week."), { announce: true });
+    };
     newAvatar.addEventListener("click", activate);
     // Keyboard activation for the role="button" avatar (finding #12).
     newAvatar.addEventListener("keydown", (e) => {
@@ -583,9 +596,52 @@ function updateAssistantBubble() {
 // The typewriter is purely visual. Screen readers hear the message only when
 // `announce` is set (explicit avatar activation) — the full text lands in the
 // hidden live region at once, never character by character (review finding).
+// The bubble is position:fixed and, on a phone, spans the viewport's full
+// width — so for as long as it is on screen it sits ON TOP of whatever the
+// reader has scrolled to. Measured at 375x812 it occupied y=645..734 and
+// covered the identity card outright: the level badge, the points bar and the
+// name were all underneath it, roughly forty pixels below a suicide hotline.
+//
+// The tip is worth showing. It is not worth showing FOREVER, which is what a
+// fixed element with no dismissal does. After it has been readable for
+// LUMI_DWELL_MS the bubble folds away and the avatar stays — still tappable,
+// still the same character, still the same tip one tap away.
+//
+// Phone only. On a wide viewport the assistant sits in the bottom-right margin
+// beside the content rather than over it, and there is nothing to fix.
+function isPhoneViewport() {
+  return typeof window.matchMedia === "function" &&
+    window.matchMedia(`(max-width: ${LUMI_PHONE_MAX_PX}px)`).matches;
+}
+
+function showBubble() {
+  if (lumiDwellTimeout) {
+    clearTimeout(lumiDwellTimeout);
+    lumiDwellTimeout = null;
+  }
+  document.getElementById("assistant-speech-bubble")?.classList.remove("d-none");
+}
+
+function dismissBubbleLater() {
+  if (lumiDwellTimeout) clearTimeout(lumiDwellTimeout);
+  if (!isPhoneViewport()) return;
+  lumiDwellTimeout = setTimeout(() => {
+    document.getElementById("assistant-speech-bubble")?.classList.add("d-none");
+    lumiDwellTimeout = null;
+  }, LUMI_DWELL_MS);
+}
+
 function triggerLumiMessage(message, { announce = false } = {}) {
   const bubble = document.getElementById("assistant-speech-bubble");
   if (!bubble) return;
+
+  // The GATE on folding is phone-only; the folded STATE was not. A reader who
+  // let the bubble fold on a phone and then widened the window — a rotated
+  // tablet, a resized desktop window, a re-docked laptop — kept a hidden
+  // bubble for the rest of the session, and every later tip was typed into a
+  // display:none element. Un-fold whenever a tip arrives on a viewport that
+  // was never supposed to fold it.
+  if (!isPhoneViewport()) showBubble();
 
   if (announce) {
     const sr = document.getElementById("assistant-sr");
@@ -602,6 +658,7 @@ function triggerLumiMessage(message, { announce = false } = {}) {
   // motion gets the whole tip at once — strictly more information, sooner.
   if (prefersReducedMotion()) {
     bubble.textContent = message;
+    dismissBubbleLater();
     return;
   }
 
@@ -615,6 +672,9 @@ function triggerLumiMessage(message, { announce = false } = {}) {
     } else {
       clearInterval(lumiTypewriterInterval);
       lumiTypewriterInterval = null;
+      // Dwell starts when the sentence is complete, never while it is still
+      // arriving — the typewriter would otherwise eat the reading time.
+      dismissBubbleLater();
     }
   }, TYPEWRITER_SPEED_MS);
 }

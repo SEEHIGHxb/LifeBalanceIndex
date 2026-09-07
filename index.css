@@ -49,7 +49,14 @@
   --color-track: #eceae4;          /* progress track / rail background */
 
   /* Typography: Source Serif 4 headings, Inter body, Sarabun for Thai */
-  --font-serif: 'Source Serif 4', 'Sarabun', Georgia, serif;
+  /* Each face is subsetted by unicode-range, so ONE stack serves both
+     scripts: Latin resolves to Source Serif 4, Thai to Maitree — including
+     inside a single mixed run. Sarabun stayed in this stack for years as a
+     silent last resort, which meant every Thai heading rendered in a SANS
+     and the serif/sans contrast this design is built on did not exist in
+     the app's primary language. Maitree is Sarabun's serif companion from
+     the same foundry; see assets/fonts/fonts.css. */
+  --font-serif: 'Source Serif 4', 'Maitree', Georgia, serif;
   --font-sans: 'Inter', 'Sarabun', system-ui, sans-serif;
   --font-mono: ui-monospace, 'Sarabun', 'SFMono-Regular', Menlo, monospace;
 
@@ -76,7 +83,6 @@
   --text-xl: 1.15rem;
   --text-2xl: 1.5rem;
   --text-3xl: 1.9rem;
-  --text-4xl: 2.6rem;
 
   /* Layout */
   --radius: 4px;
@@ -101,6 +107,93 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+
+/* --- Thai typography ------------------------------------------------------
+ * Thai is this app's primary language and, until this release, the stylesheet
+ * had NOT ONE rule scoped to it. Everything below fixes a Latin typographic
+ * habit that is actively wrong for Thai script.
+ *
+ * `lang` is set on <html> by i18n.js on every language switch, so these rules
+ * follow the reader without a re-render.
+ *
+ * 1. LEADING. Thai stacks vowels above and tone marks above those, and
+ *    descends below the baseline for others; the glyph column is roughly twice
+ *    the height of a Latin x-height run. 1.55 puts the tone marks of one line
+ *    into the descenders of the line above. 1.75 clears them.
+ * 2. TRACKING. Every negative or positive letter-spacing in this sheet was set
+ *    by eye against Latin. Thai renders as shaped clusters — a base consonant
+ *    plus its marks — and spacing between them is decided by the font's own
+ *    shaping, not by the designer. Tracking pulls a cluster apart or collides
+ *    it with its neighbour, and the -0.01em on .brand h1 did the former to the
+ *    app's own name. Reset to normal wherever this sheet sets it.
+ * 3. UPPERCASE. text-transform: uppercase is a no-op on Thai, so the small-cap
+ *    labels lose the one signal that made them read as labels. They keep their
+ *    size and colour; only the tracking that no longer helps is dropped.
+ */
+/* ON BODY, NOT ON html. The first version of this set line-height on <html>
+   and inherited nothing: `body` DECLARES line-height 1.55, and a declared
+   value beats an inherited one whatever the specificity of the ancestor that
+   set it. The 1.75 reached no text at all. */
+html[lang="th"] body {
+  line-height: 1.75;
+}
+
+/* Headings can be tighter than body copy but never as tight as Latin — and
+   never tighter than what they already had. These inherited 1.55 before any
+   Thai rule existed; an earlier draft of this block set 1.45 and so made the
+   commonest heading in the app WORSE for the readers it was written for.
+   1.6 is looser than the Latin default and tighter than the Thai body. */
+html[lang="th"] h1,
+html[lang="th"] h2,
+html[lang="th"] h3,
+html[lang="th"] h4,
+html[lang="th"] .card-header,
+html[lang="th"] .brand h1 {
+  letter-spacing: normal;
+  line-height: 1.6;
+}
+
+/* Prose that declares its own leading, and so never sees the body rule above.
+   Only rules carrying running sentences are listed — a chip or a table cell
+   holding two words gains nothing from more leading and would only get taller. */
+html[lang="th"] .care-banner-text,
+html[lang="th"] .onb-why,
+html[lang="th"] .prompt-text p,
+html[lang="th"] .deep-banner p,
+html[lang="th"] .suggestion-text,
+html[lang="th"] .gauge-note,
+html[lang="th"] .gauge-summary,
+html[lang="th"] .field-note,
+html[lang="th"] .profile-note,
+html[lang="th"] .benchmark-disclaimer,
+html[lang="th"] .grade-explainer p,
+html[lang="th"] .balance-index-caption {
+  line-height: 1.75;
+}
+
+/* The thirteen rules in this sheet that set letter-spacing for Latin. Listed
+   explicitly rather than reset with a wildcard: a wildcard would also flatten
+   the Latin runs — source names, instrument acronyms, currency codes — that
+   sit inside Thai copy and still want their tracking.
+   .confidence-badge and .component-confidence share one declaration; both are
+   named, because listing only the second is exactly the kind of miss this
+   enumeration invites — it left the trust chip tracked to a Latin eye. */
+html[lang="th"] .confidence-badge,
+html[lang="th"] .holo-badge,
+html[lang="th"] .criterion-chip,
+html[lang="th"] .prefill-chip,
+html[lang="th"] .onb-optional,
+html[lang="th"] .component-confidence,
+html[lang="th"] .percentile-band,
+html[lang="th"] .grade-badge,
+html[lang="th"] .grade-none,
+html[lang="th"] .grade-unranked,
+html[lang="th"] .provenance-table thead th,
+html[lang="th"] .aspect-grade-band,
+html[lang="th"] .balance-band {
+  letter-spacing: normal;
+}
+
 
 /* Reserve the scrollbar's column whether or not a scrollbar is present.
    Without this the centered .app-container shifts sideways by the scrollbar
@@ -1059,11 +1152,37 @@ header {
   text-align: center;
 }
 
-.aspect-score-value {
-  font-family: var(--font-mono);
+/* The aspect header used to lead with the 0-100 score at --text-3xl and carry
+   the grade as a --text-xs chip beside it. The score is this app's own
+   composite; the grade is read off the CITED percentile (or, for finance, off
+   the score with that stated in the card below). The sourced statement was the
+   small one.
+   Inverted: the letter is now the display glyph and the score is secondary
+   beneath it. The letter keeps its band colours from .grade-a..f — it does not
+   get a bigger version of the chip, because a chip that size reads as a badge
+   to collect rather than as a measurement. */
+.aspect-grade-glyph {
+  display: block;
+  font-family: var(--font-serif);
   font-size: var(--text-3xl);
   font-weight: 700;
-  color: var(--color-navy);
+  line-height: 1.05;
+}
+.aspect-grade-band {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+.aspect-score-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-secondary);
 }
 
 .aspect-score-max {
@@ -1080,7 +1199,27 @@ header {
   background: var(--color-track);
   border: 1px solid var(--color-card-border);
   overflow: visible;
-  margin: 8px 0 6px;
+  /* Bottom margin clears the .gauge-range bracket that hangs below the rail. */
+  margin: 8px 0 16px;
+}
+
+/* The indicative range, drawn under the rail as a bracket. The range is the
+   honest half of a percentile — it says how precise the estimate is — and in
+   text form it was the smallest thing in the block.
+   IT IS A SEPARATE BAR, NOT AN OVERLAY, and that is the whole design. The
+   first version of this drew the band inside the track: .gauge-range is
+   positioned and .gauge-fill is not, so per CSS painting order the band landed
+   ON TOP of the fill and visually truncated it at range.low — a reader on an
+   `estimate` benchmark saw their own bar cut ten percentile points short.
+   Hanging it below the rail cannot occlude anything, needs no z-index, and
+   shows the WHOLE range rather than only the part above the marker.
+   .gauge-track already sets overflow: visible for the marker. */
+.gauge-range {
+  position: absolute;
+  bottom: -8px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-card-border);
 }
 
 .gauge-fill {
@@ -1942,6 +2081,14 @@ header {
   background: var(--color-success);
   border-color: var(--color-success);
 }
+/* The glyph is not a chip: no fill, no border, no pill. A filled 30px block of
+   green would read as a trophy, which is the one thing a population comparison
+   must not look like. */
+.aspect-grade-glyph.grade-a {
+  color: var(--color-success);
+  background: none;
+  border: none;
+}
 .grade-b { color: var(--color-success); }
 .grade-c { color: var(--color-text-secondary); }
 .grade-d { color: var(--color-accent); }
@@ -2056,9 +2203,17 @@ header {
   align-items: baseline;
   gap: 2px;
 }
+/* 2.6rem — 41.6px, the top step of the scale, and the largest type anywhere
+   in this app — used to belong to this number. It is the ONE figure on the
+   page that no published source stands behind: the app's own harmonic mean,
+   captioned two lines below as "this app's own summary figure, not a published
+   measure". The cited percentiles it is built from were set at --text-xs, 12px,
+   grey. The type scale was making the opposite claim to the copy.
+   Demoted BELOW the letter grade on the aspect page, which is the sourced
+   statement. --text-4xl had no other user and is gone with it. */
 .balance-index-value {
   font-family: var(--font-serif);
-  font-size: var(--text-4xl);
+  font-size: var(--text-2xl);
   font-weight: 700;
   line-height: 1;
   color: var(--color-navy);
@@ -2577,15 +2732,27 @@ header {
   /* Default first, so a card added later without an order class lands at the
      end of the page rather than jumping to the very top — which is what an
      unset `order: 0` would otherwise do. (Caught exactly that way: the Recent
-     Reviews card had no class and sorted above the radar.) */
+     Reviews card had no class and sorted above the radar.)
+
+     EVERY SELECTOR BELOW IS SCOPED TO .dashboard-grid, and that is not
+     decoration. The fallback was written as `.dashboard-grid .card` (0,2,0)
+     while the six specific rules were bare single classes (0,1,0), so the
+     fallback out-specified all of them: every card resolved to order 90, they
+     all tied, and flex fell back to DOM order. The reordering this block exists
+     to perform has therefore never actually run on a phone since it was
+     written. Measured at 375px: the identity card led the page at y=376 and the
+     radar — "the point of the app" — sat at y=861, below the fold, which is
+     the exact layout the comment above says was being fixed.
+
+     Matching the specificity is the whole fix. Keep them matched. */
   .dashboard-grid .card { order: 90; }
 
-  .dash-radar    { order: 1; }
-  .dash-index    { order: 2; }
-  .dash-scores   { order: 3; }
-  .dash-suggest  { order: 4; }
-  .dash-activity { order: 5; }
-  .dash-identity { order: 6; }
+  .dashboard-grid .dash-radar    { order: 1; }
+  .dashboard-grid .dash-index    { order: 2; }
+  .dashboard-grid .dash-scores   { order: 3; }
+  .dashboard-grid .dash-suggest  { order: 4; }
+  .dashboard-grid .dash-activity { order: 5; }
+  .dashboard-grid .dash-identity { order: 6; }
 
   /* Aspect Scores, collapsed to one statement per aspect.
      ---------------------------------------------------

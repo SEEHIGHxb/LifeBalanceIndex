@@ -78,10 +78,21 @@ const PROFILE_EDIT_ENUMS = ["gender", "region", "employment", "relationshipStatu
 // digitalLiteracy left this list in v73 when the CIT Learning subscale
 // replaced it. The stored field, its sanitiser and its validator all remain so
 // that pre-v73 saves keep scoring; it simply has no input to arrive from.
-const PROFILE_EDIT_NUMERIC = ["income", "weight", "height", "liquidSavings", "committedOutflow"];
+const PROFILE_EDIT_NUMERIC = ["income", "weight", "height", "liquidSavings", "committedOutflow", "familySupport"];
 // The numeric fields whose hand-entry should upgrade the confidence tier: a
 // value the user just typed is provided data, same as answering it at onboarding.
-const PROFILE_EDIT_PROVIDED = ["income", "weight", "height", "liquidSavings", "committedOutflow"];
+const PROFILE_EDIT_PROVIDED = ["income", "weight", "height", "liquidSavings", "committedOutflow", "familySupport"];
+
+// Fields where an EMPTY box means zero rather than "leave this alone".
+//
+// Blank means "unchanged" for every other numeric edit, and that is right for
+// income, height and weight: none of them has a meaningful "none", so a blank
+// box is a user who did not want to retype a number. familySupport is the
+// app's first optional money field — its own placeholder says "leave blank if
+// none" — so for it, blank is an ANSWER. Without this, someone who stops
+// sending money home has no way to say so: their runway stays permanently
+// shortened and Social Contribution keeps reporting money they no longer send.
+const PROFILE_EDIT_CLEARABLE = new Set(["familySupport"]);
 const AGE_MIN = 15;
 const AGE_MAX = 100;
 
@@ -193,7 +204,10 @@ export class GameStateManager {
       if (edits[key] !== undefined) candidate[key] = edits[key];
     }
     for (const key of PROFILE_EDIT_NUMERIC) {
-      if (edits[key] !== undefined && String(edits[key]).trim() !== "") candidate[key] = edits[key];
+      if (edits[key] === undefined) continue;
+      const blank = String(edits[key]).trim() === "";
+      if (blank && PROFILE_EDIT_CLEARABLE.has(key)) candidate[key] = 0;
+      else if (!blank) candidate[key] = edits[key];
     }
     // Not editable from the Profile page since v68 (the question was retired).
     // Kept because the Midori connector still delivers it through the same
@@ -872,6 +886,7 @@ export class GameStateManager {
     // an absent or zero committedOutflow simply leaves the runway undefined.
     p.liquidSavings = parseFloat(surveyData.liquidSavings || 0);
     p.committedOutflow = parseFloat(surveyData.committedOutflow || 0);
+    p.familySupport = parseFloat(surveyData.familySupport || 0);
     p.digitalLiteracy = parseFloat(surveyData.digitalLiteracy || 50);
     p.weeklyLearningHours = parseFloat(surveyData.weeklyLearningHours || 0);
     p.weeklyVigorousDays = parseInt(surveyData.weeklyVigorousDays || 0);

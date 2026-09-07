@@ -69,9 +69,31 @@ test("learning hours feed personalGoals ((0.3/0.7) x learningScore) and humanity
   // 0.3/0.7 in v64, when grit left the composite and the two surviving weights
   // were renormalized over 0.7 rather than re-picked.
   // futureStudyScore: hours/4*100 capped => 0 -> 100; humanityFuture delta
-  // = 0.25 * 0.5 * 100 = 12.5, rounded half-up to 13.
+  // = w * 0.5 * 100. THIS FIXTURE CARRIES NO `lfisItems`, so it is a pre-v65
+  // baseline on the four-term 0.25 weight: 0.25 * 0.5 * 100 = 12.5 -> 13.
+  // The post-v65 five-term path is the test below, and it is the one every
+  // current user is on.
   const shifts = weeklyAspectShifts(BASE, { ...BASE, weeklyLearningHours: 5 }, JSS_BASELINE);
   assert.deepEqual(shifts, { personalGoals: 21, humanityFuture: 13 });
+});
+
+test("v77: a post-v65 baseline moves humanityFuture on the 0.2 weight, not 0.25", () => {
+  // THE BEHAVIOURAL TEST FOR THE lfisWeight FIX. Both delta sites hardcoded
+  // 0.25 and were never updated when v65 added the sixth LFIS item and moved
+  // the per-term weight to 0.2, so every post-v65 user's weekly shift on this
+  // aspect was overstated by 25%. The first guard written for this only grepped
+  // scoring.js for the constant name, which would have passed against a wrong
+  // number; this asserts the delta a real save actually produces.
+  //
+  // 0.2 * 0.5 * 100 = 10, against the 13 the legacy path gives above.
+  const v65 = { ...JSS_BASELINE, lfisItems: 6 };
+  const shifts = weeklyAspectShifts(BASE, { ...BASE, weeklyLearningHours: 5 }, v65);
+  assert.deepEqual(shifts, { personalGoals: 21, humanityFuture: 10 });
+
+  // And the two paths must genuinely differ, or the fix is inert.
+  const legacy = weeklyAspectShifts(BASE, { ...BASE, weeklyLearningHours: 5 }, JSS_BASELINE);
+  assert.ok(legacy.humanityFuture > shifts.humanityFuture,
+    "the pre-v65 weight must stay higher — five terms share the aspect, not four");
 });
 
 test("donations and volunteering shift socialContribution by their factor weights", () => {

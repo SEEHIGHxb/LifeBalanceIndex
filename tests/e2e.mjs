@@ -147,8 +147,18 @@ try {
   // review on record the prompt has to actually arrive, or the birthday becomes
   // a question the app never asks and the level silently never advances.
   await page.click("#tab-dashboard");
-  await page.waitForSelector("#tab-dashboard", { timeout: 10000 });
-  if (!(await birthdayPromptShown())) {
+  // #tab-dashboard is the tab BUTTON, and it is in the DOM the whole time — so
+  // waiting on it waited for nothing, and the check below raced renderDashboard.
+  // This failed roughly one run in three, on this release AND on v77 (measured:
+  // 2 of 4 on v77, 1 of 3 on HEAD), which is exactly the kind of intermittent
+  // red that trains people to re-run CI instead of reading it.
+  // Wait for a card the dashboard actually renders, then give the prompt its own
+  // bounded wait so a genuine absence still fails the flow.
+  await page.waitForSelector(".dash-index", { timeout: 10000 });
+  const birthdayArrived = await page
+    .waitForSelector("#birthday-prompt-dismiss", { timeout: 5000 })
+    .then(() => true, () => false);
+  if (!birthdayArrived) {
     problems.push("flow2: the birthday prompt never arrived after the first weekly review");
   }
 } catch (err) {

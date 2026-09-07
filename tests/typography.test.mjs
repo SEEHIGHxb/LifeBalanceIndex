@@ -126,3 +126,80 @@ test("i18n sets the lang attribute the Thai rules key off", () => {
   assert.match(read("i18n.js"), /document\.documentElement\.lang\s*=/);
   assert.match(read("app.js"), /document\.documentElement\.lang\s*=/);
 });
+
+// --- The epistemic hierarchy -----------------------------------------------
+//
+// This app's whole claim is that it is careful about what it knows. Before
+// v78 the type sizes said the opposite:
+//
+//   the Balance Index — its OWN composite, captioned two lines down as "not a
+//   published measure" — was set at --text-4xl, 2.6rem/41.6px, the top step of
+//   the scale and the largest type anywhere in the product;
+//
+//   the cited percentiles it is built from were --text-xs, 0.75rem/12px, grey;
+//
+//   on the aspect page the 0-100 score led at --text-3xl and the letter grade,
+//   which is read off the cited percentile, was a --text-xs chip beside it.
+//
+// These tests state the ordering as an assertion so it cannot silently invert
+// again. They compare TOKENS, not pixels: a retuned scale is fine, a reordered
+// hierarchy is not.
+
+// Every --text-* step, as a number of rem.
+function typeScale() {
+  const css = readFileSync(join(root, "index.css"), "utf8");
+  const scale = {};
+  for (const [, name, rem] of css.matchAll(/--text-([a-z0-9]+):\s*([\d.]+)rem;/g)) {
+    scale[`--text-${name}`] = Number(rem);
+  }
+  return scale;
+}
+
+// The --text-* token a rule sets, or null.
+function sizeOf(selector) {
+  const css = readFileSync(join(root, "index.css"), "utf8");
+  const rule = css.match(
+    new RegExp(`\\${selector}\\s*\\{[^}]*?font-size:\\s*var\\((--text-[a-z0-9]+)\\)`, "s")
+  );
+  return rule ? rule[1] : null;
+}
+
+test("the app's own composite is set smaller than a sourced figure", () => {
+  const scale = typeScale();
+  const composite = sizeOf(".balance-index-value");
+  const cited = sizeOf(".aspect-grade-glyph");
+  assert.ok(composite && cited, "both figures must size themselves from the scale");
+  assert.ok(
+    scale[composite] < scale[cited],
+    `the Balance Index is set at ${composite} (${scale[composite]}rem) and the ` +
+    `letter grade at ${cited} (${scale[cited]}rem). The Index is the one figure ` +
+    `in this app that no published source stands behind, and it must not be ` +
+    `the louder of the two.`
+  );
+});
+
+test("the cited grade outranks the uncited score on the aspect header", () => {
+  const scale = typeScale();
+  const glyph = sizeOf(".aspect-grade-glyph");
+  const score = sizeOf(".aspect-score-value");
+  assert.ok(glyph && score, "both aspect-header figures must size from the scale");
+  assert.ok(
+    scale[glyph] > scale[score],
+    `the letter grade (${glyph}) must be set larger than the 0-100 score ` +
+    `(${score}): the letter is read off the cited percentile, the score is ` +
+    `this app's own composite`
+  );
+});
+
+test("the percentile's range is drawn on the rail, not only stated in small text", () => {
+  // The range is the honest half of a percentile — how precise the estimate is
+  // — and it was the smallest text in the block.
+  const aspect = readFileSync(join(root, "views/aspect.js"), "utf8");
+  assert.match(aspect, /class="gauge-range"[^>]*b\.range\.low/,
+    "the gauge must draw the indicative range from b.range");
+  assert.match(readFileSync(join(root, "index.css"), "utf8"), /\.gauge-range\s*\{/);
+  // A screen reader gets the same two facts the sighted reader now gets.
+  assert.match(aspect, /aria-valuetext=/,
+    "the gauge must speak its range, not just draw it");
+});
+

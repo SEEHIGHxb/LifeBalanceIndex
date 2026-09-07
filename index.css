@@ -83,7 +83,6 @@
   --text-xl: 1.15rem;
   --text-2xl: 1.5rem;
   --text-3xl: 1.9rem;
-  --text-4xl: 2.6rem;
 
   /* Layout */
   --radius: 4px;
@@ -160,6 +159,7 @@ html[lang="th"] .grade-badge,
 html[lang="th"] .grade-none,
 html[lang="th"] .grade-unranked,
 html[lang="th"] .provenance-table thead th,
+html[lang="th"] .aspect-grade-band,
 html[lang="th"] .balance-band {
   letter-spacing: normal;
 }
@@ -1131,11 +1131,37 @@ header {
   text-align: center;
 }
 
-.aspect-score-value {
-  font-family: var(--font-mono);
+/* The aspect header used to lead with the 0-100 score at --text-3xl and carry
+   the grade as a --text-xs chip beside it. The score is this app's own
+   composite; the grade is read off the CITED percentile (or, for finance, off
+   the score with that stated in the card below). The sourced statement was the
+   small one.
+   Inverted: the letter is now the display glyph and the score is secondary
+   beneath it. The letter keeps its band colours from .grade-a..f — it does not
+   get a bigger version of the chip, because a chip that size reads as a badge
+   to collect rather than as a measurement. */
+.aspect-grade-glyph {
+  display: block;
+  font-family: var(--font-serif);
   font-size: var(--text-3xl);
   font-weight: 700;
-  color: var(--color-navy);
+  line-height: 1.05;
+}
+.aspect-grade-band {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+.aspect-score-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-secondary);
 }
 
 .aspect-score-max {
@@ -1153,6 +1179,20 @@ header {
   border: 1px solid var(--color-card-border);
   overflow: visible;
   margin: 8px 0 6px;
+}
+
+/* The indicative range, drawn ON the rail instead of stated as "typical range
+   55–79" in --text-xs grey underneath it. The range is the honest half of a
+   percentile — it is how precise the estimate is — and it was the smallest
+   text in the block. Sits under the fill and the marker so the point estimate
+   still reads first. */
+.gauge-range {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 6px;
+  background: var(--color-card-border);
+  opacity: 0.85;
 }
 
 .gauge-fill {
@@ -2014,6 +2054,14 @@ header {
   background: var(--color-success);
   border-color: var(--color-success);
 }
+/* The glyph is not a chip: no fill, no border, no pill. A filled 30px block of
+   green would read as a trophy, which is the one thing a population comparison
+   must not look like. */
+.aspect-grade-glyph.grade-a {
+  color: var(--color-success);
+  background: none;
+  border: none;
+}
 .grade-b { color: var(--color-success); }
 .grade-c { color: var(--color-text-secondary); }
 .grade-d { color: var(--color-accent); }
@@ -2128,9 +2176,17 @@ header {
   align-items: baseline;
   gap: 2px;
 }
+/* 2.6rem — 41.6px, the top step of the scale, and the largest type anywhere
+   in this app — used to belong to this number. It is the ONE figure on the
+   page that no published source stands behind: the app's own harmonic mean,
+   captioned two lines below as "this app's own summary figure, not a published
+   measure". The cited percentiles it is built from were set at --text-xs, 12px,
+   grey. The type scale was making the opposite claim to the copy.
+   Demoted BELOW the letter grade on the aspect page, which is the sourced
+   statement. --text-4xl had no other user and is gone with it. */
 .balance-index-value {
   font-family: var(--font-serif);
-  font-size: var(--text-4xl);
+  font-size: var(--text-2xl);
   font-weight: 700;
   line-height: 1;
   color: var(--color-navy);

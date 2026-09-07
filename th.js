@@ -973,6 +973,7 @@ export const TH = {
   // {pct}/{low}/{high} arrive from percentileLabel() already prefixed with
   // "ที่ " in Thai, so the template adds no space before them.
   "{pct} percentile · typical range {low}–{high}": "เปอร์เซ็นไทล์{pct} · ช่วงทั่วไป{low}–{high}",
+  "{pct} percentile, typical range {low} to {high}": "เปอร์เซ็นไทล์{pct} ช่วงทั่วไป{low} ถึง {high}",
   "in-depth verified": "ยืนยันเชิงลึกแล้ว",
   "“Percentile” = the share of people you're ahead of, so higher is better. The range shows how precise this estimate is, not a statistical confidence interval.":
     "“เปอร์เซ็นไทล์” = สัดส่วนของคนที่คุณนำหน้า ยิ่งสูงยิ่งดี ส่วนช่วงบอกว่าค่าประมาณนี้แม่นแค่ไหน ไม่ใช่ช่วงความเชื่อมั่นทางสถิติ",

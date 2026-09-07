@@ -61,10 +61,21 @@ export function renderAspectPage(containerId, state, aspectKey) {
             <span class="confidence-caption">${tp("{answered}/{total} inputs answered", { answered: detail.confidence.answered, total: detail.confidence.total })}</span>
           </p>` : ""}
       </div>
+      <!-- Grade first, score second. The letter is read off the cited
+           percentile (or, for finance, off the score, which the card below
+           says in as many words); the 0-100 figure is this app's own
+           composite. The sourced statement leads. Aspects with no grade — not
+           answered yet, or deliberately not ranked — keep the chip, because
+           there is no letter to set and a placeholder glyph would invent one. -->
       <div class="aspect-score-badge">
-        <span class="aspect-score-value">${detail.score}</span>
-        <span class="aspect-score-max">/100</span>
-        ${gradeBadge(grade, unranked)}
+        ${grade ? `
+          <span class="aspect-grade-glyph grade-${grade.grade.toLowerCase()}">${escapeHtml(grade.grade)}</span>
+          <span class="aspect-grade-band">${t(grade.label)}</span>
+        ` : gradeBadge(grade, unranked)}
+        <div>
+          <span class="aspect-score-value">${detail.score}</span>
+          <span class="aspect-score-max">/100</span>
+        </div>
       </div>
     </div>
 
@@ -111,7 +122,9 @@ export function renderAspectPage(containerId, state, aspectKey) {
           <h4 class="card-header">${t("Standing vs Society")}</h4>
           ${b ? `
             ${Number.isFinite(b.percentile) ? `
-              <div class="gauge-track" role="progressbar" aria-label="${t("Percentile vs society")}" aria-valuenow="${b.percentile}" aria-valuemin="1" aria-valuemax="99">
+              <div class="gauge-track" role="progressbar" aria-label="${t("Percentile vs society")}" aria-valuenow="${b.percentile}" aria-valuemin="1" aria-valuemax="99"
+                   aria-valuetext="${tp("{pct} percentile, typical range {low} to {high}", { pct: b.percentile, low: b.range.low, high: b.range.high })}">
+                <div class="gauge-range" style="left: ${b.range.low}%; width: ${Math.max(0, b.range.high - b.range.low)}%;"></div>
                 <div class="gauge-fill" style="width: ${b.percentile}%;"></div>
                 <div class="gauge-marker" style="left: ${b.percentile}%;"></div>
               </div>` : ""}

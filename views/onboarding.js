@@ -97,11 +97,33 @@ export function renderOnboarding(containerId, onComplete) {
         ])}
         ${numberField("onb-income", t("Monthly Individual Income (Net THB)"), "", 'min="0"', { required: true, field: "income" })}
         ${numberField("onb-savings", t("Monthly Savings (THB)"), "", 'min="0"', { required: true, field: "monthlySavings", placeholder: t("e.g. 3,000") })}
+        <!-- OPTIONAL since v79, and the only two optional numbers on a step
+             whose own header line promises the answers will be "compared
+             against real population benchmarks". These two are not, and cannot
+             be: neither reaches a score. Both feed runwayMonths alone, which
+             round 11 declined to rank PERMANENTLY for want of a published
+             distribution. So until v78 the mandatory gate in front of
+             everything this app does included two questions about a
+             household's cash position, asked before the reader had seen what
+             the app does with a single number they had typed. They are invited
+             again on the Finance page, where the runway is actually printed
+             and the reason for asking is on screen. -->
         <div class="grid-2">
-          ${numberField("onb-liquid", t("Liquid Savings You Could Reach This Week (THB)"), "", 'min="0"', { required: true, field: "liquidSavings", placeholder: t("e.g. 50,000") })}
-          ${numberField("onb-outflow", t("Committed Monthly Outflow (THB)"), "", 'min="0"', { required: true, field: "committedOutflow", placeholder: t("e.g. 12,000") })}
+          ${numberField("onb-liquid", t("Liquid Savings You Could Reach This Week (THB)"), "", 'min="0"', { field: "liquidSavings", placeholder: t("e.g. 50,000") })}
+          ${numberField("onb-outflow", t("Committed Monthly Outflow (THB)"), "", 'min="0"', {
+            field: "committedOutflow",
+            placeholder: t("e.g. 12,000"),
+            // Was the first sentence of the paragraph below, where it read "The
+            // second box is what you cannot skip" -- and .grid-2 collapses to
+            // one column under 600px, so on a phone there was no second box.
+            // In the field's own note it needs no positional reference at all.
+            // Same string profile.js already uses for the same input.
+            note: t("Rent, loan repayments, bills.")
+          })}
         </div>
-        <p class="onb-why">${t("The second box is what you cannot skip in a month — rent, loan repayments, bills. Together these two give your runway: how long you could cover the unskippable if income stopped. It is shown on your Finance page and is deliberately not scored, because no published distribution says what a given number of months is worth.")}</p>
+        <!-- .onb-note, not .onb-why: the latter is the class each step's own
+             header line uses, so this rendered as a second heading mid-form. -->
+        <p class="onb-note">${t("Both optional. Together they give your runway: how long you could cover the unskippable if income stopped. Reported on your Finance page, not scored.")}</p>
         <!-- Asked separately since v78. It used to be one of the examples in
              the box above ("rent, loan repayments, family support, bills"),
              which meant the money a reader sends to their parents entered this

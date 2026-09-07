@@ -145,8 +145,12 @@ export const TH = {
   "Committed Monthly Outflow (THB)": "รายจ่ายผูกพันต่อเดือน (บาท)",
   "e.g. 50,000": "เช่น 50,000",
   "e.g. 12,000": "เช่น 12,000",
-  "The second box is what you cannot skip in a month — rent, loan repayments, bills. Together these two give your runway: how long you could cover the unskippable if income stopped. It is shown on your Finance page and is deliberately not scored, because no published distribution says what a given number of months is worth.":
-    "ช่องที่สองคือรายจ่ายที่คุณตัดออกไม่ได้ในแต่ละเดือน เช่น ค่าเช่า ค่าผ่อนชำระ ค่าสาธารณูปโภค สองค่านี้รวมกันให้ “ระยะประคอง” ของคุณ คือระยะเวลาที่คุณจะครอบคลุมรายจ่ายที่ตัดไม่ได้หากรายได้หยุดลง ค่านี้แสดงบนหน้าการเงินและจงใจไม่นำไปคิดคะแนน เพราะไม่มีการกระจายตัวที่เผยแพร่ใดบอกว่าจำนวนเดือนเท่าใดมีค่าแค่ไหน",
+  // v79: the two runway boxes stopped being required, so the note under them
+  // says so first. The definition of "committed outflow" that used to open
+  // this paragraph moved into that field's own note -- it said "the second
+  // box", and .grid-2 is one column on a phone.
+  "Both optional. Together they give your runway: how long you could cover the unskippable if income stopped. Reported on your Finance page, not scored.":
+    "ไม่บังคับทั้งสองช่อง หากกรอกทั้งคู่จะได้ “ระยะประคอง” ของคุณ คือระยะเวลาที่คุณจะครอบคลุมรายจ่ายที่ตัดไม่ได้หากรายได้หยุดลง แสดงบนหน้าการเงิน ไม่คิดคะแนน",
   "Money You Send to Family (THB/month)": "เงินที่คุณส่งให้ครอบครัว (บาท/เดือน)",
   "e.g. 5,000 — leave blank if none": "เช่น 5,000 — เว้นว่างไว้หากไม่มี",
   "Counted in your runway with the box above, and shown on your Social Contribution page as giving. It is never subtracted from a score.":
@@ -159,6 +163,10 @@ export const TH = {
     "เงินที่คุณส่งให้ครอบครัว ไม่นำไปคิดคะแนน เพราะอัตราการมีส่วนร่วมที่เผยแพร่สองชุดซึ่งเป็นฐานของเปอร์เซ็นไทล์หน้านี้ นับการบริจาคเงินให้องค์กรและการเป็นอาสาสมัครอย่างเป็นทางการ และไม่มีชุดใดถามถึงการดูแลพ่อแม่ การจัดอันดับคุณด้วยมาตรวัดที่ไม่เคยถามประชากรกลุ่มนั้นเลย เท่ากับเป็นการสร้างการเปรียบเทียบขึ้นมาเอง ค่านี้แสดงไว้ตรงนี้เพราะมันคือการให้ ไม่ว่าแบบสำรวจสองชุดนั้นจะนับหรือไม่",
   "Measured, Not Scored": "วัดไว้ แต่ไม่คิดคะแนน",
   "Runway": "ระยะประคอง",
+  // Shown in the runway row's place while its two inputs are not on file.
+  "Not shown yet. It needs two numbers: the savings you could reach this week, and what you cannot skip in a month. Give both and this page will show how long you could cover the unskippable if income stopped. Like everything in this section it is reported to you, not scored — no published distribution says what a given number of months is worth, so there is no ranking to gain or lose by answering.":
+    "ยังไม่แสดง ต้องใช้ตัวเลขสองตัว: เงินออมที่ถอนใช้ได้ภายในสัปดาห์นี้ และรายจ่ายที่คุณตัดไม่ได้ในแต่ละเดือน เมื่อกรอกครบทั้งสองตัว หน้านี้จะแสดงว่าหากรายได้หยุดลง คุณจะครอบคลุมรายจ่ายที่ตัดไม่ได้ไปได้นานแค่ไหน เช่นเดียวกับทุกอย่างในส่วนนี้ ตัวเลขนี้รายงานให้คุณทราบ ไม่คิดคะแนน — ไม่มีการกระจายตัวที่เผยแพร่ใดบอกว่าจำนวนเดือนเท่าใดมีค่าแค่ไหน จึงไม่มีอันดับใดที่จะได้หรือเสียจากการตอบ",
+  "Add them on the Profile page": "เพิ่มได้ในหน้าโปรไฟล์",
   "{n} months": "{n} เดือน",
   "{savings} THB you could reach this week ÷ {outflow} THB/mo you cannot skip. Not scored — no published distribution says what a given number of months is worth, so this is reported to you rather than ranked.":
     "เงินออมที่ถอนใช้ได้ภายในสัปดาห์นี้ {savings} บาท ÷ รายจ่ายที่ตัดไม่ได้ {outflow} บาท/เดือน ไม่คิดคะแนน เพราะไม่มีการกระจายตัวที่เผยแพร่ใดบอกว่าจำนวนเดือนเท่าใดมีค่าแค่ไหน ค่านี้จึงรายงานให้คุณทราบ ไม่ได้นำไปจัดอันดับ",

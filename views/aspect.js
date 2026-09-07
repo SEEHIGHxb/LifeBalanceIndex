@@ -177,7 +177,7 @@ export function renderAspectPage(containerId, state, aspectKey) {
           `).join("")}
         </div>
 
-        ${detail.facts.length > 0 ? `
+        ${detail.facts.length > 0 || detail.invite ? `
         <div class="card">
           <h4 class="card-header">${t("Measured, Not Scored")}</h4>
           ${detail.facts.map(f => `
@@ -189,6 +189,24 @@ export function renderAspectPage(containerId, state, aspectKey) {
               <div class="component-detail">${escapeHtml(f.detail)}</div>
             </div>
           `).join("")}
+          ${detail.invite ? `
+            <!-- Same .component-row as a filled fact, deliberately: this IS the
+                 runway row, in the state where its inputs are not on file yet.
+                 Giving it its own banner elsewhere on the page would separate
+                 the ask from the thing being asked for, which is the mistake
+                 v79 is undoing — onboarding asked for these two numbers three
+                 screens before it said what they were for. No value in the
+                 right-hand slot, because there is no value; an em dash there
+                 would read as a measured result. -->
+            <div class="component-row">
+              <div class="component-head">
+                <span>${escapeHtml(detail.invite.label)}</span>
+              </div>
+              <div class="component-detail">
+                ${escapeHtml(detail.invite.text)}
+                <a href="${detail.invite.href}">${escapeHtml(detail.invite.linkLabel)}</a>
+              </div>
+            </div>` : ""}
         </div>` : ""}
 
         ${suggestions.length > 0 ? `

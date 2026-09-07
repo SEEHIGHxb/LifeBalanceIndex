@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `78`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `79`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,78 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.28.0] — 2026-09-07 (APP_VERSION 79)
+
+### Changed
+
+- **Onboarding stops requiring two numbers that score nothing.** Step 1 asked
+  for Liquid Savings and Committed Monthly Outflow as `required: true`, which
+  put two questions about a household's cash position inside the mandatory gate
+  in front of the entire app — before the reader had seen what the app does
+  with a single figure they had typed.
+
+  Neither reaches a score. Both feed `runwayMonths` and nothing else, and round
+  11 declined **permanently** to rank the runway for want of a published
+  distribution. Meanwhile the step's own header line promises the answers will
+  be "compared against real population benchmarks", which for these two is not
+  true and cannot be made true.
+
+  They are now optional, and invited again on the **Finance page**, in the
+  "Measured, Not Scored" card where the runway is actually printed and the
+  reason for asking is on screen beside the ask.
+
+  Considered and rejected: moving them into the deep assessment. `DEEP_INSTRUMENTS`
+  is validated questionnaires — radio items, aspect-scoped, scored. Two unranked
+  numeric fields there would mean building a new page type into a structure whose
+  purpose is scoring.
+
+- **Silence stopped being reported as a zero.** This is the part of the change
+  that needed care rather than the part that was asked for. Making the fields
+  optional gave `liquidSavings: 0` a second meaning: it had been "I have nothing
+  I could reach this week", and it is now also "I did not answer that".
+  `runwayMonths` sees 0 either way and returns 0 months, so the naive version of
+  this release would have printed **"Runway: 0 months"** — a sentence about a
+  reader's finances that the reader never said — to everyone who skipped the box.
+
+  The row is now withheld unless the coverage map says both inputs were actually
+  given. Both, not just the numerator: skipping the outflow box while filling in
+  family support leaves a denominator that is only part of what cannot be
+  skipped, and an understated denominator **overstates** the runway, which is the
+  direction that tells someone they are safer than they are.
+
+  Saves made before coverage flags were captured read as *unknown*, not as
+  *missing*, and keep their row — on those releases the fields were required, so
+  their owners did answer. Same convention `inputAnswered` already used.
+
+### Fixed
+
+- **The onboarding help text no longer points at a box that is not there.** It
+  opened "The second box is what you cannot skip in a month", and `.grid-2`
+  collapses to a single column below 600px — so on a phone there was no second
+  box. That definition now sits in the outflow field's own `note`, where it needs
+  no positional reference, and reuses the string `views/profile.js` already
+  carries for the identical input.
+- **It also stopped rendering as a heading.** The paragraph used `.onb-why`, the
+  class each step's own header line uses, so it read as a second heading
+  mid-form. It now uses `.onb-note`, which shares `.profile-note`'s declaration
+  — the same role in the same kind of place.
+- The third sentence (not scored, no published distribution) duplicated
+  `views/methodology.js` at greater length; compressed to one clause.
+
+### Tests
+
+- The `family-support` drift guard was **re-anchored, not weakened**. It matched
+  the deleted sentence; the copy it protects moved rather than disappeared, so
+  the guard moved with it and now reads the outflow field's note. It reads the
+  note specifically rather than the whole field block, because the block now
+  carries a source comment that discusses family support by name — a guard over
+  the block would fail on a comment while a real regression in the user-facing
+  string went unnoticed.
+- Seven tests added. Each was **verified to fail against the defect it
+  describes** before being kept: restoring `required: true` trips the gating
+  test, removing the coverage check trips three, and putting "family support"
+  back in the outflow note trips the drift guard.
 
 ## [2.27.0] — 2026-09-07 (APP_VERSION 78)
 

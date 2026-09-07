@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `77`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `78`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,125 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.27.0] — 2026-09-07 (APP_VERSION 78)
+
+Round 16 is the first release driven by a review of the app's **design** rather
+than its numbers. Four reviewers looked at the creative surface from four
+directions; where they agreed, they agreed that the design was arguing against
+the product. An app whose whole claim is care about what it knows was setting
+its one unsourced figure in the largest type it owns, and had never written a
+line of CSS for the language most of its readers use.
+
+Nothing here changes a score. Every change is about what the app shows, how
+large it shows it, and in what order.
+
+### Added — Thai typography
+
+- **A Thai serif.** `--font-serif` read `'Source Serif 4', 'Sarabun', Georgia,
+  serif`, and Source Serif 4 is subsetted to Latin — so every Thai heading
+  skipped it and landed on Sarabun, the same **sans** that `--font-sans`
+  resolves to. Both typographic roles were one role, and the serif/sans
+  contrast this design is built on was a Latin-only feature. Maitree now ships
+  alongside Sarabun (both Cadson Demak, designed to sit together), so
+  Maitree:Sarabun in Thai is the pairing that Source Serif 4:Inter is in Latin.
+  Because both faces are subsetted by `unicode-range`, one stack serves both
+  scripts and resolves correctly inside a mixed run.
+- **The first `[lang="th"]` rules in this stylesheet.** Leading goes to 1.75,
+  because Thai stacks vowels above the base consonant and tone marks above
+  those, and at 1.55 those marks sat in the descenders of the line above.
+  Negative and positive tracking tuned by eye against Latin is reset to
+  `normal` — including the `-0.01em` that `.brand h1` was applying to the app's
+  own name. Chips get the line-height to clear a tone mark.
+- **`familySupport`**, its own profile field. See below.
+
+### Changed — the phone fold
+
+- **The mobile card reordering now actually runs.** It had a fallback rule at
+  specificity (0,2,0) and six specific rules at (0,1,0), so the fallback
+  out-specified every rule it was meant to back up: all six cards resolved to
+  `order: 90`, tied, and flex fell back to DOM order. The block comment
+  describes fixing exactly the layout the block was still producing. Measured
+  at 375×812, the radar — "the point of the app" — has moved from y=861 to
+  y=376, and now sits entirely inside the first screen.
+- **The in-depth assessment offer moved below the scores**, from y=376 to
+  y=2842. Its sentence is "go deeper for more accurate scores", which above the
+  scores is an argument about numbers the reader has not been shown yet. Same
+  card, same copy, same button, further down.
+- **The assistant's speech bubble folds away on a phone** after a 9s dwell that
+  starts when the sentence finishes arriving, and returns on a tap. It is
+  `position: fixed` and full-width there, so it sat permanently on top of
+  whatever was scrolled under it — measured at y=645..734, covering the level
+  badge, the points bar and the name. The artwork, the character and the
+  dialogue are untouched.
+- The mental-health banner is deliberately **unchanged**. It renders only when
+  WHO-5 or ST-5 crosses the concern threshold, and for that reader hotlines
+  above the fold is the right call.
+
+### Changed — the epistemic hierarchy
+
+- **The Balance Index is no longer the largest type in the product.** It held
+  `--text-4xl`, 2.6rem/41.6px, while the cited percentiles it is built from sat
+  at 12px grey. It is this app's own harmonic mean, captioned two lines below
+  as "not a published measure". Demoted to `--text-2xl`; `--text-4xl` is
+  deleted, having had no other user.
+- **The aspect header leads with the letter grade**, a `--text-3xl` serif glyph
+  with its band label under it, and the 0-100 composite is secondary beneath.
+  The letter is read off the cited percentile; the score is this app's own. The
+  glyph drops the chip's fill, border and pill — a 30px filled green block
+  would read as a trophy, which is the one thing a population comparison must
+  not look like.
+- **The percentile's indicative range is drawn on the gauge** rather than
+  stated as "typical range 55–79" in 12px grey underneath it, with an
+  `aria-valuetext` so a screen reader gets both facts too. The range says how
+  precise the estimate is, and it was the smallest text in the block.
+
+### Changed — family support is no longer filed as a bill
+
+The committed-outflow question read *"what you cannot skip in a month — rent,
+loan repayments, **family support**, bills"*. So money a reader sends to their
+parents entered this model in exactly one place: inside a denominator that
+shortens a runway. Social Contribution, meanwhile, scored donations to charity
+and volunteering hours. For a reader practising กตัญญู, the largest transfer
+they make to another household was a bill in the finance section and did not
+exist at all in the section about giving.
+
+It was never *subtracted* from a score — `runwayMonths` is reported and not
+scored, and that has not changed. It was invisible.
+
+- `familySupport` is now asked separately and is optional.
+- The runway divides by `committedOutflow + familySupport`, because that money
+  does not stop when income stops. **Additive with no schema bump**: a save
+  written before the split keeps its runway to the baht.
+- Social Contribution reports it as a **fact** — a formatted line, no bar, no
+  weight, no percentile.
+- It is **not** added to the Social Contribution score. Every published giving
+  statistic behind that percentile measures donations to organisations and
+  formal volunteering; none asks about supporting parents. Scoring it would
+  move a reader up a ranking whose population was never asked the question.
+  Shown, named as giving, left unranked — the same call v77 made for
+  Environment.
+
+### Corrections to the review that prompted this release
+
+- There is **no dark mode** in this app and no gold accent; the palette is warm
+  paper, burgundy and navy. The `.text-gold` token is a leftover name.
+- The refusals are **not** delivered only through `title=` attributes.
+  `views/aspect.js` has carried a visible "Not ranked — on purpose" card, with
+  the aspect's own reason, since the refusals were introduced.
+- The mental-health banner is **271px**, not 540px.
+
+### Tests
+
+`tests/typography.test.mjs`, `tests/layout.test.mjs` and
+`tests/family-support.test.mjs` are new. Between them they pin: that the serif
+and sans stacks do not resolve Thai to the same face (verified to fail against
+the v77 stack); that every Thai face ships and is precached; that the order
+rules out-specify their own fallback; that the app's own composite is set
+smaller than a sourced figure; that family support moves no score; and that the
+committed-outflow question never files family support as a bill again.
+
+595 tests pass, up from 568.
 
 ## [2.26.0] — 2026-09-05 (APP_VERSION 77)
 

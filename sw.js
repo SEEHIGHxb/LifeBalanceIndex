@@ -81,7 +81,10 @@ const APP_SHELL = [
   "./assets/fonts/sarabun-thai-400.woff2",
   "./assets/fonts/sarabun-thai-500.woff2",
   "./assets/fonts/sarabun-thai-600.woff2",
-  "./assets/fonts/sarabun-thai-700.woff2"
+  "./assets/fonts/sarabun-thai-700.woff2",
+  "./assets/fonts/maitree-thai-400.woff2",
+  "./assets/fonts/maitree-thai-600.woff2",
+  "./assets/fonts/maitree-thai-700.woff2"
 ];
 
 self.addEventListener("install", (event) => {

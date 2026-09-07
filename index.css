@@ -49,7 +49,14 @@
   --color-track: #eceae4;          /* progress track / rail background */
 
   /* Typography: Source Serif 4 headings, Inter body, Sarabun for Thai */
-  --font-serif: 'Source Serif 4', 'Sarabun', Georgia, serif;
+  /* Each face is subsetted by unicode-range, so ONE stack serves both
+     scripts: Latin resolves to Source Serif 4, Thai to Maitree — including
+     inside a single mixed run. Sarabun stayed in this stack for years as a
+     silent last resort, which meant every Thai heading rendered in a SANS
+     and the serif/sans contrast this design is built on did not exist in
+     the app's primary language. Maitree is Sarabun's serif companion from
+     the same foundry; see assets/fonts/fonts.css. */
+  --font-serif: 'Source Serif 4', 'Maitree', Georgia, serif;
   --font-sans: 'Inter', 'Sarabun', system-ui, sans-serif;
   --font-mono: ui-monospace, 'Sarabun', 'SFMono-Regular', Menlo, monospace;
 
@@ -100,6 +107,71 @@ body {
   position: relative;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* --- Thai typography ------------------------------------------------------
+ * Thai is this app's primary language and, until this release, the stylesheet
+ * had NOT ONE rule scoped to it. Everything below fixes a Latin typographic
+ * habit that is actively wrong for Thai script.
+ *
+ * `lang` is set on <html> by i18n.js on every language switch, so these rules
+ * follow the reader without a re-render.
+ *
+ * 1. LEADING. Thai stacks vowels above and tone marks above those, and
+ *    descends below the baseline for others; the glyph column is roughly twice
+ *    the height of a Latin x-height run. 1.55 puts the tone marks of one line
+ *    into the descenders of the line above. 1.75 clears them.
+ * 2. TRACKING. Every negative or positive letter-spacing in this sheet was set
+ *    by eye against Latin. Thai renders as shaped clusters — a base consonant
+ *    plus its marks — and spacing between them is decided by the font's own
+ *    shaping, not by the designer. Tracking pulls a cluster apart or collides
+ *    it with its neighbour, and the -0.01em on .brand h1 did the former to the
+ *    app's own name. Reset to normal wherever this sheet sets it.
+ * 3. UPPERCASE. text-transform: uppercase is a no-op on Thai, so the small-cap
+ *    labels lose the one signal that made them read as labels. They keep their
+ *    size and colour; only the tracking that no longer helps is dropped.
+ */
+html[lang="th"] {
+  line-height: 1.75;
+}
+
+/* Headings can be tighter than body copy but never as tight as Latin. */
+html[lang="th"] h1,
+html[lang="th"] h2,
+html[lang="th"] h3,
+html[lang="th"] h4,
+html[lang="th"] .card-header,
+html[lang="th"] .brand h1 {
+  letter-spacing: normal;
+  line-height: 1.45;
+}
+
+/* The twelve rules in this sheet that set letter-spacing for Latin. Listed
+   explicitly rather than reset with a wildcard: a wildcard would also flatten
+   the Latin runs — source names, instrument acronyms, currency codes — that
+   sit inside Thai copy and still want their tracking. */
+html[lang="th"] .holo-badge,
+html[lang="th"] .criterion-chip,
+html[lang="th"] .prefill-chip,
+html[lang="th"] .onb-optional,
+html[lang="th"] .component-confidence,
+html[lang="th"] .percentile-band,
+html[lang="th"] .grade-badge,
+html[lang="th"] .grade-none,
+html[lang="th"] .grade-unranked,
+html[lang="th"] .provenance-table thead th,
+html[lang="th"] .balance-band {
+  letter-spacing: normal;
+}
+
+/* Thai has no ascender-free line, so a chip sized to Latin clips its tone
+   marks. Room for the stack, without moving the chip's own box. */
+html[lang="th"] .percentile-band,
+html[lang="th"] .grade-badge,
+html[lang="th"] .balance-band,
+html[lang="th"] .confidence-badge,
+html[lang="th"] .component-confidence {
+  line-height: 1.5;
 }
 
 /* Reserve the scrollbar's column whether or not a scrollbar is present.

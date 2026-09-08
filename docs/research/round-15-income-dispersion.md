@@ -1,8 +1,10 @@
 # Round 15 — is `INCOME_LOG_SIGMA` a free parameter, and does the income rank understate the tail?
 
-Status: **OPEN — brief written 2026-09-06.** **No code change to the distribution. The one change made in
-v77 was to correct a code comment that misdescribed how sigma is derived, plus a test that stops the
-calibration being broken silently.**
+Status: **CLOSED — answered 2026-09-08** (brief written 2026-09-06). **Still no code change to the
+distribution, and now for a stronger reason than "unverified": the anchor the round asked for arrived,
+and it is the wrong quantity.** Q1 and Q4 are answered from primary NSO sources. Q2 is answered but
+REFUSED. Q3 is answered structurally. Read `## Outcome` at the foot of this file before treating
+anything above it as settled — the export's central recommendation does not survive it.
 
 Affected code:
 
@@ -137,3 +139,160 @@ In rough order of value:
 - **Q4.** Does any published Thai source break individual earnings out by REGION beyond Bangkok/rest? The
   binary in `sanitize.js` currently ranks an Isaan farmer against a national-minus-Bangkok median that sits
   materially above their own region's, understating their percentile.
+
+---
+
+# Outcome — 2026-09-08
+
+Answered by `Thai Income Distribution Calibration.docx` (Gemini Deep Research), then verified here. The
+export's **arithmetic is exact** and its **structural diagnosis is right**. Its **headline recommendation
+is refused**, and its **regional table is substantially wrong**. All four outcomes are evidenced below.
+
+The material difference from the brief is environmental, and worth recording for future rounds: the brief
+was written where `nso.go.th` and `nesdc.go.th` were blocked by network egress policy. Verification ran
+from a machine that could reach `nso.go.th`, so the Labour Force Survey could be read directly instead of
+through summaries. **`nesdc.go.th` still could not be read** — its download endpoint self-redirects without
+a browser session — so the Gini itself remains uncited by this project.
+
+## What was verified, and how
+
+### The arithmetic: 9 of 9 exact
+
+Every quantitative claim was recomputed independently before being believed. All reproduce:
+
+| Claim | Export | Recomputed |
+|---|---|---|
+| sigma from the mean/median identity | 0.6536 | 0.6536 |
+| Gini at sigma 0.6536 | 0.3561 | 0.3560 |
+| Gini at sigma 0.65 | 0.3542 | 0.3542 |
+| implied mean, sigma 0.65, median 12,900 | 15,934 | 15,934 |
+| implied mean, sigma 0.85, median 12,900 | 18,513 | 18,513 |
+| Gini at sigma 0.85 | 0.4520 | 0.4522 |
+| sigma required for Gini 0.417 | 0.7763 | 0.7764 |
+| median if that sigma holds and the mean is preserved | 11,817 | 11,816 |
+| income at which the rank saturates at 99 | 52,900 | 52,867 |
+
+The saturation figure is the rounding threshold, not the 99th centile of the distribution — a first attempt
+to check it computed the latter, got 58,519, and was wrong. The export was right.
+
+### Q1 — is there a published NSO median individual wage? **NO. Confirmed at the primary source.**
+
+NSO Labour Force Survey, Q4/2025 (ไตรมาสที่ 4 ตุลาคม–ธันวาคม 2568), read directly. The report publishes
+**Table 3.7, "Employees by wage/salary"** — a bracket frequency distribution — and **Table 18, "Employee
+average monthly wage by economic activity, region and area"** — arithmetic means. **No median scalar
+appears in either.** The export's account of NSO's reporting practice is accurate.
+
+`INCOME_MEDIAN_NATIONAL = 12900` therefore remains what the v77 comment said it was: derived from the
+published mean under an assumed dispersion, not an independently published figure.
+
+### Q2 — is Thailand's income Gini in the mid-0.4s? **Answered as 0.417, and REFUSED anyway.**
+
+The export attributes 0.417 (2023) to NESDC's *Report on the Analysis of Poverty and Inequality Situation
+in Thailand 2023*, and the cited NESDC page is real. The PDF could not be retrieved, so **this project
+still has no primary citation for 0.417** and does not adopt it under round 8's sourcing rule.
+
+That turned out not to matter, because the figure is the wrong quantity regardless of whether it verifies:
+
+- **NESDC measures per-capita HOUSEHOLD income** from the Socio-Economic Survey. The export states this
+  itself, in its own comparison table, and then recommends importing the number anyway.
+- **This field asks one person for their own monthly income.** Household per-capita income pools earners,
+  dependants and non-wage income, and disperses more widely than individual wages.
+
+This is the same error the export correctly warns about between consumption and income, one level further
+down. Catching it at the first level and walking into it at the second is the round's main lesson.
+
+**And it fits worse, measurably.** Against NSO Table 3.7 (19.53 million employees; shares renormalised over
+the 99.2% with a known wage):
+
+| Monthly wage | NSO published | Current model (sigma 0.65) | Export's fix (sigma 0.7764) |
+|---|---|---|---|
+| under 10,000 | 27.3% | 34.8% | 41.5% |
+| 10,000–14,999 | 32.8% | 24.4% | 20.6% |
+| 15,000–29,999 | 29.9% | 31.1% | 26.4% |
+| over 30,000 | **10.0%** | **9.7%** | 11.5% |
+
+The proposed recalibration misses the body by 14 points where the current one misses by 8, and loses the
+one bracket the current calibration gets right. **Recommendation refused on evidence, not on taste.**
+
+### Q3 — if the targets conflict, is the answer a heavier tail? **Yes. Confirmed by free fit.**
+
+A lognormal was fitted **freely** to the four published brackets — both parameters loose, no anchor, no
+published mean to honour. The best attainable fit is median 13,160 / sigma 0.5165, and it reaches only
+**5.5% above 30,000 THB against a published 10.0%**: it buys agreement in the body by giving up the tail.
+
+So the mean/Gini conflict is **not** evidence that sigma is misset. No two-parameter lognormal reproduces
+this distribution. Fixing it properly means a heavier-tailed family (lognormal–Pareto splice, GB2) or the
+published quantiles themselves — a decision about model family, not an edit to a constant.
+
+### Q4 — does NSO break wages out beyond Bangkok/rest? **Yes, and the export's numbers are wrong.**
+
+Table 18 exists as described, and disaggregates by region *and* by municipal/non-municipal area. But the
+export claims five macro-regions where **NSO uses seven**, and its wage figures — footnoted to a blog, a
+news site and a web forum rather than to the LFS it names — do not match the source:
+
+| Region | Export claimed | NSO Table 18, Q4/2025 | |
+|---|---|---|---|
+| Bangkok | ~22,500–24,000 | **21,458** | overstated |
+| Central | ~15,500–16,500 | **15,340** | slightly overstated |
+| Eastern | *not listed* | **15,137** | region omitted |
+| Northern | ~11,200–12,100 | **14,496** | understated by ~2,700 |
+| Northeastern | ~10,500–11,600 | **13,230** | understated by ~1,900 |
+| Southern | ~13,000–14,200 | **13,933** | correct |
+| Southern Border | *not listed* | **11,395** | region omitted |
+| non-municipal (kingdom) | ~8,400–9,500 | **13,648** | wrong by ~4,500 |
+
+Whole kingdom: **15,912**. The rows that verify are the ones the export sourced to NSO PDFs; the rows that
+fail are the ones it sourced to `the-shiv.com`, `sanook.com` and `pantip.com`. Rounds 6 and 7 found the
+same pattern in their own exports.
+
+**The regional argument survives in weakened form.** Isaan really is below Bangkok, but at a ratio of
+13,230/21,458 = **0.617**, not the ~0.5 claimed, and the spread among non-Bangkok regions (13,230 to
+15,340, about 16%) is far narrower than the export implies. The Bangkok/Provinces binary distorts less
+than the export argues — while still distorting.
+
+## Two things the verification found that the export did not
+
+1. **The mean anchor is corroborated.** LFS Q4/2025 reports a whole-kingdom average wage of **15,912 THB**
+   against the **15,972** (Q3/2025) the model uses. The anchor is current.
+
+2. **The Bangkok multiplier is corroborated across two surveys.** `INCOME_MEDIAN_BANGKOK` is the national
+   median scaled by the SES household-income ratio 39,100/29,000 = **1.3483**. NSO's Bangkok-to-kingdom
+   *individual wage* ratio is 21,458/15,912 = **1.3485**. Two different surveys measuring two different
+   aggregates give the same regional multiplier to four significant figures. That is a coincidence worth
+   nothing statistically and a great deal practically: the one regional assumption in the model is now
+   independently supported.
+
+## What changed in code
+
+Nothing in the distribution. Deliberately.
+
+| Change | Where |
+|---|---|
+| Calibration measured against published NSO brackets, and the refused recalibration guarded | `tests/benchmarks.test.mjs` |
+| Free-fit proof that no lognormal fits body and tail together | `tests/benchmarks.test.mjs` |
+| Calibration comment corrected: a Gini is not the missing anchor | `benchmarks.js` |
+
+The comment mattered. It previously told a reader that an income Gini "would close" the median's missing
+anchor and had been left out only because it could not be verified — which invites precisely the change
+this round refused. It now says why the figure is the wrong one.
+
+## Still open
+
+- **The median is still unanchored.** Round 15 asked whether a Gini would fix that. It would not.
+- **The rank still saturates at ~52,900 THB.** Structural, not a constant; see Q3.
+- **Q4's regional expansion is now possible and was not taken.** Published per-region means exist and the
+  Bangkok median already demonstrates the ratio method. It was deferred because it changes the onboarding
+  and profile inputs, and the flow redesign is pending. The data is in the table above when wanted.
+
+## What would still settle it, revised
+
+Superseded ranking from the brief. NSO **individual-wage quantiles** are the only thing that helps now:
+
+1. **NSO LFS microdata** — an empirical ECDF, as WHO-5 got its published table in v41. Removes the family
+   assumption, the median assumption and the saturation together. A data request, not a literature search.
+2. **A finer published wage-bracket table.** Table 3.7's four bands with an open top are enough to *test*
+   against and too coarse to *interpolate*. Ten bands would replace the parametric model outright.
+3. **A published median individual wage.** Q1 answers that NSO does not publish one; an academic paper
+   computing it from microdata, with the computation stated, would do.
+4. ~~A verified NESDC income Gini~~ — **struck.** Answered, and it is the wrong aggregate. Do not spend
+   another round retrieving it.

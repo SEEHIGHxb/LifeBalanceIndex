@@ -250,19 +250,40 @@ export function ordinal(n) {
 // been derived from the mean and an assumed sigma (or vice versa) — one
 // published number and one free parameter wearing two names.
 //
-// A second published anchor would close it, and the natural one is Thailand's
-// income Gini, since for a lognormal Gini = 2*Phi(sigma/sqrt(2)) - 1. That
-// would pin sigma directly and let the median be DERIVED from the published
-// mean rather than assumed. It is deliberately not done here: no Thai income
-// Gini could be verified against a primary source, and this project does not
-// cite secondary summaries for a figure it displays (round 8's sourcing rule).
-// The arithmetic, the candidate figures and what would settle it are written up
-// in docs/research/round-15-income-dispersion.md.
+// A GINI IS NOT THE MISSING ANCHOR, and this note used to imply it was. Round
+// 15's answer arrived with exactly the figure that was wanted -- NESDC's income
+// Gini of 0.417 (2023), which for a lognormal (Gini = 2*Phi(sigma/sqrt(2)) - 1)
+// implies sigma = 0.7764 -- and the recommendation was refused anyway. Two
+// reasons, in order of weight:
 //
-// Note also that the tension may not be resolvable inside this model at all:
-// the sigma implied by the mean/median pair (0.65) and the sigma implied by any
-// mid-0.4s Gini (~0.85) cannot both hold, which would say the lognormal FAMILY
-// understates the Thai upper tail rather than that one parameter is misset.
+//   1. WRONG QUANTITY. NESDC measures per-capita HOUSEHOLD income from the SES.
+//      This field asks one person for their own monthly income. That is the
+//      same class of mismatch as the consumption-vs-income error the export
+//      itself warns about, one level further down, and household per-capita
+//      income is the more dispersed of the two.
+//   2. IT FITS WORSE. Measured against the NSO's own published wage brackets
+//      (LFS Q4/2025 Table 3.7, 19.53 million employees), sigma = 0.7764 misses
+//      the body by 14 points where 0.65 misses it by 8, and overshoots the
+//      share above 30,000 THB. Guarded in tests/benchmarks.test.mjs.
+//
+// So the median is still unanchored and a Gini will not anchor it. What would
+// is an individual-wage quantile table; NSO publishes four brackets with an
+// open top, which is too coarse to interpolate but enough to test against.
+//
+// The mean anchor itself now has independent corroboration: LFS Q4/2025 reports
+// a whole-kingdom average wage of 15,912 THB against the 15,972 (Q3/2025) below,
+// and its Bangkok-to-kingdom ratio of 21,458/15,912 = 1.3485 lands on the SES
+// household ratio 39,100/29,000 = 1.3483 that INCOME_MEDIAN_BANGKOK uses -- two
+// different surveys, two different aggregates, the same regional multiplier.
+//
+// THE TENSION IS STRUCTURAL, NOT A MISSET CONSTANT. Fitting a lognormal FREELY
+// to those four published brackets -- both parameters loose -- still reaches
+// only ~5.5% above 30,000 THB against a published 10.0%. No lognormal holds the
+// Thai body and the Thai tail at once, so the fix is a heavier-tailed family or
+// the published quantiles themselves, not a new value for sigma. Also guarded.
+//
+// Full workings, the verification of the export against primary sources, and
+// what would settle it: docs/research/round-15-income-dispersion.md.
 const INCOME_MEDIAN_NATIONAL = 12900;
 const INCOME_MEDIAN_BANGKOK = 17400;
 const INCOME_LOG_SIGMA = 0.65;

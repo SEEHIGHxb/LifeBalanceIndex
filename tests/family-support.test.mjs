@@ -143,13 +143,28 @@ test("the committed-outflow question no longer files family support as a bill", 
   // examples would silently undo the whole round: the new field would still
   // exist, and readers would still enter the money in the box that only ever
   // shortens a runway.
+  // RE-ANCHORED in v79, and worth saying why rather than letting a future
+  // reader assume the guard was weakened. It used to match the sentence "The
+  // second box is what you cannot skip in a month...". v79 deleted that
+  // sentence -- it named a "second box" that does not exist under 600px, where
+  // .grid-2 is a single column -- but the copy did not go away, it moved into
+  // the outflow field's own note. So the guard moves with it. What is being
+  // protected has not changed by a word: whatever text explains committed
+  // outflow to the reader must not list family support among its examples.
+  //
+  // Reading the note rather than the whole field block is deliberate. The block
+  // now carries a source comment that discusses family support by name, and a
+  // guard that searched the block would fail on a comment while a real
+  // regression in the user-facing string went unnoticed.
   const onboarding = read("views/onboarding.js");
-  const outflowCopy = onboarding.match(/The second box is what you cannot skip in a month[^"]*/);
-  assert.ok(outflowCopy, "the committed-outflow help text must still be there");
+  const outflowField = onboarding.match(/numberField\("onb-outflow"[\s\S]*?\}\)\}/);
+  assert.ok(outflowField, "the committed-outflow field must still be there");
+  const outflowNote = outflowField[0].match(/note: t\("([^"]+)"\)/);
+  assert.ok(outflowNote, "the committed-outflow help text must still be there");
   assert.ok(
-    !/family support/i.test(outflowCopy[0]),
+    !/family support/i.test(outflowNote[1]),
     `the committed-outflow question lists family support as an example again: ` +
-    `"${outflowCopy[0]}"`
+    `"${outflowNote[1]}"`
   );
   assert.match(onboarding, /field: "familySupport"/,
     "onboarding must ask for family support on its own");

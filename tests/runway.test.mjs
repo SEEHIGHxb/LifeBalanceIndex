@@ -24,6 +24,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import { runwayMonths, calculateFinanceScore } from "../scoring.js";
 import { getAspectDetail } from "../aspects.js";
@@ -194,4 +195,110 @@ test("V70 CONTRACT: runway changes no score anywhere in the app", () => {
     poor.components.map(c => c.value),
     "no component bar responds to runway either"
   );
+});
+
+// --- v79: THE TWO INPUTS ARE OPTIONAL, AND SILENCE IS NOT A ZERO -----------
+//
+// Making onboarding's two runway boxes optional gave `liquidSavings: 0` a
+// second meaning. It had been one fact ("I have nothing I can reach"); it is
+// now also "I did not answer that". runwayMonths sees 0 either way and returns
+// 0 months, so without a guard the page would print "0 months" -- a statement
+// about this reader's finances that the reader never made -- to everyone who
+// skipped the box. These tests pin the distinction and the invitation that
+// takes the row's place.
+
+test("v79: a skipped input is not a zero \u2014 the runway row is omitted, not printed as 0", () => {
+  const state = makeState({
+    liquidSavings: 0, committedOutflow: 12000,
+    provided: { liquidSavings: false, committedOutflow: true }
+  });
+  const facts = getAspectDetail(state, "finance").facts;
+  assert.equal(facts.find(f => f.key === "runway"), undefined,
+    "a runway was printed from a number the reader never gave");
+});
+
+test("v79: an OVERSTATING runway is refused too, not just an understating one", () => {
+  // Skipping the outflow box while filling in family support leaves a
+  // denominator that is only part of what cannot be skipped. A denominator
+  // that is too small makes the runway too LONG, which is the direction that
+  // tells someone they are safer than they are.
+  const state = makeState({
+    liquidSavings: 120000, committedOutflow: 0, familySupport: 5000,
+    provided: { liquidSavings: true, committedOutflow: false }
+  });
+  assert.equal(runwayMonths(state.profile), 24, "the raw arithmetic still divides");
+  assert.equal(getAspectDetail(state, "finance").facts.find(f => f.key === "runway"), undefined,
+    "but the page must not print 24 months off half a denominator");
+});
+
+test("v79: a save from before coverage was captured still shows its runway", () => {
+  // The back-compat case, and the one a careless implementation breaks. On
+  // these saves the fields were REQUIRED, so their owners did answer; an
+  // absent `provided` map means unknown, never missing.
+  const state = makeState({ liquidSavings: 60000, committedOutflow: 12000 });
+  delete state.profile.provided;
+  const runway = getAspectDetail(state, "finance").facts.find(f => f.key === "runway");
+  assert.ok(runway, "an older save lost the row it had already earned");
+  assert.equal(runway.display, "5 months");
+});
+
+test("v79: both inputs given means the row is back and the invitation is gone", () => {
+  const state = makeState({
+    liquidSavings: 60000, committedOutflow: 12000,
+    provided: { liquidSavings: true, committedOutflow: true }
+  });
+  const detail = getAspectDetail(state, "finance");
+  assert.ok(detail.facts.find(f => f.key === "runway"), "the row must render");
+  assert.equal(detail.invite, null, "and must not be asked for twice");
+});
+
+test("v79: the invitation appears exactly when the row does not", () => {
+  // The two must never disagree: an invitation beside a printed runway reads
+  // as a bug, and a missing row with no explanation reads as one too. Both
+  // answers come from runwayInputsMissing, and this is the guard on that.
+  const cases = [
+    { liquidSavings: false, committedOutflow: false },
+    { liquidSavings: true, committedOutflow: false },
+    { liquidSavings: false, committedOutflow: true },
+    { liquidSavings: true, committedOutflow: true }
+  ];
+  for (const provided of cases) {
+    const state = makeState({ liquidSavings: 60000, committedOutflow: 12000, provided });
+    const detail = getAspectDetail(state, "finance");
+    const hasRow = Boolean(detail.facts.find(f => f.key === "runway"));
+    const hasInvite = Boolean(detail.invite);
+    assert.equal(hasRow, !hasInvite,
+      `row and invitation disagree for ${JSON.stringify(provided)}`);
+  }
+});
+
+test("v79: the invitation is finance-only and never carries a score", () => {
+  const state = makeState({ provided: { liquidSavings: false, committedOutflow: false } });
+  for (const key of ["physical", "mental", "relationships", "personalGoals",
+                     "socialContribution", "environment", "humanityFuture"]) {
+    assert.equal(getAspectDetail(state, key).invite, null, key + " grew an invitation");
+  }
+  const invite = getAspectDetail(state, "finance").invite;
+  assert.equal(invite.value, undefined, "an invitation must never carry a bar value");
+  assert.equal(invite.href, "#/profile");
+});
+
+test("v79: onboarding does not gate the assessment on either runway input", () => {
+  // Source-level, because these two are the ONLY numeric fields on that step
+  // without `required`, and there is no DOM harness in this suite to submit
+  // the form through. It fails on the defect: restoring `required: true` to
+  // either field puts the flag back inside the matched call and trips it.
+  const onboarding = readFileSync(
+    new URL("../views/onboarding.js", import.meta.url), "utf8");
+  for (const id of ["onb-liquid", "onb-outflow"]) {
+    const call = onboarding.match(new RegExp(`numberField\\("${id}"[\\s\\S]*?\\}\\)\\}`));
+    assert.ok(call, id + " is missing from onboarding entirely");
+    assert.ok(!/required:\s*true/.test(call[0]),
+      id + " is a required field again \u2014 the runway is gating the whole app");
+  }
+  // And the one it sits beside is still required, so this test cannot pass by
+  // the whole step having quietly become optional.
+  const savings = onboarding.match(/numberField\("onb-savings"[\s\S]*?\}\)\}/);
+  assert.match(savings[0], /required:\s*true/,
+    "monthly savings must still be required \u2014 it sets the goal target");
 });

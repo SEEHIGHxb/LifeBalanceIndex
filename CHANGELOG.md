@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `78`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `79`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,78 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.28.0] — 2026-09-07 (APP_VERSION 79)
+
+### Changed
+
+- **Onboarding stops requiring two numbers that score nothing.** Step 1 asked
+  for Liquid Savings and Committed Monthly Outflow as `required: true`, which
+  put two questions about a household's cash position inside the mandatory gate
+  in front of the entire app — before the reader had seen what the app does
+  with a single figure they had typed.
+
+  Neither reaches a score. Both feed `runwayMonths` and nothing else, and round
+  11 declined **permanently** to rank the runway for want of a published
+  distribution. Meanwhile the step's own header line promises the answers will
+  be "compared against real population benchmarks", which for these two is not
+  true and cannot be made true.
+
+  They are now optional, and invited again on the **Finance page**, in the
+  "Measured, Not Scored" card where the runway is actually printed and the
+  reason for asking is on screen beside the ask.
+
+  Considered and rejected: moving them into the deep assessment. `DEEP_INSTRUMENTS`
+  is validated questionnaires — radio items, aspect-scoped, scored. Two unranked
+  numeric fields there would mean building a new page type into a structure whose
+  purpose is scoring.
+
+- **Silence stopped being reported as a zero.** This is the part of the change
+  that needed care rather than the part that was asked for. Making the fields
+  optional gave `liquidSavings: 0` a second meaning: it had been "I have nothing
+  I could reach this week", and it is now also "I did not answer that".
+  `runwayMonths` sees 0 either way and returns 0 months, so the naive version of
+  this release would have printed **"Runway: 0 months"** — a sentence about a
+  reader's finances that the reader never said — to everyone who skipped the box.
+
+  The row is now withheld unless the coverage map says both inputs were actually
+  given. Both, not just the numerator: skipping the outflow box while filling in
+  family support leaves a denominator that is only part of what cannot be
+  skipped, and an understated denominator **overstates** the runway, which is the
+  direction that tells someone they are safer than they are.
+
+  Saves made before coverage flags were captured read as *unknown*, not as
+  *missing*, and keep their row — on those releases the fields were required, so
+  their owners did answer. Same convention `inputAnswered` already used.
+
+### Fixed
+
+- **The onboarding help text no longer points at a box that is not there.** It
+  opened "The second box is what you cannot skip in a month", and `.grid-2`
+  collapses to a single column below 600px — so on a phone there was no second
+  box. That definition now sits in the outflow field's own `note`, where it needs
+  no positional reference, and reuses the string `views/profile.js` already
+  carries for the identical input.
+- **It also stopped rendering as a heading.** The paragraph used `.onb-why`, the
+  class each step's own header line uses, so it read as a second heading
+  mid-form. It now uses `.onb-note`, which shares `.profile-note`'s declaration
+  — the same role in the same kind of place.
+- The third sentence (not scored, no published distribution) duplicated
+  `views/methodology.js` at greater length; compressed to one clause.
+
+### Tests
+
+- The `family-support` drift guard was **re-anchored, not weakened**. It matched
+  the deleted sentence; the copy it protects moved rather than disappeared, so
+  the guard moved with it and now reads the outflow field's note. It reads the
+  note specifically rather than the whole field block, because the block now
+  carries a source comment that discusses family support by name — a guard over
+  the block would fail on a comment while a real regression in the user-facing
+  string went unnoticed.
+- Seven tests added. Each was **verified to fail against the defect it
+  describes** before being kept: restoring `required: true` trips the gating
+  test, removing the coverage check trips three, and putting "family support"
+  back in the outflow note trips the drift guard.
 
 ## [2.27.0] — 2026-09-07 (APP_VERSION 78)
 
@@ -522,6 +594,222 @@ no longer true of Finance.
 - **The monthly check-in adds up to +3 points for having logged reviews**
   (`state.js`), which the methodology page's "never by flat per-log bonuses"
   does not cover.
+
+## [2.25.0] — 2026-08-26 (APP_VERSION 76)
+
+Round 14. **Backfilled 2026-09-07** — written from the commits, not from memory.
+
+### Removed
+
+- **The savings bonus, on three independently sufficient grounds.** Until v75
+  `calculateFinanceScore` added `savingsBonus` — `savingsRate / 20`, capped and
+  divided by 10, so 0 to +10 points — on top of a composite whose weights already
+  summed to exactly 1.0, then clamped the total.
+
+  1. **It double-counted.** CFPB item 4 is "I have money left over at the end of
+     the month". `savingsRate` is derived in `connections.js` as
+     `(income − expenses) / income` — the money left over at the end of the
+     month. The same fact, asked subjectively at weight 0.85 and measured
+     objectively as a bonus outside the weighting.
+  2. **The structure is unprecedented.** No validated index adds an un-normalised
+     term outside its composite. Checked against FinHealth, CFPB, OECD/INFE and
+     the World Bank capability frameworks; recorded as a confirmed structural
+     absence rather than a gap in the searching.
+  3. **The 20% divisor was never published.** It traces to the 50/30/20 rule
+     (Warren & Tyagi, *All Your Worth*, 2005) — a trade paperback. Institutional
+     targets are all about savings **stock**, never monthly flow. In Thailand
+     median net saving across income deciles 1–6 runs 0–5%, so the full +10
+     landed mostly on people already scoring high on income standing.
+
+### Changed
+
+- Saving moved from `components` (a scored bar) to `facts` (a reported line),
+  joining runway. It is **still collected and still shown** — it sets the savings
+  goal target and pre-fills the weekly review — it is simply not scored.
+- Reference profile's finance score 54 → **49**. Finance ceiling 95 → **85**
+  under 70 and 99 → **92** from 70 up, so **Finance can no longer reach the
+  app-wide cap of 99 at any age**. Pinned openly rather than fixed: the bonus was
+  what used to close that gap, with points no instrument published.
+- Balance Index cost is **one point** (98 → 97), small because
+  `relativeToPopulation` reads the gap to the reference average and that average
+  fell by 5 in the same release.
+- `RULES.finance.savings` deleted rather than rehomed — rules are looked up by
+  *component* key, so it became unreachable the moment saving stopped being one.
+
+### Not done
+
+- **Income was not touched.** The research recommended removing `income_standing`
+  too; that is round 10's own finding, and round 10 already acted on it by cutting
+  the weight 0.6 → 0.15.
+- **Savings stock was not scored.** The FinHealth-style liquid-stock indicator was
+  examined and declined **permanently** by round 11.
+
+### Open question this leaves
+
+Nothing the weekly review collects moves the finance score any more. The savings
+pledge still tracks the rate and pays XP, but the aspect-shift loop that existed
+in v75 is gone. Restoring it needs a published normalizer for something objective
+in personal finance — which rounds 10, 11 and 14 have each failed to find, three
+times, for three different quantities.
+
+## [2.24.0] — 2026-08-26 (APP_VERSION 75)
+
+**Backfilled 2026-09-07.**
+
+### Added
+
+- **A half-finished form survives a reload.** Onboarding asks 64 radio groups and
+  25 fields over six steps, and until now a reload, a back-swipe, or a phone call
+  that killed the tab took every answer and dropped the user back on question 1.
+  The answers had never been anywhere but the DOM.
+
+  `draft.js` writes a scratch copy to its own `localStorage` key on every `input`
+  and `change`, and restores it on render — wired into onboarding, the monthly
+  check-in, and each deep-assessment section (one draft per aspect, so submitting
+  Mental cannot discard a half-finished Finance section). Cleared on successful
+  submit: from then on `state.js` is the record, and a draft would be a stale
+  second copy of assessment data.
+
+  Kept **out** of the state schema, alongside `lifequest_share_prefs` and
+  `lifequest_lang`: a draft has not been validated or scored and must never
+  migrate.
+
+### Fixed
+
+- **The subtle bug this avoids**, and the reason `applyDraft` returns what it
+  restored rather than a boolean: onboarding records which instruments were
+  answered by listening for `input` and `change`, and setting `.checked` from
+  script fires neither. A restore that did not report its work would leave a fully
+  answered assessment recorded as **unanswered**, and every aspect page would show
+  "estimated" confidence over real answers.
+- Same class, second instance: restoring a "Coupled" relationship by setting
+  `.value` fires no `change` either, so the RAS block would stay hidden and those
+  items would never be asked. `syncCoupleBlock` is extracted and called after a
+  restore.
+- Drafts are **discarded rather than repaired** when the app version differs (v73
+  added CIT Learning; a v72 draft would fill every block but that one and look
+  complete), when older than 7 days, or when unparseable.
+- `draft.js` registered in the service-worker `APP_SHELL` — without it the app
+  breaks offline.
+
+## [2.23.0] — 2026-08-25 (APP_VERSION 74)
+
+Round 13. **Backfilled 2026-09-07.**
+
+### Fixed
+
+- **One donation stopped being scored in two aspects.** LFIS item 3 asked "I
+  support or donate to causes addressing future generations' well-being". Giving
+  is already scored at 0.4 of Social Contribution through PTM item 1 and
+  `monthlyDonations`, so the same act was paid again at 0.1 of Humanity's Future.
+
+  The overlap was **conditional rather than structural**, which is worse than it
+  first looks. The pension v64 removed was one fact counted twice for everybody —
+  at least uniform. Here it depended on *where the money went*: a monthly gift to
+  a temple scored once, an identical gift to a children's fund scored twice. The
+  double payment landed precisely on the users the aspect exists to credit.
+
+  The replacement item measures the one future-directed behaviour nothing else
+  scores — restraint toward a beneficiary who does not exist yet: *"I use less of
+  something now so more of it is left for the people who come after me."*
+
+### Disproved, and recorded as such
+
+- Item 4 ("I plan my finances with a horizon of 10 years or more") was expected to
+  be a second pension and **is not**. `calculateFinanceScore` scored income, CFPB
+  and the savings bonus; all five CFPB items measure *present* coping, and a
+  savings rate carries no horizon at all. Nothing in the app scores planning
+  horizon. Recorded because the next reader will have the same suspicion.
+
+### Not done
+
+- **No weights move** — not the 0.2 across the five terms, not Social
+  Contribution's 0.4, not Finance. Same position, same count, same FREQ_5 scale,
+  so stored `lfis` sums stay valid and need no migration. Both previous fixes in
+  this class (v64, v67) moved weights; this one does not, and says so.
+- Dropping the item was considered and rejected: `calculateHumanityFutureScore`
+  infers the v65 maintaining term from `lfisAnswers.length >= 6`, so a five-item
+  instrument would read as a pre-v65 save and silently lose it.
+- The `weeklyLearningHours` reuse is confirmed as the app's largest double-count
+  (~0.167 of Personal Goals and 0.1 of Humanity's Future) and **deliberately
+  kept**, disclosed in three comments and on the user-facing detail line.
+
+## [2.22.0] — 2026-08-23 (APP_VERSION 73)
+
+**Backfilled 2026-09-07.**
+
+### Changed
+
+- **The "digital literacy" slider is gone.** Personal Goals' learning term was
+  half weekly study hours and half a 0–100 self-rating slider with no instrument,
+  no validation and no norm behind it — after v72 the only unvalidated term left
+  in the aspect. Replaced by the **CIT Learning subscale** (Su, Tay & Diener 2014,
+  doi:10.1111/aphw.12027), same paper and same licence as v72's Accomplishment.
+
+  `learningScore` is now `0.5 × study hours + 0.5 × CIT Learning`, so the new
+  subscale carries **one sixth** of the aspect, not a third. The behavioural half
+  stays on purpose: GSE, Accomplishment and Learning are all self-appraisals, and
+  study hours are the only term in the aspect a user could be wrong about in a
+  checkable direction.
+
+- **Why a sixth rather than a third**, stated rather than assumed: Su et al. name
+  Learning (with Community) as the only subscales showing merely modest
+  relationships to existing well-being measures, and conclude both "may be
+  peripheral rather than central". Its correlation with the SWLS is .20, the
+  weakest of any positively-worded subscale. That cuts both ways, and the release
+  says so rather than picking a side — peripherality is why Learning cannot
+  double-count against Mental the way Accomplishment (r = .82) can, and also why a
+  three-question appraisal does not carry the whole term alone.
+
+### Corrected
+
+- Two reliability figures round 12 had recorded from secondary notes, read at
+  primary source while implementing: alpha **.76–.82** across five samples, not
+  .79–.82; four-month test-retest **.66**, never recorded before — the lower half
+  of the instrument, against Accomplishment's .78.
+
+## [2.21.0] — 2026-08-23 (APP_VERSION 72)
+
+Round 12's adoption. **Backfilled 2026-09-07.**
+
+### Added
+
+- **Personal Goals finally contains a measure of goals.** It never had one. The
+  composite becomes an equal-weighted mean of three terms —
+  `(gseScore + citAccScore + learningScore) / 3` — replacing the
+  `(0.4·gse + 0.3·learning) / 0.7` pair left behind when grit stopped being scored
+  in v64.
+
+  Both surviving coefficients change value (0.571 → 0.333 and 0.429 → 0.333), so
+  this is a **scoring change, not an addition**: anyone who answers the new items
+  sees their Personal Goals number move.
+
+  Three items verbatim from Appendix A of Su, Tay & Diener 2014
+  (doi:10.1111/aphw.12027), on the published 1–5 agreement scale. Licensed for
+  standalone non-commercial use by the instrument itself: "The CIT subscales may
+  be used alone or in combination with each other."
+
+- **Equal thirds is disclosed as a choice, not a citation.** The CIT publishes no
+  rule for combining its subscales; the round-12 addendum searched the paper and
+  recorded the absence. What the authors did do, building a composite of this
+  instrument themselves, was weight the BIT's ten facets equally with none
+  privileged — a revealed practice, not a stated rule, and the methodology page
+  says so in the same register v69 used for the 0.15 income weight.
+
+### Not done
+
+- **Not benchmarked, deliberately.** Wiese et al. 2018 had to free the intercept
+  of this subscale's marker item to reach partial scalar invariance across ten
+  countries — exactly the property that breaks mean comparison between cultures —
+  and the only published norms are American. The component is scored and shown; it
+  never gets a percentile, and there is no `benchmarks.js` entry.
+- Re-asked at every monthly check-in rather than frozen at onboarding: published
+  four-month test-retest is .78, stable but far from fixed, and freezing it would
+  leave the aspect responding only through self-efficacy and learning — the
+  situation this release exists to end.
+- Old saves do not move and need no migration. A baseline with no Accomplishment
+  sum keeps the pre-v72 weighting and reproduces its exact previous score;
+  substituting a midpoint would fabricate an answer the user was never asked for.
 
 ## [2.20.1] — 2026-08-19 (APP_VERSION 71)
 

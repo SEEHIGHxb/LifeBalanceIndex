@@ -375,6 +375,45 @@ function humanityFutureComponents(p, b) {
   return items;
 }
 
+// --- THE TWO RUNWAY INPUTS (v79) ---
+//
+// The runway is the only figure in this app assembled from numbers the reader
+// may decline to give. Both were `required: true` in onboarding until v79,
+// which meant the mandatory gate in front of the whole app asked for a
+// household's cash position to produce a figure that is, by round 11's
+// permanent decision, never scored and never ranked.
+//
+// The cost of making them optional is that `liquidSavings: 0` stops being one
+// fact. It is now either "I have nothing I could reach this week" or "I did
+// not answer that", and only the coverage map can tell them apart. These two
+// helpers are the single place that distinction is drawn, so the row and the
+// invitation to fill it can never disagree about which inputs are missing.
+const RUNWAY_INPUTS = ["liquidSavings", "committedOutflow"];
+
+// Which runway inputs the reader is KNOWN not to have given. Empty when the
+// coverage map is absent: that is "unknown", not "missing" (inputAnswered
+// above draws the same line), and on such a save the fields were required, so
+// treating silence as a skip would blank a row its owner did answer.
+export function runwayInputsMissing(p = {}) {
+  const provided = p.provided;
+  if (!provided || typeof provided !== "object") return [];
+  return RUNWAY_INPUTS.filter(k => provided[k] !== true);
+}
+
+// The Finance page's invitation to supply them, shown exactly when they are
+// the reason no runway is printed. Returned as DATA, not markup, so the rule
+// for when it appears is testable without a DOM — and so it can never drift
+// from runwayInputsMissing, which decides whether the row is there at all.
+export function runwayInvite(p = {}) {
+  if (runwayInputsMissing(p).length === 0) return null;
+  return {
+    label: t("Runway"),
+    text: t("Not shown yet. It needs two numbers: the savings you could reach this week, and what you cannot skip in a month. Give both and this page will show how long you could cover the unskippable if income stopped. Like everything in this section it is reported to you, not scored — no published distribution says what a given number of months is worth, so there is no ranking to gain or lose by answering."),
+    href: "#/profile",
+    linkLabel: t("Add them on the Profile page")
+  };
+}
+
 // --- FACTS: MEASURED, NOT SCORED (v70) ---
 //
 // A second, separate list from `components`, and separate on purpose. Every
@@ -409,7 +448,23 @@ function aspectFacts(aspectKey, p) {
     });
   }
 
-  const months = runwayMonths(p);
+  // Since v79 both runway inputs are optional in onboarding, which gives a
+  // stored 0 two meanings it did not have before: someone who has none, and
+  // someone who skipped the box. runwayMonths cannot tell them apart — it
+  // sees 0 either way and returns "0 months", which would put a sentence about
+  // this reader's finances on screen that the reader never said. So the check
+  // is made HERE, against the coverage flags, before the row is built.
+  //
+  // Both inputs are required, not just the numerator: skipping the outflow box
+  // while filling in family support leaves a denominator that is only part of
+  // what cannot be skipped, and an understated denominator OVERSTATES the
+  // runway — the more dangerous direction of the two.
+  //
+  // An absent `provided` map reads as unknown rather than as missing, the same
+  // convention inputAnswered uses above: those saves predate coverage capture,
+  // and on them the field was required, so their owners did answer and their
+  // row must keep rendering.
+  const months = runwayInputsMissing(p).length > 0 ? null : runwayMonths(p);
   // null = no committed outflow on file, so no runway is defined. Omitted
   // rather than printed as zero or as infinity — same contract as bmiScore.
   if (months === null) return facts;
@@ -529,6 +584,10 @@ export function getAspectDetail(state, aspectKey) {
     confidence: getAspectConfidence(state, aspectKey),
     components,
     facts: aspectFacts(aspectKey, p),
+    // null on every aspect but finance, and on finance only once both runway
+    // inputs are on file. The view renders the "Measured, Not Scored" card when
+    // either this or `facts` has something to say.
+    invite: aspectKey === "finance" ? runwayInvite(p) : null,
     flaggedInstruments,
     trend: (state.snapshots || []).map(s => ({
       date: s.date,

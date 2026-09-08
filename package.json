@@ -11,6 +11,6 @@
     "lint": "npx --yes @biomejs/biome@1.9.4 lint ."
   },
   "devDependencies": {
-    "playwright": "^1.56.0"
+    "playwright": "1.49.1"
   }
 }

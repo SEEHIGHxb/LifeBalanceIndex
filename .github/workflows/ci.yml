@@ -39,9 +39,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      # --no-save keeps package.json dependency-free (the project ships no
-      # runtime deps and has no lockfile) while still creating a node_modules
-      # the smoke script's `import { chromium } from "playwright"` can resolve.
+      # --no-save leaves package.json untouched (the project ships no runtime
+      # deps and has no lockfile) while still creating a node_modules the smoke
+      # script's `import { chromium } from "playwright"` can resolve.
+      #
+      # The version here is EXACT and must stay in step with the devDependency
+      # in package.json, which is exact for the same reason: with no lockfile a
+      # caret range is not a pin at all, and the next Playwright release would
+      # quietly change which Chromium these flows run against, landing the
+      # failure on whichever PR happened to be open. Moving to a newer
+      # Playwright is a deliberate two-line change, not something npm decides.
       - name: Install Playwright (chromium only)
         run: |
           npm install --no-save playwright@1.49.1

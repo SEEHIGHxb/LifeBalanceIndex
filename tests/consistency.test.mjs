@@ -174,3 +174,23 @@ test("the giving-share term reads a field that profiles actually carry", () => {
   assert.ok(generous.socialContribution.percentile > token.socialContribution.percentile,
     "giving magnitude must move the standing when income is on the profile");
 });
+
+test("the browser CI runs is the one package.json declares, exactly", () => {
+  // Third mirrored fact, added in v79. The smoke and e2e flows are the only
+  // check that the app BOOTS, and which Chromium they boot is decided by the
+  // Playwright version. package.json declared ^1.56.0 while CI installed
+  // 1.49.1, and because the project ships no lockfile the caret was never a
+  // pin: nothing reconciled the two, and nothing would have noticed if the
+  // range had started resolving somewhere else entirely. A drifting browser
+  // does not fail loudly -- it fails on whichever PR is open the day a new
+  // release lands, in a job whose failure looks like the PR's fault.
+  const ci = read(".github/workflows/ci.yml");
+  const declared = JSON.parse(read("package.json")).devDependencies.playwright;
+  const installed = ci.match(/npm install --no-save playwright@(\S+)/);
+
+  assert.ok(installed, "the CI smoke job no longer installs playwright by an explicit version");
+  assert.equal(declared, installed[1],
+    "package.json and the CI smoke job disagree on the Playwright version");
+  assert.match(declared, /^\d+\.\d+\.\d+$/,
+    "the Playwright version must be exact -- with no lockfile a range is not a pin");
+});

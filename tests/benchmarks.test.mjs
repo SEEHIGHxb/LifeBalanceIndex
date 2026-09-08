@@ -727,6 +727,96 @@ test("the income lognormal still reproduces the published LFS average wage", () 
     "the Bangkok median must stay the national one scaled by the published SES ratio");
 });
 
+test("the income model matches the published NSO wage brackets where it can, and is honest about where it cannot", () => {
+  // THE FIRST EMPIRICAL CHECK ON THIS DISTRIBUTION. Until round 15 the model
+  // was validated against a published MEAN only, which one free parameter can
+  // always be tuned to hit. NSO Labour Force Survey Q4/2025 Table 3.7 publishes
+  // the actual shape -- four wage brackets over 19.53 million employees -- so
+  // the fit can now be measured rather than assumed.
+  //
+  //   https://www.nso.go.th/nsoweb/storage/survey_detail/2026/20260223141532_13518.pdf
+  //
+  // Shares below are renormalised over the 99.2% with a known wage (0.8% are
+  // reported "unknown" and are not a bracket).
+  //
+  // WHAT THIS TEST IS FOR. Round 15's export recommended recalibrating sigma to
+  // 0.7763 to match NESDC's income Gini of 0.417. Measured against these
+  // brackets that change makes the fit WORSE -- 14 points off in the body
+  // instead of 8 -- because 0.417 describes per-capita HOUSEHOLD income and
+  // this field asks for INDIVIDUAL income. The recommendation was refused on
+  // that evidence, and this test is what makes the refusal reproducible instead
+  // of a claim in a document.
+  const bands = [
+    { edge: 10000, label: "under 10,000", nso: 27.1 },
+    { edge: 15000, label: "10,000-14,999", nso: 32.5 },
+    { edge: 30000, label: "15,000-29,999", nso: 29.7 },
+    { edge: null, label: "over 30,000", nso: 9.9 }
+  ];
+  const known = bands.reduce((sum, b) => sum + b.nso, 0);
+
+  let below = 0;
+  const model = bands.map(b => {
+    const upTo = b.edge === null ? 100 : incomePercentile(b.edge, "Provinces");
+    const share = upTo - below;
+    below = upTo;
+    return share;
+  });
+
+  // The top bracket is the one that matters most and the one the model gets
+  // right: a rank exists to say how many people you are above, and the people
+  // above 30,000 are the whole of the upper tail. Tight, because this is where
+  // a recalibration to a household-income Gini goes wrong first.
+  const topObserved = bands[3].nso / known * 100;
+  assert.ok(Math.abs(model[3] - topObserved) < 1.0,
+    `the model puts ${model[3].toFixed(1)}% above 30,000 THB against a published `
+    + `${topObserved.toFixed(1)}% -- the upper tail no longer matches the LFS`);
+
+  // The body is knowingly off by up to ~8 points: the model is fitted to the
+  // mean, not to these brackets. That is recorded rather than hidden, and this
+  // bound stops it silently getting worse. It is NOT a licence to widen.
+  bands.forEach((b, i) => {
+    const observed = b.nso / known * 100;
+    assert.ok(Math.abs(model[i] - observed) < 9,
+      `bracket "${b.label}": model ${model[i].toFixed(1)}% vs published `
+      + `${observed.toFixed(1)}% -- the calibration has drifted off the LFS shape`);
+  });
+});
+
+test("no lognormal can fit the Thai wage body and its tail at once", () => {
+  // The finding that survived round 15, stated as arithmetic rather than as an
+  // opinion about model families. Fitting a lognormal FREELY to the four
+  // published brackets -- both parameters loose, no anchor -- still cannot
+  // reach the published 10.0% above 30,000 THB. The best fit understates the
+  // top bracket by roughly half, because a lognormal's tail decays too fast.
+  //
+  // So the honest reading of the mean/Gini conflict is not "sigma is misset"
+  // but "this family is the wrong shape at the top". Fixing it means a
+  // heavier-tailed family or the published quantiles themselves -- a decision,
+  // not a constant edit. Guarded here so a future recalibration cannot be sold
+  // as having solved a problem that is structural.
+  const cdf = (x, med, sigma) => normalCdf(Math.log(x), Math.log(med), sigma);
+  const observed = [27.1, 32.5, 29.7, 9.9].map(v => v / 99.2);
+
+  let best = { err: Infinity };
+  for (let med = 10000; med <= 20000; med += 20) {
+    for (let sigma = 0.30; sigma <= 1.20; sigma += 0.005) {
+      const m = [
+        cdf(10000, med, sigma),
+        cdf(15000, med, sigma) - cdf(10000, med, sigma),
+        cdf(30000, med, sigma) - cdf(15000, med, sigma),
+        1 - cdf(30000, med, sigma)
+      ];
+      const err = m.reduce((sum, v, i) => sum + (v - observed[i]) ** 2, 0);
+      if (err < best.err) best = { err, med, sigma, top: m[3] };
+    }
+  }
+
+  assert.ok(best.top < observed[3] - 0.03,
+    `a freely fitted lognormal reached ${(best.top * 100).toFixed(1)}% above 30,000 THB, `
+    + `against a published ${(observed[3] * 100).toFixed(1)}% -- if this ever passes, the `
+    + `family fits after all and round 15's structural finding needs revisiting`);
+});
+
 test("the sigma a Gini would imply is NOT the sigma this model uses", () => {
   // Documented so the conflict is visible in the suite rather than only in a
   // comment: these two calibration targets cannot both hold for a lognormal,

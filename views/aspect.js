@@ -194,7 +194,7 @@ export function renderAspectPage(containerId, state, aspectKey) {
                  runway row, in the state where its inputs are not on file yet.
                  Giving it its own banner elsewhere on the page would separate
                  the ask from the thing being asked for, which is the mistake
-                 v79 is undoing — onboarding asked for these two numbers three
+                 v79 began undoing and v80 finished — onboarding asked for these two numbers three
                  screens before it said what they were for. No value in the
                  right-hand slot, because there is no value; an em dash there
                  would read as a measured result. -->

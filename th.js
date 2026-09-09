@@ -152,6 +152,12 @@ export const TH = {
   "Both optional. Together they give your runway: how long you could cover the unskippable if income stopped. Reported on your Finance page, not scored.":
     "ไม่บังคับทั้งสองช่อง หากกรอกทั้งคู่จะได้ “ระยะประคอง” ของคุณ คือระยะเวลาที่คุณจะครอบคลุมรายจ่ายที่ตัดไม่ได้หากรายได้หยุดลง แสดงบนหน้าการเงิน ไม่คิดคะแนน",
   "Money You Send to Family (THB/month)": "เงินที่คุณส่งให้ครอบครัว (บาท/เดือน)",
+  // v80: the three runway boxes left onboarding for the in-depth assessment,
+  // where they are a separate block with its own save. The heading says what
+  // they are and what they are not, because on that page everything around
+  // them IS scored.
+  "Runway — optional, and never scored": "ระยะประคอง — ไม่บังคับ และไม่คิดคะแนน",
+  "Save these figures": "บันทึกตัวเลขเหล่านี้",
   "e.g. 5,000 — leave blank if none": "เช่น 5,000 — เว้นว่างไว้หากไม่มี",
   "Counted in your runway with the box above, and shown on your Social Contribution page as giving. It is never subtracted from a score.":
     "นับรวมในระยะประคองพร้อมกับช่องด้านบน และแสดงบนหน้าการมีส่วนร่วมทางสังคมในฐานะการให้ ค่านี้ไม่เคยถูกนำไปหักออกจากคะแนนใด",

@@ -28,8 +28,11 @@ const DRAFT_KEY = "onboarding";
 // also carry data-field so validateScope range-checks them per step.
 const ONB_NUMERIC_IDS = {
   income: "onb-income", monthlySavings: "onb-savings",
-  liquidSavings: "onb-liquid", committedOutflow: "onb-outflow",
-  familySupport: "onb-family",
+  // liquidSavings / committedOutflow / familySupport are deliberately absent
+  // since v80 -- see the note on step 1. Their coverage flags therefore come
+  // back false from buildProvidedFlags, which is exactly right: the runway row
+  // stays withheld until someone actually enters the figures, rather than
+  // reporting a zero nobody typed.
   weeklyLearningHours: "onb-learning", weeklyVigorousDays: "onb-vig-days",
   weeklyVigorousMins: "onb-vig-mins", weeklyModerateDays: "onb-mod-days",
   weeklyModerateMins: "onb-mod-mins", weeklyWalkingDays: "onb-walk-days",
@@ -97,46 +100,26 @@ export function renderOnboarding(containerId, onComplete) {
         ])}
         ${numberField("onb-income", t("Monthly Individual Income (Net THB)"), "", 'min="0"', { required: true, field: "income" })}
         ${numberField("onb-savings", t("Monthly Savings (THB)"), "", 'min="0"', { required: true, field: "monthlySavings", placeholder: t("e.g. 3,000") })}
-        <!-- OPTIONAL since v79, and the only two optional numbers on a step
-             whose own header line promises the answers will be "compared
-             against real population benchmarks". These two are not, and cannot
-             be: neither reaches a score. Both feed runwayMonths alone, which
-             round 11 declined to rank PERMANENTLY for want of a published
-             distribution. So until v78 the mandatory gate in front of
-             everything this app does included two questions about a
-             household's cash position, asked before the reader had seen what
-             the app does with a single number they had typed. They are invited
-             again on the Finance page, where the runway is actually printed
-             and the reason for asking is on screen. -->
-        <div class="grid-2">
-          ${numberField("onb-liquid", t("Liquid Savings You Could Reach This Week (THB)"), "", 'min="0"', { field: "liquidSavings", placeholder: t("e.g. 50,000") })}
-          ${numberField("onb-outflow", t("Committed Monthly Outflow (THB)"), "", 'min="0"', {
-            field: "committedOutflow",
-            placeholder: t("e.g. 12,000"),
-            // Was the first sentence of the paragraph below, where it read "The
-            // second box is what you cannot skip" -- and .grid-2 collapses to
-            // one column under 600px, so on a phone there was no second box.
-            // In the field's own note it needs no positional reference at all.
-            // Same string profile.js already uses for the same input.
-            note: t("Rent, loan repayments, bills.")
-          })}
-        </div>
-        <!-- .onb-note, not .onb-why: the latter is the class each step's own
-             header line uses, so this rendered as a second heading mid-form. -->
-        <p class="onb-note">${t("Both optional. Together they give your runway: how long you could cover the unskippable if income stopped. Reported on your Finance page, not scored.")}</p>
-        <!-- Asked separately since v78. It used to be one of the examples in
-             the box above ("rent, loan repayments, family support, bills"),
-             which meant the money a reader sends to their parents entered this
-             app in exactly one place: as a number that shortens a runway. It
-             belongs in the runway — it does not stop when income stops — but it
-             is not only a bill, and folding it into one made it invisible
-             everywhere else. Optional, because plenty of people send nothing
-             and a required field would make them type a zero to say so. -->
-        ${numberField("onb-family", t("Money You Send to Family (THB/month)"), "", 'min="0"', {
-          field: "familySupport",
-          placeholder: t("e.g. 5,000 — leave blank if none"),
-          note: t("Counted in your runway with the box above, and shown on your Social Contribution page as giving. It is never subtracted from a score.")
-        })}
+        <!-- THE RUNWAY FIGURES ARE NOT ASKED HERE ANY MORE (v80).
+             v79 made them optional and left them in place. That fixed the gate
+             and not the confusion: a tester read three money questions about a
+             household's cash position, on the step whose header promises the
+             answers will be "compared against real population benchmarks", and
+             none of the three is compared against anything -- they are not
+             scored, and round 11 declined PERMANENTLY to rank the runway for
+             want of a published distribution. Optional did not make them less
+             out of place; it only made them skippable.
+
+             They now live in the in-depth assessment (#/deep, the Finance
+             section) and, as before, on the Profile page. Both are places a
+             reader has chosen to go, with the runway already on screen.
+
+             v79's changelog considered that move and rejected it, on the
+             grounds that the deep page is a structure for scored
+             questionnaires. That objection is answered rather than ignored:
+             the figures are a SEPARATE form in the finance card with its own
+             save, not items smuggled into an instrument. Nothing about them
+             reaches submitDeepAssessment. -->
         ${instrumentBlock("cfpb")}`
     },
     {
@@ -410,11 +393,6 @@ export function renderOnboarding(containerId, onComplete) {
         // amount itself is deliberately NOT stored: one savings number in the
         // state means an income edit cannot leave two of them disagreeing.
         savingsRate: savingsRateFrom(val("onb-savings"), val("onb-income")),
-        // Kept in baht, unlike savings above: there is no rate to derive, and a
-        // stock over an outflow is a ratio the app prints rather than stores.
-        liquidSavings: val("onb-liquid"),
-        committedOutflow: val("onb-outflow"),
-        familySupport: val("onb-family"),
         height: val("onb-height"),
         weight: val("onb-weight"),
         sleepHours: val("onb-sleep"),

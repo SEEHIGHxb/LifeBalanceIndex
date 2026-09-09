@@ -283,22 +283,69 @@ test("v79: the invitation is finance-only and never carries a score", () => {
   assert.equal(invite.href, "#/profile");
 });
 
-test("v79: onboarding does not gate the assessment on either runway input", () => {
-  // Source-level, because these two are the ONLY numeric fields on that step
-  // without `required`, and there is no DOM harness in this suite to submit
-  // the form through. It fails on the defect: restoring `required: true` to
-  // either field puts the flag back inside the matched call and trips it.
+test("v80: onboarding does not ask for the runway figures at all", () => {
+  // v79 made these optional and left them on step 1. That fixed the gate and
+  // not the confusion -- a tester still met three questions about a
+  // household's cash position on the step whose header promises the answers
+  // will be "compared against real population benchmarks", and none of the
+  // three is compared against anything. v80 removes them; #/deep and the
+  // Profile page ask instead.
+  //
+  // Source-level, because this suite has no DOM harness to submit the form
+  // through. It fails on the defect: putting either the field or its reader
+  // back trips it.
   const onboarding = readFileSync(
     new URL("../views/onboarding.js", import.meta.url), "utf8");
-  for (const id of ["onb-liquid", "onb-outflow"]) {
-    const call = onboarding.match(new RegExp(`numberField\\("${id}"[\\s\\S]*?\\}\\)\\}`));
-    assert.ok(call, id + " is missing from onboarding entirely");
-    assert.ok(!/required:\s*true/.test(call[0]),
-      id + " is a required field again \u2014 the runway is gating the whole app");
+  for (const id of ["onb-liquid", "onb-outflow", "onb-family"]) {
+    assert.ok(!new RegExp(`numberField\\("${id}"`).test(onboarding),
+      id + " is back on the onboarding form \u2014 the runway is being asked for "
+      + "inside the mandatory gate again");
   }
-  // And the one it sits beside is still required, so this test cannot pass by
-  // the whole step having quietly become optional.
+  for (const field of ["liquidSavings", "committedOutflow", "familySupport"]) {
+    assert.ok(!new RegExp(`${field}: val\\(`).test(onboarding),
+      field + " is being read out of the onboarding form again");
+  }
+  // And the step is still a real form asking for real numbers, so this cannot
+  // pass by onboarding having been emptied or renamed out from under it.
   const savings = onboarding.match(/numberField\("onb-savings"[\s\S]*?\}\)\}/);
+  assert.ok(savings, "onboarding no longer asks for monthly savings either");
   assert.match(savings[0], /required:\s*true/,
     "monthly savings must still be required \u2014 it sets the goal target");
+});
+
+test("v80: the in-depth assessment asks instead, without requiring or scoring", () => {
+  const deep = readFileSync(
+    new URL("../views/assessments.js", import.meta.url), "utf8");
+
+  for (const id of ["deep-liquid", "deep-outflow", "deep-family"]) {
+    const call = deep.match(new RegExp(`numberField\\("${id}"[\\s\\S]*?\\}\\)\\}`));
+    assert.ok(call, id + " is missing from the in-depth assessment");
+    assert.ok(!/required:\s*true/.test(call[0]),
+      id + " is required again \u2014 three unscored figures must not gate a "
+      + "questionnaire");
+  }
+
+  // Its OWN form. This is the whole design of the move: v79 rejected putting
+  // these on the deep page because that page is a structure for scored
+  // instruments, and the answer is that they are not inside one. Merging them
+  // into .deep-form would make three optional money boxes blockable by an
+  // unanswered Likert item and would carry them into submitDeepAssessment.
+  assert.match(deep, /<form id="deep-runway-form">/,
+    "the runway figures must stay a separate form from the deep instrument");
+
+  // Saved through the profile mutator, so blank-means-zero for family support
+  // and the provided flags are decided in exactly one place.
+  assert.match(
+    deep,
+    /stateManager\.updateProfile\(\{[\s\S]*?liquidSavings:[\s\S]*?committedOutflow:[\s\S]*?familySupport:[\s\S]*?\}\)/,
+    "the runway form must save all three figures through updateProfile");
+
+  // And nothing about them may reach the assessment mutator: no XP, no
+  // verified badge, no score movement for typing in a bank balance.
+  const handler = deep.slice(deep.indexOf("const runwayForm"));
+  const handlerEnd = handler.indexOf("container.querySelectorAll");
+  assert.ok(handlerEnd > 0, "the runway submit handler is no longer where this guard reads it");
+  assert.ok(!/submitDeepAssessment/.test(handler.slice(0, handlerEnd)),
+    "the runway form is submitting through submitDeepAssessment \u2014 unscored "
+    + "figures must not verify an aspect or award XP");
 });

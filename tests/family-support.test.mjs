@@ -156,8 +156,14 @@ test("the committed-outflow question no longer files family support as a bill", 
   // now carries a source comment that discusses family support by name, and a
   // guard that searched the block would fail on a comment while a real
   // regression in the user-facing string went unnoticed.
-  const onboarding = read("views/onboarding.js");
-  const outflowField = onboarding.match(/numberField\("onb-outflow"[\s\S]*?\}\)\}/);
+  // RE-ANCHORED AGAIN in v80: the question moved off onboarding entirely and
+  // into the in-depth assessment's finance card. What is protected has still
+  // not changed by a word -- whatever text explains committed outflow to the
+  // reader must not list family support among its examples -- only where that
+  // text lives. The Profile page carries the identical string and is covered
+  // by its own suite.
+  const onboarding = read("views/assessments.js");
+  const outflowField = onboarding.match(/numberField\("deep-outflow"[\s\S]*?\}\)\}/);
   assert.ok(outflowField, "the committed-outflow field must still be there");
   const outflowNote = outflowField[0].match(/note: t\("([^"]+)"\)/);
   assert.ok(outflowNote, "the committed-outflow help text must still be there");
@@ -167,7 +173,7 @@ test("the committed-outflow question no longer files family support as a bill", 
     `"${outflowNote[1]}"`
   );
   assert.match(onboarding, /field: "familySupport"/,
-    "onboarding must ask for family support on its own");
+    "the app must still ask for family support on its own, in its own box");
 });
 
 test("the field survives a round trip through the profile editor", async () => {

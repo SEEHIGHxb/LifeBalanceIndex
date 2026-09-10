@@ -1,5 +1,10 @@
 # Round 1 — Which instruments have *representative Thai* norms?
 
+Status: **CLOSED — 2026-07-30.** Answered NOT FOUND for all twelve instruments, and the
+export's own proposed substitutes failed verification (the "Thai" GSE norm traced to 135
+head nurses in Yunnan, China). Round 2 pursued the one remaining lead, the TMHI-15. Line
+added 2026-09-10; see round 0 for why.
+
 **Why this round exists.** Round 0 asked, for each instrument we already use: "does a Thai
 norm exist?" The answer came back essentially uniform — **no representative Thai general-adult
 community norm exists for any of the twelve instruments.** Every usable number was a proxy:

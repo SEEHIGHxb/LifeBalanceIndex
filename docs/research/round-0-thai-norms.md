@@ -1,5 +1,11 @@
 # Round 0 — Thai norms and official Thai translations
 
+Status: **CLOSED — 2026-07-29.** Answered: no representative Thai general-adult community
+norm exists for any instrument this app uses. Round 1 re-asked the same question per
+instrument and reached the same answer. Line added 2026-09-10 — this file had carried no
+status at all, which is what let round 3 sit six weeks marked "not yet answered" after it
+had in fact been answered.
+
 **Purpose:** every percentile, letter grade and the Balance Index in Life Balance Index is
 computed by comparing a user's instrument score against a published population mean and SD.
 Most of those reference values currently come from foreign samples, and two come from

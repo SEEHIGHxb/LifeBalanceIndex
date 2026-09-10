@@ -544,6 +544,17 @@ function physicalBenchmark(profile) {
 //   - PHYSICAL: Thai activity by age IS published (Katewongsa 2021, 5 survey
 //     waves), but the 2019 spread across bands is 70.8-76.0% — a 5-point
 //     gradient. Not worth a mechanism. WHO-5's spread is ~40 points.
+//     RE-CHECKED 2026-09-10 against Table 1 of the paper, because resting this
+//     on the single most recent wave was the argument's weak point. It holds,
+//     and more strongly than one wave can show: the gradient has CLOSED
+//     monotonically across the series — 18-34 / 35-64 / 65+ sufficient MVPA
+//     runs 67.4 / 68.9 / 53.2 in 2012 (a 15.7-point spread), then 11.7, 9.9,
+//     6.8, and 5.2 points in 2015, 2017, 2018, 2019. So the flatness is a
+//     trend rather than a quirk of the wave quoted above.
+//     Note what that means, though: on SPA 2012 alone a 15.7-point gradient
+//     WOULD have been worth a mechanism. This is a fact about Thailand in
+//     2019, not a permanent property of the measure. If a later wave reopens
+//     the gap, this decision should be reopened with it.
 //   - RELATIONSHIPS: cannot be age-banded FOR A RANK, and still cannot be
 //     ranked at all. (v43 does quote one age-stratified row — CLS Table A3b,
 //     the 8-9 band by age — but as a population fact beside a band placement,

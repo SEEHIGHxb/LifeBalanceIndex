@@ -194,3 +194,46 @@ test("the browser CI runs is the one package.json declares, exactly", () => {
   assert.match(declared, /^\d+\.\d+\.\d+$/,
     "the Playwright version must be exact -- with no lockfile a range is not a pin");
 });
+
+
+test("no research round doc can be lying about whether it is finished", () => {
+  // FOURTH MIRRORED FACT, added after round 3. A round's status lives in two
+  // places -- the doc's own header, and whether the work is actually done --
+  // and those drifted apart for six weeks. round-3-age-stratified-norms.md
+  // read "OPEN -- not yet answered" while its answer sat processed and shipped
+  // inside benchmarks.js, under a heading naming the very date the brief was
+  // written. Nothing was wrong with the research; the file was simply wrong
+  // about itself, and an auditor reading the directory would have concluded a
+  // high-priority round had been dropped.
+  //
+  // This cannot check "is the work done" -- no test can. What it CAN do is
+  // force the claim to be declared in two places, so closing a round means
+  // editing this list and opening one means the same. A status line that
+  // drifts now fails CI instead of quietly misinforming the next reader.
+  const dir = join(root, "docs", "research");
+  const docs = readdirSync(dir).filter(f => /^round-.*\.md$/.test(f)).sort();
+  assert.ok(docs.length >= 16, "the round docs moved or vanished");
+
+  // Every round currently OPEN. Empty is the correct state: every round is
+  // either closed or explicitly PARTLY CLOSED with its open asks written down.
+  const DECLARED_OPEN = new Set([]);
+
+  const open = [];
+  for (const f of docs) {
+    const text = readFileSync(join(dir, f), "utf8");
+    // Accepts "Status:" and the bold "**Status:**" the round-2 pair uses.
+    const status = text.match(/^\*{0,2}Status:?\*{0,2}\s*(.+)$/m);
+    assert.ok(status, `${f} carries no Status line -- a round doc must say whether it is finished`);
+    if (/^\*{0,2}OPEN\b/i.test(status[1].trim())) open.push(f);
+  }
+
+  const undeclared = open.filter(f => !DECLARED_OPEN.has(f));
+  assert.deepEqual(undeclared, [],
+    `these docs say OPEN but are not declared open in this test: ${undeclared.join(", ")}`
+    + " -- either the round is finished and its status is stale, or add it to DECLARED_OPEN");
+
+  const stale = [...DECLARED_OPEN].filter(f => !open.includes(f));
+  assert.deepEqual(stale, [],
+    `DECLARED_OPEN names rounds that are no longer OPEN: ${stale.join(", ")}`
+    + " -- remove them, so this list keeps meaning something");
+});

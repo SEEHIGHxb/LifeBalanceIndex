@@ -1,6 +1,10 @@
 # Round 3 research brief — age-stratified norms + working-age loneliness prevalence
 
-Status: OPEN — brief written 2026-07-30, not yet answered.
+Status: **CLOSED — 2026-09-10.** **It was answered on 2026-07-30, the day the brief was written,
+and acted on in code the same day. This line said "not yet answered" for six weeks because nobody
+updated it.** The decisions live in `benchmarks.js`, under the heading "Why only WHO-5 is
+age-banded (researched 2026-07-30)". Read `## Outcome` at the foot of this file: one code comment
+is strengthened, no benchmark moves, and two of the export's figures do not exist.
 Purpose: decide whether Life Balance Index can age-band its percentile benchmarks, and
 whether the Relationships aspect can be ranked from prevalence rates.
 
@@ -197,3 +201,156 @@ For each figure, confirm you can answer yes to all of these. If not, downgrade o
 Close your report with an explicit **NOT FOUND list**: every question or sub-question where you
 searched and found nothing, with a one-line note on where you looked. I will act on that list —
 it tells me which parts of the app must stay unranked.
+
+---
+
+# Outcome — 2026-09-10
+
+## The round was already answered. Only this file did not know.
+
+`Thai Age Stratified Population Norms.docx` is dated **2026-07-30** — the same day this brief was
+written. The answer was read, acted on, and written into `benchmarks.js` on that date, under a
+heading that says so:
+
+> `--- Why only WHO-5 is age-banded (researched 2026-07-30) ---`
+>
+> "Age stratification must come from the SOURCE, never from this project. Only one aspect has an
+> age-banded table published with the norm it already cites, so only one is age-banded. Recorded
+> so the research is not re-run."
+
+That block answers all four questions and both secondaries. What failed was **bookkeeping, not
+research**: the status line at the top of this file kept saying `OPEN — not yet answered` while
+the work sat finished in a shipped file. A reader auditing this directory would have concluded a
+high-priority round had been abandoned. `tests/consistency.test.mjs` now guards against a repeat
+— see "What changed" below.
+
+## Verification of the export against primary sources
+
+The export is **unusually good on absence and unreliable on presence**, which is now the fourth
+round running (6, 7, 15, 3) where that has been the exact shape of the result.
+
+### Where it is right, and corroborates the code independently
+
+| Question | Export | This project's independent finding, 2026-07-30 |
+|---|---|---|
+| Q1 Thai income by age | NOT FOUND. SES is household-level; LFS carries wages by industry/region, not by age | "NSO SES is household-level and the LFS age tables carry participation, not earnings" |
+| Q3 Thai BMI by age | NOT FOUND at either the 23.0 or 25.0 line, no mean/SD by band | "no Thai age-stratified data exists" |
+| Q4 Thailand-specific loneliness by age | NOT FOUND — country-level aggregates published, age break-outs not | "no Thailand break-out" |
+
+Three NOT FOUNDs reached twice, from two different search environments, six weeks apart. That is
+the strongest form this project's negative results ever take, and it is what makes the unranked
+aspects defensible rather than merely unfinished.
+
+### Q2 — verified verbatim at the primary source, and the code's reasoning gets stronger
+
+The export's physical-activity figures are **exactly right**, including a detail that looks like
+an error and is not: it reports the SPA 2015 middle-age cell as `76.9% (95% CI: 45.5% - 78.3%)`,
+a confidence interval that cannot contain its own point estimate that way. Fetching Table 1 of
+Katewongsa et al. 2021 (BMC Public Health 21:649, doi:10.1186/s12889-021-10508-3) confirms the
+paper prints exactly that. **The malformed interval is the publication's own typo, transcribed
+faithfully.** An export that had been inventing numbers would have produced a tidier one.
+
+The full series, read from Table 1 rather than one wave:
+
+| Wave | 18–34 | 35–64 | 65+ | Spread across bands |
+|---|---|---|---|---|
+| SPA 2012 | 67.4% | 68.9% | 53.2% | **15.7 pts** |
+| SPA 2015 | 68.8% | 76.9% | 65.2% | 11.7 pts |
+| SPA 2017 | 71.0% | 75.6% | 65.7% | 9.9 pts |
+| SPA 2018 | 74.9% | 77.2% | 70.4% | 6.8 pts |
+| SPA 2019 | 72.5% | 76.0% | 70.8% | **5.2 pts** |
+
+The code's existing note cites the 2019 spread as "70.8-76.0% — a 5-point gradient" and declines
+to age-band on that basis. **That figure is exact, and the decision is now better supported than
+the note claimed.** The age gradient in Thai activity has closed monotonically across the whole
+survey series — 15.7 points in 2012 down to 5.2 in 2019 — so the flatness is a trend, not a
+quirk of the wave that happened to be quoted. Resting the argument on one wave was the note's
+only weakness, and it is the one thing this round changes in code.
+
+Worth stating plainly: had only SPA 2012 existed, a 15.7-point gradient would have been worth a
+mechanism. The decision not to age-band physical activity is a fact about 2019 Thailand, not a
+permanent property of the measure.
+
+### Q4 — two of the five figures do not exist
+
+The export reports Meta-Gallup loneliness for five age bands, each with a `VERBATIM QUOTE` of a
+table row and `EXACT LOCATION: Page 18 / Online Report Summary Table`. All five cite the same
+URL, a Gallup **opinion/news article**. Fetching it:
+
+| Age band | Export's "verbatim" table row | At the cited URL |
+|---|---|---|
+| 15–18 | 25% very/fairly lonely | traceable in public reporting |
+| 19–29 | 27% | **present**, quoted in prose |
+| 30–44 | 25% | **absent — no such figure anywhere reachable** |
+| 45–64 | 22% | **absent — no such figure anywhere reachable** |
+| 65+ | 17% | **present**, quoted in prose |
+
+The page publishes **no table at all**, has no page 18, and does not print the survey question.
+So the two middle-band figures are quoted as cells of a table that does not exist, and the
+`SOURCE TYPE: PRIMARY official statistic` label is wrong for a news article under round 8's
+sourcing rule regardless of whether the numbers are true.
+
+The export also claims the mandatory item wording — *"In general, how lonely do you feel?"* with
+four response options — footnoted to that same page, **which does not contain it.** The brief
+made question wording mandatory precisely because a prevalence without it is unusable. So:
+
+> **`benchmarks.js`'s existing claim that Meta-Gallup's question wording is unpublished stands.**
+> The export appeared to contradict it and does not survive its own citation.
+
+One more overstatement: the export declares loneliness "demonstrates a **linear decrease** with
+advancing age", refuting the U-shape. Its own five figures are 25 → 27 → 25 → 22 → 17, which
+rises before it falls. The U-shape is refuted, but by the peak sitting in young adulthood, not by
+linearity.
+
+### Q3's one positive figure is unusable either way
+
+A single BMI ≥ 25 figure is offered for ages 15–29 (19.5%, NHES IV) with `PERSISTENT ID: none`,
+`EXACT LOCATION: PMC12892435 text snippet`, and an author line reading "Aekplakorn W et al. /
+Secondary analysis in primary literature". That article could not be reached from here (the host
+served a CAPTCHA), so it is recorded as **unverified rather than fabricated** — but a snippet
+inside a secondary analysis is not a citable source under round 8's rule, and one band out of six
+could not be used anyway. The app's Thai BMI reference stays the all-ages ≥ 25 share it already
+cites.
+
+### Secondary Q1 — the export answered the question asked and missed the need behind it
+
+The export marks age-stratified WHO-5 norms **NOT FOUND**, correctly: Kliem et al. 2025 does not
+print mean and SD per age band. It then notes in passing that Table 2 publishes cumulative
+percentile lookups by age band instead.
+
+**That table is what this app has been using since v41.** For an app that reports percentiles, a
+published percentile table is not a consolation prize for missing mean/SD — it is strictly
+better, because it removes the normal-distribution assumption entirely. The project had already
+found it, adopted it, verified all 182 cells against the male/female supplementary tables, and
+**repaired three published cells** that were duplication errors in production. The export's own
+description of the scale ("0 to 56") is also wrong; it is 0–100 after the ×4 transform.
+
+Nothing to act on. Recorded because a future reader comparing this export against the code would
+otherwise see a NOT FOUND next to a working implementation and wonder which was wrong.
+
+## What changed
+
+| Change | Where |
+|---|---|
+| Status corrected; this outcome recorded | this file |
+| Physical-activity age note now rests on all five SPA waves, not 2019 alone | `benchmarks.js` |
+| Round-doc status bookkeeping guarded — an OPEN round must be declared in the test | `tests/consistency.test.mjs` |
+| Rounds 0 and 1 given the `Status:` line they never had | those two files |
+
+**No benchmark, constant or score moved.** No version bump, following round 15's precedent for a
+comment-only change to a shipped file: nothing about the app's behaviour differs.
+
+## Still open after this round
+
+- **Nothing in round 3.** All four questions and both secondaries are answered: one adopted
+  (WHO-5, already shipped), one found-and-declined (physical activity, on a measured 5-point
+  gradient), four NOT FOUND with agreement from two independent searches.
+- **The Bangkok/Provinces binary** remains the live age/geography question, and it is a *region*
+  question rather than an age one. Round 15 verified per-region NSO wage means for all seven
+  regions; expanding to them waits on the flow redesign.
+- **Relationships stays unranked.** Round 3 was the round that could have unblocked it, via
+  working-age loneliness prevalence. It did not: the only age-stratified prevalence that exists
+  is a single non-UCLA item with no Thai break-out and, as verified above, no published wording.
+  Rounds 4 and 5 reached the same wall from different directions. Three rounds is enough — this
+  should not be asked a fourth time without a new instrument or new data appearing first.
+

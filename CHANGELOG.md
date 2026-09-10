@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `79`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `80`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,53 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.29.0] — 2026-09-09 (APP_VERSION 80)
+
+### Changed
+
+- **The runway figures left onboarding for the in-depth assessment.** v79 made
+  Liquid Savings, Committed Monthly Outflow and Money You Send to Family
+  optional and left all three on step 1. A tester read them there anyway and
+  called the step confusing, which is the right verdict: optional made them
+  skippable, not less out of place. Three questions about a household's cash
+  position still arrived inside the mandatory gate, on the step whose own header
+  promises the answers will be "compared against real population benchmarks",
+  and none of the three is compared against anything. They are not scored, and
+  round 11 declined **permanently** to rank the runway for want of a published
+  distribution.
+
+  They now sit in the **in-depth assessment** (`#/deep`), in the Finance card,
+  and remain on the **Profile page** as before. Both are pages a reader chose to
+  open.
+
+  **This reverses v79's "considered and rejected".** That entry rejected the
+  deep page on the grounds that it is a structure for scored questionnaires —
+  radio items, aspect-scoped — and that unranked numeric fields would mean
+  building a new page type into it. The objection was right about the structure
+  and is answered rather than overruled: the figures are a **separate form**
+  with its own save button, not items appended to an instrument. Nothing about
+  them reaches `submitDeepAssessment`. They award no XP, verify no aspect, move
+  no score, and cannot be blocked by an unanswered Likert item. What changed is
+  the evidence — a tester found the onboarding placement confusing, and that
+  outranks the tidiness of leaving them where they were.
+
+  Two consequences worth stating:
+
+  - **New users are never asked at onboarding**, so their coverage flags come
+    back false and the Finance page shows its invitation instead of a runway
+    row. That is the v79 machinery working as designed, not a regression.
+  - **Existing saves are untouched.** Anyone who already entered the figures
+    keeps them, their runway row, and their provided flags.
+
+- **The boxes render blank rather than pre-filled with a zero.** On the deep
+  page a stored `0` means either "I have nothing I could reach this week" or
+  "nobody ever asked me", and pre-filling the second as a `0` would put a
+  statement about a reader's finances into a box they never filled in — the
+  same defect v79 fixed on the Finance page's runway row. A value shows only
+  when the coverage map says it was actually given. Saves that predate the
+  flags read as *unknown* rather than *missing* and keep their values, matching
+  the `inputAnswered` convention.
 
 ## [2.28.0] — 2026-09-07 (APP_VERSION 79)
 

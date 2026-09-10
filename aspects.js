@@ -375,7 +375,7 @@ function humanityFutureComponents(p, b) {
   return items;
 }
 
-// --- THE TWO RUNWAY INPUTS (v79) ---
+// --- THE TWO RUNWAY INPUTS (v79; off the onboarding form since v80) ---
 //
 // The runway is the only figure in this app assembled from numbers the reader
 // may decline to give. Both were `required: true` in onboarding until v79,
@@ -448,12 +448,14 @@ function aspectFacts(aspectKey, p) {
     });
   }
 
-  // Since v79 both runway inputs are optional in onboarding, which gives a
-  // stored 0 two meanings it did not have before: someone who has none, and
-  // someone who skipped the box. runwayMonths cannot tell them apart — it
-  // sees 0 either way and returns "0 months", which would put a sentence about
-  // this reader's finances on screen that the reader never said. So the check
-  // is made HERE, against the coverage flags, before the row is built.
+  // Since v79 both runway inputs are optional, and since v80 onboarding does
+  // not ask for them at all -- they are entered on #/deep or the Profile page.
+  // Either way a stored 0 carries two meanings it did not have before: someone
+  // who has none, and someone who skipped the box. runwayMonths cannot tell
+  // them apart -- it sees 0 either way and returns "0 months", which would put
+  // a sentence about this reader's finances on screen that the reader never
+  // said. So the check is made HERE, against the coverage flags, before the
+  // row is built.
   //
   // Both inputs are required, not just the numerator: skipping the outflow box
   // while filling in family support leaves a denominator that is only part of

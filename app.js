@@ -16,7 +16,7 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=79";
+} from "./ui.js?v=80";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -274,7 +274,10 @@ function renderActiveTab() {
   } else if (route.type === "checkin") {
     renderCheckin("main-view", state, handleCheckinComplete);
   } else if (route.type === "deep") {
-    renderDeepAssessment("main-view", state, handleDeepComplete);
+    // The fourth argument is the runway block's save handler, not the
+    // assessment's: those three figures are profile facts and report exactly as
+    // the Profile page's own save does.
+    renderDeepAssessment("main-view", state, handleDeepComplete, handleProfileSaved);
   } else if (route.type === "methodology") {
     renderMethodology("main-view", state);
   } else if (route.type === "year") {

@@ -1,8 +1,9 @@
 # Chapter-ending facts — inventory and outcome
 
-Status: **PARTLY COMPLETE — 2026-09-11.** Six sources verified and added to
-`SOURCES`. Five of eight chapters searched; **three searches died on a rate limit
-and have not run** (see below).
+Status: **COMPLETE — 2026-09-11.** All eight chapters searched, **14 sources
+verified and added to `SOURCES`**, taking the registry from 20 entries to 34.
+Three searches died on a rate limit on the first attempt and were re-run
+successfully.
 
 ## What this is for
 
@@ -32,6 +33,14 @@ agent's word.
 | `nsoInformal` | The Lookout | 52.4% of Thailand's 39.9m workers are in informal employment, with no social-security coverage |
 | `unWppAgeing` | The Lookout | 15.4% of Thailand was 65 or over in 2024, up from 10.3% in 2015 |
 | `thaiSleep2015` | The Highlands | 56.4% of Thai adults met the 7-9 hour sleep recommendation in 2015 |
+| `thaiHouseholdPower` | The Wildwood | Air conditioners are 26.50% of Thai household electricity — the largest single appliance share |
+| `dedeSetpoint` | The Wildwood | Thailand's energy authorities recommend setting air conditioning to 26-27 C |
+| `pcdWaste` | The Wildwood | 38.3% of Thailand's 27.76m tonnes of municipal waste was put to beneficial use in 2025 |
+| `cafTrend` | The Crossroads | Thai volunteering rose 15% (2009-18) to 19% (2021) to 24% (2023) |
+| `nsoMeritMaking` | The Crossroads | The average Thai household spends 254 baht/month on merit-making and helping others |
+| `findexSaving` | The Market | 63.1% of Thai adults saved any money in the past year |
+| `findexResilience` | The Market | 58.6% could find emergency money within 30 days without much difficulty |
+| `botHouseholdDebt` | The Market | Thai household debt was 86.8% of GDP in Q2 2025, down from a 95.5% peak |
 
 **They are deliberately not in any benchmark's `sources:` array.** Every other entry
 in the registry backs a claim the app makes on screen; these back claims the chapter
@@ -77,6 +86,17 @@ and it is about the country rather than the reader.
   ages 10+ and the measure counts time in bed including napping. It would read as
   plainly false to an adult reader. Two of the searches disagreed on this figure; the
   one that rejected it was right.
+- **EGAT's claim that 1°C of set-point saves up to 4.5% of the electricity cost.** On
+  the same page as `dedeSetpoint` and cited to no underlying study. The set-point
+  recommendation is kept; this figure is not.
+- **"39-44% of Thai households own an air conditioner."** Widely repeated, and it
+  traces to a newspaper rather than to any NSO table that could be opened. The NSO
+  household energy PDFs were retrieved but their embedded Thai fonts carry no
+  ToUnicode map, so digits could not be reliably attached to their row labels. Do not
+  use this figure.
+- **Thai household debt of 164,055 baht per household** (NSO 2019, 45.2% of households
+  indebted). Verified, but 2019 data sitting beside finance facts from 2024-25 —
+  a six-year gap spanning a pandemic. Use only if the date is shown prominently.
 
 ## NOT FOUND — treat as non-existent
 
@@ -97,6 +117,35 @@ Recording these so no future round spends money re-deriving them.
 - Thai Social Security Office coverage counts, Government Pension Fund membership, and
   National Savings Fund participation — every figure that surfaced came from news
   outlets, which the sourcing rule excludes.
+- **A Thai kWh-per-household electricity figure.** EPPO publishes sector totals and
+  per-capita indicators but no per-household table; the IEA's Thailand page returns
+  403; and the IEA's *Future of Cooling in Southeast Asia* mentions Thailand **only as
+  an unlabelled bar in a chart** — its stated numbers are ASEAN-wide. If a future
+  return attaches a Thailand air-conditioning-ownership figure to that report, it is
+  invented; the report contains none.
+- **NSO Household Socio-Economic Survey 2023 debt and savings figures.** The 2023
+  report is sold rather than published, its free summary omits the breakdowns, and
+  NSO's interactive dashboard returned a server-side Cloudflare failure. 2019 is the
+  most recent freely verifiable year for those line items.
+
+## A recurring failure mode worth naming
+
+Three separate sources in this round extract with **misaligned columns**, so that
+country names and numbers land in the wrong rows under naive text extraction:
+
+- the CAF World Giving Index ranking tables,
+- the Global Findex country appendix (Table B.1, p. 298),
+- the NSO Household Socio-Economic Survey expenditure tables.
+
+In each case the misaligned read produces *plausible-looking numbers*, which is what
+makes it dangerous — there is nothing obviously wrong with the output. This is almost
+certainly the origin of this app's own CAF column-shift error, corrected in v63.
+
+**Anything read out of a ranking or appendix table must be extracted by coordinate,
+not by text order, and cross-checked against a second table in the same document.**
+Every figure here that came from such a table was read that way: Thailand's CAF rows
+by position across three editions, and the NSO 254-baht figure confirmed as the
+whole-kingdom value in both Table 6 and Table 7.
 
 ## Scoring-grade finding — reported, not acted on
 
@@ -110,27 +159,46 @@ administers WHO-5 and ST-5, so *"using it would be an instrument swap"* rather t
 norm swap. The German WHO-5 community norms stay. Noted here only because a search
 returned it as though it were a discovery.
 
-## The three chapters that did not run
+## The three re-runs
 
-**The Market (finance), The Wildwood (environment) and The Crossroads (social
-contribution)** each hit a session rate limit and returned nothing. None is in a bad
-position — finance holds four figures, environment two, social contribution three —
-but The Crossroads and The Wildwood are both still single-source, and a second
-independent source for either would be worth having.
+The first attempt at finance, environment and social contribution died on a session
+rate limit. All three were re-run with the gaps this audit had identified named as
+explicit priorities, and all three delivered.
 
-Outstanding leads for whoever picks this up:
+**The Wildwood closed the largest gap in the registry.** The app asks the reader
+whether they limit air-conditioning and had no cited figure for Thai household energy
+of any kind, despite its own note calling air-conditioning the dominant household
+energy behaviour in Thailand. It now has three sources, including the appliance
+breakdown and Thailand's own official set-point recommendation.
 
-- **Environment:** no cited figure exists for Thai household air-conditioning or
-  electricity use, despite the app's own note that air-conditioning is the dominant
-  household energy behaviour in Thailand. The most valuable gap remaining anywhere.
-- **Social contribution:** Thai NSO volunteering or household charitable-expenditure
-  data; or World Giving Index historical figures for Thailand, which would let a
-  chapter say how giving has moved rather than only where it stands.
-- **Finance:** a Thai savings or emergency-buffer statistic. The reader is asked for
-  their monthly savings and gets no context for it at all.
-- **The Lookout:** OECD *Economic Surveys: Thailand 2025*, "Tackling informality"
-  chapter, returned HTTP 403. A legitimate primary publisher and the best unexplored
-  lead, for anyone with OECD iLibrary access.
+**The Market closed the second-largest.** The reader types a monthly savings figure
+and received no context at all. `findexSaving` is the most strongly verified figure in
+the whole set — agreed to four decimal places across three independent World Bank
+channels.
+
+**The Crossroads got both a trend and a genuinely independent second source.** It had
+rested entirely on one CAF edition. It now has the CAF trend across three editions,
+plus an NSO household-expenditure figure that is independent in publisher, instrument
+and unit.
+
+One lead remains unexplored: **OECD *Economic Surveys: Thailand 2025*, "Tackling
+informality"** returned HTTP 403. A legitimate primary publisher, relevant to The
+Lookout, for anyone with OECD iLibrary access. The Bank of Thailand's own
+financial-literacy survey was also not pursued to a conclusion, since Findex had
+already filled the savings gap — it remains the route to a *Thai-published* savings
+statistic rather than a World Bank one.
+
+## A finding about the app, not about the world
+
+`geb` item 5 asks the reader how often they *"limit air-conditioning use or set it to
+25°C or higher"*. Thailand's Department of Alternative Energy Development and
+Efficiency recommends **26-27°C** (`dedeSetpoint`).
+
+So the app's own item is more lenient than the national guidance it ought to reflect,
+and a reader answering "very often" at 25°C is being credited for a set-point their
+energy ministry would ask them to raise. The `geb` items are app-authored rather than a
+validated instrument, so the wording is changeable — but it moves a scoring input and
+belongs in its own change, not in a fact-gathering pass.
 
 ## Method note
 

@@ -109,6 +109,97 @@ export const SOURCES = {
   who5Cutoff: {
     label: "WHO-5 screening cut-off (Topp et al. 2015, Psychother Psychosom 84(3):167-176, doi:10.1159/000376585): a score below 50/100 indicates likely depression, sensitivity 79-88%, specificity 76-88%. A CLINICAL SCREENING threshold, not a population rank; the optimal cut-off shifts by population.",
     url: "https://pubmed.ncbi.nlm.nih.gov/25831962/"
+  },
+
+  // --- CHAPTER-ENDING FACTS (added 2026-09-11) -----------------------------
+  //
+  // The six below serve the redesigned onboarding flow's chapter endings (see
+  // docs/onboarding-flow-redesign.md), where each of the eight chapters reads
+  // the reader's own answers back to them and adds one fact about the world.
+  //
+  // WHY THEY ARE NOT IN ANY `sources:` ARRAY YET. Every other entry in this
+  // registry backs a claim the app currently makes on screen. These back
+  // claims the chapter endings will make once built. Listing them on an
+  // aspect page today would tell a reader that this aspect's ranking rests on
+  // them, which is false for all six -- none is a scoring input and none is a
+  // norm. They get wired in with the chapter that states them.
+  //
+  // ALL SIX WERE RE-OPENED AT THE PUBLISHER on 2026-09-11 and the figures read
+  // off the page, not taken from a search result. That matters here: rounds 5,
+  // 6 and 7 each accepted a fabricated source from delegated research -- a DOI
+  // that 404s, a "page 18 summary table" that does not exist, two invented Thai
+  // sources. Page numbers below are where the figure actually sits in the file
+  // the URL serves.
+
+  // THE COMMONS (relationships). The one find that fixes a real gap: this app's
+  // two relationship instruments are normed on the over-57s, and here is a
+  // nationally representative THAI figure on ages 15+. It is NOT a norm for
+  // either instrument and cannot rank anyone -- it is a population prevalence,
+  // which is exactly why it is safe to state and useless for scoring.
+  whrThaiSupport: {
+    label: "World Happiness Report 2025, Chapter 2 Statistical Appendix (Wellbeing Research Centre, Oxford, with Gallup): Thailand's social-support score 0.876 -- 87.6% answer yes to \"If you were in trouble, do you have relatives or friends you can count on to help you whenever you need them\". Gallup World Poll 2022-2024, nationally representative, AGES 15+, roughly 1,000 respondents per year. Figure 51, page 77, ranking 47th (Montenegro 0.876, Tajikistan 0.878 adjacent).",
+    url: "https://files.worldhappiness.report/WHR25_Ch02_Appendix_B.pdf"
+  },
+
+  // THE STILL WATER (mental). The chapter had NO usable fact: all three mental
+  // entries above are clinical thresholds, and a screening cut-off shown to
+  // someone who has just answered ten questions about their mood reads as a
+  // diagnosis. This one is a national average holding steady for eight years --
+  // about the country, not the reader.
+  //
+  // USE THE MEAN AND THE TREND ONLY. The same report publishes evaluative
+  // bands (below/equal to/above the general population) which must NOT follow
+  // the number into the app. And note this is the TMHI-15, a different
+  // instrument from the WHO-5 this app administers: round 2 already established
+  // that adopting it would be an instrument swap, not a norm swap. It is a fact
+  // to state, not a benchmark to rank against.
+  nsoHappiness: {
+    label: "National Statistical Office of Thailand, Thai Mental Health (Happiness) Survey 2015: mean Thai Mental Health Indicator (TMHI-15) score 31.44 of 45 among Thais aged 15+, and the national average held between 31.4 and 33.6 every year from 2008 to 2015. N=95,707 self-responding, collected with the Q3 2015 Labour Force Survey. Mean on page 5, sample on page 4, annual series in the summary chart.",
+    url: "https://www.nso.go.th/nsoweb/storage/ebook/2023/20230504135930_39501.pdf"
+  },
+
+  // THE WORKSHOP (personal goals). The reader is asked for weekly learning
+  // hours and the app had no figure of any kind for it. Thai learning HOURS do
+  // not exist in published form -- Thailand is not in PIAAC and the NSO does not
+  // measure duration -- so this measures appetite instead, which cannot read as
+  // a grade on the reader. The second figure is the more useful one: it names a
+  // shared external constraint, so a reader with no study hours sees a country
+  // short of time rather than a personal failing.
+  nsoSkillDev: {
+    label: "National Statistical Office of Thailand, Skill Development Survey 2021: of 57.00 million Thais aged 15+, 5.33 million (9.3%) wanted to develop their skills; among those who did not, the most-cited reason was having no free time (22.24 million people). 83,880 sampled households nationwide, fielded Jan-Mar 2021 with the Q1 Labour Force Survey. Trend 9.0% (2017), 7.9% (2020), 9.3% (2021).",
+    url: "https://www.nso.go.th/nsoweb/storage/survey_detail/2023/20230504195500_83837.pdf"
+  },
+
+  // THE LOOKOUT (humanity's future), first of two. Structural, not personal:
+  // informality is defined by whether the SYSTEM covers you, so this says
+  // nothing about a reader's foresight. That framing is the whole point -- this
+  // aspect must never tell someone without a pension that their future is bleak.
+  nsoInformal: {
+    label: "National Statistical Office of Thailand, Informal Employment Survey 2025: of 39.9 million employed persons, 20.9 million (52.4%) were in informal employment, defined by the NSO as \"employed persons who are not protected or have no social security from work\". N=166,908 persons in 77,454 responding households, 96.1% household response, fielded Q3 2025. Executive summary, report page v.",
+    url: "https://www.nso.go.th/nsoweb/storage/survey_detail/2026/20251126091907_74347.pdf"
+  },
+
+  // THE LOOKOUT, second. Genuinely independent of the above -- different
+  // publisher, different method, and it is a demographic estimate rather than a
+  // survey, so it has no N. Detached from any individual's behaviour entirely,
+  // which makes it the safest fact available for this aspect.
+  unWppAgeing: {
+    label: "UN World Population Prospects (UN Population Division), via World Bank World Development Indicators, indicator SP.POP.65UP.TO.ZS: 15.4% of Thailand's population was aged 65 or over in 2024, up from 10.3% in 2015. A de facto resident-population estimate, not a sample.",
+    url: "https://data.worldbank.org/indicator/SP.POP.65UP.TO.ZS?locations=TH"
+  },
+
+  // THE HIGHLANDS (physical). Pairs with nsfSleep above on the SAME 7-9 hour
+  // threshold, which turns a recommendation the reader is measured against into
+  // a fact about where Thai adults actually sit.
+  //
+  // Two caveats that must travel with it. Sleep was self-reported in a one-day
+  // time-use diary and includes napping, so it is time at rest rather than a
+  // sleep-quality measure. And do NOT use the 9.44 h/day geometric mean from
+  // the companion PLOS ONE analysis of the same surveys: that sample is aged
+  // 10+, counts time in bed, and would read as plainly false to an adult.
+  thaiSleep2015: {
+    label: "Trends and correlates of meeting 24-hour movement guidelines among Thai adults (Int J Behav Nutr Phys Act 2020, doi:10.1186/s12966-020-01011-9): 56.4% of Thai adults met the 7-9 hour sleep recommendation in 2015 (95% CI 56.0-56.9). N=167,577 aged 18-59 across four waves of the Thai National Time-Use Surveys; the 2015 wave is 46,580. Self-reported single-day time-use diary, includes napping.",
+    url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC7446156/"
   }
 };
 

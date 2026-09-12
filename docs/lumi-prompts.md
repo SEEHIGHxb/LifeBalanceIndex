@@ -1,7 +1,9 @@
 # Lumi — image generation prompts
 
-Status: **READY TO GENERATE — written 2026-09-11.** No images produced from these yet.
-The app continues to use the existing `assets/lumi.png` until they are.
+Status: **SUPERSEDED — 2026-09-12.** The art direction moved to League of Legends splash
+art; the live kit is `lumi/00-README.md`. Kept because its role description, identity
+anchors and acceptance checks still hold — only the style and character blocks below were
+replaced. No images have been produced from either kit yet.
 
 ## What this is for
 

@@ -191,7 +191,9 @@ html[lang="th"] .grade-none,
 html[lang="th"] .grade-unranked,
 html[lang="th"] .provenance-table thead th,
 html[lang="th"] .aspect-grade-band,
-html[lang="th"] .balance-band {
+html[lang="th"] .balance-band,
+html[lang="th"] .chapter-ending-eyebrow,
+html[lang="th"] .chapter-fact-label {
   letter-spacing: normal;
 }
 
@@ -1733,32 +1735,185 @@ header {
   min-height: 44px; /* touch target stays WCAG-sized even though the text is small */
 }
 
-/* --- Onboarding: progress, rationale, express path --- */
-.onb-progress {
-  margin-bottom: 22px;
+/* --- Onboarding: the journey ring (v81, replaced the progress bar) ---
+ *
+ * The bar it replaced measured how much FORM was left. This measures how much
+ * WORLD is lit: eight arcs in RADAR_KEYS order, each filling as its chapter is
+ * answered, with a marker travelling the circuit. Arc length is progress and
+ * never score -- see the note at the top of views/journey-ring.js.
+ */
+.journey-ring {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  margin: 0 auto 22px;
 }
-.onb-progress-head {
+.journey-ring-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+.ring-track {
+  fill: none;
+  stroke: var(--color-track);
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+/* BUTT, NOT ROUND, and this is not a style preference. A round cap on a
+ * zero-length dash still paints a dot, so with round caps every UNLIT region
+ * showed a coloured pip and the ring read as eight-eighths done before the
+ * reader had answered anything. The dim track underneath keeps its round ends,
+ * so the ring still reads as eight soft segments. */
+.ring-lit {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: butt;
+  transition: stroke-dashoffset 0.45s ease;
+}
+.ring-marker {
+  transition: cx 0.45s ease, cy 0.45s ease, fill 0.45s ease;
+}
+.journey-ring-centre {
+  position: absolute;
+  inset: 0;
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  pointer-events: none;
+  text-align: center;
+  padding: 0 22px;
+}
+.journey-ring-region {
   font-family: var(--font-sans);
   font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-navy);
+}
+.journey-ring-count {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
-  margin-bottom: 6px;
+  font-variant-numeric: tabular-nums;
 }
-#onb-step-label { font-weight: 600; color: var(--color-navy); }
-.onb-progress-track {
-  height: 6px;
+
+/* --- Onboarding: the reveal rhythm ---
+ *
+ * Within an instrument screen the reader sees every question they have already
+ * answered, plus exactly one they have not. `.q-pending` is everything after
+ * that one.
+ *
+ * DISPLAY, NOT OPACITY, for the pending state. A question faded to zero opacity
+ * is still in the tab order and still read aloud, so a keyboard or screen-reader
+ * user would meet all six items at once while a sighted user met one -- two
+ * different assessments from the same markup. `display: none` removes it from
+ * both, which is the only way the two experiences stay the same shape.
+ */
+.survey-page[data-instrument] fieldset.q-pending {
+  display: none;
+}
+.survey-page[data-instrument] fieldset.q-answered {
+  opacity: 0.62;
+}
+.survey-page[data-instrument] fieldset.q-answered:hover,
+.survey-page[data-instrument] fieldset.q-answered:focus-within {
+  opacity: 1;
+}
+.survey-page[data-instrument] fieldset.survey-question:not(.q-answered):not(.q-pending) {
+  animation: q-rise 0.28s ease;
+}
+@keyframes q-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* --- Onboarding: the chapter ending ---
+ *
+ * --chapter-hue is set inline per chapter by views/onboarding.js from the hue
+ * declared in views/journey.js, so the eight endings are one rule rather than
+ * eight.
+ */
+.chapter-ending {
+  border: 1px solid var(--color-card-border);
+  border-top: 4px solid var(--chapter-hue, var(--color-navy));
+  border-radius: 10px;
+  padding: 22px 20px;
+  margin-bottom: 18px;
+}
+.chapter-ending-eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--chapter-hue, var(--color-navy));
+  margin: 0 0 6px;
+}
+.chapter-ending-region {
+  margin: 0 0 4px;
+}
+.chapter-ending-theme {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-style: italic;
+  color: var(--color-text-secondary);
+  margin: 0 0 16px;
+}
+.chapter-recap {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 18px;
+}
+.chapter-recap li {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  padding: 8px 0 8px 16px;
+  border-left: 3px solid var(--chapter-hue, var(--color-navy));
+  margin-bottom: 8px;
+}
+.chapter-fact {
   background: var(--color-track);
-  border-radius: 3px;
-  overflow: hidden;
+  border-radius: 8px;
+  padding: 16px 18px;
 }
-.onb-progress-fill {
-  height: 100%;
-  width: 0;
-  background: var(--color-navy);
-  border-radius: 3px;
-  transition: width 0.35s ease;
+.chapter-fact-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin: 0 0 8px;
+}
+.chapter-fact-text {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.55;
+  margin: 0;
+}
+/* The citation is folded rather than printed under every fact -- a 60-word
+ * source line beneath four lines of writing buries the beat it supports. Folded
+ * is not hidden: the disclosure is always present and always openable. */
+.chapter-fact-source {
+  margin-top: 12px;
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+}
+.chapter-fact-source summary {
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.chapter-fact-source p {
+  margin: 4px 0 0;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
 }
 .onb-why {
   font-family: var(--font-sans);
@@ -2391,7 +2546,9 @@ header {
    rule for why 1px of press feedback should survive the preference. */
 @media (prefers-reduced-motion: reduce) {
   .reward-pop { animation: reward-out 0.4s ease-in 1.5s both; }
-  .onb-progress-fill { transition: none; }
+  .ring-lit { transition: none; }
+  .ring-marker { transition: none; }
+  .survey-page[data-instrument] fieldset.survey-question { animation: none; }
 }
 
 /* --- Wide tables scroll inside their card instead of panning the page --- */

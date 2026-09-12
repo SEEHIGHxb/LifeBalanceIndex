@@ -109,6 +109,225 @@ export const SOURCES = {
   who5Cutoff: {
     label: "WHO-5 screening cut-off (Topp et al. 2015, Psychother Psychosom 84(3):167-176, doi:10.1159/000376585): a score below 50/100 indicates likely depression, sensitivity 79-88%, specificity 76-88%. A CLINICAL SCREENING threshold, not a population rank; the optimal cut-off shifts by population.",
     url: "https://pubmed.ncbi.nlm.nih.gov/25831962/"
+  },
+
+  // --- CHAPTER-ENDING FACTS (added 2026-09-11) -----------------------------
+  //
+  // The six below serve the redesigned onboarding flow's chapter endings (see
+  // docs/onboarding-flow-redesign.md), where each of the eight chapters reads
+  // the reader's own answers back to them and adds one fact about the world.
+  //
+  // WHY THEY ARE NOT IN ANY `sources:` ARRAY YET. Every other entry in this
+  // registry backs a claim the app currently makes on screen. These back
+  // claims the chapter endings will make once built. Listing them on an
+  // aspect page today would tell a reader that this aspect's ranking rests on
+  // them, which is false for all six -- none is a scoring input and none is a
+  // norm. They get wired in with the chapter that states them.
+  //
+  // ALL SIX WERE RE-OPENED AT THE PUBLISHER on 2026-09-11 and the figures read
+  // off the page, not taken from a search result. That matters here: rounds 5,
+  // 6 and 7 each accepted a fabricated source from delegated research -- a DOI
+  // that 404s, a "page 18 summary table" that does not exist, two invented Thai
+  // sources. Page numbers below are where the figure actually sits in the file
+  // the URL serves.
+
+  // THE COMMONS (relationships). The one find that fixes a real gap: this app's
+  // two relationship instruments are normed on the over-57s, and here is a
+  // nationally representative THAI figure on ages 15+. It is NOT a norm for
+  // either instrument and cannot rank anyone -- it is a population prevalence,
+  // which is exactly why it is safe to state and useless for scoring.
+  whrThaiSupport: {
+    label: "World Happiness Report 2025, Chapter 2 Statistical Appendix (Wellbeing Research Centre, Oxford, with Gallup): Thailand's social-support score 0.876 -- 87.6% answer yes to \"If you were in trouble, do you have relatives or friends you can count on to help you whenever you need them\". Gallup World Poll 2022-2024, nationally representative, AGES 15+, roughly 1,000 respondents per year. Figure 51, page 77, ranking 47th (Montenegro 0.876, Tajikistan 0.878 adjacent).",
+    url: "https://files.worldhappiness.report/WHR25_Ch02_Appendix_B.pdf"
+  },
+
+  // THE STILL WATER (mental). The chapter had NO usable fact: all three mental
+  // entries above are clinical thresholds, and a screening cut-off shown to
+  // someone who has just answered ten questions about their mood reads as a
+  // diagnosis. This one is a national average holding steady for eight years --
+  // about the country, not the reader.
+  //
+  // USE THE MEAN AND THE TREND ONLY. The same report publishes evaluative
+  // bands (below/equal to/above the general population) which must NOT follow
+  // the number into the app. And note this is the TMHI-15, a different
+  // instrument from the WHO-5 this app administers: round 2 already established
+  // that adopting it would be an instrument swap, not a norm swap. It is a fact
+  // to state, not a benchmark to rank against.
+  nsoHappiness: {
+    label: "National Statistical Office of Thailand, Thai Mental Health (Happiness) Survey 2015: mean Thai Mental Health Indicator (TMHI-15) score 31.44 of 45 among Thais aged 15+, and the national average held between 31.4 and 33.6 every year from 2008 to 2015. N=95,707 self-responding, collected with the Q3 2015 Labour Force Survey. Mean on page 5, sample on page 4, annual series in the summary chart.",
+    url: "https://www.nso.go.th/nsoweb/storage/ebook/2023/20230504135930_39501.pdf"
+  },
+
+  // THE WORKSHOP (personal goals). The reader is asked for weekly learning
+  // hours and the app had no figure of any kind for it. Thai learning HOURS do
+  // not exist in published form -- Thailand is not in PIAAC and the NSO does not
+  // measure duration -- so this measures appetite instead, which cannot read as
+  // a grade on the reader. The second figure is the more useful one: it names a
+  // shared external constraint, so a reader with no study hours sees a country
+  // short of time rather than a personal failing.
+  nsoSkillDev: {
+    label: "National Statistical Office of Thailand, Skill Development Survey 2021: of 57.00 million Thais aged 15+, 5.33 million (9.3%) wanted to develop their skills; among those who did not, the most-cited reason was having no free time (22.24 million people). 83,880 sampled households nationwide, fielded Jan-Mar 2021 with the Q1 Labour Force Survey. Trend 9.0% (2017), 7.9% (2020), 9.3% (2021).",
+    url: "https://www.nso.go.th/nsoweb/storage/survey_detail/2023/20230504195500_83837.pdf"
+  },
+
+  // THE LOOKOUT (humanity's future), first of two. Structural, not personal:
+  // informality is defined by whether the SYSTEM covers you, so this says
+  // nothing about a reader's foresight. That framing is the whole point -- this
+  // aspect must never tell someone without a pension that their future is bleak.
+  nsoInformal: {
+    label: "National Statistical Office of Thailand, Informal Employment Survey 2025: of 39.9 million employed persons, 20.9 million (52.4%) were in informal employment, defined by the NSO as \"employed persons who are not protected or have no social security from work\". N=166,908 persons in 77,454 responding households, 96.1% household response, fielded Q3 2025. Executive summary, report page v.",
+    url: "https://www.nso.go.th/nsoweb/storage/survey_detail/2026/20251126091907_74347.pdf"
+  },
+
+  // THE LOOKOUT, second. Genuinely independent of the above -- different
+  // publisher, different method, and it is a demographic estimate rather than a
+  // survey, so it has no N. Detached from any individual's behaviour entirely,
+  // which makes it the safest fact available for this aspect.
+  unWppAgeing: {
+    label: "UN World Population Prospects (UN Population Division), via World Bank World Development Indicators, indicator SP.POP.65UP.TO.ZS: 15.4% of Thailand's population was aged 65 or over in 2024, up from 10.3% in 2015. A de facto resident-population estimate, not a sample.",
+    url: "https://data.worldbank.org/indicator/SP.POP.65UP.TO.ZS?locations=TH"
+  },
+
+  // THE HIGHLANDS (physical). Pairs with nsfSleep above on the SAME 7-9 hour
+  // threshold, which turns a recommendation the reader is measured against into
+  // a fact about where Thai adults actually sit.
+  //
+  // Two caveats that must travel with it. Sleep was self-reported in a one-day
+  // time-use diary and includes napping, so it is time at rest rather than a
+  // sleep-quality measure. And do NOT use the 9.44 h/day geometric mean from
+  // the companion PLOS ONE analysis of the same surveys: that sample is aged
+  // 10+, counts time in bed, and would read as plainly false to an adult.
+  thaiSleep2015: {
+    label: "Trends and correlates of meeting 24-hour movement guidelines among Thai adults (Int J Behav Nutr Phys Act 2020, doi:10.1186/s12966-020-01011-9): 56.4% of Thai adults met the 7-9 hour sleep recommendation in 2015 (95% CI 56.0-56.9). N=167,577 aged 18-59 across four waves of the Thai National Time-Use Surveys; the 2015 wave is 46,580. Self-reported single-day time-use diary, includes napping.",
+    url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC7446156/"
+  },
+
+  // THE WILDWOOD (environment). This closed the largest gap in the registry:
+  // the app asks the reader about air-conditioning and had no cited figure for
+  // Thai household energy at all, despite its own note calling air-conditioning
+  // the dominant household energy behaviour in Thailand.
+  //
+  // VERIFICATION IS ONE STEP WEAKER THAN MOST ENTRIES HERE, stated rather than
+  // hidden. The figure sits in the published ABSTRACT, read byte-identical at
+  // Crossref, DOAJ and OpenAlex -- three independent publisher-fed indexes
+  // agreeing on title, journal, volume 6, pages 337-343 and year. Elsevier's own
+  // page is CAPTCHA-gated and was not bypassed. Verified at three indexes, NOT
+  // at the publisher. Anyone who can reach ScienceDirect should confirm and
+  // delete this paragraph.
+  thaiHouseholdPower: {
+    label: "Electricity consumption characteristics in Thailand residential sector and its saving potential (Energy Reports 6:337-343, 2020, doi:10.1016/j.egyr.2019.11.085): air conditioners accounted for 26.50% of Thai household-sector electricity in 2018 -- the largest single appliance share, ahead of refrigerators 19.33% and indoor lighting 14.93%. Household total 35,624.37 GWh. Questionnaire survey of N=7,192 households across all regions of Thailand, 2018.",
+    url: "https://doi.org/10.1016/j.egyr.2019.11.085"
+  },
+
+  // THE WILDWOOD, second. Thailand's own energy authorities stating their own
+  // recommendation, which is what makes a press release primary here.
+  //
+  // TWO THINGS DELIBERATELY LEFT OUT. The same page claims 1 degree of set-point
+  // saves up to 4.5% of the electricity cost, citing no underlying study, so it
+  // is not in the label. And note a mismatch worth acting on separately: the
+  // app's own geb item 5 asks whether the reader sets air-conditioning to "25 C
+  // or higher", while Thailand's energy authority recommends 26-27 C. The app's
+  // item is more lenient than the national guidance it ought to reflect. The geb
+  // items are app-authored rather than a validated instrument, so that is
+  // changeable -- but it moves a scoring input and belongs in its own change.
+  dedeSetpoint: {
+    label: "Electricity Generating Authority of Thailand / Department of Alternative Energy Development and Efficiency, \"Energy-saving campaign launched to reduce electricity consumption in hot season\", 26 April 2023: Thailand's energy authorities recommend \"setting air conditioner temperature to 26-27 C and using electric fans to circulate cool air\". A national policy recommendation, not a survey; no sample. Same page records the then-record peak demand of 33,384.7 MW on 20 April 2023.",
+    url: "https://www.egat.co.th/home/en/20230426e/"
+  },
+
+  // THE WILDWOOD, third. The Pollution Control Department's own live database,
+  // census-style across all 77 provinces rather than a sample. Components sum
+  // exactly: 10.62 + 11.10 + 6.04 = 27.76.
+  //
+  // UNIT WARNING, and it matters: the Thai term is "nam klap ma chai prayot" --
+  // put to BENEFICIAL USE -- which includes composting and waste-to-energy, not
+  // only recycling. Rendering 38.3% as a "recycling rate" would overstate it.
+  // Bangkok alone is 27.1% (3,592 of 13,254 tonnes/day).
+  pcdWaste: {
+    label: "Thai Pollution Control Department, Municipal Solid Waste Management Information System, national summary for 2568 BE (2025): of 27.76 million tonnes of municipal waste generated, 10.62 million tonnes were put to beneficial use (38.3%), 11.10 million tonnes disposed of correctly and 6.04 million tonnes incorrectly. Administrative data for all 77 provinces, not a sample. Beneficial use includes composting and energy recovery, so it is broader than recycling.",
+    url: "https://thaimsw.pcd.go.th/report_country.php?year=2568"
+  },
+
+  // THE CROSSROADS (social contribution). The app already cites the 2024 edition
+  // for where Thailand STANDS; these are the same programme's earlier editions,
+  // which say how it has MOVED. Read by COORDINATE extraction from each report,
+  // not linear text extraction -- those ranking tables genuinely column-shift
+  // under naive extraction, which is almost certainly how this app's own CAF
+  // citation acquired the column-shift error corrected in v63. The 2024 row reads
+  // 67% donated / 24% volunteered / 64% helped, matching what the app already
+  // holds, so this also independently confirms that correction.
+  //
+  // NOT AN INDEPENDENT SECOND SOURCE. All three editions rest on the Gallup World
+  // Poll, the same programme cafWgi already uses. It is a trend, not a
+  // corroboration. And 15% is a ten-year aggregate while 19% and 24% are single
+  // years, so this is not a 2009-to-2023 comparison.
+  cafTrend: {
+    label: "CAF World Giving Index, Thailand across three editions (all \"in the past month\", adults 15+, Gallup World Poll, ~1,000 respondents per country per year): volunteering rose 15% (2009-2018 ten-year aggregate, 10th edition 2019 p.23) to 19% (2021 data, 2022 edition p.21) to 24% (2023 data, 2024 edition p.16). Donating money over the same three points: 71%, 62%, 67%. Thailand ranked 4th of 128 countries for donating money across the 2009-2018 decade.",
+    url: "https://www.cafonline.org/docs/default-source/research-archive/giving-around-the-world/world-giving-index-reports/2019_caf_wgi_10th_edition_report.pdf"
+  },
+
+  // THE CROSSROADS, second -- and the genuinely independent one: different
+  // publisher, different instrument, different unit. Incidence says what share of
+  // people gave; this says what households actually spent.
+  //
+  // PER HOUSEHOLD PER MONTH, not per person. Do not set it beside a reader's own
+  // personal monthly donation without saying so. 2019 is the most recent year
+  // carrying this breakdown that could be verified free of charge -- the 2023
+  // report is sold rather than published and its free summary omits these lines.
+  nsoMeritMaking: {
+    label: "National Statistical Office of Thailand, Household Socio-Economic Survey 2019 (Whole Kingdom): the average Thai household spent 254 baht per month on merit-making money and other assistance to people outside the household, plus 23 baht per month contributing money or goods to NGOs and institutions, out of 20,742 baht total monthly household expenditure -- about 1.2% and 0.1%. N=55,854 private households across all provinces. The 254 figure appears as the whole-kingdom value in both Table 6 and Table 7.",
+    url: "https://catalogapi.nso.go.th/api/doc/SES_31_1.pdf"
+  },
+
+  // THE MARKET (finance). The app asks the reader for their monthly savings and
+  // gave them no context whatsoever. This is the fill.
+  //
+  // The strongest-verified figure in this whole set: agreed to four decimal
+  // places across three independent World Bank channels -- the official XLSX, the
+  // official CSV, and the Data360 API, which was queried again directly and
+  // returned 63.088596.
+  //
+  // FRAMING RULE. Never render this as "63% manage to save -- do you?". It is the
+  // share who set aside any money at all, and the survey deliberately did not ask
+  // HOW MUCH, which is what makes it safe beside a reader's own figure. A reader
+  // who saved nothing sits inside a named third of the country, not outside a
+  // standard. The unit is annual behaviour, not a monthly amount.
+  findexSaving: {
+    label: "World Bank Global Findex Database 2025: 63.1% of Thai adults aged 15+ saved or set aside any money in the year before the survey, against a low- and middle-income economy average of 55%. N=1,003 face-to-face interviews, fieldwork September-December 2024, margin of error 4.2 points; three southern provinces excluded for security, under 4% of the population. The survey did not ask how much was saved.",
+    url: "https://hdl.handle.net/10986/43438"
+  },
+
+  // THE MARKET, second, and the most CFPB-relevant: the CFPB scale probes
+  // capacity to absorb a shock, and this measures exactly that, self-assessed.
+  //
+  // VERIFICATION, stated honestly: confirmed in the official Findex XLSX and CSV
+  // and validated arithmetically -- its six per-source sub-shares sum to 58.617%,
+  // exactly the headline, and possible plus not-possible sum to 100.000%. It is
+  // not exposed on the Data360 API path that confirmed findexSaving, so it rests
+  // on the dataset files plus that internal consistency, one notch weaker.
+  //
+  // FRAMING RULE, strict. Report the 58.6% who found it possible and not too
+  // hard. Do NOT invert it to "41% could not", and do not lead with the 29.6% who
+  // said "very difficult" -- the same data framed as a deficit reads as an
+  // accusation, and a reader who has just reported feeling bad about money would
+  // land in the accused group.
+  findexResilience: {
+    label: "World Bank Global Findex Database 2025: 58.6% of Thai adults aged 15+ said it would be possible, and either not difficult or only somewhat difficult, to come up with emergency money equal to 5% of Thailand's per-capita gross national income within 30 days -- against a low- and middle-income economy average of 56%. N=1,003, fieldwork September-December 2024. A one-off 30-day amount, per person, not a monthly figure.",
+    url: "https://hdl.handle.net/10986/43438"
+  },
+
+  // THE MARKET, third. Its value is that it makes a reader's own debt feel
+  // structural rather than personal.
+  //
+  // TWO THINGS NOT TO CARRY ACROSS. The Bank of Thailand's own surrounding
+  // language is evaluative -- the report calls it "the Household Debt Problem"
+  // and the bank elsewhere refers to a "watchful level of 80%". That threshold
+  // must not reach the app: a threshold is precisely the "what you should be"
+  // framing these facts exclude. And do not pair it with the reader's savings
+  // answer in a way that implies causation.
+  botHouseholdDebt: {
+    label: "Bank of Thailand, Financial Stability Review 2025: Thailand's household debt stood at 86.8% of GDP in Q2 2025, down from 88.4% at the end of 2024 and from a peak of 95.5% in Q1 2021. An aggregate national ratio from financial-institution reporting -- not per household, not per person, and carrying no baht figure. Calculated as household debt divided by nominal quarterly GDP on a trailing four-quarter basis.",
+    url: "https://www.bot.or.th/content/dam/bot/documents/en/research-and-publications/reports/financial-stability-report/FS_Review_2025e.pdf"
   }
 };
 

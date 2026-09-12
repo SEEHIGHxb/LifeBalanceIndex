@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `80`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `81`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,80 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.30.0] — 2026-09-11 (APP_VERSION 81)
+
+### Changed
+
+- **Onboarding is eight chapters on a ring, not six form pages.** Nothing about
+  what is *asked* moved: the same 85 required inputs, the same 14 instruments
+  administered at their published wording and their published five-point scales,
+  the same field ids, the same submitted payload. What moved is the partition
+  and the pacing.
+
+  The old shape asked for 85 answers across 6 pages — 12, 14, 10, 12, 17 and 20,
+  with the two heaviest last — and gave nothing back inside a page. The only
+  feedback a reader got was `Step {n} of 6`, which advanced roughly once every
+  four minutes. Three defects followed: six pages is too coarse to register as
+  progress and too dense to feel quick, the load rose toward the end where
+  attention is thinnest, and the reader supplied all 85 answers before the app
+  said anything about any of them.
+
+  It is now **30 screens** — 22 carrying questions, 8 chapter endings. One
+  instrument, or one small group of related numbers, per screen. Within an
+  instrument, items are revealed one at a time: the reader sees every question
+  they have answered plus exactly one they have not.
+
+  `views/onboarding.js` is now an engine that knows how to reveal an item,
+  advance a screen and light a region; the new `views/journey.js` is the content
+  it renders. The split is what will let the deep assessment and the monthly
+  review adopt the same answering language without copying any of the writing.
+
+- **The progress bar became a ring of eight regions** (`views/journey-ring.js`).
+  The bar measured how much form was left. The ring measures how much world is
+  lit: eight arcs in `RADAR_KEYS` order, so completing the circuit is completing
+  the assessment and the shape being built is the shape the dashboard shows
+  afterwards. Arc length is screens completed and never score.
+
+  It also stops claiming what it cannot know. The bar printed "About 5 minutes
+  total" on all six steps — the same sentence whether the reader was four
+  seconds in or four minutes. The ring says which region they are in and how
+  many of the eight are done.
+
+### Added
+
+- **A chapter ending after each of the eight regions**: a recap of the reader's
+  own answers, and one cited fact about the world. The recaps are arithmetic on
+  what the reader typed — three single-use items a day is about 1,100 a year —
+  and the facts are the fourteen sources verified in v80 and inventoried in
+  `docs/chapter-facts.md`, each linking out to its publisher behind a folded
+  disclosure.
+
+  **Descriptive, never evaluative, and this is load-bearing.** No ending shows a
+  score, a grade, a percentile or a rank. `docs/research/usability-test-plan.md`
+  already worries whether testers "answer ST-5 and UCLA-3 honestly, or begin
+  optimizing their score"; a rank shown at chapter 1 would be read by someone
+  about to answer chapters 2 through 8, and every number downstream of it would
+  be contaminated. The verdict stays at the end, where it cannot reach back.
+
+  Nothing is lost by the constraint. The ending that tells a reader they threw
+  away roughly 1,100 pieces of plastic last year is a better beat than one that
+  tells them they are in the 62nd percentile.
+
+### Fixed
+
+- **`classList` and `dataset` on `tests/dom-stub.mjs` nodes.** The rewrite shows
+  its first screen at render time rather than only on a draft restore, which
+  means the view legitimately toggles `.d-none` on thirty screens. The stub's
+  nodes had no `classList`, so that read as a view bug when it was a stub gap.
+
+### Notes
+
+- **`geb` item 5 still credits a 25°C air-conditioning set-point** while
+  Thailand's own energy authority recommends 26–27°C (`SOURCES.dedeSetpoint`).
+  Recorded in v80 and still not acted on: the item is app-authored and therefore
+  changeable, but it is a scoring input and moving it belongs in its own change
+  with its own migration reasoning.
 
 ## [2.29.0] — 2026-09-09 (APP_VERSION 80)
 

@@ -1,38 +1,59 @@
-// views/onboarding.js - the six-step baseline assessment (onboarding) view.
+// views/onboarding.js - the baseline assessment, as a journey through eight
+// chapters rather than six long form pages.
 //
-// Blank-first policy (v2.3.0): every field starts empty, every mandatory field
-// carries a red "*", and the user cannot advance a step or finish until each
-// visible required control is answered. This deliberately removes the old
-// "Optional" steps and the "See my results now" express shortcut — a first
-// baseline must be filled in full, so no aspect is scored from a silent default.
+// WHAT CHANGED AND WHY (v81). The content is identical: the same 85 required
+// inputs, the same 14 instruments, the same field ids, the same submitted
+// payload. Only the PARTITION and the PACING changed. The old shape asked for
+// 85 answers across 6 pages -- 12, 14, 10, 12, 17 and 20, heaviest last -- with
+// no in-page feedback at all, so the only signal a reader got was a "Step n of
+// 6" that moved roughly once every four minutes. See
+// docs/onboarding-flow-redesign.md for the counts and the argument.
+//
+// Now: one instrument (or one small group of numbers) per screen, items within
+// an instrument revealed one at a time, and every chapter ending with a recap
+// of the reader's own answers plus one cited fact. The ring replaces the bar.
+//
+// Blank-first policy (v2.3.0) is untouched: every field starts empty, every
+// mandatory field carries a red "*", and no screen can be left until each
+// visible required control is answered. A first baseline must be filled in
+// full, so no aspect is scored from a silent default.
+//
+// THE THING THIS FILE MUST NOT DO. No screen before the end may show a score,
+// a grade, a percentile or a rank. usability-test-plan.md already worries that
+// testers "begin optimizing their score"; a rank shown at chapter 1 would be
+// read by someone answering chapters 2 to 8, and every number after it would be
+// contaminated. The recaps are descriptive by construction -- see the rule at
+// the top of views/journey.js.
 
 import { stateManager } from "../state.js";
 import { buildProvidedFlags, buildAnsweredFlags } from "../validation.js";
-import {
-  numberField, instrumentBlock, collectInstrument, validateScope
-} from "./instrument-forms.js";
-import { scrollIntoViewGently } from "./helpers.js";
+import { collectInstrument, validateScope } from "./instrument-forms.js";
+import { escapeHtml, scrollIntoViewGently } from "./helpers.js";
 import { applyDraft, saveDraft, clearDraft, instrumentsIn } from "../draft.js";
 import { savingsRateFrom } from "../scoring.js";
-import { t, tp } from "../i18n.js";
+import { CHAPTERS, allScreens } from "./journey.js";
+import { ringMarkup, paintRing } from "./journey-ring.js";
+import { SOURCES } from "../benchmarks.js";
+import { INSTRUMENTS } from "../surveys.js";
+import { t } from "../i18n.js";
 
-// The form is long enough that losing it hurts: six steps, 64 radio groups and
-// a dozen numeric fields. draft.js keeps a scratch copy under this name so a
-// reload resumes instead of restarting. Cleared the moment the baseline is
-// accepted -- from then on state.js is the record, and a draft would be a stale
-// second copy of assessment data.
+// The form is long enough that losing it hurts. draft.js keeps a scratch copy
+// under this name so a reload resumes instead of restarting. Cleared the moment
+// the baseline is accepted -- from then on state.js is the record, and a draft
+// would be a stale second copy of assessment data.
 const DRAFT_KEY = "onboarding";
 
 // Maps each validated numeric field (validation.js FIELD_CONSTRAINTS keys) to
 // its onboarding input id — used for reading and coverage tracking. The inputs
-// also carry data-field so validateScope range-checks them per step.
+// also carry data-field so validateScope range-checks them per screen.
+//
+// liquidSavings / committedOutflow / familySupport are deliberately absent
+// since v80. Their coverage flags therefore come back false from
+// buildProvidedFlags, which is exactly right: the runway row stays withheld
+// until someone actually enters the figures on the Profile or deep pages,
+// rather than reporting a zero nobody typed.
 const ONB_NUMERIC_IDS = {
   income: "onb-income", monthlySavings: "onb-savings",
-  // liquidSavings / committedOutflow / familySupport are deliberately absent
-  // since v80 -- see the note on step 1. Their coverage flags therefore come
-  // back false from buildProvidedFlags, which is exactly right: the runway row
-  // stays withheld until someone actually enters the figures, rather than
-  // reporting a zero nobody typed.
   weeklyLearningHours: "onb-learning", weeklyVigorousDays: "onb-vig-days",
   weeklyVigorousMins: "onb-vig-mins", weeklyModerateDays: "onb-mod-days",
   weeklyModerateMins: "onb-mod-mins", weeklyWalkingDays: "onb-walk-days",
@@ -42,22 +63,48 @@ const ONB_NUMERIC_IDS = {
   volunteeringHours: "onb-volunteer"
 };
 
-// A red required marker, matching instrument-forms.js.
-const REQ = `<span class="req" aria-hidden="true">*</span>`;
+// Content screens with a chapter ending inserted after the last screen of each
+// chapter. Both kinds render as `.survey-page`, which matters more than it
+// looks: instrument-forms.js:isConditionallyHidden treats a `.d-none` ancestor
+// as "skip this control" UNLESS that ancestor is a `.survey-page`. Keeping the
+// class means an off-screen screen is still validated by the final sweep, so a
+// reader cannot reach submit with an unanswered screen behind them.
+function buildScreens() {
+  const out = [];
+  for (const screen of allScreens()) {
+    out.push({ ...screen, kind: "content" });
+    if (screen.endsChapter) {
+      out.push({ kind: "ending", chapter: screen.chapter, id: `ending-${screen.chapter}` });
+    }
+  }
+  return out;
+}
 
-// A mandatory dropdown: starts on a disabled blank "— Select —", so the user
-// must make a conscious choice (gender keeps "Prefer not to say" as a real
-// option). Carries data-required + an inline error span for validateScope, and
-// aria-required so the "*" — which is aria-hidden — is not the only signal.
-function selectField(id, label, options) {
+// A chapter ending: the reader's own answers, then one fact about the world.
+//
+// The citation is real and links out, but it is folded into a <details> rather
+// than printed under every fact. A chapter ending is four lines of writing; a
+// 60-word citation beneath each one would bury the beat it exists to support.
+// Folded is not hidden -- the disclosure is always present and always openable,
+// which is the standard the rest of the app's benchmark cards already meet.
+function endingMarkup(chapterIndex) {
+  const chapter = CHAPTERS[chapterIndex];
+  const source = SOURCES[chapter.fact.source];
   return `
-    <div class="form-group">
-      <label for="${id}">${label} ${REQ}</label>
-      <select id="${id}" class="form-control" data-required="1" aria-required="true">
-        <option value="" disabled selected>${t("— Select —")}</option>
-        ${options.map(o => `<option value="${o.v}">${t(o.l)}</option>`).join("")}
-      </select>
-      <span class="field-error d-none" id="${id}-err" aria-live="polite"></span>
+    <div class="chapter-ending" style="--chapter-hue: ${chapter.hue};">
+      <p class="chapter-ending-eyebrow">${t("Region complete")}</p>
+      <h3 class="chapter-ending-region">${escapeHtml(chapter.region)}</h3>
+      <p class="chapter-ending-theme">${escapeHtml(chapter.theme)}</p>
+      <ul class="chapter-recap" id="recap-${chapterIndex}"></ul>
+      <div class="chapter-fact">
+        <p class="chapter-fact-label">${t("Meanwhile, in the world")}</p>
+        <p class="chapter-fact-text">${escapeHtml(chapter.fact.text)}</p>
+        ${source ? `
+        <details class="chapter-fact-source">
+          <summary>${t("Where this comes from")}</summary>
+          <p><a href="${source.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(source.label)}</a></p>
+        </details>` : ""}
+      </div>
     </div>`;
 }
 
@@ -66,133 +113,48 @@ export function renderOnboarding(containerId, onComplete) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  const pages = [
-    {
-      title: t("Step 1: Profile & Finance"),
-      why: t("We start with income and demographics so your scores can be compared against real population benchmarks."),
-      body: `
-        <div class="form-group">
-          <label for="onb-name">${t("Name")}</label>
-          <input type="text" id="onb-name" class="form-control" value="" maxlength="40">
-        </div>
-        <div class="grid-2">
-          ${numberField("onb-age", t("Age"), "", 'min="15" max="100"', { required: true, placeholder: "15–100" })}
-          ${selectField("onb-gender", t("Gender (for benchmark norms)"), [
-            { v: "unspecified", l: "Prefer not to say" },
-            { v: "male", l: "Male" },
-            { v: "female", l: "Female" }
-          ])}
-        </div>
-        ${selectField("onb-region", t("Primary Region (Cost of Living Mapping)"), [
-          { v: "Provinces", l: "Provinces / Upcountry Thailand" },
-          { v: "Bangkok", l: "Bangkok & Vicinity" }
-        ])}
-        ${selectField("onb-employment", t("Employment Status"), [
-          { v: "Office Worker", l: "Office Worker / Salary Employee" },
-          { v: "Freelancer", l: "Freelancer / Independent" },
-          { v: "Business Owner", l: "Business Owner / Entrepreneur" },
-          { v: "Unemployed", l: "Unemployed / Looking for Work" },
-          { v: "Student", l: "Student" }
-        ])}
-        ${selectField("onb-relationship", t("Relationship Status"), [
-          { v: "Single", l: "Single" },
-          { v: "Coupled", l: "In a Relationship / Married" }
-        ])}
-        ${numberField("onb-income", t("Monthly Individual Income (Net THB)"), "", 'min="0"', { required: true, field: "income" })}
-        ${numberField("onb-savings", t("Monthly Savings (THB)"), "", 'min="0"', { required: true, field: "monthlySavings", placeholder: t("e.g. 3,000") })}
-        <!-- THE RUNWAY FIGURES ARE NOT ASKED HERE ANY MORE (v80).
-             v79 made them optional and left them in place. That fixed the gate
-             and not the confusion: a tester read three money questions about a
-             household's cash position, on the step whose header promises the
-             answers will be "compared against real population benchmarks", and
-             none of the three is compared against anything -- they are not
-             scored, and round 11 declined PERMANENTLY to rank the runway for
-             want of a published distribution. Optional did not make them less
-             out of place; it only made them skippable.
+  const screens = buildScreens();
+  const total = screens.length;
+  const lastIndex = total - 1;
 
-             They now live in the in-depth assessment (#/deep, the Finance
-             section) and, as before, on the Profile page. Both are places a
-             reader has chosen to go, with the runway already on screen.
+  const screenMarkup = (screen, i) => {
+    const isLast = i === lastIndex;
+    const nav = `
+      <div class="onb-nav">
+        ${i > 0 ? `<button type="button" class="btn btn-onb-prev" data-screen="${i}">${t("Back")}</button>` : `<span></span>`}
+        <div class="onb-nav-right">
+          ${isLast
+            ? `<button type="submit" class="btn btn-primary">${t("Complete Assessment")}</button>`
+            : `<button type="button" class="btn btn-primary btn-onb-next" data-screen="${i}">${screen.kind === "ending" ? t("Travel on") : t("Next")}</button>`}
+        </div>
+      </div>`;
 
-             v79's changelog considered that move and rejected it, on the
-             grounds that the deep page is a structure for scored
-             questionnaires. That objection is answered rather than ignored:
-             the figures are a SEPARATE form in the finance card with its own
-             save, not items smuggled into an instrument. Nothing about them
-             reaches submitDeepAssessment. -->
-        ${instrumentBlock("cfpb")}`
-    },
-    {
-      title: t("Step 2: Physical Baseline"),
-      why: t("A few body and activity numbers place your physical health against national norms."),
-      body: `
-        <div class="grid-2">
-          ${numberField("onb-height", t("Height (cm)"), "", 'min="100" max="250"', { required: true, field: "height", placeholder: "100–250" })}
-          ${numberField("onb-weight", t("Weight (kg)"), "", 'min="25" max="300"', { required: true, field: "weight", placeholder: "25–300" })}
-        </div>
-        <div class="grid-2">
-          ${numberField("onb-sleep", t("Average Nightly Sleep (Hours)"), "", 'min="0" max="16" step="0.5"', { required: true, field: "sleepHours", placeholder: "0–16" })}
-          ${numberField("onb-veg", t("Vegetable Portions per Day"), "", 'min="0" max="15"', { required: true, field: "vegetablePortions", placeholder: "0–15", note: t("One portion ≈ 80 g — about one handful, or half a plate of cooked greens. Vegetables only: the guideline check behind this field counts vegetables, not fruit.") })}
-        </div>
-        ${numberField("onb-water", t("Water Intake per Day (Liters)"), "", 'min="0" max="10" step="0.1"', { required: true, field: "waterLiters", placeholder: "0–10" })}
-        <p class="instrument-title">${t("Weekly Physical Activity (IPAQ)")}</p>
-        <div class="grid-2">
-          ${numberField("onb-vig-days", t("Vigorous Exercise (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyVigorousDays", placeholder: "0–7" })}
-          ${numberField("onb-vig-mins", t("Vigorous Minutes on Each of Those Days"), "", 'min="0" max="600"', { required: true, field: "weeklyVigorousMins", placeholder: "0–600", note: t("Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.") })}
-        </div>
-        <div class="grid-2">
-          ${numberField("onb-mod-days", t("Moderate Exercise (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyModerateDays", placeholder: "0–7" })}
-          ${numberField("onb-mod-mins", t("Moderate Minutes on Each of Those Days"), "", 'min="0" max="600"', { required: true, field: "weeklyModerateMins", placeholder: "0–600", note: t("Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.") })}
-        </div>
-        <div class="grid-2">
-          ${numberField("onb-walk-days", t("Walking (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyWalkingDays", placeholder: "0–7" })}
-          ${numberField("onb-walk-mins", t("Walking Minutes on Each of Those Days"), "", 'min="0" max="600"', { required: true, field: "weeklyWalkingMins", placeholder: "0–600", note: t("Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.") })}
-        </div>
-        ${instrumentBlock("jss")}`
-    },
-    {
-      title: t("Step 3: Mental Well-Being"),
-      why: t("Two validated screens (ST-5, WHO-5) estimate stress and well-being. This is a self-check, not a diagnosis."),
-      body: `
-        ${instrumentBlock("st5")}
-        ${instrumentBlock("who5")}`
-    },
-    {
-      title: t("Step 4: Relationships"),
-      why: t("Score your social connection and loneliness."),
-      body: `
-        ${instrumentBlock("lsns")}
-        ${instrumentBlock("ucla")}
-        <div id="ras-block" class="d-none">
-          ${instrumentBlock("ras")}
-        </div>`
-    },
-    {
-      title: t("Step 5: Goals & Learning"),
-      why: t("Self-efficacy and perseverance, plus your weekly learning habits."),
-      body: `
-        ${instrumentBlock("gse")}
-        ${instrumentBlock("citacc")}
-        ${instrumentBlock("citlearn")}
-        ${instrumentBlock("grit")}
-        ${numberField("onb-learning", t("Weekly Learning / Study Hours"), "", 'min="0" max="80" step="0.5"', { required: true, field: "weeklyLearningHours", placeholder: "0–80" })}`
-    },
-    {
-      title: t("Step 6: Contribution, Environment & Future"),
-      why: t("Prosocial habits, everyday environmental behavior, and your long-term outlook."),
-      body: `
-        ${instrumentBlock("ptm")}
-        <div class="grid-2">
-          ${numberField("onb-donations", t("Monthly Donations (THB)"), "", 'min="0"', { required: true, field: "monthlyDonations" })}
-          ${numberField("onb-volunteer", t("Volunteering Hours per Month"), "", 'min="0" max="168"', { required: true, field: "volunteeringHours", placeholder: "0–168" })}
-        </div>
-        ${instrumentBlock("geb")}
-        ${numberField("onb-plastics", t("Single-Use Plastic Items per Day"), "", 'min="0" max="100"', { required: true, field: "singleUsePlastics", placeholder: "0–100" })}
-        ${instrumentBlock("lfis")}`
+    if (screen.kind === "ending") {
+      return `
+        <div class="survey-page survey-page-ending d-none" id="onb-page-${i}" data-chapter="${screen.chapter}">
+          ${endingMarkup(screen.chapter)}
+          ${nav}
+        </div>`;
     }
-  ];
 
-  const totalSteps = pages.length;
+    // The couples-only RAS block keeps its conditional wrapper INSIDE the
+    // screen. The wrapper is what validateScope skips for a single reader; the
+    // screen itself is additionally skipped in navigation, so a single reader
+    // never lands on a page with nothing on it.
+    const body = screen.conditional === "couple"
+      ? `<div id="ras-block" class="d-none">${screen.body}</div>`
+      : screen.body;
+
+    return `
+      <div class="survey-page d-none" id="onb-page-${i}" data-chapter="${screen.chapter}"
+        ${screen.instrument ? `data-instrument="${screen.instrument}"` : ""}
+        ${screen.conditional ? `data-conditional="${screen.conditional}"` : ""}>
+        <h3 class="card-header">${escapeHtml(screen.title)}</h3>
+        <p class="onb-why">${escapeHtml(screen.stem)}</p>
+        ${body}
+        ${nav}
+      </div>`;
+  };
 
   container.innerHTML = `
     <div class="onboarding-container card">
@@ -200,97 +162,169 @@ export function renderOnboarding(containerId, onComplete) {
         <h1>${t("PERSONAL WELLBEING ASSESSMENT")}</h1>
         <p>${t("Baseline Assessment")}</p>
       </div>
-      <div class="onb-progress">
-        <div class="onb-progress-head">
-          <span id="onb-step-label"></span>
-          <span id="onb-step-time"></span>
-        </div>
-        <div class="onb-progress-track"><div class="onb-progress-fill" id="onb-progress-fill"></div></div>
-      </div>
+      ${ringMarkup(CHAPTERS)}
       <div id="onb-resume" class="onb-resume d-none">
         <span>${t("Picked up where you left off. Your answers were saved on this device.")}</span>
         <button type="button" class="btn btn-sm" id="onb-resume-clear">${t("Start over")}</button>
       </div>
       <form id="onboarding-form">
-        ${pages.map((page, i) => `
-          <div class="survey-page ${i === 0 ? "" : "d-none"}" id="onb-page-${i}">
-            <h3 class="card-header">${page.title}</h3>
-            <p class="onb-why">${page.why}</p>
-            ${page.body}
-            <div class="onb-nav">
-              ${i > 0 ? `<button type="button" class="btn btn-onb-prev" data-page="${i}">${t("Back")}</button>` : `<span></span>`}
-              <div class="onb-nav-right">
-                ${i < totalSteps - 1
-                  ? `<button type="button" class="btn btn-primary btn-onb-next" data-page="${i}">${t("Next")}</button>`
-                  : `<button type="submit" class="btn btn-primary">${t("Complete Assessment")}</button>`}
-              </div>
-            </div>
-          </div>`).join("")}
+        ${screens.map(screenMarkup).join("")}
       </form>
       <p id="onboarding-error" class="d-none" style="color: var(--color-crimson); margin-top: 12px; font-weight: 600;"></p>
     </div>
   `;
 
+  const form = document.getElementById("onboarding-form");
+  const pageEl = (i) => document.getElementById(`onb-page-${i}`);
   const errorEl = () => document.getElementById("onboarding-error");
   const showError = (msg) => { const el = errorEl(); el.textContent = msg; el.classList.remove("d-none"); };
   const hideError = () => errorEl().classList.add("d-none");
 
-  const updateProgress = (idx) => {
-    const fill = document.getElementById("onb-progress-fill");
-    const label = document.getElementById("onb-step-label");
-    const time = document.getElementById("onb-step-time");
-    if (fill) fill.style.width = `${Math.round(((idx + 1) / totalSteps) * 100)}%`;
-    if (label) label.textContent = tp("Step {n} of {total}", { n: idx + 1, total: totalSteps });
-    if (time) time.textContent = t("About 5 minutes total");
+  // --- the couples-only block --------------------------------------------
+  const relationshipSelect = document.getElementById("onb-relationship");
+  const isCoupled = () => relationshipSelect.value === "Coupled";
+  // Extracted because a restore has to run it too: setting `.value` from script
+  // fires no change event, so without this a restored "Coupled" answer would
+  // leave the RAS block hidden and the reader would never be asked those items.
+  const syncCoupleBlock = () => {
+    document.getElementById("ras-block").classList.toggle("d-none", !isCoupled());
+  };
+  const isSkippedScreen = (screen) => screen.conditional === "couple" && !isCoupled();
+  const isSkipped = (i) => isSkippedScreen(screens[i]);
+
+  // --- the reveal rhythm -------------------------------------------------
+  //
+  // Within an instrument screen the reader sees every question they have
+  // already answered, plus exactly one they have not. That is the in-screen
+  // feedback the old six-page form had none of, and it is computed from the
+  // DOM rather than tracked in a counter on purpose: a reader who scrolls back
+  // and CHANGES an earlier answer must not have the later ones vanish, and a
+  // draft restore must land on the right item without replaying any events.
+  const syncReveal = (page) => {
+    if (!page || !page.dataset.instrument) return;
+    let seenUnanswered = false;
+    for (const fs of page.querySelectorAll("fieldset.survey-question")) {
+      if (fs.querySelector('input[type="radio"]:checked')) {
+        fs.classList.remove("q-pending");
+        fs.classList.add("q-answered");
+        continue;
+      }
+      fs.classList.remove("q-answered");
+      // The first unanswered question is live; everything after it waits.
+      fs.classList.toggle("q-pending", seenUnanswered);
+      seenUnanswered = true;
+    }
   };
 
-  // Recorded so a draft can put the user back on the step they left, rather
-  // than on step 1 with five steps of answers they have to page past.
-  let currentStep = 0;
+  // --- the ring ----------------------------------------------------------
+  //
+  // `within` is the fraction of THIS chapter's screens the reader has passed,
+  // counting the ending as one of them. Screens completed, never score.
+  const chapterProgress = (index) => {
+    const screen = screens[index];
+    if (screen.chapter < 0) return { chapter: -1, within: 0 };
+    const ofChapter = screens.filter(s => s.chapter === screen.chapter && !isSkippedScreen(s));
+    const position = ofChapter.indexOf(screen);
+    return { chapter: screen.chapter, within: position < 0 ? 0 : position / ofChapter.length };
+  };
 
-  const showPage = (idx) => {
-    currentStep = idx;
-    pages.forEach((_, i) => {
-      document.getElementById(`onb-page-${i}`).classList.toggle("d-none", i !== idx);
-    });
-    updateProgress(idx);
+  const updateRing = (index) => {
+    paintRing(container, { ...chapterProgress(index), chapters: CHAPTERS });
+  };
+
+  // --- recap -------------------------------------------------------------
+  //
+  // Built at display time, because it reads what the reader actually typed.
+  // This accessor is the whole DOM dependency of views/journey.js: that module
+  // never touches `document`, which is what makes the writing testable.
+  const read = {
+    num(id) {
+      const el = document.getElementById(id);
+      if (!el || String(el.value).trim() === "") return null;
+      const n = Number(el.value);
+      return Number.isFinite(n) ? n : null;
+    },
+    answers(key) {
+      const instrument = INSTRUMENTS[key];
+      if (!instrument) return [];
+      return instrument.items.map((_, i) => {
+        const el = form.querySelector(`input[name="${key}-q${i}"]:checked`);
+        return el ? Number(el.value) : null;
+      });
+    }
+  };
+
+  const fillRecap = (chapterIndex) => {
+    const list = document.getElementById(`recap-${chapterIndex}`);
+    if (!list) return;
+    let lines = [];
+    try {
+      lines = CHAPTERS[chapterIndex].recap(read) || [];
+    } catch (err) {
+      // A recap is writing around an assessment, not the assessment. If it
+      // throws on some shape of answer nobody anticipated, the reader still
+      // gets their chapter ending and their fact, and the console gets the
+      // defect. Losing the flow over a sentence would be the worse failure by
+      // a wide margin.
+      console.error(`Chapter recap failed for ${CHAPTERS[chapterIndex].aspect}:`, err);
+    }
+    list.innerHTML = lines.map(line => `<li>${escapeHtml(line)}</li>`).join("");
+  };
+
+  // --- navigation --------------------------------------------------------
+  let currentScreen = 0;
+
+  const showScreen = (index) => {
+    currentScreen = index;
+    screens.forEach((_, i) => pageEl(i).classList.toggle("d-none", i !== index));
+    const page = pageEl(index);
+    syncReveal(page);
+    if (screens[index].kind === "ending") fillRecap(screens[index].chapter);
+    updateRing(index);
     scrollIntoViewGently(container, { block: "start" });
   };
 
-  // Next advances only when the current step is complete and in range.
+  // Walks past a screen the reader is not being asked (today: the couples-only
+  // RAS screen for a single reader). Returns null when there is nothing left in
+  // that direction, which only happens at the two ends.
+  const nextVisible = (from, step) => {
+    let i = from + step;
+    while (i >= 0 && i < total && isSkipped(i)) i += step;
+    return i >= 0 && i < total ? i : null;
+  };
+
   container.querySelectorAll(".btn-onb-next").forEach(btn => {
     btn.addEventListener("click", () => {
-      const idx = parseInt(btn.dataset.page);
-      const invalid = validateScope(document.getElementById(`onb-page-${idx}`));
+      const index = parseInt(btn.dataset.screen);
+      const invalid = validateScope(pageEl(index));
       if (invalid) {
-        showError(t("Please answer every question on this step."));
+        showError(t("Please answer every question on this screen."));
         scrollIntoViewGently(invalid, { block: "center" });
         return;
       }
       hideError();
-      showPage(idx + 1);
+      const target = nextVisible(index, 1);
+      if (target !== null) showScreen(target);
     });
   });
   container.querySelectorAll(".btn-onb-prev").forEach(btn => {
-    btn.addEventListener("click", () => { hideError(); showPage(parseInt(btn.dataset.page) - 1); });
+    btn.addEventListener("click", () => {
+      hideError();
+      const target = nextVisible(parseInt(btn.dataset.screen), -1);
+      if (target !== null) showScreen(target);
+    });
   });
 
-  // Couple-only questions appear only once "Coupled" is chosen (blank/Single
-  // keep the RAS block hidden, so validateScope skips it).
-  const relationshipSelect = document.getElementById("onb-relationship");
-  // Extracted because a restore has to run it too: setting `.value` from script
-  // fires no change event, so without this a restored "Coupled" answer would
-  // leave the RAS block hidden and the user would never be asked those items.
-  const syncCoupleBlock = () => {
-    document.getElementById("ras-block").classList.toggle("d-none", relationshipSelect.value !== "Coupled");
-  };
-  relationshipSelect.addEventListener("change", syncCoupleBlock);
+  relationshipSelect.addEventListener("change", () => {
+    syncCoupleBlock();
+    updateRing(currentScreen);
+  });
 
-  updateProgress(0);
-
-  // Coverage capture: the user must now answer everything, so these sets end up
-  // fully populated — but they still record interaction honestly (e.g. the RAS
-  // instrument stays unanswered, hence answered=false, for single users).
+  // --- coverage capture --------------------------------------------------
+  //
+  // The reader must now answer everything, so these sets end up fully
+  // populated — but they still record interaction honestly (e.g. the RAS
+  // instrument stays unanswered, hence answered=false, for single readers).
   const touchedFields = new Set();
   const touchedInstruments = new Set();
   const idToField = Object.fromEntries(
@@ -303,7 +337,6 @@ export function renderOnboarding(containerId, onComplete) {
     el.classList.remove("input-invalid");
     if (group && group.tagName === "FIELDSET") group.classList.remove("survey-question-invalid");
   };
-  const form = document.getElementById("onboarding-form");
   form.addEventListener("input", (e) => {
     const field = idToField[e.target.id];
     if (field) touchedFields.add(field);
@@ -313,9 +346,12 @@ export function renderOnboarding(containerId, onComplete) {
     const match = (e.target.name || "").match(/^([a-z0-9]+)-q\d+$/i);
     if (match) touchedInstruments.add(match[1]);
     clearControlError(e.target);
+    // An answer is what advances the reveal, so this runs on every radio
+    // change rather than only on the one that happens to be live.
+    syncReveal(e.target.closest(".survey-page"));
   });
 
-  // --- draft restore, then autosave ------------------------------------
+  // --- draft restore, then autosave --------------------------------------
   //
   // ORDER MATTERS. The restore runs AFTER `touchedFields` and
   // `touchedInstruments` exist, because it seeds them directly: applyDraft sets
@@ -330,12 +366,22 @@ export function renderOnboarding(containerId, onComplete) {
       if (field) touchedFields.add(field);
     }
     for (const key of instrumentsIn(restored.restoredNames)) touchedInstruments.add(key);
+    // Only on a restore. A fresh render already ships the RAS block hidden, so
+    // an unconditional call here would do nothing except require a live DOM at
+    // render time -- which the view tests deliberately do not provide.
     syncCoupleBlock();
     document.getElementById("onb-resume").classList.remove("d-none");
-    if (Number.isInteger(restored.step) && restored.step > 0 && restored.step < totalSteps) {
-      showPage(restored.step);
-    }
   }
+
+  // Screens are far finer than the old six steps, so a draft written by the v80
+  // pager carries a `step` of 0..5 that means something else here. Clamping is
+  // deliberately all this does: a resumed reader lands inside their own
+  // answers rather than on a screen that does not exist, and every screen
+  // behind them is still swept by the final validation before submit.
+  const resumeAt = restored && Number.isInteger(restored.step)
+    ? Math.min(Math.max(restored.step, 0), lastIndex)
+    : 0;
+  showScreen(isSkipped(resumeAt) ? (nextVisible(resumeAt, 1) ?? 0) : resumeAt);
 
   // Start over: drop the draft and put the form back to the blank-first state
   // the markup was rendered in. form.reset() is exactly right here BECAUSE of
@@ -350,22 +396,24 @@ export function renderOnboarding(containerId, onComplete) {
     syncCoupleBlock();
     document.getElementById("onb-resume").classList.add("d-none");
     hideError();
-    showPage(0);
+    showScreen(0);
   });
 
-  const save = () => saveDraft(DRAFT_KEY, form, { step: currentStep });
+  const save = () => saveDraft(DRAFT_KEY, form, { step: currentScreen });
   form.addEventListener("input", save);
   form.addEventListener("change", save);
 
   // Build the survey payload from the DOM and submit. By the time this runs
-  // every step has passed validateScope, so no field is blank or out of range.
+  // every screen has passed validateScope, so no field is blank or out of range.
   const doSubmit = () => {
     hideError();
-    // Final full-form sweep: validate every step, jump to the first offender.
-    for (let i = 0; i < totalSteps; i++) {
-      const invalid = validateScope(document.getElementById(`onb-page-${i}`));
+    // Final full-form sweep: validate every screen, jump to the first offender.
+    // Ending screens hold no controls, so they pass trivially.
+    for (let i = 0; i < total; i++) {
+      if (isSkipped(i)) continue;
+      const invalid = validateScope(pageEl(i));
       if (invalid) {
-        showPage(i);
+        showScreen(i);
         showError(t("Please answer every question before submitting."));
         scrollIntoViewGently(invalid, { block: "center" });
         return;
@@ -441,7 +489,7 @@ export function renderOnboarding(containerId, onComplete) {
     }
   };
 
-  document.getElementById("onboarding-form").addEventListener("submit", (e) => {
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
     doSubmit();
   });

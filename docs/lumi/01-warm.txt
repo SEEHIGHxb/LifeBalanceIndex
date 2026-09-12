@@ -1,0 +1,9 @@
+League of Legends splash art style: painterly digital illustration, semi-realistic stylised proportions, richly rendered with confident visible brushwork, sculpted form and volume, strong directional key light with a bright warm rim light separating her from the background, jewel-tone palette, crisp focal detail on the face, high production-quality character portrait. Keyed for daylight rather than night: the overall value range stays bright and open, so the drama is in the lighting on the character, not in darkness around her.
+
+Lumi: a friendly young woman in her early twenties. Straight dark hair with a cool blue sheen falling just past her shoulders, side-swept fringe, individual strands catching the light. A small polished gold and cornflower-blue enamel star hairpin above her left ear. Warm amber eyes with clear bright catchlights. A single small gold star-drop earring. She wears a high-collared jacket in soft cornflower-blue wool with fine gold star embroidery threaded along the collar and a brass clasp at the throat.
+
+Framing: head-and-shoulders portrait, head centred with clear headroom and empty margin at all four corners, because the image is displayed cropped inside a circle. Background: a flat uniform pale mint field, hex #DCF2E4, completely plain -- no scenery, no gradient, no props. Square 1:1 composition, 1024x1024 or larger.
+
+Expression: a calm, open, welcoming half-smile, looking directly at the viewer, head slightly tilted, relaxed shoulders. She looks like someone glad you arrived and in no hurry at all.
+
+Keep it bright and friendly. One character only. Fully clothed with the collar closed. No text, lettering, watermark or signature anywhere in the image. Keep her hands out of frame.

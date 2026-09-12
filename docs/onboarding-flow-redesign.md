@@ -5,7 +5,7 @@ prototype was built, played and approved ("I have tried the Wildwood, and it's l
 good"), and the flow engine now runs all eight chapters in the app: 30 screens, the
 reveal rhythm, the ring, and eight cited chapter endings. Phase 3 (Lumi and the
 ceremony) and Phase 4 (one answering language across the deep and monthly flows)
-are not started. Lumi is still visually unlocked — see `lumi-prompts.md`.
+are not started. Lumi is still visually unlocked — see `lumi/00-README.md`.
 
 ## Why this exists
 

@@ -1,8 +1,11 @@
 # Onboarding flow redesign — the eight chapters
 
-Status: **AGREED — 2026-09-11, not yet started.** Direction settled with the author
-across two rounds of questions; Phase 1 is the next action. Nothing in this document
-has been built.
+Status: **PHASES 0-2 SHIPPED — 2026-09-11 (APP_VERSION 81).** The Environment
+prototype was built, played and approved ("I have tried the Wildwood, and it's look
+good"), and the flow engine now runs all eight chapters in the app: 30 screens, the
+reveal rhythm, the ring, and eight cited chapter endings. Phase 3 (Lumi and the
+ceremony) and Phase 4 (one answering language across the deep and monthly flows)
+are not started. Lumi is still visually unlocked — see `lumi-prompts.md`.
 
 ## Why this exists
 

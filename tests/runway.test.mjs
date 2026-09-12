@@ -294,8 +294,17 @@ test("v80: onboarding does not ask for the runway figures at all", () => {
   // Source-level, because this suite has no DOM harness to submit the form
   // through. It fails on the defect: putting either the field or its reader
   // back trips it.
-  const onboarding = readFileSync(
+  // TWO FILES SINCE v81. The chapter rewrite split onboarding into an engine
+  // (views/onboarding.js, which reads the form and submits) and a content model
+  // (views/journey.js, which declares the fields). A runway field could be
+  // reintroduced in either, so both are read and the absence is asserted across
+  // the pair -- checking only the engine would have let the field back in
+  // through the chapter that declares it.
+  const engine = readFileSync(
     new URL("../views/onboarding.js", import.meta.url), "utf8");
+  const content = readFileSync(
+    new URL("../views/journey.js", import.meta.url), "utf8");
+  const onboarding = engine + content;
   for (const id of ["onb-liquid", "onb-outflow", "onb-family"]) {
     assert.ok(!new RegExp(`numberField\\("${id}"`).test(onboarding),
       id + " is back on the onboarding form \u2014 the runway is being asked for "
@@ -305,9 +314,9 @@ test("v80: onboarding does not ask for the runway figures at all", () => {
     assert.ok(!new RegExp(`${field}: val\\(`).test(onboarding),
       field + " is being read out of the onboarding form again");
   }
-  // And the step is still a real form asking for real numbers, so this cannot
+  // And the flow is still a real form asking for real numbers, so this cannot
   // pass by onboarding having been emptied or renamed out from under it.
-  const savings = onboarding.match(/numberField\("onb-savings"[\s\S]*?\}\)\}/);
+  const savings = content.match(/numberField\("onb-savings"[\s\S]*?\}\)\}/);
   assert.ok(savings, "onboarding no longer asks for monthly savings either");
   assert.match(savings[0], /required:\s*true/,
     "monthly savings must still be required \u2014 it sets the goal target");

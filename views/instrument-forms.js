@@ -229,3 +229,24 @@ export function validateScope(scopeEl) {
 
   return firstInvalid;
 }
+
+// A mandatory dropdown: starts on a disabled blank "— Select —", so the user
+// must make a conscious choice (gender keeps "Prefer not to say" as a real
+// option). Carries data-required + an inline error span for validateScope, and
+// aria-required so the "*" — which is aria-hidden — is not the only signal.
+//
+// MOVED HERE FROM views/onboarding.js in the chapter rewrite. It was always a
+// form builder sitting in a view by accident; views/journey.js needs it now,
+// and a second copy there would be the kind of drift the blank-first policy
+// cannot survive.
+export function selectField(id, label, options) {
+  return `
+    <div class="form-group">
+      <label for="${id}">${label} ${REQ_MARK}</label>
+      <select id="${id}" class="form-control" data-required="1" aria-required="true">
+        <option value="" disabled selected>${t("— Select —")}</option>
+        ${options.map(o => `<option value="${o.v}">${t(o.l)}</option>`).join("")}
+      </select>
+      <span class="field-error d-none" id="${id}-err" aria-live="polite"></span>
+    </div>`;
+}

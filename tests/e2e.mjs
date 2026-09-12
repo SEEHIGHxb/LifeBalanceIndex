@@ -40,8 +40,8 @@ const readState = () => page.evaluate(() =>
 
 // --- FLOW 1: full onboarding -> dashboard ---
 // Blank-first: nothing is pre-filled, every required field must be answered,
-// and there is no express shortcut. Fill the whole form (all six steps, even the
-// hidden ones), then walk each step and submit.
+// and there is no express shortcut. Fill every screen at once, even the hidden
+// ones, then walk the whole flow and submit.
 try {
   await page.goto(BASE, { waitUntil: "networkidle" });
   await page.waitForSelector("#onboarding-form", { timeout: 10000 });
@@ -64,11 +64,33 @@ try {
     });
   });
 
-  // Advance through steps 0..4, then submit on step 5. Each Next re-validates
-  // the step, so a missed field would fail here rather than silently pass.
-  for (let i = 0; i < 5; i++) {
-    await page.click(`#onb-page-${i} .btn-onb-next`);
+  // Walk every screen to the last one, then submit.
+  //
+  // THE SCREEN COUNT IS DELIBERATELY NOT WRITTEN DOWN HERE. This loop used to
+  // read `for (let i = 0; i < 5; i++)` because onboarding was six pages. v81
+  // made it thirty screens and the literal did not fail loudly: it walked five,
+  // stopped in the middle of the assessment, and timed out waiting for a submit
+  // button still hidden twenty-four screens away. Flows 2 through 6 then failed
+  // with it, each reporting its own symptom ("null has no baseline",
+  // "#tab-dashboard never visible"), so one stale number read as six unrelated
+  // breakages. Walking until no Next remains cannot go stale.
+  //
+  // Each Next re-validates its own screen, so a missed field still fails here
+  // rather than silently passing. The bound is a stuck-loop guard, not a screen
+  // count -- if it is ever reached, the flow has stopped advancing and the
+  // assertion below says so.
+  let walked = 0;
+  for (; walked < 200; walked++) {
+    const next = page.locator(".survey-page:not(.d-none) .btn-onb-next");
+    if ((await next.count()) === 0) break;
+    await next.click();
   }
+  if (walked >= 200) {
+    problems.push("flow1: onboarding never reached its last screen — a Next click is not advancing");
+  }
+  // Proves the walk ended where the assessment ends rather than stalling on a
+  // screen that happens to have no Next of its own.
+  await page.waitForSelector('.survey-page:not(.d-none) button[type="submit"]', { timeout: 10000 });
   await page.click('#onboarding-form button[type="submit"]');
 
   await page.waitForSelector("#tab-dashboard", { timeout: 10000 });

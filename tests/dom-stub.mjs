@@ -23,6 +23,26 @@
 
 const DEFAULT_WIDTH_PX = 360;
 
+// A real DOMTokenList, minus the parts nothing here uses. Added when the
+// onboarding rewrite started showing its first screen AT RENDER TIME rather
+// than only on a draft restore: the view legitimately toggles `.d-none` on
+// every screen, and a node without a classList made that read as a view bug
+// when it was a stub gap. Backed by a Set so add/remove/toggle compose the way
+// the real one does.
+function makeClassList(initial = "") {
+  const set = new Set(String(initial).split(/\s+/).filter(Boolean));
+  return {
+    add(...names) { for (const n of names) set.add(n); },
+    remove(...names) { for (const n of names) set.delete(n); },
+    contains(name) { return set.has(name); },
+    toggle(name, force) {
+      const on = force === undefined ? !set.has(name) : !!force;
+      if (on) set.add(name); else set.delete(name);
+      return on;
+    }
+  };
+}
+
 export function makeNode(tagName) {
   return {
     tagName,
@@ -30,6 +50,8 @@ export function makeNode(tagName) {
     textContent: "",
     attributes: {},
     childNodes: [],
+    dataset: {},
+    classList: makeClassList(),
     setAttribute(name, value) { this.attributes[name] = String(value); },
     getAttribute(name) { return Object.hasOwn(this.attributes, name) ? this.attributes[name] : null; },
     appendChild(child) { this.childNodes.push(child); return child; },

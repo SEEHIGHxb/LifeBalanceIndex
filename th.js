@@ -110,12 +110,8 @@ export const TH = {
   // --- Onboarding ---
   "PERSONAL WELLBEING ASSESSMENT": "แบบประเมินสุขภาวะส่วนบุคคล",
   "Baseline Assessment": "แบบประเมินพื้นฐาน",
-  "Step 1: Profile & Finance": "ขั้นที่ 1: ข้อมูลส่วนตัวและการเงิน",
   "Step {n} of {total}": "ขั้นที่ {n} จาก {total}",
   "About 5 minutes total": "ใช้เวลาทั้งหมดประมาณ 5 นาที",
-  "We start with income and demographics so your scores can be compared against real population benchmarks.": "เราเริ่มจากรายได้และข้อมูลประชากร เพื่อให้เทียบคะแนนของคุณกับเกณฑ์มาตรฐานประชากรจริงได้",
-  "A few body and activity numbers place your physical health against national norms.": "ตัวเลขร่างกายและกิจกรรมเพียงไม่กี่ข้อ ช่วยวัดสุขภาพกายของคุณเทียบกับเกณฑ์ระดับประเทศ",
-  "Two validated screens (ST-5, WHO-5) estimate stress and well-being. This is a self-check, not a diagnosis.": "แบบคัดกรองที่ผ่านการรับรองสองชุด (ST-5, WHO-5) ประเมินความเครียดและสุขภาวะ นี่เป็นการตรวจสอบตนเอง ไม่ใช่การวินิจฉัย",
   "Quick-start results.": "ผลลัพธ์แบบเริ่มเร็ว",
   "Aspects beyond your first sections use baseline estimates. Submit a Weekly Review to shape them, and monthly re-assessments refine your survey scores over time.": "ด้านที่อยู่นอกเหนือช่วงแรกใช้ค่าประมาณพื้นฐาน ส่งการทบทวนรายสัปดาห์เพื่อปรับให้ตรงขึ้น และการประเมินซ้ำรายเดือนจะปรับคะแนนแบบสอบถามของคุณให้แม่นยำขึ้นเมื่อเวลาผ่านไป",
   "points": "คะแนน",
@@ -181,7 +177,6 @@ export const TH = {
   "Rent, loan repayments, bills.": "ค่าเช่า ค่าผ่อนชำระ ค่าสาธารณูปโภค",
   "Asked separately since v78. If you set up this profile earlier, this money was part of the box above — take it out of that figure before you enter it here, or it will be counted twice. Leave this blank or enter 0 if you send nothing.":
     "แอปเริ่มถามแยกตั้งแต่ v78 หากคุณตั้งค่าโปรไฟล์ไว้ก่อนหน้านั้น เงินก้อนนี้เคยรวมอยู่ในช่องด้านบน กรุณาหักออกจากตัวเลขในช่องนั้นก่อนกรอกตรงนี้ มิฉะนั้นจะถูกนับซ้ำ หากคุณไม่ได้ส่งเงินให้ครอบครัว เว้นว่างไว้หรือกรอก 0",
-  "Step 2: Physical Baseline": "ขั้นที่ 2: พื้นฐานร่างกาย",
   "Height (cm)": "ส่วนสูง (ซม.)",
   "Weight (kg)": "น้ำหนัก (กก.)",
   "Average Nightly Sleep (Hours)": "ชั่วโมงนอนเฉลี่ยต่อคืน",
@@ -196,11 +191,7 @@ export const TH = {
   "Moderate Minutes on Each of Those Days": "นาทีต่อวัน เฉพาะวันที่ออกกำลังปานกลาง",
   "Walking (Days/Week)": "เดิน (วัน/สัปดาห์)",
   "Walking Minutes on Each of Those Days": "นาทีต่อวัน เฉพาะวันที่เดิน",
-  "Step 3: Mental Well-Being": "ขั้นที่ 3: สุขภาพจิต",
-  "Step 4: Relationships": "ขั้นที่ 4: ความสัมพันธ์",
-  "Step 5: Goals & Learning": "ขั้นที่ 5: เป้าหมายและการเรียนรู้",
   "Weekly Learning / Study Hours": "ชั่วโมงเรียนรู้/ศึกษาต่อสัปดาห์",
-  "Step 6: Contribution, Environment & Future": "ขั้นที่ 6: สังคม สิ่งแวดล้อม และอนาคต",
   "Monthly Donations (THB)": "เงินบริจาคต่อเดือน (บาท)",
   "Volunteering Hours per Month": "ชั่วโมงจิตอาสาต่อเดือน",
   "Single-Use Plastic Items per Day": "พลาสติกใช้ครั้งเดียวต่อวัน (ชิ้น)",
@@ -1346,11 +1337,7 @@ export const TH = {
   "Profile updated — {parts}": "อัปเดตโปรไฟล์แล้ว — {parts}",
   "— Select —": "— เลือก —",
   "Required.": "จำเป็นต้องกรอก",
-  "Please answer every question on this step.": "กรุณาตอบทุกคำถามในขั้นตอนนี้",
   "Please answer every question before submitting.": "กรุณาตอบทุกคำถามก่อนส่ง",
-  "Score your social connection and loneliness.": "ประเมินความสัมพันธ์ทางสังคมและความเหงาของคุณ",
-  "Self-efficacy and perseverance, plus your weekly learning habits.": "การรับรู้ความสามารถของตนเองและความมุ่งมั่น รวมถึงนิสัยการเรียนรู้รายสัปดาห์ของคุณ",
-  "Prosocial habits, everyday environmental behavior, and your long-term outlook.": "นิสัยเอื้อสังคม พฤติกรรมรักษ์สิ่งแวดล้อมในชีวิตประจำวัน และมุมมองระยะยาวของคุณ",
 
   // Comparison populations — who each percentile is actually measured against.
   "Thai workers": "แรงงานไทย",
@@ -1437,5 +1424,176 @@ export const TH = {
   "This card shows your mental wellbeing alongside the other seven aspects. Choosing “Shape only” keeps the numbers off it.":
     "การ์ดนี้แสดงด้านจิตใจของคุณรวมอยู่กับอีกเจ็ดด้าน หากเลือก “เฉพาะรูปทรง” ตัวเลขจะไม่ปรากฏบนการ์ด",
   "Instagram cannot accept a post directly from a website. Pick Instagram in the share sheet, or save the image and post it from the app.":
-    "อินสตาแกรมไม่รับโพสต์โดยตรงจากเว็บไซต์ กรุณาเลือกอินสตาแกรมในหน้าต่างแชร์ของเครื่อง หรือบันทึกรูปภาพแล้วโพสต์จากแอปโดยตรง"
+    "อินสตาแกรมไม่รับโพสต์โดยตรงจากเว็บไซต์ กรุณาเลือกอินสตาแกรมในหน้าต่างแชร์ของเครื่อง หรือบันทึกรูปภาพแล้วโพสต์จากแอปโดยตรง",
+
+  // --- THE EIGHT CHAPTERS (v81) --------------------------------------
+  // The redesigned onboarding flow: region names, screen stems, the recap
+  // lines that read a reader's own answers back to them, and the eight
+  // cited facts. See docs/onboarding-flow-redesign.md.
+  "Setting out":
+    "ออกเดินทาง",
+  "Journey complete":
+    "เดินทางครบแล้ว",
+  "Before you set out":
+    "ก่อนออกเดินทาง",
+  "Six quick things, so the rest of the journey can compare you with people in a similar situation. Nothing here is scored.":
+    "หกข้อสั้น ๆ เพื่อให้ส่วนที่เหลือของการเดินทางเทียบคุณกับคนที่อยู่ในสถานการณ์ใกล้เคียงกันได้ ข้อมูลตรงนี้ไม่ถูกนำไปให้คะแนน",
+  "The Market":
+    "ตลาด",
+  "Where what you have meets what it costs.":
+    "ที่ซึ่งสิ่งที่คุณมีมาเจอกับราคาที่ต้องจ่าย",
+  "What comes in, what stays":
+    "เข้ามาเท่าไร เหลืออยู่เท่าไร",
+  "Two numbers. Round them — nothing here needs to be exact.":
+    "สองตัวเลข ปัดเศษได้ ไม่มีอะไรตรงนี้ที่ต้องเป๊ะ",
+  "Now how money feels, which is a different question from how much of it there is.":
+    "ต่อไปคือความรู้สึกเรื่องเงิน ซึ่งเป็นคนละคำถามกับว่ามีเงินเท่าไร",
+  "Of the {income} baht that comes in each month, you set aside {amount}.":
+    "จาก {income} บาทที่เข้ามาในแต่ละเดือน คุณเก็บไว้ {amount} บาท",
+  "Over a year, that is about {annual} baht.":
+    "ตลอดหนึ่งปีคิดเป็นราว {annual} บาท",
+  "Of five statements about money, {n} described you well.":
+    "จากห้าข้อความเกี่ยวกับเรื่องเงิน มี {n} ข้อที่ตรงกับคุณ",
+  "Across Thailand, 63.1% of adults set aside money at some point last year. The survey deliberately never asked how much — only whether any was set aside at all.":
+    "ทั่วประเทศไทย ผู้ใหญ่ 63.1% เก็บเงินไว้บ้างในช่วงปีที่ผ่านมา แบบสำรวจตั้งใจไม่ถามว่าเก็บเท่าไร ถามเพียงว่าได้เก็บบ้างหรือไม่",
+  "The Highlands":
+    "ที่ราบสูง",
+  "The climb your body does every day, whether or not you notice it.":
+    "การไต่ที่ร่างกายคุณทำทุกวัน ไม่ว่าคุณจะรู้ตัวหรือไม่",
+  "The basics":
+    "ข้อมูลพื้นฐาน",
+  "Used for a BMI band and nothing else. It is never shown to anyone.":
+    "ใช้สำหรับคำนวณช่วงค่า BMI เท่านั้น และไม่ถูกแสดงให้ใครเห็น",
+  "An ordinary day":
+    "วันธรรมดาวันหนึ่ง",
+  "Not your best day and not your worst — the one that repeats.":
+    "ไม่ใช่วันที่ดีที่สุดและไม่ใช่วันที่แย่ที่สุด แต่เป็นวันที่เกิดซ้ำ ๆ",
+  "Three pairs. For each: how many days in a normal week, and how long on one of those days — not the weekly total.":
+    "สามคู่ แต่ละคู่ถามว่าในหนึ่งสัปดาห์ปกติทำกี่วัน และในวันที่ทำนั้นทำนานเท่าไร ไม่ใช่ยอดรวมทั้งสัปดาห์",
+  "Four questions about how the sleep actually went, which the hours alone do not tell us.":
+    "สี่คำถามว่าการนอนเป็นอย่างไรจริง ๆ ซึ่งจำนวนชั่วโมงอย่างเดียวบอกไม่ได้",
+  "{hours} hours a night — around {annual} hours of sleep a year.":
+    "คืนละ {hours} ชั่วโมง คิดเป็นการนอนราว {annual} ชั่วโมงต่อปี",
+  "You move for about {mins} minutes in a normal week.":
+    "คุณขยับร่างกายราว {mins} นาทีในหนึ่งสัปดาห์ปกติ",
+  "{n} portions of vegetables a day is roughly {annual} across a year.":
+    "ผัก {n} ส่วนต่อวัน คิดเป็นราว {annual} ส่วนตลอดหนึ่งปี",
+  "In a national time-use survey of 167,577 Thai adults, 56.4% slept within the recommended seven to nine hours. The other 43.6% are not a small group.":
+    "ในการสำรวจการใช้เวลาระดับประเทศจากคนไทยวัยผู้ใหญ่ 167,577 คน มี 56.4% ที่นอนอยู่ในช่วงเจ็ดถึงเก้าชั่วโมงตามคำแนะนำ อีก 43.6% ไม่ใช่กลุ่มเล็ก ๆ",
+  "The Still Water":
+    "ผืนน้ำนิ่ง",
+  "Where the surface tells you something about what is underneath.":
+    "ที่ซึ่งผิวน้ำบอกบางอย่างเกี่ยวกับสิ่งที่อยู่ข้างใต้",
+  "Five questions about the last few weeks. There is no right answer and nothing here is a diagnosis.":
+    "ห้าคำถามเกี่ยวกับไม่กี่สัปดาห์ที่ผ่านมา ไม่มีคำตอบที่ถูก และไม่มีอะไรตรงนี้ที่เป็นการวินิจฉัย",
+  "Five more, about the same stretch of time — this time asking what was good rather than what was hard.":
+    "อีกห้าคำถามในช่วงเวลาเดียวกัน ครั้งนี้ถามถึงสิ่งที่ดี ไม่ใช่สิ่งที่ยาก",
+  "You answered {n} questions about the past few weeks.":
+    "คุณตอบคำถามเกี่ยวกับไม่กี่สัปดาห์ที่ผ่านมาไปแล้ว {n} ข้อ",
+  "In {n} of the five well-being questions, you said that was true of you most of the time or more.":
+    "ในห้าคำถามเรื่องความเป็นอยู่ที่ดี มี {n} ข้อที่คุณตอบว่าเป็นจริงกับคุณเกือบตลอดเวลาหรือมากกว่านั้น",
+  "None of the five well-being questions landed in the upper half for you. That is recorded exactly as you gave it.":
+    "ไม่มีข้อใดในห้าคำถามเรื่องความเป็นอยู่ที่ดีที่ตกอยู่ในครึ่งบนสำหรับคุณ คำตอบถูกบันทึกไว้ตามที่คุณให้มาทุกประการ",
+  "Thailand's national mental-health score has sat between 31.4 and 33.6 out of 45 every single year from 2008 to 2015. Whatever else changed in those eight years, that did not.":
+    "คะแนนสุขภาพจิตระดับประเทศของไทยอยู่ระหว่าง 31.4 ถึง 33.6 จาก 45 ทุกปีตั้งแต่ 2551 ถึง 2558 ไม่ว่าอะไรจะเปลี่ยนไปในแปดปีนั้น สิ่งนี้ไม่เปลี่ยน",
+  "The Commons":
+    "ลานกลางเมือง",
+  "The people you would call, and the people who would call you.":
+    "คนที่คุณจะโทรหา และคนที่จะโทรหาคุณ",
+  "Six questions about the people around you — three about family, three about friends.":
+    "หกคำถามเกี่ยวกับคนรอบตัวคุณ สามข้อเรื่องครอบครัว สามข้อเรื่องเพื่อน",
+  "Three questions about the gaps. They are asked of everyone, including people with plenty of company.":
+    "สามคำถามเกี่ยวกับช่องว่าง ถามทุกคน รวมถึงคนที่มีผู้คนรายล้อมอยู่มากมาย",
+  "Three last questions, asked only because you said you are in a relationship.":
+    "สามคำถามสุดท้าย ถามเพราะคุณระบุว่ากำลังมีความสัมพันธ์อยู่",
+  "Across the six network questions your answers add up to {n}.":
+    "จากหกคำถามเรื่องเครือข่ายผู้คน คำตอบของคุณรวมได้ {n}",
+  "None of the three loneliness questions described you often.":
+    "ไม่มีข้อใดในสามคำถามเรื่องความเหงาที่ตรงกับคุณบ่อย ๆ",
+  "{n} of the three loneliness questions described you at least some of the time.":
+    "มี {n} ข้อจากสามคำถามเรื่องความเหงาที่ตรงกับคุณอย่างน้อยบางครั้ง",
+  "Asked whether they have relatives or friends they can count on whenever they need them, 87.6% of people in Thailand say yes. It is one of the country's strongest showings on any measure of this kind.":
+    "เมื่อถูกถามว่ามีญาติหรือเพื่อนที่พึ่งพาได้ยามต้องการหรือไม่ คนในประเทศไทย 87.6% ตอบว่ามี นี่เป็นหนึ่งในตัวเลขที่แข็งแรงที่สุดของประเทศในมาตรวัดลักษณะนี้",
+  "The Workshop":
+    "โรงช่าง",
+  "What you are building, and whether you believe you can finish it.":
+    "สิ่งที่คุณกำลังสร้าง และความเชื่อว่าคุณจะทำมันจนจบได้",
+  "Six statements about how you handle difficulty.":
+    "หกข้อความเกี่ยวกับวิธีที่คุณรับมือกับความยากลำบาก",
+  "Three about finishing things.":
+    "สามข้อเกี่ยวกับการทำสิ่งต่าง ๆ ให้สำเร็จ",
+  "Three about learning things.":
+    "สามข้อเกี่ยวกับการเรียนรู้สิ่งใหม่",
+  "Four about staying with something once the novelty wears off.":
+    "สี่ข้อเกี่ยวกับการอยู่กับบางสิ่งต่อไปเมื่อความแปลกใหม่จางลง",
+  "Time at the bench":
+    "เวลาที่โต๊ะทำงาน",
+  "Any deliberate learning counts — a course, a language, a craft, a manual.":
+    "การเรียนรู้อย่างตั้งใจนับได้ทั้งหมด ไม่ว่าจะเป็นคอร์ส ภาษา งานฝีมือ หรือคู่มือสักเล่ม",
+  "{hours} hours a week of deliberate learning — about {annual} hours a year.":
+    "เรียนรู้อย่างตั้งใจสัปดาห์ละ {hours} ชั่วโมง คิดเป็นราว {annual} ชั่วโมงต่อปี",
+  "No hours set aside for learning this week. It is a week, not a verdict.":
+    "สัปดาห์นี้ไม่ได้กันเวลาไว้เรียนรู้ นี่เป็นแค่หนึ่งสัปดาห์ ไม่ใช่คำตัดสิน",
+  "Of six statements about handling difficulty, {n} were true of you.":
+    "จากหกข้อความเรื่องการรับมือกับความยากลำบาก มี {n} ข้อที่เป็นจริงกับคุณ",
+  "Of 57 million Thais aged 15 and over, 5.33 million said they wanted to develop a skill. Among those who did not, the reason given most often — by 22.24 million people — was having no free time.":
+    "จากคนไทยอายุ 15 ปีขึ้นไป 57 ล้านคน มี 5.33 ล้านคนที่บอกว่าอยากพัฒนาทักษะ ในกลุ่มที่ไม่อยาก เหตุผลที่ถูกให้มากที่สุดโดย 22.24 ล้านคนคือไม่มีเวลาว่าง",
+  "The Crossroads":
+    "ทางแยก",
+  "What you hand to people you will never meet again.":
+    "สิ่งที่คุณส่งต่อให้คนที่คุณจะไม่ได้พบอีก",
+  "Five questions about a typical month, not an exceptional one.":
+    "ห้าคำถามเกี่ยวกับเดือนธรรมดา ไม่ใช่เดือนพิเศษ",
+  "Money and hours":
+    "เงินและเวลา",
+  "Both can be zero. Giving is not the only way to contribute and this app does not pretend otherwise.":
+    "ทั้งสองข้อเป็นศูนย์ได้ การให้ไม่ใช่ทางเดียวในการมีส่วนร่วม และแอปนี้ไม่แสร้งว่าเป็นเช่นนั้น",
+  "{amount} baht a month is about {annual} baht a year passed on.":
+    "เดือนละ {amount} บาท คิดเป็นราว {annual} บาทต่อปีที่ส่งต่อออกไป",
+  "{hours} hours a month adds up to roughly {annual} hours a year given to other people.":
+    "เดือนละ {hours} ชั่วโมง รวมเป็นราว {annual} ชั่วโมงต่อปีที่มอบให้ผู้อื่น",
+  "No money and no hours this month — recorded as given, and not weighed against anything.":
+    "เดือนนี้ไม่มีทั้งเงินและเวลา บันทึกไว้ตามที่ให้มา และไม่ถูกนำไปชั่งกับสิ่งใด",
+  "The share of people in Thailand who volunteered their time in the past month went from 15% to 19% to 24% across three editions of the same global survey. It is one of the steepest rises anywhere in it.":
+    "สัดส่วนคนในประเทศไทยที่สละเวลาเป็นอาสาสมัครในเดือนที่ผ่านมาเพิ่มจาก 15% เป็น 19% และเป็น 24% ตลอดสามฉบับของแบบสำรวจระดับโลกฉบับเดียวกัน เป็นการเพิ่มขึ้นที่ชันที่สุดแห่งหนึ่งในแบบสำรวจนั้น",
+  "The Wildwood":
+    "ป่าใหญ่",
+  "The mark a single ordinary day leaves behind it.":
+    "ร่องรอยที่วันธรรมดาเพียงวันเดียวทิ้งไว้",
+  "Six everyday habits. Answer for what you actually do, not what you mean to.":
+    "หกพฤติกรรมประจำวัน ตอบตามที่คุณทำจริง ไม่ใช่ตามที่ตั้งใจจะทำ",
+  "One last count":
+    "นับอีกครั้งเป็นครั้งสุดท้าย",
+  "Bags, straws, cups, cutlery, bottles — anything used once and thrown away.":
+    "ถุง หลอด แก้ว ช้อนส้อม ขวด อะไรก็ตามที่ใช้ครั้งเดียวแล้วทิ้ง",
+  "{n} single-use items a day is about {annual} in a year.":
+    "ของใช้ครั้งเดียวทิ้ง {n} ชิ้นต่อวัน คิดเป็นราว {annual} ชิ้นต่อปี",
+  "Nothing single-use on an ordinary day.":
+    "วันธรรมดาไม่มีของใช้ครั้งเดียวทิ้งเลย",
+  "Of six green habits, {n} are ones you do often or very often.":
+    "จากหกพฤติกรรมรักษ์โลก มี {n} ข้อที่คุณทำบ่อยหรือบ่อยมาก",
+  "Thailand produced 27.76 million tonnes of municipal waste last year and put 10.62 million tonnes of it back to use — composted, recycled or burned for energy. That is 38.3%.":
+    "ปีที่ผ่านมาประเทศไทยมีขยะมูลฝอยชุมชน 27.76 ล้านตัน และนำกลับมาใช้ประโยชน์ได้ 10.62 ล้านตัน ทั้งการทำปุ๋ย รีไซเคิล และเผาเป็นพลังงาน คิดเป็น 38.3%",
+  "The Lookout":
+    "จุดชมวิว",
+  "How far ahead you are looking, and who is standing there with you.":
+    "คุณมองไปข้างหน้าไกลแค่ไหน และมีใครยืนอยู่ตรงนั้นกับคุณ",
+  "Six last questions. The furthest ahead this whole journey asks you to look.":
+    "หกคำถามสุดท้าย ไกลที่สุดเท่าที่การเดินทางทั้งหมดนี้ขอให้คุณมอง",
+  "Of six questions about the long term, {n} described something you do often.":
+    "จากหกคำถามเรื่องระยะยาว มี {n} ข้อที่ตรงกับสิ่งที่คุณทำบ่อย",
+  "That is the last of them. Every region on the ring is lit.":
+    "นั่นคือข้อสุดท้าย ทุกดินแดนบนวงแหวนสว่างครบแล้ว",
+  "In 2015, 10.3% of Thailand's population was 65 or older. By 2024 it was 15.4%. The country the long term belongs to is not the one that exists now.":
+    "ในปี 2558 ประชากรไทย 10.3% มีอายุ 65 ปีขึ้นไป พอถึงปี 2567 ตัวเลขนี้เป็น 15.4% ประเทศที่ระยะยาวเป็นของมัน ไม่ใช่ประเทศที่มีอยู่ตอนนี้",
+  "Region complete":
+    "ดินแดนนี้ครบแล้ว",
+  "Meanwhile, in the world":
+    "ขณะเดียวกันในโลกใบนี้",
+  "Where this comes from":
+    "ที่มาของข้อมูลนี้",
+  "Travel on":
+    "เดินทางต่อ",
+  "Please answer every question on this screen.":
+    "กรุณาตอบทุกคำถามในหน้านี้"
 };

@@ -65,6 +65,35 @@ test("every ?v=N cache buster matches APP_VERSION", () => {
   }
 });
 
+test("the service worker is registered at a versioned URL", () => {
+  // THIS FAILS ON THE DEFECT, and the defect is one a release cannot see.
+  //
+  // `/sw.js` is served through a CDN that answered `cf-cache-status: HIT` with
+  // `Cache-Control: max-age=14400`. With a bare `register("./sw.js")` the
+  // browser's update check fetched that cached copy, found it identical to the
+  // worker it already had, and installed nothing -- so the previous worker kept
+  // serving its own precache and the new release was invisible for four hours
+  // while the HTML from the edge already asked for it. v82 shipped that way.
+  //
+  // A version in the script URL makes it a new URL per release, which the CDN
+  // has nothing to hit. Reverting to a bare path would restore a bug whose only
+  // symptom is "the deploy did nothing", days after the commit that caused it.
+  const src = read("app.js");
+  const call = src.match(/serviceWorker[\s\S]{0,80}?\.register\(\s*([^,)]+)/);
+  assert.ok(call, "app.js no longer registers a service worker");
+  assert.match(
+    call[1], /\$\{APP_VERSION\}/,
+    "the service worker script URL must carry ${APP_VERSION}. A bare \"./sw.js\" is " +
+    "cached by the CDN, so the browser never sees a new worker and the release " +
+    "does not reach anyone already using the app."
+  );
+  assert.match(
+    src, /updateViaCache:\s*"none"/,
+    "register() must pass updateViaCache: \"none\" so the browser's own HTTP cache " +
+    "cannot hold the worker script either"
+  );
+});
+
 test("the service worker CACHE_NAME matches APP_VERSION", () => {
   const src = read("sw.js");
   const found = [...src.matchAll(/lifequest-v(\d+)/g)].map(m => m[1]);

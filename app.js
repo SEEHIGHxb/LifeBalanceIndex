@@ -16,7 +16,7 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=82";
+} from "./ui.js?v=83";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -739,11 +739,34 @@ window.addEventListener("hashchange", () => {
 });
 
 // PWA: offline support via the network-first service worker.
+//
+// THE SCRIPT URL CARRIES THE VERSION, and that is load-bearing rather than
+// tidy. The site sits behind a CDN that served `/sw.js` with
+// `Cache-Control: max-age=14400` and answered `cf-cache-status: HIT`, so for
+// four hours after a release the browser's update check fetched the PREVIOUS
+// worker, found it byte-identical to the one it already had, and installed
+// nothing. The old worker then answered every request from its own precache,
+// which pinned the whole app to the previous release while the HTML served
+// from the edge already asked for the new one. v82 shipped and was invisible.
+//
+// A versioned query makes the script a new URL on every release, so the CDN
+// has nothing to hit and the browser sees a genuinely different worker. A
+// registration is keyed by SCOPE, not by script URL, so this updates the
+// existing one rather than adding a second; skipWaiting and clients.claim in
+// sw.js then hand over without waiting for every other tab to close.
+//
+// updateViaCache: "none" closes the browser-side half of the same hole — it
+// keeps the HTTP cache away from the worker script and its imports.
+//
+// This cannot fix the CDN rule itself. `/sw.js` wants to be served no-store;
+// the versioned query is what makes a release land while it is not.
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(err => {
-      console.error("Service worker registration failed:", err);
-    });
+    navigator.serviceWorker
+      .register(`./sw.js?v=${APP_VERSION}`, { updateViaCache: "none" })
+      .catch(err => {
+        console.error("Service worker registration failed:", err);
+      });
   });
 }
 

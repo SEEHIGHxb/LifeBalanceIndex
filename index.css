@@ -158,6 +158,7 @@ html[lang="th"] .brand h1 {
    holding two words gains nothing from more leading and would only get taller. */
 html[lang="th"] .care-banner-text,
 html[lang="th"] .onb-why,
+html[lang="th"] .region-banner-theme,
 html[lang="th"] .prompt-text p,
 html[lang="th"] .deep-banner p,
 html[lang="th"] .suggestion-text,
@@ -193,6 +194,7 @@ html[lang="th"] .provenance-table thead th,
 html[lang="th"] .aspect-grade-band,
 html[lang="th"] .balance-band,
 html[lang="th"] .chapter-ending-eyebrow,
+html[lang="th"] .region-banner-eyebrow,
 html[lang="th"] .chapter-fact-label {
   letter-spacing: normal;
 }
@@ -1830,6 +1832,89 @@ header {
   to   { opacity: 1; transform: none; }
 }
 
+/* --- Onboarding: the region wash (v82) ---
+ *
+ * Each chapter repaints the WHOLE PAGE in its own colour, so travelling from
+ * The Market to The Highlands is a visible change of place rather than a
+ * different heading on the same off-white card. --journey-wash is set on <body>
+ * by views/onboarding.js from the wash declared per chapter in views/journey.js.
+ *
+ * PALE WASH PLUS SATURATED ACCENT, not a saturated background. The obvious
+ * reading of "full-bleed region colour" is the page painted in the chapter's
+ * own hue with light text on it -- and it fails: white on the gold #d9a441 is
+ * 2.2:1, nowhere near the 4.5:1 that small radio labels need, and three of the
+ * eight hues are that bright. So the page takes a light tint of the hue and the
+ * ink stays navy, which clears 7:1 on all eight; the hue itself carries the
+ * top rule, the motif and the answer states. tests/journey.test.mjs computes
+ * the real ratio for every wash against --color-navy parsed out of this file,
+ * so a future deeper wash fails the suite rather than the reader.
+ */
+body.journey-lit {
+  background-color: var(--journey-wash, var(--bg-primary));
+  transition: background-color 0.55s ease;
+}
+/* The card floats ON the wash rather than hiding it. Translucent white instead
+ * of eight tinted card colours: one rule, and it tracks any future wash. */
+body.journey-lit .onboarding-container.card {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+/* --- Onboarding: the region banner ---
+ *
+ * Present on every answering screen of a chapter. The theme line is added only
+ * on the chapter's first screen -- see the note in views/onboarding.js.
+ */
+.region-banner {
+  position: relative;
+  border-top: 4px solid var(--chapter-hue, var(--color-navy));
+  padding: 14px 58px 14px 0;
+  margin: 0 0 18px;
+}
+.region-banner-eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin: 0 0 2px;
+}
+.region-banner-name {
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  color: var(--color-navy);
+  margin: 0;
+}
+.region-banner-theme {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-style: italic;
+  color: var(--color-text-secondary);
+  margin: 6px 0 0;
+}
+/* Decorative and aria-hidden: it says nothing the region name does not already
+ * say in text. Sized in the corner the banner's right padding reserves, so it
+ * can never overlap a long Thai region name. */
+.region-motif {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  fill: none;
+  stroke: var(--chapter-hue, var(--color-navy));
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.5;
+}
+/* The chapter's colour on the reader's own answers, so the accent is doing
+ * something the reader can act on rather than only decorating a header. */
+.survey-page[data-instrument] fieldset.q-answered {
+  border-left: 3px solid var(--chapter-hue, var(--color-card-border));
+  padding-left: 12px;
+}
+
 /* --- Onboarding: the chapter ending ---
  *
  * --chapter-hue is set inline per chapter by views/onboarding.js from the hue
@@ -1837,6 +1922,7 @@ header {
  * eight.
  */
 .chapter-ending {
+  background: rgba(255, 255, 255, 0.55);
   border: 1px solid var(--color-card-border);
   border-top: 4px solid var(--chapter-hue, var(--color-navy));
   border-radius: 10px;
@@ -2546,6 +2632,7 @@ header {
    rule for why 1px of press feedback should survive the preference. */
 @media (prefers-reduced-motion: reduce) {
   .reward-pop { animation: reward-out 0.4s ease-in 1.5s both; }
+  body.journey-lit { transition: none; }
   .ring-lit { transition: none; }
   .ring-marker { transition: none; }
   .survey-page[data-instrument] fieldset.survey-question { animation: none; }

@@ -1,11 +1,18 @@
 # Onboarding flow redesign — the eight chapters
 
-Status: **PHASES 0-2 SHIPPED — 2026-09-11 (APP_VERSION 81).** The Environment
+Status: **PHASES 0-2 SHIPPED — 2026-09-11 (APP_VERSION 81); REGION COLOUR ADDED
+2026-09-15 (APP_VERSION 82).** The Environment
 prototype was built, played and approved ("I have tried the Wildwood, and it's look
 good"), and the flow engine now runs all eight chapters in the app: 30 screens, the
 reveal rhythm, the ring, and eight cited chapter endings. Phase 3 (Lumi and the
 ceremony) and Phase 4 (one answering language across the deep and monthly flows)
-are not started. Lumi is still visually unlocked — see `lumi/00-README.md`.
+are not started. Lumi is still visually unlocked — see `lumi/00-README.md`; the app
+runs on a placeholder derived from `assets/lumi_current_design/`.
+
+v82 answered the flattest thing about the shipped flow: the region existed only on
+the eight ending cards, so a reader crossed The Wildwood on the same off-white page
+as everything else and met the forest for one screen in four. Each chapter now
+washes the whole page in its own colour and names the region on every screen.
 
 ## Why this exists
 

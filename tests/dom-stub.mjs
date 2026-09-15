@@ -43,10 +43,24 @@ function makeClassList(initial = "") {
   };
 }
 
+// CSSStyleDeclaration, minus the parts nothing here uses. A plain `{}` carries
+// assignments like `el.style.color = "red"` but not `setProperty`, which is the
+// only way to write a CUSTOM property -- and the region wash is a custom
+// property on <body>.
+function makeStyle() {
+  const props = {};
+  return {
+    props,
+    setProperty(name, value) { props[name] = String(value); },
+    getPropertyValue(name) { return Object.hasOwn(props, name) ? props[name] : ""; },
+    removeProperty(name) { delete props[name]; }
+  };
+}
+
 export function makeNode(tagName) {
   return {
     tagName,
-    style: {},
+    style: makeStyle(),
     textContent: "",
     attributes: {},
     childNodes: [],
@@ -113,6 +127,10 @@ export function installDom({ width = DEFAULT_WIDTH_PX } = {}) {
       return { nodeType: 3, textContent: String(text) };
     }
   };
+
+  // The view paints the journey wash onto <body>. A real document always has
+  // one, so the stub does too rather than the view guarding for its absence.
+  globalThis.document.body = makeNode("body");
 
   return { html, nodes, width };
 }

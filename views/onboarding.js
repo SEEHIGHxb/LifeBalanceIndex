@@ -35,7 +35,7 @@ import { CHAPTERS, allScreens } from "./journey.js";
 import { ringMarkup, paintRing } from "./journey-ring.js";
 import { SOURCES } from "../benchmarks.js";
 import { INSTRUMENTS } from "../surveys.js";
-import { t } from "../i18n.js";
+import { t, tp } from "../i18n.js";
 
 // The form is long enough that losing it hurts. draft.js keeps a scratch copy
 // under this name so a reload resumes instead of restarting. Cleared the moment
@@ -78,6 +78,31 @@ function buildScreens() {
     }
   }
   return out;
+}
+
+// The region banner: what turns 22 answering screens from a form into a place.
+//
+// Before this, a chapter's colour and name appeared ONLY on its ending card, so
+// the reader crossed The Wildwood on the same off-white page as every other
+// screen and met the forest for one screen out of four. The name was present in
+// the ring's centre the whole time, but at --text-sm inside a 132px ring it sits
+// below everything else in the hierarchy.
+//
+// The theme line shows on the chapter's FIRST screen only. It is an arrival
+// beat; repeated on all four screens of a chapter it stops being one.
+//
+// The motif is decorative and aria-hidden: it carries no information the region
+// name does not already carry in text.
+function regionBannerMarkup(chapter, index, showTheme) {
+  return `
+    <div class="region-banner">
+      <svg class="region-motif" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="${chapter.motif}" />
+      </svg>
+      <p class="region-banner-eyebrow">${tp("Region {n} of {total}", { n: index + 1, total: CHAPTERS.length })}</p>
+      <h4 class="region-banner-name">${escapeHtml(chapter.region)}</h4>
+      ${showTheme ? `<p class="region-banner-theme">${escapeHtml(chapter.theme)}</p>` : ""}
+    </div>`;
 }
 
 // A chapter ending: the reader's own answers, then one fact about the world.
@@ -129,9 +154,12 @@ export function renderOnboarding(containerId, onComplete) {
         </div>
       </div>`;
 
+    const chapter = screen.chapter >= 0 ? CHAPTERS[screen.chapter] : null;
+    const themed = chapter ? ` style="--chapter-hue: ${chapter.hue}; --chapter-wash: ${chapter.wash};"` : "";
+
     if (screen.kind === "ending") {
       return `
-        <div class="survey-page survey-page-ending d-none" id="onb-page-${i}" data-chapter="${screen.chapter}">
+        <div class="survey-page survey-page-ending d-none" id="onb-page-${i}" data-chapter="${screen.chapter}"${themed}>
           ${endingMarkup(screen.chapter)}
           ${nav}
         </div>`;
@@ -146,9 +174,10 @@ export function renderOnboarding(containerId, onComplete) {
       : screen.body;
 
     return `
-      <div class="survey-page d-none" id="onb-page-${i}" data-chapter="${screen.chapter}"
+      <div class="survey-page d-none" id="onb-page-${i}" data-chapter="${screen.chapter}"${themed}
         ${screen.instrument ? `data-instrument="${screen.instrument}"` : ""}
         ${screen.conditional ? `data-conditional="${screen.conditional}"` : ""}>
+        ${chapter ? regionBannerMarkup(chapter, screen.chapter, screen.startsChapter) : ""}
         <h3 class="card-header">${escapeHtml(screen.title)}</h3>
         <p class="onb-why">${escapeHtml(screen.stem)}</p>
         ${body}
@@ -274,6 +303,22 @@ export function renderOnboarding(containerId, onComplete) {
   // --- navigation --------------------------------------------------------
   let currentScreen = 0;
 
+  // Paints the region's colour across the whole page. Set on <body>, not on the
+  // container: a wash that stops at the card edge reads as a tinted panel
+  // rather than as somewhere the reader has travelled to.
+  //
+  // The prologue is outside the ring and keeps the app's own paper, which is
+  // what makes crossing into The Market feel like a departure.
+  const paintWash = (index) => {
+    const chapter = screens[index].chapter >= 0 ? CHAPTERS[screens[index].chapter] : null;
+    if (chapter) {
+      document.body.style.setProperty("--journey-wash", chapter.wash);
+      document.body.classList.add("journey-lit");
+    } else {
+      document.body.classList.remove("journey-lit");
+    }
+  };
+
   const showScreen = (index) => {
     currentScreen = index;
     screens.forEach((_, i) => pageEl(i).classList.toggle("d-none", i !== index));
@@ -281,6 +326,7 @@ export function renderOnboarding(containerId, onComplete) {
     syncReveal(page);
     if (screens[index].kind === "ending") fillRecap(screens[index].chapter);
     updateRing(index);
+    paintWash(index);
     scrollIntoViewGently(container, { block: "start" });
   };
 
@@ -482,6 +528,11 @@ export function renderOnboarding(containerId, onComplete) {
       // draft would be a stale second copy of assessment data, and on a retake
       // it would repopulate the form with the previous run.
       clearDraft(DRAFT_KEY);
+      // The journey is finished and the dashboard is not a region. Leaving the
+      // wash on would tint every screen after this one with whichever chapter
+      // happened to be last.
+      document.body.classList.remove("journey-lit");
+      document.body.style.removeProperty("--journey-wash");
       onComplete();
     } catch (err) {
       console.error("Onboarding submission failed:", err);

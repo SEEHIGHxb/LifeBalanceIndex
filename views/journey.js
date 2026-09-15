@@ -112,6 +112,8 @@ export const CHAPTERS = [
     region: t("The Market"),
     theme: t("Where what you have meets what it costs."),
     hue: "#d9a441",
+    wash: "#f2e2bb",
+    motif: "M4 7a8 3 0 1 0 16 0a8 3 0 1 0-16 0 M4 12a8 3 0 1 0 16 0a8 3 0 1 0-16 0 M4 17a8 3 0 1 0 16 0a8 3 0 1 0-16 0",
     screens: [
       fieldsScreen(
         "money",
@@ -151,6 +153,8 @@ export const CHAPTERS = [
     region: t("The Highlands"),
     theme: t("The climb your body does every day, whether or not you notice it."),
     hue: "#3fa796",
+    wash: "#d9eeea",
+    motif: "M2 19 L8 8 L12 14 L16 6 L22 19",
     screens: [
       fieldsScreen(
         "body",
@@ -236,6 +240,8 @@ export const CHAPTERS = [
     region: t("The Still Water"),
     theme: t("Where the surface tells you something about what is underneath."),
     hue: "#5b8dd9",
+    wash: "#dde8f8",
+    motif: "M2 11a10 5 0 0 1 20 0 M5 15a7 3.5 0 0 1 14 0 M8 19a4 2 0 0 1 8 0",
     screens: [
       instrumentScreen("st5", t("Five questions about the last few weeks. There is no right answer and nothing here is a diagnosis.")),
       instrumentScreen("who5", t("Five more, about the same stretch of time — this time asking what was good rather than what was hard."))
@@ -263,6 +269,8 @@ export const CHAPTERS = [
     region: t("The Commons"),
     theme: t("The people you would call, and the people who would call you."),
     hue: "#d9738f",
+    wash: "#f7dfe6",
+    motif: "M8 9a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5 M16 9a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5 M3 20c0-3.5 2.2-6 5-6s5 2.5 5 6 M11 20c0-3.5 2.2-6 5-6s5 2.5 5 6",
     screens: [
       instrumentScreen("lsns", t("Six questions about the people around you — three about family, three about friends.")),
       instrumentScreen("ucla", t("Three questions about the gaps. They are asked of everyone, including people with plenty of company.")),
@@ -294,6 +302,8 @@ export const CHAPTERS = [
     region: t("The Workshop"),
     theme: t("What you are building, and whether you believe you can finish it."),
     hue: "#e08a3c",
+    wash: "#f8e4cf",
+    motif: "M8 3 L8 21 M16 3 L16 21 M8 8 L16 8 M8 13 L16 13 M8 18 L16 18",
     screens: [
       instrumentScreen("gse", t("Six statements about how you handle difficulty.")),
       instrumentScreen("citacc", t("Three about finishing things.")),
@@ -332,6 +342,8 @@ export const CHAPTERS = [
     region: t("The Crossroads"),
     theme: t("What you hand to people you will never meet again."),
     hue: "#8d6fd1",
+    wash: "#e6dff8",
+    motif: "M12 21 L12 4 M12 6 L19 6 L17 8.5 L12 8.5 M12 12 L5 12 L7 14.5 L12 14.5",
     screens: [
       instrumentScreen("ptm", t("Five questions about a typical month, not an exceptional one.")),
       fieldsScreen(
@@ -382,6 +394,8 @@ export const CHAPTERS = [
     region: t("The Wildwood"),
     theme: t("The mark a single ordinary day leaves behind it."),
     hue: "#2e9e5b",
+    wash: "#d8eddf",
+    motif: "M12 21 L12 16 M5 16 L12 5 L19 16 Z M8 11 L16 11",
     screens: [
       instrumentScreen("geb", t("Six everyday habits. Answer for what you actually do, not what you mean to.")),
       fieldsScreen(
@@ -417,6 +431,8 @@ export const CHAPTERS = [
     region: t("The Lookout"),
     theme: t("How far ahead you are looking, and who is standing there with you."),
     hue: "#5a63b8",
+    wash: "#e0e2f5",
+    motif: "M2 20 L22 20 M12 3 L13.8 8.2 L19 8.2 L14.8 11.6 L16.4 17 L12 13.8 L7.6 17 L9.2 11.6 L5 8.2 L10.2 8.2 Z",
     screens: [
       instrumentScreen("lfis", t("Six last questions. The furthest ahead this whole journey asks you to look."))
     ],
@@ -438,10 +454,15 @@ export const CHAPTERS = [
 // belongs to and whether it is that chapter's last. The engine renders from
 // this and never walks CHAPTERS itself.
 export function allScreens() {
-  const out = [{ ...PROLOGUE, chapter: -1, endsChapter: false }];
+  const out = [{ ...PROLOGUE, chapter: -1, startsChapter: false, endsChapter: false }];
   CHAPTERS.forEach((chapter, ci) => {
     chapter.screens.forEach((screen, si) => {
-      out.push({ ...screen, chapter: ci, endsChapter: si === chapter.screens.length - 1 });
+      out.push({
+        ...screen,
+        chapter: ci,
+        startsChapter: si === 0,
+        endsChapter: si === chapter.screens.length - 1
+      });
     });
   });
   return out;

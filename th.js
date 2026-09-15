@@ -1586,6 +1586,7 @@ export const TH = {
     "นั่นคือข้อสุดท้าย ทุกดินแดนบนวงแหวนสว่างครบแล้ว",
   "In 2015, 10.3% of Thailand's population was 65 or older. By 2024 it was 15.4%. The country the long term belongs to is not the one that exists now.":
     "ในปี 2558 ประชากรไทย 10.3% มีอายุ 65 ปีขึ้นไป พอถึงปี 2567 ตัวเลขนี้เป็น 15.4% ประเทศที่ระยะยาวเป็นของมัน ไม่ใช่ประเทศที่มีอยู่ตอนนี้",
+  "Region {n} of {total}": "ดินแดนที่ {n} จาก {total}",
   "Region complete":
     "ดินแดนนี้ครบแล้ว",
   "Meanwhile, in the world":

@@ -7,6 +7,7 @@
 // definitions rather than a copy of them.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import { CHAPTERS, PROLOGUE, allScreens } from "../views/journey.js";
 import { RADAR_KEYS } from "../chart.js";
@@ -130,6 +131,77 @@ test("exactly one screen per chapter is marked as its last", () => {
   for (let i = 0; i < CHAPTERS.length; i++) {
     const ends = screens.filter(s => s.chapter === i && s.endsChapter);
     assert.equal(ends.length, 1, `${CHAPTERS[i].aspect}: ${ends.length} screens marked as the chapter's last`);
+  }
+});
+
+// --- THE WASH IS READ THROUGH, NOT JUST LOOKED AT -------------------------
+//
+// v82 paints each chapter's colour across the whole page. The tempting version
+// of that is the saturated hue as the background with light text on it, and it
+// is unreadable: white on the finance gold #d9a441 is 2.2:1 against the 4.5:1
+// small text needs. So `wash` is a light tint and the ink stays navy -- and
+// that only holds while the wash STAYS light, which is what this measures.
+//
+// --color-navy is parsed out of the stylesheet rather than hardcoded here, so
+// lightening the ink token re-checks all eight washes instead of silently
+// lowering the floor.
+function relativeLuminance(hex) {
+  const channels = [1, 3, 5]
+    .map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+    .map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function contrastRatio(a, b) {
+  const [hi, lo] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+test("every region wash keeps the app's own ink readable on it", () => {
+  const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");
+  const navy = css.match(/--color-navy:\s*(#[0-9a-f]{6})/i);
+  assert.ok(navy, "index.css no longer defines --color-navy, which every wash is measured against");
+
+  const washes = new Set();
+  for (const chapter of CHAPTERS) {
+    assert.match(chapter.wash, /^#[0-9a-f]{6}$/i, `${chapter.aspect}: wash is not a hex colour`);
+    const ratio = contrastRatio(chapter.wash, navy[1]);
+    // 7:1 is AAA for body text. The floor is deliberately above the 4.5:1
+    // minimum: the wash sits under a 22-screen form of small radio labels, and
+    // the card over it is only 88% opaque, so the real composite is lighter
+    // than this measurement rather than darker.
+    assert.ok(
+      ratio >= 7,
+      `${chapter.aspect}: navy ink on wash ${chapter.wash} is ${ratio.toFixed(2)}:1, below 7:1. ` +
+      "A wash this deep needs a different ink, not a darker page."
+    );
+    washes.add(chapter.wash.toLowerCase());
+  }
+  // Two regions sharing a wash would make travelling between them invisible,
+  // which is the entire point of the feature.
+  assert.equal(washes.size, CHAPTERS.length, "two chapters share a wash");
+});
+
+test("a motif is path data and cannot carry markup", () => {
+  // views/onboarding.js drops this straight into a d="" attribute. Path data is
+  // commands and numbers, so there is nothing to escape -- but only while that
+  // stays true. A motif holding a tag or a quote would be an injection point in
+  // a file that currently has none.
+  for (const chapter of CHAPTERS) {
+    assert.ok(chapter.motif, `${chapter.aspect}: no motif`);
+    assert.doesNotMatch(chapter.motif, /[<>"']/, `${chapter.aspect}: motif contains markup, not path data`);
+    assert.match(chapter.motif, /^M[\d\s.-]/, `${chapter.aspect}: motif does not begin with a moveto`);
+  }
+});
+
+test("exactly one screen per chapter is marked as its first", () => {
+  // The arrival beat -- the region name with its theme line -- renders on the
+  // chapter's first screen only. Two would repeat the beat and stop it being
+  // one; none would drop the reader into a chapter with no idea where they are.
+  const screens = allScreens();
+  for (let i = 0; i < CHAPTERS.length; i++) {
+    const starts = screens.filter(s => s.chapter === i && s.startsChapter);
+    assert.equal(starts.length, 1, `${CHAPTERS[i].aspect}: ${starts.length} screens marked as the chapter's first`);
   }
 });
 

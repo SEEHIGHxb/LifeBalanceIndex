@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `81`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `82`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,44 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.31.0] — 2026-09-15 (APP_VERSION 82)
+
+### Added
+
+- **Each chapter now repaints the whole page in its own colour.** A region wash
+  on `<body>`, crossfading as the reader travels, so crossing from The Market
+  into The Highlands is a visible change of place. Declared per chapter as
+  `wash` in `views/journey.js` beside the existing `hue`.
+- **A region banner on every answering screen**: the region number, its name,
+  and — on the chapter's first screen only — its theme line, over a rule in the
+  chapter's colour with a code-drawn motif (coins, a ridgeline, ripples, two
+  figures, a ladder, a signpost, a tree, a star over the horizon).
+- **The chapter's colour on answered questions**, so the accent marks the
+  reader's own progress rather than only decorating a header.
+
+### Fixed
+
+- `assets/lumi.png` was missing and the app 404'd on it, which failed both the
+  smoke and E2E suites. Restored as a 256px placeholder derived from
+  `assets/lumi_current_design/warm.png` — the 1254px source is 2.0 MB for a
+  56px circular avatar in a PWA that precaches every asset.
+
+### Notes
+
+- **Why the page is a pale tint and not the chapter's hue.** The literal reading
+  of full-bleed region colour is the page painted in the saturated hue with
+  light text on it, and it fails on contrast: white on the finance gold
+  `#d9a441` is 2.2:1 where small text needs 4.5:1, and three of the eight hues
+  are that bright. The page takes a light tint, the ink stays navy at 7:1 or
+  better on all eight, and the hue carries the rule, the motif and the answer
+  states. `tests/journey.test.mjs` computes the real ratio for every wash
+  against `--color-navy` parsed out of `index.css`, so a deeper wash fails the
+  suite rather than the reader.
+- The wash is removed on submit. Leaving it on would tint the dashboard with
+  whichever chapter happened to be last.
+- 623 unit tests (620 + three guards: wash contrast, motif is path data and not
+  markup, exactly one arrival screen per chapter).
 
 ## [2.30.0] — 2026-09-11 (APP_VERSION 81)
 

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `82`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `83`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,35 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.31.1] — 2026-09-15 (APP_VERSION 83)
+
+### Fixed
+
+- **Releases were not reaching anyone already using the app.** `/sw.js` is
+  served through a CDN with `Cache-Control: max-age=14400`, answering
+  `cf-cache-status: HIT`. The browser's service-worker update check fetched
+  that cached copy, found it byte-identical to the worker it already had, and
+  installed nothing — so the previous worker went on answering every request
+  from its own precache while the HTML from the edge already asked for the new
+  version. v82 deployed correctly (`version.js` served `82`, `views/journey.js`
+  served all eight washes) and was invisible in the browser: v81 JavaScript
+  under v82 HTML, for up to four hours per release.
+
+  The service worker is now registered at `./sw.js?v=${APP_VERSION}`, which is
+  a new URL on every release and so has nothing for the CDN to hit, with
+  `updateViaCache: "none"` closing the browser-side half of the same hole.
+  `tests/consistency.test.mjs` fails if either is reverted — the symptom of
+  that regression is "the deploy did nothing", which surfaces days after the
+  commit responsible.
+
+### Notes
+
+- **This does not fix the CDN rule.** `/sw.js` should be served `no-store`; the
+  versioned query is what makes a release land while it is not. Until the rule
+  changes, a browser holding the old worker needs one unstick: unregister the
+  worker in devtools (Application -> Service Workers -> Unregister) and reload.
+  `localStorage` is untouched by that, so no assessment data is lost.
 
 ## [2.31.0] — 2026-09-15 (APP_VERSION 82)
 

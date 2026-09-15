@@ -1,0 +1,9 @@
+Bright storybook illustration. Painted digital artwork with visible soft brushwork and a watercolour wash, gently cel-shaded forms, clear simple shapes that stay readable when the picture is shrunk to a thin band, soft diffuse daylight, airy high-key palette, no hard black shadows, subtle paper grain. A wide calm landscape with the horizon roughly centred, inviting rather than dramatic.
+
+Scene: an open-air morning market. Rows of cloth awnings in warm ochre and cream, wooden stalls, stacked baskets and crates of produce, a set of brass balance scales on one counter, hanging paper lanterns unlit in the daylight, a swept stone floor. Warm low sunlight coming in from one side, dust hanging in the light. Busy with goods and completely empty of people.
+
+Palette: built around #d9a441 as the dominant accent, sitting on a light ground close to #f2e2bb, so the picture belongs beside a page of that colour. Keep the overall value range light.
+
+Composition: the image will be CROPPED TO A HORIZONTAL BAND THROUGH THE MIDDLE, so keep everything that matters in the central horizontal third. Leave the top edge and the bottom edge open and uneventful -- sky, haze, still water, empty ground. Nothing important near any corner.
+
+No people, no animals, no characters, no faces. No text, lettering, signage, numbers, watermark or signature anywhere in the image. No logos, no frame, no border. Landscape orientation, 1536x1024.

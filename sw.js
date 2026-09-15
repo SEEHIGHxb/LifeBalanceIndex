@@ -92,10 +92,19 @@ const APP_SHELL = [
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      // Same reasoning as the fetch handler: a plain addAll can populate the
-      // new cache from the browser's stale HTTP entries, which would bake a
-      // torn deploy into the offline shell for the life of this CACHE_NAME.
-      .then(cache => cache.addAll(APP_SHELL.map(url => new Request(url, { cache: "no-cache" }))))
+      // Same reasoning as the fetch handler, and the same two layers to get
+      // past. cache: "no-cache" keeps the browser's own stale HTTP entries out
+      // of the new cache; versioned() keeps the CDN's out. A plain addAll would
+      // bake a torn deploy — or, as with v82, an ENTIRELY previous release —
+      // into the offline shell for the life of this CACHE_NAME.
+      //
+      // Fetched at the versioned URL and stored under the BARE one, so the
+      // page's bare module imports still match what is in here. addAll cannot
+      // do that: it keys each entry by the URL it fetched.
+      .then(cache => Promise.all(APP_SHELL.map(url =>
+        fetch(versioned(new URL(url, self.location).toString()), { cache: "no-cache" })
+          .then(res => (res.ok ? cache.put(url, res) : null))
+      )))
       .then(() => self.skipWaiting())
   );
 });
@@ -108,12 +117,42 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// The URL this worker asks the NETWORK for, which is not the URL the page
+// asked us for.
+//
+// cache: "no-cache" above makes the BROWSER revalidate instead of answering
+// from its own HTTP cache. It does nothing about a CDN in front of the origin,
+// and there is one: every bare asset URL came back `cf-cache-status: HIT` with
+// `Cache-Control: max-age=14400`, so for four hours after a release the origin
+// held the new bytes and the edge handed out the old ones. Measured, not
+// assumed — bare `/views/onboarding.js` returned the previous release while
+// the same path with any query string returned the current one.
+//
+// That is why v82 deployed correctly and was invisible. The ?v=N query tags
+// only three URLs; the module graph has ~66 bare relative imports, and every
+// one of them was served stale.
+//
+// Stamping the version onto the OUTBOUND request makes each release ask for
+// URLs the edge has never seen, so it has nothing to serve and must go to the
+// origin. The response is still returned for the page's original bare request
+// and still cached under that bare key, so module resolution and the offline
+// fallback are untouched.
+//
+// This is a workaround for a cache rule, not a fix for it: /sw.js and the
+// module graph want a no-store or short-TTL rule at the CDN. Until then, this
+// is what makes a deploy reach anyone who already has the app open.
+function versioned(url) {
+  const u = new URL(url);
+  u.searchParams.set("v", CACHE_NAME);
+  return u.toString();
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
 
   event.respondWith(
-    fetch(req, { cache: "no-cache" })
+    fetch(versioned(req.url), { cache: "no-cache", credentials: "same-origin" })
       .then(res => {
         if (res.ok) {
           const clone = res.clone();

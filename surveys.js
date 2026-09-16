@@ -3,19 +3,19 @@
 // "def" is the pre-checked default so partial submissions never crash scoring.
 
 const DESCRIBES_REVERSED = [
-  { v: 0, l: "Describes me completely" },
-  { v: 1, l: "Describes me very well" },
-  { v: 2, l: "Somewhat" },
+  { v: 4, l: "Not at all" },
   { v: 3, l: "Very little" },
-  { v: 4, l: "Not at all" }
+  { v: 2, l: "Somewhat" },
+  { v: 1, l: "Describes me very well" },
+  { v: 0, l: "Describes me completely" }
 ];
 
 const FREQ_POSITIVE = [
-  { v: 4, l: "Always" },
-  { v: 3, l: "Often" },
-  { v: 2, l: "Sometimes" },
+  { v: 0, l: "Never" },
   { v: 1, l: "Rarely" },
-  { v: 0, l: "Never" }
+  { v: 2, l: "Sometimes" },
+  { v: 3, l: "Often" },
+  { v: 4, l: "Always" }
 ];
 
 // CFPB frequency for NEGATIVELY-worded items (mirror of FREQ_POSITIVE). The
@@ -23,11 +23,11 @@ const FREQ_POSITIVE = [
 // FREQUENCY item, not a describes-me item — used at onboarding and in the deep
 // CFPB-10.
 const FREQ_REVERSED = [
-  { v: 0, l: "Always" },
-  { v: 1, l: "Often" },
-  { v: 2, l: "Sometimes" },
+  { v: 4, l: "Never" },
   { v: 3, l: "Rarely" },
-  { v: 4, l: "Never" }
+  { v: 2, l: "Sometimes" },
+  { v: 1, l: "Often" },
+  { v: 0, l: "Always" }
 ];
 
 // Standard 6-point Jenkins Sleep Scale frequency anchors (days in the past
@@ -50,12 +50,12 @@ const ST5_FREQ = [
 ];
 
 const WHO5_FREQ = [
-  { v: 5, l: "All of the time" },
-  { v: 4, l: "Most of the time" },
-  { v: 3, l: "More than half the time" },
-  { v: 2, l: "Less than half the time" },
+  { v: 0, l: "At no time" },
   { v: 1, l: "Some of the time" },
-  { v: 0, l: "At no time" }
+  { v: 2, l: "Less than half the time" },
+  { v: 3, l: "More than half the time" },
+  { v: 4, l: "Most of the time" },
+  { v: 5, l: "All of the time" }
 ];
 
 const LSNS_COUNT = [
@@ -443,11 +443,11 @@ export function instrumentSize(key) {
 
 // CFPB "describes me" for POSITIVELY-worded items (mirror of DESCRIBES_REVERSED).
 const DESCRIBES_POSITIVE = [
-  { v: 4, l: "Describes me completely" },
-  { v: 3, l: "Describes me very well" },
-  { v: 2, l: "Somewhat" },
+  { v: 0, l: "Not at all" },
   { v: 1, l: "Very little" },
-  { v: 0, l: "Not at all" }
+  { v: 2, l: "Somewhat" },
+  { v: 3, l: "Describes me very well" },
+  { v: 4, l: "Describes me completely" }
 ];
 
 // PSS-10 (Cohen). Negatively-worded items count UP toward stress...
@@ -479,33 +479,33 @@ const LIKE_ME_5_REV = [
 
 // Rosenberg Self-Esteem: 4-point agree scale, positive and reverse-keyed forms.
 const RSES_AGREE = [
-  { v: 3, l: "Strongly agree" },
-  { v: 2, l: "Agree" },
+  { v: 0, l: "Strongly disagree" },
   { v: 1, l: "Disagree" },
-  { v: 0, l: "Strongly disagree" }
+  { v: 2, l: "Agree" },
+  { v: 3, l: "Strongly agree" }
 ];
 const RSES_AGREE_REV = [
-  { v: 0, l: "Strongly agree" },
-  { v: 1, l: "Agree" },
+  { v: 3, l: "Strongly disagree" },
   { v: 2, l: "Disagree" },
-  { v: 3, l: "Strongly disagree" }
+  { v: 1, l: "Agree" },
+  { v: 0, l: "Strongly agree" }
 ];
 
 // CFC-12: 5-point "characteristic of me". Future-oriented items count up...
 const CFC_CHAR = [
-  { v: 5, l: "Extremely characteristic of me" },
-  { v: 4, l: "Somewhat characteristic of me" },
-  { v: 3, l: "Uncertain" },
+  { v: 1, l: "Extremely uncharacteristic of me" },
   { v: 2, l: "Somewhat uncharacteristic of me" },
-  { v: 1, l: "Extremely uncharacteristic of me" }
+  { v: 3, l: "Uncertain" },
+  { v: 4, l: "Somewhat characteristic of me" },
+  { v: 5, l: "Extremely characteristic of me" }
 ];
 // ...and immediate-oriented items (3,4,5,9,10,11,12) are reverse-keyed.
 const CFC_CHAR_REV = [
-  { v: 1, l: "Extremely characteristic of me" },
-  { v: 2, l: "Somewhat characteristic of me" },
-  { v: 3, l: "Uncertain" },
+  { v: 5, l: "Extremely uncharacteristic of me" },
   { v: 4, l: "Somewhat uncharacteristic of me" },
-  { v: 5, l: "Extremely uncharacteristic of me" }
+  { v: 3, l: "Uncertain" },
+  { v: 2, l: "Somewhat characteristic of me" },
+  { v: 1, l: "Extremely characteristic of me" }
 ];
 
 // RAS-7 extra items are negatively framed (higher raw feeling = worse), so

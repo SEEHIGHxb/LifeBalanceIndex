@@ -608,8 +608,12 @@ const topPosition = instr => instr.items.map(it => it.options[0].v);
 
 test("a straight-lined CFPB at onboarding is demoted to unanswered and flagged", () => {
   const m = new GameStateManager();
-  // [0,0,0,4,0] is every item's FIRST radio: the reverse-keyed item 4 makes an
-  // honest pattern land elsewhere, so this reads as careless.
+  // [4,4,4,0,4] is every item's FIRST radio now that scales run least-first
+  // (tests/scale-direction.test.mjs): items 1-3 are reverse-keyed so their
+  // least end scores 4, while item 4 is positively keyed and scores 0 there.
+  // An honest respondent cannot land on one position across all five, so this
+  // reads as careless. Derived from the data rather than written out, so the
+  // next reordering cannot leave this test asserting a stale pattern.
   m.submitOnboarding({ ...MINIMAL_SURVEY, cfpb: topPosition(INSTRUMENTS.cfpb) }, false, {
     provided: {},
     answered: { cfpb: true, who5: true }

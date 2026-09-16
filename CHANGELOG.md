@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `85`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `86`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,64 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.34.0] — 2026-09-16 (APP_VERSION 86)
+
+### Fixed
+
+- **Every Likert scale now runs least-first.** Five of the twenty-five
+  instruments painted their options most-first while the other twenty opened on
+  their least end: onboarding **CFPB** ("Describes me completely" and "Always"
+  on the left) and **WHO-5** ("All of the time"), and in the deep assessment
+  **CFPB-10**, **Rosenberg** ("Strongly agree") and **CFC-12** ("Extremely
+  characteristic of me"). All five were reordered, so the leftmost radio is the
+  lowest frequency, quantity or agreement everywhere in the app. Reported
+  directly: *"they are all order from high to low. In the common sense, describe
+  more or always represent high frequency… we should make the it order from low
+  to high."*
+- **The clash that cost real data was in The Still Water.** `views/journey.js`
+  asks **ST-5 and WHO-5 on consecutive screens**, and the second stem ties them
+  together — *"Five more, about the same stretch of time."* ST-5 opened on
+  "Rarely / Not at all" and WHO-5 on "All of the time", so a reader who had just
+  answered five items where the left end meant LEAST met five more, on the same
+  subject, where it meant MOST. Anyone answering by position rather than by
+  reading anchors — which is most people by item forty — inverted their own
+  mental-health score, and nothing downstream could detect it.
+- **CFPB taught the wrong rule first.** It is the first Likert screen in the
+  journey, so a reader's opening lesson was "leftmost = maximum" and then twelve
+  of the remaining thirteen onboarding instruments contradicted it.
+
+### Notes
+
+- **No score moves.** Option values live in `{ v, l }` pairs and
+  `collectInstrument` reads the VALUE of the chosen radio, so reordering the
+  array changes paint order only. Every raw sum, clinical threshold, published
+  norm and stored baseline is untouched, and no migration is needed. Verified by
+  the whole suite passing with one literal changed.
+- **This deviates from the printed form of four instruments**, deliberately. The
+  official WHO-5 opens on "All of the time", the CFPB worksheet on "Describes me
+  completely" and Rosenberg's original on "Strongly agree". A printed form is
+  read one sheet at a time; this app asks fourteen instruments in one sitting,
+  and within-app inconsistency produces mis-clicks that no norm can correct for.
+  What actually makes a score comparable to its norms — anchor wording and point
+  count — is unchanged and still guarded by `tests/instrument-fidelity.test.mjs`.
+- **Straight-line detection is unaffected.** `isStraightLined` compares option
+  POSITIONS, and every mixed-keyed instrument had all of its scales in the
+  reversal set, so positions shift uniformly. Two tests carried the old
+  first-option values as literals and were updated; `tests/state.test.mjs` now
+  derives the pattern from the data so the next reordering cannot leave it
+  stale.
+- **`tests/scale-direction.test.mjs` is new** and is why this stays fixed. It
+  enumerates the least anchor of every scale in both banks and fails if any
+  scale opens on something else — or ENDS on a least anchor, which is the
+  backwards case. Verified biting: restoring WHO-5 to its printed order fails
+  three of its four tests, naming the instrument and the reason. The
+  enumeration is deliberate friction, so a new instrument cannot be added
+  without someone stating which end is least.
+- **`CFC-12` is worth a second look.** The app administers it on five points
+  where the published CFC is seven, so its scale already deviates from source
+  independently of this change.
+- 631 unit tests (+4: the new scale-direction file).
 
 ## [2.33.0] — 2026-09-16 (APP_VERSION 85)
 

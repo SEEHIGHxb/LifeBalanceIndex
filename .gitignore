@@ -20,3 +20,8 @@ docs/article/
 # the project stays dependency-free; a committed lockfile pins a version the
 # workflow does not use and drifts from package.json on every release.
 package-lock.json
+
+# Source art for the region chapter plates: the ~10 MB of AI-generated PNGs the
+# committed assets/regions/*.jpg were band-cropped from. Kept locally so a plate
+# can be re-cropped without regenerating it; not worth the repo weight.
+assets/regions/*.png

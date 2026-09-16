@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `83`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `84`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,44 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.32.0] — 2026-09-16 (APP_VERSION 84)
+
+### Added
+
+- **Each chapter now opens on an illustrated plate of its region.** A wide
+  painted band at the top of the arrival screen — the market, the terraced
+  climb, the mirror-calm lake, the long table, the workbench, the crossroads,
+  the summer wood, the lookout — above the region rule in that chapter's
+  colour. Eight images, `assets/regions/*.jpg`, precached with the shell.
+
+### Notes
+
+- **Why a plate and not the painted page background originally asked for.**
+  Measured on the real layout: the card is 77% of the viewport on a 1280px
+  desktop and **91% on a 375px phone**, at 88% opacity, so a painted page
+  background shows as two 16px slivers on a phone, dimmed to 12%. The plate is
+  the one placement where the art is fully visible on every device — and
+  because nothing is asked to sit on top of it, it sidesteps the contrast
+  problem that made the page wash a pale tint rather than the saturated hue.
+- **The plate is on the arrival screen only**, bound to the same flag as the
+  theme line. An illustrated book prints the plate where the chapter opens, not
+  again on every page of it; and at 128-190px tall on all 21 content screens it
+  would push the first question below the fold on a phone. The region is still
+  carried continuously by the page wash and named on every screen by the banner.
+- **The art is AI-generated and two of the eight are known off-brief.** The
+  Highlands came back grass-green against its declared teal `#3fa796` — a 69°
+  hue drift, which leaves it 10° from The Wildwood, so two regions currently
+  read as the same colour. The Lookout came back as a night scene rather than
+  blue hour: mean luminance 131 against The Still Water's 211. Both are wired
+  as-is to get the band tuned against real art; replacing either is a drop-in
+  file swap with no code change.
+- **0.73 MB for the set**, band-cropped to 1024x400 JPEG from 10.3 MB of source
+  PNGs. The sources stay out of the repo. `tests/journey.test.mjs` fails if a
+  chapter has no plate, if a plate file is missing, if one exceeds 200 KB, or if
+  one is absent from the `sw.js` precache — that last being a defect that works
+  perfectly online and shows a blank band offline.
+- 626 unit tests (624 + two guards).
 
 ## [2.31.1] — 2026-09-15 (APP_VERSION 83)
 

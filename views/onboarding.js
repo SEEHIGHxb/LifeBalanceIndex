@@ -93,8 +93,23 @@ function buildScreens() {
 //
 // The motif is decorative and aria-hidden: it carries no information the region
 // name does not already carry in text.
+// `showTheme` is the chapter's ARRIVAL screen, and it now governs the plate as
+// well as the theme line. Two reasons the plate is not on every screen of a
+// chapter. An illustrated book prints the plate where the chapter opens, not
+// again on every page of it -- repeating it is what makes it wallpaper rather
+// than an arrival. And the plate is a 128-190px band: above all 21 content
+// screens it would push the first question below the fold on a phone, where
+// the card is already 91% of the viewport. The region is carried continuously
+// by the page wash (v82) and named on every screen by the banner below; the
+// plate is the beat, not the wallpaper.
+//
+// alt="" because it is decorative: the region name is in text directly beneath
+// it, so a described plate would make a screen reader announce the place
+// twice. Same reasoning as the motif.
 function regionBannerMarkup(chapter, index, showTheme) {
   return `
+    ${showTheme ? `<img class="region-plate" src="./assets/regions/${chapter.plate}.jpg"
+      alt="" width="1024" height="400" loading="lazy" decoding="async">` : ""}
     <div class="region-banner">
       <svg class="region-motif" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="${chapter.motif}" />

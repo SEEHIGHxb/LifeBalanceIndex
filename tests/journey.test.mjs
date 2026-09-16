@@ -157,72 +157,159 @@ function contrastRatio(a, b) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-test("every chapter declares a plate whose image is present and within budget", () => {
+test("every chapter declares art that is present, in budget and precached", () => {
   // FAILS ON THE DEFECT, and there are three defects here a green suite would
   // otherwise ship.
   //
-  // A chapter with no `plate` renders src="./assets/regions/undefined.jpg" --
-  // a broken image at the top of an arrival screen, on one region only, which
-  // is exactly the kind of thing that survives a manual click-through of
-  // whichever chapter you happened to test.
+  // A chapter with no `art` paints url("./assets/regions/undefined.jpg") --
+  // one region with no background, which is exactly the kind of thing that
+  // survives a manual click-through of whichever chapter you happened to test.
   //
-  // A plate missing from the sw.js precache works perfectly online and is a
-  // blank band offline, which cannot be caught except by testing offline.
+  // Art missing from the sw.js precache works perfectly online and leaves that
+  // region bare offline, which cannot be caught except by testing offline.
   //
-  // And these are the heaviest assets in the repo. The set exists as 1024x400
-  // JPEGs because the source PNGs were 10.3 MB for eight images; dropping one
-  // 2 MB original in here would more than double what every install downloads.
+  // And these are the heaviest assets in the repo by an order of magnitude.
+  // They are full-frame 1280px JPEGs because they are now viewport-filling
+  // backgrounds rather than 400px bands; the whole set is precached, so every
+  // byte is paid by every install whether or not the reader gets that far.
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
   const seen = new Set();
   for (const chapter of CHAPTERS) {
     assert.match(
-      chapter.plate ?? "", /^[a-z][a-z-]*$/,
-      `${chapter.region} has no usable plate slug. It must be a lowercase ` +
+      chapter.art ?? "", /^[a-z][a-z-]*$/,
+      `${chapter.region} has no usable art slug. It must be a lowercase ` +
       "filename stem, and it must NOT be derived from `region` -- that is a " +
       "t() string and changes with the reader's language."
     );
-    assert.ok(!seen.has(chapter.plate), `two chapters share the plate "${chapter.plate}"`);
-    seen.add(chapter.plate);
+    assert.ok(!seen.has(chapter.art), `two chapters share the art "${chapter.art}"`);
+    seen.add(chapter.art);
 
-    const file = new URL(`../assets/regions/${chapter.plate}.jpg`, import.meta.url);
+    const file = new URL(`../assets/regions/${chapter.art}.jpg`, import.meta.url);
     assert.ok(
       existsSync(file),
-      `assets/regions/${chapter.plate}.jpg is missing, so ${chapter.region} opens on a broken image`
+      `assets/regions/${chapter.art}.jpg is missing, so ${chapter.region} has no background`
     );
     const kb = statSync(file).size / 1024;
     assert.ok(
-      kb < 200,
-      `assets/regions/${chapter.plate}.jpg is ${Math.round(kb)} KB. The budget is ` +
-      "200 KB per plate: all eight are precached, so this is weight every " +
-      "install pays whether or not the reader ever reaches that region."
+      kb < 180,
+      `assets/regions/${chapter.art}.jpg is ${Math.round(kb)} KB. The budget is ` +
+      "180 KB: all eight are precached, so this is weight every install pays " +
+      "whether or not the reader ever reaches that region."
     );
     assert.ok(
-      sw.includes(`"./assets/regions/${chapter.plate}.jpg"`),
-      `assets/regions/${chapter.plate}.jpg is not in the sw.js APP_SHELL, so it ` +
-      "renders online and is a blank band offline"
+      sw.includes(`"./assets/regions/${chapter.art}.jpg"`),
+      `assets/regions/${chapter.art}.jpg is not in the sw.js APP_SHELL, so it ` +
+      "renders online and is missing offline"
     );
   }
-  assert.equal(seen.size, 8, "expected eight distinct plates");
+  assert.equal(seen.size, 8, "expected eight distinct region images");
 });
 
-test("the plate is rendered only on a chapter's arrival screen", () => {
-  // The plate is a 128-190px band. On all 21 content screens it would push the
-  // first question below the fold on a phone, where the card is 91% of the
-  // viewport -- and the same image three screens running turns an arrival into
-  // wallpaper. It is bound to the same flag as the theme line so the two
-  // cannot drift apart.
+test("the region art is a background, not an element inside the card", () => {
+  // The whole point of the v85 change. An <img> in the card is a picture in a
+  // frame; a fixed background layer is a place the reader is standing in.
+  // Reverting to an element would also put art back in the scroll flow,
+  // pushing the first question down the screen again.
   const src = readFileSync(new URL("../views/onboarding.js", import.meta.url), "utf8");
-  assert.match(
-    src, /\$\{\s*showTheme\s*\?[\s\S]{0,200}?region-plate/,
-    "region-plate is no longer guarded by showTheme in regionBannerMarkup. Putting " +
-    "the plate on every screen is a deliberate design change if you want it -- but " +
-    "it costs a phone reader the first question of every screen."
+  assert.doesNotMatch(
+    src, /<img[^>]*region/,
+    "the region art is being rendered as an <img> again. It belongs on <body> " +
+    "as a background so it fills the viewport behind and around the card."
   );
   assert.match(
-    src, /class="region-plate"[\s\S]{0,160}?alt=""/,
-    'the plate must keep alt="": it is decorative, and the region name is in text ' +
-    "directly beneath it"
+    src, /setProperty\([\s\S]{0,40}"--journey-art"/,
+    "views/onboarding.js no longer sets --journey-art on <body>, so no region " +
+    "paints its background"
   );
+  const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");
+  assert.match(
+    css, /body\.journey-lit::before \{[\s\S]*?position:\s*fixed/,
+    "the art layer must be position: fixed on a pseudo-element -- " +
+    "background-attachment: fixed is broken on iOS Safari"
+  );
+});
+
+test("the card veil keeps the app's own ink readable over the darkest art", () => {
+  // THIS IS THE GUARD THAT MAKES ART-BEHIND-TEXT SAFE, and it is why the veil
+  // is 0.86 rather than a number that looked nice.
+  //
+  // The reader's questions sit on a translucent card over a full-screen
+  // painting. Open the card up to show more art, or add a ninth image darker
+  // than the current eight, and the helper text silently stops being readable
+  // -- silently, because whoever makes the change is looking at a bright
+  // region on a good monitor. Measured: at 0.86 the secondary ink clears
+  // 4.80:1; at 0.82 it falls to 4.47:1 and fails the 4.5:1 small-text
+  // minimum. There is almost no room here, which is exactly why it is a test.
+  //
+  // Node has no JPEG decoder, so the darkest tile of each image is recorded in
+  // assets/regions/contrast.json alongside the byte size it was measured from.
+  // The size check is what makes that record trustworthy: swap an image and
+  // the recorded size stops matching, so this fails and tells you to
+  // re-measure rather than passing on a stale number.
+  const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");
+  // The rule lists every surface that carries text over the art: the card,
+  // the header and the footer. Read the selectors as well as the alpha, so a
+  // surface dropped from the list is caught here rather than by a reader.
+  const rule = css.match(
+    /((?:body\.journey-lit [^{,]+,\s*)*body\.journey-lit [^{]+)\{[^}]*?rgba\(\s*255,\s*255,\s*255,\s*([\d.]+)\s*\)[^}]*?backdrop-filter/
+  );
+  assert.ok(rule, "no white rgba veil with a backdrop-filter is applied over the region art");
+  const alpha = Number(rule[2]);
+  const veiled = rule[1];
+
+  // Every surface that can hold text on a journey screen. The footer was
+  // measured at 1.07:1 on raw art before it was veiled, so a missing entry
+  // here is not cosmetic.
+  for (const surface of [".onboarding-container.card", "header", ".app-footer"]) {
+    assert.ok(
+      veiled.includes(surface),
+      `${surface} is no longer veiled over the region art. Text on it would sit ` +
+      "directly on an illustrated background -- the footer links measured 1.07:1 " +
+      "that way, against a 4.5:1 floor."
+    );
+  }
+
+  const measured = JSON.parse(
+    readFileSync(new URL("../assets/regions/contrast.json", import.meta.url), "utf8")
+  ).regions;
+
+  const toHex = rgb => "#" + rgb.map(c => c.toString(16).padStart(2, "0")).join("");
+  // Both inks that land on the onboarding card. Small text in either needs
+  // 4.5:1; the stems and helper lines use the secondary colour, and they are
+  // the ones that actually bind.
+  const inks = ["--color-navy", "--color-text-secondary"].map(name => {
+    const m = css.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, "i"));
+    assert.ok(m, `index.css no longer defines ${name}, which the veil is measured against`);
+    return { name, hex: m[1] };
+  });
+
+  for (const chapter of CHAPTERS) {
+    const rec = measured[chapter.art];
+    assert.ok(
+      rec,
+      `assets/regions/contrast.json has no entry for "${chapter.art}". A new region ` +
+      "background needs its darkest tile measured before it can be shipped."
+    );
+    const file = new URL(`../assets/regions/${chapter.art}.jpg`, import.meta.url);
+    assert.equal(
+      statSync(file).size, rec.bytes,
+      `assets/regions/${chapter.art}.jpg is ${statSync(file).size} bytes but ` +
+      `contrast.json was measured against ${rec.bytes}. The image changed, so its ` +
+      "recorded darkest tile is stale -- re-measure it, do not edit the number."
+    );
+
+    const over = rec.darkestTile.map(c => Math.round(alpha * 255 + (1 - alpha) * c));
+    for (const ink of inks) {
+      const ratio = contrastRatio(ink.hex, toHex(over));
+      assert.ok(
+        ratio >= 4.5,
+        `${ink.name} on the card over ${chapter.art}.jpg is ${ratio.toFixed(2)}:1, below ` +
+        `the 4.5:1 small-text minimum. Either the card veil (now ${alpha}) was opened ` +
+        "up to show more art, or this image is darker than the set it joined. Raise " +
+        "the veil or lighten the image -- do not lower the threshold."
+      );
+    }
+  }
 });
 
 test("every region wash keeps the app's own ink readable on it", () => {
@@ -236,7 +323,7 @@ test("every region wash keeps the app's own ink readable on it", () => {
     const ratio = contrastRatio(chapter.wash, navy[1]);
     // 7:1 is AAA for body text. The floor is deliberately above the 4.5:1
     // minimum: the wash sits under a 22-screen form of small radio labels, and
-    // the card over it is only 88% opaque, so the real composite is lighter
+    // the card over it is only 86% opaque, so the real composite is lighter
     // than this measurement rather than darker.
     assert.ok(
       ratio >= 7,

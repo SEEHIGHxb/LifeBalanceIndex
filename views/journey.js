@@ -112,7 +112,7 @@ export const CHAPTERS = [
     region: t("The Market"),
     theme: t("Where what you have meets what it costs."),
     hue: "#d9a441",
-    plate: "market",
+    art: "market",
     wash: "#f2e2bb",
     motif: "M4 7a8 3 0 1 0 16 0a8 3 0 1 0-16 0 M4 12a8 3 0 1 0 16 0a8 3 0 1 0-16 0 M4 17a8 3 0 1 0 16 0a8 3 0 1 0-16 0",
     screens: [
@@ -154,7 +154,7 @@ export const CHAPTERS = [
     region: t("The Highlands"),
     theme: t("The climb your body does every day, whether or not you notice it."),
     hue: "#3fa796",
-    plate: "highlands",
+    art: "highlands",
     wash: "#d9eeea",
     motif: "M2 19 L8 8 L12 14 L16 6 L22 19",
     screens: [
@@ -242,7 +242,7 @@ export const CHAPTERS = [
     region: t("The Still Water"),
     theme: t("Where the surface tells you something about what is underneath."),
     hue: "#5b8dd9",
-    plate: "still-water",
+    art: "still-water",
     wash: "#dde8f8",
     motif: "M2 11a10 5 0 0 1 20 0 M5 15a7 3.5 0 0 1 14 0 M8 19a4 2 0 0 1 8 0",
     screens: [
@@ -272,7 +272,7 @@ export const CHAPTERS = [
     region: t("The Commons"),
     theme: t("The people you would call, and the people who would call you."),
     hue: "#d9738f",
-    plate: "commons",
+    art: "commons",
     wash: "#f7dfe6",
     motif: "M8 9a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5 M16 9a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5 M3 20c0-3.5 2.2-6 5-6s5 2.5 5 6 M11 20c0-3.5 2.2-6 5-6s5 2.5 5 6",
     screens: [
@@ -306,7 +306,7 @@ export const CHAPTERS = [
     region: t("The Workshop"),
     theme: t("What you are building, and whether you believe you can finish it."),
     hue: "#e08a3c",
-    plate: "workshop",
+    art: "workshop",
     wash: "#f8e4cf",
     motif: "M8 3 L8 21 M16 3 L16 21 M8 8 L16 8 M8 13 L16 13 M8 18 L16 18",
     screens: [
@@ -347,7 +347,7 @@ export const CHAPTERS = [
     region: t("The Crossroads"),
     theme: t("What you hand to people you will never meet again."),
     hue: "#8d6fd1",
-    plate: "crossroads",
+    art: "crossroads",
     wash: "#e6dff8",
     motif: "M12 21 L12 4 M12 6 L19 6 L17 8.5 L12 8.5 M12 12 L5 12 L7 14.5 L12 14.5",
     screens: [
@@ -400,7 +400,7 @@ export const CHAPTERS = [
     region: t("The Wildwood"),
     theme: t("The mark a single ordinary day leaves behind it."),
     hue: "#2e9e5b",
-    plate: "wildwood",
+    art: "wildwood",
     wash: "#d8eddf",
     motif: "M12 21 L12 16 M5 16 L12 5 L19 16 Z M8 11 L16 11",
     screens: [
@@ -438,7 +438,7 @@ export const CHAPTERS = [
     region: t("The Lookout"),
     theme: t("How far ahead you are looking, and who is standing there with you."),
     hue: "#5a63b8",
-    plate: "lookout",
+    art: "lookout",
     wash: "#e0e2f5",
     motif: "M2 20 L22 20 M12 3 L13.8 8.2 L19 8.2 L14.8 11.6 L16.4 17 L12 13.8 L7.6 17 L9.2 11.6 L5 8.2 L10.2 8.2 Z",
     screens: [

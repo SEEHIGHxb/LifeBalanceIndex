@@ -93,23 +93,12 @@ function buildScreens() {
 //
 // The motif is decorative and aria-hidden: it carries no information the region
 // name does not already carry in text.
-// `showTheme` is the chapter's ARRIVAL screen, and it now governs the plate as
-// well as the theme line. Two reasons the plate is not on every screen of a
-// chapter. An illustrated book prints the plate where the chapter opens, not
-// again on every page of it -- repeating it is what makes it wallpaper rather
-// than an arrival. And the plate is a 128-190px band: above all 21 content
-// screens it would push the first question below the fold on a phone, where
-// the card is already 91% of the viewport. The region is carried continuously
-// by the page wash (v82) and named on every screen by the banner below; the
-// plate is the beat, not the wallpaper.
-//
-// alt="" because it is decorative: the region name is in text directly beneath
-// it, so a described plate would make a screen reader announce the place
-// twice. Same reasoning as the motif.
+// The region's art is NOT rendered here. It is a page background, painted on
+// <body> by paintWash below, so it fills the viewport behind and around the
+// card rather than sitting in a band inside it. This function renders only the
+// text: which region, its name, and on the arrival screen its theme line.
 function regionBannerMarkup(chapter, index, showTheme) {
   return `
-    ${showTheme ? `<img class="region-plate" src="./assets/regions/${chapter.plate}.jpg"
-      alt="" width="1024" height="400" loading="lazy" decoding="async">` : ""}
     <div class="region-banner">
       <svg class="region-motif" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="${chapter.motif}" />
@@ -328,6 +317,15 @@ export function renderOnboarding(containerId, onComplete) {
     const chapter = screens[index].chapter >= 0 ? CHAPTERS[screens[index].chapter] : null;
     if (chapter) {
       document.body.style.setProperty("--journey-wash", chapter.wash);
+      // The region's art, as a background layer on <body>. Set here rather
+      // than in the screen markup because a background has to be behind AND
+      // around the card to read as a place; anything rendered inside the card
+      // is a picture in a frame instead. The wash stays set as the colour
+      // underneath it, which is what shows while the JPEG is still loading
+      // and what a reader with images disabled gets.
+      document.body.style.setProperty(
+        "--journey-art", `url("./assets/regions/${chapter.art}.jpg")`
+      );
       document.body.classList.add("journey-lit");
     } else {
       document.body.classList.remove("journey-lit");

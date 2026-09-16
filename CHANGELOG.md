@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `84`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `85`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,58 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.33.0] — 2026-09-16 (APP_VERSION 85)
+
+### Changed
+
+- **The region art is now the page background, not a banner inside the card.**
+  Each chapter paints its illustrated scene across the whole viewport, behind
+  and around the card, and the card floats on it translucent so the art reads
+  through. The `region-plate` band added in v84 is gone. Requested directly:
+  *"I want the images on the background not as a banner (the background should
+  be instead of the banner)."*
+- **The eight images were re-derived full-frame**, 1280px on the long edge at
+  their native 3:2, replacing the 1024x400 band crops. A band crop used as a
+  `cover` background on a 375px phone scales to 812px tall and shows only the
+  middle ~18% of the width — unusably zoomed. 1.24 MB for the set, each under
+  180 KB.
+
+### Fixed
+
+- **The header and footer had no veil over the art.** Both are transparent by
+  default, so their text was landing directly on an illustrated background:
+  the footer links measured **1.07:1** against the darkest tile of The Market
+  where 4.5:1 is the floor for small text, and the brand in the header ran
+  1.39:1 to 2.44:1. Effectively invisible. Both now take the same translucent
+  white as the card. This is the trap in a full-bleed background — the card is
+  the surface you think about and the page chrome is the one that breaks.
+
+### Notes
+
+- **Why the card veil is 0.86 and cannot be opened further.** Compositing white
+  at that opacity over the darkest 1/256th tile of each of the eight images:
+  `--color-navy` clears 10.0:1 and `--color-text-secondary` (the stems and
+  helper lines, at small sizes) clears 4.80:1. At 0.82 the secondary ink falls
+  to **4.47:1** and fails. So there is almost no headroom to show more art
+  without darkening the ink, which is why it is a test rather than a comment.
+- **Node has no JPEG decoder**, so each image's darkest tile is recorded in
+  `assets/regions/contrast.json` with the byte size it was measured from. The
+  size check is what makes the record trustworthy: replacing an image without
+  re-measuring fails the suite instead of silently shipping unreadable helper
+  text over a darker picture.
+- The art layer is a `position: fixed` pseudo-element rather than
+  `background-attachment: fixed`, which is broken or badly janky on iOS Safari.
+  The region holds still while the form scrolls over it.
+- The per-chapter `wash` still paints `<body>` underneath the art. That is what
+  shows while the JPEG decodes and permanently for a reader who blocks images,
+  so a region keeps its colour identity either way.
+- **On a phone the art is atmosphere, not a picture.** The card is 91% of a
+  375px viewport, so the art reads as two slivers at the edges plus a faint
+  wash through the card. That is a consequence of putting text over art, not a
+  bug; the desktop view is where the scenes are actually legible.
+- 627 unit tests (+1 net: the veil-contrast guard and the art-is-a-background
+  guard added, the plate-placement guard removed with the plate).
 
 ## [2.32.0] — 2026-09-16 (APP_VERSION 84)
 

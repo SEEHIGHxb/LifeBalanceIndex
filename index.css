@@ -1864,6 +1864,38 @@ body.journey-lit .onboarding-container.card {
  * Present on every answering screen of a chapter. The theme line is added only
  * on the chapter's first screen -- see the note in views/onboarding.js.
  */
+/* A region's chapter plate: the illustrated band that opens a chapter.
+ *
+ * The source art is 1024x400 (2.56:1) and this shows it SHORTER than that on
+ * every screen, cropping to the middle with object-fit. That is deliberate and
+ * the art was commissioned for it -- every plate carries its subject in the
+ * central horizontal third precisely so the top and bottom can be thrown away
+ * at any viewport. At a 981px desktop card the band is 190px (5.2:1); at a
+ * 343px phone card it is 128px (2.7:1), close to the source ratio, so the
+ * phone crops least and the desktop most.
+ *
+ * width/height are on the element as well, so the band reserves its space
+ * before the JPEG arrives; without them the question below it jumps on first
+ * paint.
+ *
+ * No text is ever placed over a plate. That is the whole reason this is a
+ * plate and not the painted page background first asked for: illustrated art
+ * cannot hold a contrast ratio, so nothing is asked to sit on it. */
+.region-plate {
+  display: block;
+  width: 100%;
+  height: clamp(128px, 20vw, 190px);
+  object-fit: cover;
+  object-position: center;
+  margin: 0;
+  border-radius: 6px 6px 0 0;
+  background-color: var(--chapter-wash, var(--bg-secondary));
+}
+/* The banner's 4px hue rule reads as the plate's own underline when the two
+ * are adjacent. */
+.region-plate + .region-banner {
+  margin-top: 0;
+}
 .region-banner {
   position: relative;
   border-top: 4px solid var(--chapter-hue, var(--color-navy));

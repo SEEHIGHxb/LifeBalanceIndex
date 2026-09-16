@@ -7,7 +7,7 @@
 // definitions rather than a copy of them.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync, statSync } from "node:fs";
 
 import { CHAPTERS, PROLOGUE, allScreens } from "../views/journey.js";
 import { RADAR_KEYS } from "../chart.js";
@@ -156,6 +156,74 @@ function contrastRatio(a, b) {
   const [hi, lo] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
 }
+
+test("every chapter declares a plate whose image is present and within budget", () => {
+  // FAILS ON THE DEFECT, and there are three defects here a green suite would
+  // otherwise ship.
+  //
+  // A chapter with no `plate` renders src="./assets/regions/undefined.jpg" --
+  // a broken image at the top of an arrival screen, on one region only, which
+  // is exactly the kind of thing that survives a manual click-through of
+  // whichever chapter you happened to test.
+  //
+  // A plate missing from the sw.js precache works perfectly online and is a
+  // blank band offline, which cannot be caught except by testing offline.
+  //
+  // And these are the heaviest assets in the repo. The set exists as 1024x400
+  // JPEGs because the source PNGs were 10.3 MB for eight images; dropping one
+  // 2 MB original in here would more than double what every install downloads.
+  const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
+  const seen = new Set();
+  for (const chapter of CHAPTERS) {
+    assert.match(
+      chapter.plate ?? "", /^[a-z][a-z-]*$/,
+      `${chapter.region} has no usable plate slug. It must be a lowercase ` +
+      "filename stem, and it must NOT be derived from `region` -- that is a " +
+      "t() string and changes with the reader's language."
+    );
+    assert.ok(!seen.has(chapter.plate), `two chapters share the plate "${chapter.plate}"`);
+    seen.add(chapter.plate);
+
+    const file = new URL(`../assets/regions/${chapter.plate}.jpg`, import.meta.url);
+    assert.ok(
+      existsSync(file),
+      `assets/regions/${chapter.plate}.jpg is missing, so ${chapter.region} opens on a broken image`
+    );
+    const kb = statSync(file).size / 1024;
+    assert.ok(
+      kb < 200,
+      `assets/regions/${chapter.plate}.jpg is ${Math.round(kb)} KB. The budget is ` +
+      "200 KB per plate: all eight are precached, so this is weight every " +
+      "install pays whether or not the reader ever reaches that region."
+    );
+    assert.ok(
+      sw.includes(`"./assets/regions/${chapter.plate}.jpg"`),
+      `assets/regions/${chapter.plate}.jpg is not in the sw.js APP_SHELL, so it ` +
+      "renders online and is a blank band offline"
+    );
+  }
+  assert.equal(seen.size, 8, "expected eight distinct plates");
+});
+
+test("the plate is rendered only on a chapter's arrival screen", () => {
+  // The plate is a 128-190px band. On all 21 content screens it would push the
+  // first question below the fold on a phone, where the card is 91% of the
+  // viewport -- and the same image three screens running turns an arrival into
+  // wallpaper. It is bound to the same flag as the theme line so the two
+  // cannot drift apart.
+  const src = readFileSync(new URL("../views/onboarding.js", import.meta.url), "utf8");
+  assert.match(
+    src, /\$\{\s*showTheme\s*\?[\s\S]{0,200}?region-plate/,
+    "region-plate is no longer guarded by showTheme in regionBannerMarkup. Putting " +
+    "the plate on every screen is a deliberate design change if you want it -- but " +
+    "it costs a phone reader the first question of every screen."
+  );
+  assert.match(
+    src, /class="region-plate"[\s\S]{0,160}?alt=""/,
+    'the plate must keep alt="": it is decorative, and the region name is in text ' +
+    "directly beneath it"
+  );
+});
 
 test("every region wash keeps the app's own ink readable on it", () => {
   const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");

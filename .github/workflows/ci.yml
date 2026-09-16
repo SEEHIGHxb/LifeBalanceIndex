@@ -86,7 +86,7 @@ jobs:
       # below is what catches anything that isn't.
       - name: Stage the site
         run: |
-          mkdir -p _site/views _site/assets/fonts
+          mkdir -p _site/views _site/assets/fonts _site/assets/regions
           cp index.html privacy.html 404.html index.css manifest.webmanifest *.js _site/
           # CNAME is what tells Pages the site answers on lbi.plainpoint.net.
           # Staging is an explicit file list, not a copy of the repo, so this
@@ -96,6 +96,11 @@ jobs:
           cp views/*.js _site/views/
           cp assets/icon-192.png assets/icon-512.png assets/lumi.png _site/assets/
           cp assets/fonts/* _site/assets/fonts/
+          # The eight region chapter plates. A glob, not a file list: the
+          # plates are enumerated in sw.js APP_SHELL and the check below
+          # verifies every one of them landed here, so a ninth region needs
+          # no change to this line.
+          cp assets/regions/*.jpg _site/assets/regions/
 
       # The service worker precaches APP_SHELL with cache.addAll, which is
       # atomic: one 404 rejects the whole install and the app silently loses

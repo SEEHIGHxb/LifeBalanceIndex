@@ -152,11 +152,17 @@ test("straight-lining the asked items is still rejected", () => {
   const gs = seeded();
   // CFPB-10's remaining items are mixed-keyed, so one option POSITION across
   // all of them is incoherent and must not be accepted or rewarded. Take each
-  // asked item's first option — the values differ (4 vs 0) precisely because
+  // asked item's first option — the values differ (0 vs 4) precisely because
   // the keying differs, which is what makes the pattern careless.
+  //
+  // The literal below flipped when every scale was reordered to run least-first
+  // (see tests/scale-direction.test.mjs): the leftmost radio is now the LEAST
+  // end, so a positively-keyed item scores 0 there and a reverse-keyed one
+  // scores 4. The pattern being rejected is the same one, read from the other
+  // side of the scale.
   const asked = deepAskIndices("cfpb10", gs.state.baseline);
   const firstPosition = asked.map(i => DEEP_INSTRUMENTS.cfpb10.items[i].options[0].v);
-  assert.deepEqual(firstPosition, [4, 4, 4, 0, 0]);
+  assert.deepEqual(firstPosition, [0, 0, 0, 4, 4]);
 
   const before = gs.state.profile.lifetimeXp;
   const result = gs.submitDeepAssessment("finance", { cfpb10: firstPosition });

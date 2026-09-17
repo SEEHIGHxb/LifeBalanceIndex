@@ -1817,12 +1817,24 @@ header {
 .survey-page[data-instrument] fieldset.q-pending {
   display: none;
 }
-.survey-page[data-instrument] fieldset.q-answered {
-  opacity: 0.62;
-}
-.survey-page[data-instrument] fieldset.q-answered:hover,
-.survey-page[data-instrument] fieldset.q-answered:focus-within {
-  opacity: 1;
+/* ANSWERED ITEMS KEEP FULL-STRENGTH INK.
+ *
+ * This was `opacity: 0.62` on the whole fieldset, which composited the option
+ * labels and the legend down to about 2.4:1 over every one of the eight region
+ * backgrounds -- roughly HALF the 4.5:1 floor the card veil is itself held to,
+ * and the reason the veil cannot be opened past 0.86. The :hover and
+ * :focus-within rules that restored full opacity do not exist on a
+ * touchscreen, so on a phone most of the questions on an instrument screen sat
+ * at that ratio permanently, not transiently.
+ *
+ * There is no headroom to dim text here at all: --color-text-secondary already
+ * measures 4.65:1 over the darkest art in the set. So the "settled" cue is
+ * carried entirely by things that are NOT text -- the chapter-hue left border
+ * further down this sheet, and the radio controls, which are UI components
+ * held to 3:1 by WCAG 1.4.11 rather than to 4.5:1. Guarded in
+ * tests/journey.test.mjs: any opacity on the fieldset itself fails the suite. */
+.survey-page[data-instrument] fieldset.q-answered input[type="radio"] {
+  opacity: 0.6;
 }
 .survey-page[data-instrument] fieldset.survey-question:not(.q-answered):not(.q-pending) {
   animation: q-rise 0.28s ease;

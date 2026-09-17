@@ -78,11 +78,19 @@ function radioQuestion(instrKey, itemIndex, item, displayIndex = itemIndex) {
     </fieldset>`;
 }
 
-export function instrumentBlock(instrKey) {
+// `heading` controls the instrument's own title paragraph. It defaults to true
+// because views/assessments.js renderCheckin stacks these blocks with NO
+// heading of its own, so there this paragraph is the only thing naming the
+// instrument. The onboarding journey passes false: its engine already prints
+// the title as the screen's <h3>, and printing both put the name on screen
+// twice -- in Thai, twice in two different languages, because the engine's
+// copy is translated and this one was too while the value reaching the engine
+// was not. One title per screen, translated once.
+export function instrumentBlock(instrKey, { heading = true } = {}) {
   const instr = INSTRUMENTS[instrKey];
   return `
     <div class="instrument-block">
-      <p class="instrument-title">${t(instr.title)}</p>
+      ${heading ? `<p class="instrument-title">${t(instr.title)}</p>` : ""}
       ${instr.items.map((item, i) => radioQuestion(instrKey, i, item)).join("")}
     </div>`;
 }

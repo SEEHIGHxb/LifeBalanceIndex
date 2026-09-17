@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 import { readFileSync, existsSync, statSync } from "node:fs";
 
 import { CHAPTERS, PROLOGUE, allScreens } from "../views/journey.js";
+import { regionsComplete } from "../views/journey-ring.js";
 import { RADAR_KEYS } from "../chart.js";
 import { SOURCES } from "../benchmarks.js";
 import { INSTRUMENTS } from "../surveys.js";
@@ -370,4 +371,126 @@ test("every chapter carries a region name, a theme and a hue of its own", () => 
   }
   // Shared hues would make two regions on the ring indistinguishable.
   assert.equal(hues.size, CHAPTERS.length, "two chapters share a hue");
+});
+// --- the four fixes from the two-sided UX review (v87) -------------------
+
+test("answered questions keep full-strength ink over the region art", () => {
+  // `.q-answered` was `opacity: 0.62`, which composited the option labels and
+  // the legend down to about 2.4:1 over every one of the eight region
+  // backgrounds — half the 4.5:1 floor the card veil beside it is held to. The
+  // :hover and :focus-within rules that restored them do not exist on a
+  // touchscreen, which is the primary device here, so on a phone most of the
+  // questions on an instrument screen sat at that ratio permanently.
+  //
+  // There is no headroom to dim text at all: --color-text-secondary already
+  // measures 4.65:1 over the darkest art in the set, so ANY opacity on a
+  // text-bearing box fails. This asserts none is applied to the fieldset
+  // itself. Dimming a non-text child — the radio controls, which WCAG 1.4.11
+  // holds to 3:1 rather than 4.5:1 — is allowed, and is how the answered state
+  // still reads as settled.
+  const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");
+  const rules = [...css.matchAll(/fieldset\.q-answered([^{]*)\{([^}]*)\}/g)];
+  assert.ok(rules.length, "the .q-answered state has disappeared from the stylesheet");
+
+  let checkedFieldsetRule = false;
+  for (const [, selectorTail, body] of rules) {
+    const tail = selectorTail.trim();
+    // An empty tail means the rule targets the fieldset itself; a tail opening
+    // on ":" is a pseudo-class on that same fieldset. Anything else is a
+    // descendant, which may be dimmed.
+    if (tail !== "" && !tail.startsWith(":")) continue;
+    checkedFieldsetRule = true;
+    assert.doesNotMatch(
+      body, /opacity/,
+      "an answered question's fieldset carries an opacity. Its labels are text " +
+      "over an illustrated background: dimming them puts the option labels at " +
+      "about 2.4:1, against a 4.5:1 floor, and there is no headroom to recover " +
+      "it because the secondary ink is already at 4.65:1 over the darkest art. " +
+      "Dim the radio controls instead — they are UI components held to 3:1."
+    );
+  }
+  assert.ok(checkedFieldsetRule, "no rule targets fieldset.q-answered itself any more");
+});
+
+test("the ring counts a region complete only when its ending is reached", () => {
+  // The count used the in-progress chapter INDEX as the number of chapters
+  // completed, so the ring read "0 / 8" on the screen whose card is headed
+  // "Region complete", and "7 / 8" on the last screen of the journey, whose
+  // recap reads "Every region on the ring is lit." It never showed 8/8.
+  const total = CHAPTERS.length;
+  assert.equal(regionsComplete({ chapter: -1, endsChapter: false, total }), 0,
+    "the prologue has completed no region");
+  assert.equal(regionsComplete({ chapter: 0, endsChapter: false, total }), 0,
+    "a question screen inside The Market has completed no region");
+  assert.equal(regionsComplete({ chapter: 0, endsChapter: true, total }), 1,
+    "The Market's ending screen says the region is complete, so the ring must agree");
+  assert.equal(regionsComplete({ chapter: 7, endsChapter: false, total }), 7,
+    "inside the eighth region, seven are done");
+  assert.equal(regionsComplete({ chapter: 7, endsChapter: true, total }), total,
+    "the final screen must read 8 / 8 — the reader has to see the count complete");
+  assert.equal(regionsComplete({ chapter: 99, endsChapter: true, total }), total,
+    "the count can never exceed the number of regions");
+});
+
+test("an instrument screen names its instrument exactly once, translated", () => {
+  // The engine prints the screen's own <h3>, and instrumentBlock printed the
+  // title again — so the name appeared twice. In Thai it appeared twice in TWO
+  // LANGUAGES, because the engine's copy was passed through no t() while the
+  // block's was: a Thai reader met "CFPB Financial Well-Being Assessment" as
+  // the largest text on the page with the Thai underneath it, on thirteen of
+  // the twenty-one answering screens.
+  const screens = allScreens().filter(s => s.instrument);
+  assert.ok(screens.length >= 13, `only ${screens.length} instrument screens found`);
+
+  for (const screen of screens) {
+    assert.ok(screen.title && screen.title.length > 3, `${screen.id}: no screen title`);
+    assert.doesNotMatch(
+      screen.body, /class="instrument-title"/,
+      `${screen.id} renders instrumentBlock's own title paragraph as well as the ` +
+      "screen heading, so the instrument is named twice on one screen. The " +
+      "journey must call instrumentBlock(key, { heading: false })."
+    );
+  }
+
+  // And the heading the engine prints has to be translated. Asserted against
+  // the source because the default test language is English, where a missing
+  // t() is invisible — which is exactly how this shipped.
+  const src = readFileSync(new URL("../views/journey.js", import.meta.url), "utf8");
+  assert.match(
+    src, /title: t\(INSTRUMENTS\[key\]\.title\)/,
+    "the instrument screen's title is no longer wrapped in t(). It is rendered " +
+    "as the screen's <h3> by an engine that escapes but does not translate, so " +
+    "without t() every Thai instrument screen headlines an English acronym."
+  );
+
+  // The check-in still needs the paragraph: it stacks these blocks with no
+  // heading of its own, so heading must default to true.
+  const forms = readFileSync(new URL("../views/instrument-forms.js", import.meta.url), "utf8");
+  assert.match(
+    forms, /instrumentBlock\(instrKey, \{ heading = true \} = \{\}\)/,
+    "instrumentBlock's heading must DEFAULT to true — views/assessments.js " +
+    "renderCheckin stacks seven of these with no heading of its own, so " +
+    "flipping the default strips every instrument name from the monthly check-in."
+  );
+});
+
+test("the footer Methodology link is hidden until onboarding is finished", () => {
+  // #/methodology resolves through initializeApp, which re-renders onboarding
+  // while !onboarded, so the link changed the hash and did nothing else. It is
+  // also the link a hesitant reader reaches for before handing over
+  // eighty-five answers about their income and their mood, so a dead one is
+  // worse than none. app.js had already caught and hidden btn-profile for the
+  // same reason and left this one wired.
+  const app = readFileSync(new URL("../app.js", import.meta.url), "utf8");
+  const hide = app.indexOf('getElementById("footer-methodology").classList.add("d-none")');
+  const show = app.indexOf('getElementById("footer-methodology").classList.remove("d-none")');
+
+  assert.ok(hide > 0, "app.js no longer hides the footer Methodology link during first run");
+  assert.ok(show > 0, "app.js never restores the footer Methodology link after onboarding");
+  assert.ok(
+    hide < show,
+    "the hide must sit in the !onboarded branch, which comes first. Reversed, " +
+    "the link is hidden from the readers who can actually use it and shown to " +
+    "the ones for whom it does nothing."
+  );
 });

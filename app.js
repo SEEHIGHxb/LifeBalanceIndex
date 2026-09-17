@@ -16,7 +16,7 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=86";
+} from "./ui.js?v=87";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -156,6 +156,18 @@ function initializeApp() {
     // toggle beside it stays: it is bound unconditionally, and a Thai reader
     // needs it on the very first screen.
     document.getElementById("btn-profile").classList.add("d-none");
+    // Same defect, same reason, one floor down: the footer's Methodology link
+    // points at #/methodology, which resolves through initializeApp and so
+    // re-renders onboarding while !onboarded. Clicking it changed the hash and
+    // nothing else -- a dead control, and the one a hesitant reader reaches for
+    // before handing over eighty-five answers about their income and their
+    // mood. Hidden rather than wired, because renderMethodology replaces
+    // #main-view, which is where the onboarding mount lives: making the link
+    // work as-is would throw the reader out of the flow mid-assessment. Giving
+    // them a way to read the methodology BEFORE starting is worth doing and is
+    // its own change, not a line in this one. Privacy & Data beside it is a
+    // static page and works throughout.
+    document.getElementById("footer-methodology").classList.add("d-none");
 
     renderOnboarding("onboarding-mount", () => {
       // Now that there is data worth keeping, ask the browser not to evict it.
@@ -168,6 +180,7 @@ function initializeApp() {
     document.getElementById("nav-container").classList.remove("d-none");
     document.getElementById("assistant-mount").classList.remove("d-none");
     document.getElementById("btn-profile").classList.remove("d-none");
+    document.getElementById("footer-methodology").classList.remove("d-none");
     setupNavigation();
     setupAssistant();
     renderActiveTab();

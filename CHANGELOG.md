@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `86`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `87`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,80 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.35.0] — 2026-09-17 (APP_VERSION 87)
+
+Four fixes from a two-sided UX review of the onboarding journey — one reviewer
+briefed to argue what works, one to attack it, each required to name the weakest
+part of its own case. These are the four the critic found that were mechanical
+enough to fix together.
+
+### Fixed
+
+- **The instrument title was printed twice, and in Thai it was printed twice in
+  two languages.** The engine prints the screen's `<h3>` from `screen.title`,
+  and `instrumentBlock` printed the name again — but the value reaching the
+  engine came from `views/journey.js` with **no `t()`**, while the block's copy
+  had one. So a Thai reader met `CFPB Financial Well-Being Assessment` as the
+  largest text on the page with `แบบประเมินสุขภาหะทางการเงิน (CFPB)` underneath it, on
+  thirteen of the twenty-one answering screens. All fourteen Thai titles already
+  existed and were good; this was one missing `t()`. The paragraph could not
+  simply be deleted — `renderCheckin` stacks `instrumentBlock()` with no heading
+  of its own, so there it is the only title — hence a `heading` parameter that
+  defaults to true and which the journey passes false. Also recovers about 40px
+  above the fold on every instrument screen.
+- **Answered questions sat at roughly 2.4:1.** `.q-answered` was
+  `opacity: 0.62`, which composited the option labels and the legend to about
+  **half** the 4.5:1 floor the card veil next door is held to, on all eight
+  region backgrounds. The `:hover` / `:focus-within` rules that restored them do
+  not exist on a touchscreen, so on a phone most of the questions on a screen
+  sat there permanently rather than transiently. There is no headroom to dim
+  text here at all — `--color-text-secondary` already measures 4.65:1 over the
+  darkest art — so the "settled" cue now rests on things that are not text: the
+  chapter-hue left border, and the radio controls, which WCAG 1.4.11 holds to
+  3:1 rather than 4.5:1.
+- **The ring count was off by one for the whole journey and never reached
+  8/8.** `Math.max(0, chapter)` used the in-progress chapter index as the count
+  of chapters completed, so the ring read **0 / 8** on the screen whose card is
+  headed "Region complete", and **7 / 8** on the final screen, whose recap reads
+  *"Every region on the ring is lit."* For the only quantitative progress signal
+  in a thirty-screen flow, reaching the end is the one thing it has to do. The
+  arc now fills to the brim on the ending screen too, so the count, the arc and
+  the card agree.
+- **The footer Methodology link was dead during first run.** `#/methodology`
+  resolves through `initializeApp`, which re-renders onboarding while
+  `!onboarded`, so clicking it changed the hash and nothing else — and it is the
+  link a hesitant reader reaches for before handing over eighty-five answers
+  about their income and their mood. `app.js` had already caught and hidden
+  `btn-profile` for exactly this reason and left this one wired. Hidden now,
+  restored once onboarding finishes.
+
+### Notes
+
+- **Why the Methodology link is hidden rather than wired.**
+  `renderMethodology` replaces `#main-view`, which is where the onboarding
+  mount lives, so making the link work as-is would throw the reader out of the
+  flow mid-assessment. Letting someone read the methodology **before** starting
+  is worth doing and is its own change. "Privacy & Data" beside it is a static
+  page and works throughout, so the trust path is not closed.
+- `regionsComplete` is extracted and exported from `views/journey-ring.js` so
+  the off-by-one can be tested without a DOM.
+- Four new guards in `tests/journey.test.mjs`, all verified biting: dimming the
+  answered fieldset again, restoring the ring count to the chapter index,
+  printing the instrument title twice, dropping the `t()` around it, and
+  unhiding the footer link each fail the specific test written for them and
+  name the reason.
+- 635 unit tests (+4).
+
+### Still open from the same review
+
+- The resume recap can state answers the reader never gave — resuming into a
+  chapter ending with that instrument unanswered renders *"Of five statements
+  about money, 0 described you well."* `highCount` cannot distinguish
+  unanswered from lowest.
+- `showScreen` never moves focus, so a keyboard user loses it on all 29
+  advances, and `#ring-status` is byte-identical between screens inside a
+  chapter, so nothing is announced.
 
 ## [2.34.0] — 2026-09-16 (APP_VERSION 86)
 

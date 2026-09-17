@@ -68,6 +68,21 @@ export function ringMarkup(chapters) {
     </div>`;
 }
 
+// How many regions the reader has actually FINISHED. Pure and exported so the
+// off-by-one that lived here can be tested without a DOM.
+//
+// `chapter` is the index of the chapter in progress, which is one less than the
+// number completed once the reader reaches that chapter's ending screen. Using
+// the index alone -- which is what this did -- meant the ring read "0 / 8" on
+// the screen whose card is headed "Region complete", and "7 / 8" on the last
+// screen in the journey, whose recap reads "Every region on the ring is lit."
+// The count never reached 8/8 at all, which for the only quantitative progress
+// signal in a thirty-screen flow is the one thing it must do.
+export function regionsComplete({ chapter, endsChapter, total }) {
+  const done = Math.max(0, chapter) + (endsChapter ? 1 : 0);
+  return Math.min(total, done);
+}
+
 // `chapter` is the index in progress (-1 during the prologue, 8 once every
 // region is lit), `within` a 0..1 fraction of that chapter's screens completed.
 //
@@ -75,7 +90,7 @@ export function ringMarkup(chapters) {
 // aria-hidden precisely because eight coloured arcs announce as nothing useful;
 // the sentence below is the accessible equivalent of the picture, and the
 // replacement for the "Step {n} of {total}" the old bar announced.
-export function paintRing(root, { chapter, within, chapters }) {
+export function paintRing(root, { chapter, within, chapters, endsChapter = false }) {
   if (!root) return;
   const frac = Math.max(0, Math.min(1, within));
 
@@ -104,7 +119,7 @@ export function paintRing(root, { chapter, within, chapters }) {
   // Deliberately "n of 8 regions" and not a percentage or a time estimate. The
   // old bar promised "About 5 minutes total" on every one of six steps, which
   // was the same claim whether the reader was four seconds in or four minutes.
-  const complete = Math.max(0, chapter);
+  const complete = regionsComplete({ chapter, endsChapter, total: chapters.length });
 
   const region = root.querySelector("#ring-region");
   const count = root.querySelector("#ring-count");

@@ -255,10 +255,19 @@ export function renderOnboarding(containerId, onComplete) {
   // counting the ending as one of them. Screens completed, never score.
   const chapterProgress = (index) => {
     const screen = screens[index];
-    if (screen.chapter < 0) return { chapter: -1, within: 0 };
+    if (screen.chapter < 0) return { chapter: -1, within: 0, endsChapter: false };
     const ofChapter = screens.filter(s => s.chapter === screen.chapter && !isSkippedScreen(s));
     const position = ofChapter.indexOf(screen);
-    return { chapter: screen.chapter, within: position < 0 ? 0 : position / ofChapter.length };
+    // The ending screen counts its own chapter as finished: the arc fills to
+    // the brim and the count increments there, at the same moment the card in
+    // front of it says the region is complete. Anywhere else those three
+    // disagreed with each other.
+    const passed = position < 0 ? 0 : position + (screen.endsChapter ? 1 : 0);
+    return {
+      chapter: screen.chapter,
+      within: passed / ofChapter.length,
+      endsChapter: !!screen.endsChapter
+    };
   };
 
   const updateRing = (index) => {

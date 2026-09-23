@@ -1,6 +1,6 @@
 # Lumi — splash-art prompt kit for ChatGPT
 
-Status: **READY TO GENERATE — written 2026-09-12.** No images produced from these yet.
+Status: **SUPERSEDED — 2026-09-23** by [`../identity/gemini-prompts-lumi.md`](../identity/gemini-prompts-lumi.md) (Sage & Gilt line art, Gemini). The painted portraits in `assets/lumi_current_design/` came from this kit and are now the character reference for the redraw.
 The app continues to use the existing `assets/lumi.png` until they are.
 
 Supersedes the style and character blocks in `../lumi-prompts.md`, which were written in a

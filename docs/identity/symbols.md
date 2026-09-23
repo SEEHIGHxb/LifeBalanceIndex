@@ -20,7 +20,7 @@ What goes: the flat navy-outline stickers and the bright region hues. The style 
 - minimum size
 - what it must never do
 
-**How the symbols get made.** Two tests are hand-drawn in SVG on the style tile ([`style-tile.html`](style-tile.html)): S8.3 The Still Water and S8.8 The Lookout, plus S1 and S2. Every emblem also has a Gemini prompt in [`gemini-prompts.md`](gemini-prompts.md). The owner compares the two methods and picks one.
+**How the symbols get made: Gemini (chosen by the owner, 2026-09-23).** The SVG tests on the style tile ([`style-tile.html`](style-tile.html)) were flatter than the reference; the Gemini images from [`gemini-prompts.md`](gemini-prompts.md) were accepted. The masters (1024 px WebP) are in [`emblems/`](emblems/). The originals (2048 px JPG) stay out of the repo in `assets/icons/`. The app will get smaller, trimmed copies in Phase 4. The SVG star and sparkles stay as the *animated* forms, because a raster image can't grow per score or spin.
 
 ## The style in one paragraph
 
@@ -104,9 +104,9 @@ These were measured from the owner's reference image. Text contrast is checked a
 
 ## S4–S7. Lumi
 
-**Status: style open.** The owner did not include Lumi in the Sage & Gilt redraw. The v1 plan was a flat vector mascot with navy outlines, which would now clash with everything around her.
+**Status: redraw in Sage & Gilt line art, draft for owner approval, 2026-09-23.** The owner chose the redraw. She is made the same way as the emblems (Gemini, prompts in [`gemini-prompts-lumi.md`](gemini-prompts-lumi.md)), with her current portraits as the character reference.
 
-Her *character* anchors are fixed and still hold, whichever style is chosen:
+Her *character* anchors are fixed and still hold:
 - shoulder-length blue-black hair with a cornflower under-layer
 - a side-swept fringe over her right brow
 - amber eyes
@@ -116,7 +116,27 @@ Her *character* anchors are fixed and still hold, whichever style is chosen:
 - six expressions (`warm`, `curious`, `encouraging`, `pleased`, `gentle`, `delighted`) that change on screen changes only, never on answers, with no sad or worried state
 - five poses (`idle`, `point`, `wave`, `read`, `cheer`)
 
-**Decision needed later:** redraw Lumi in Sage & Gilt line art (sage and gold coat tones, fine lines), or keep her painted portraits in a gold-ringed medallion. Until then the app keeps `assets/lumi.png`.
+### How she looks in Sage & Gilt
+
+- **Style.** The same line art as the emblems: flat fills, fine outlines slightly darker than each fill (never black), a few thin inner lines for hair strands and fabric folds, and at most a very soft gradient. Her proportions stay semi-realistic, as in the current portraits, not chibi.
+- **Colours:**
+
+  | Part | Colour | Note |
+  |---|---|---|
+  | Hair | deep blue-black `#2E3547`, under-layer muted cornflower `#6E7FA6`, outline `#1F2533` | **The one colour outside the palette.** Blue-black hair is her strongest recognition cue, so it stays |
+  | Coat | sage `#C3CFB6`, shade `#A8B49C`, outline `#6F7D64` | Replaces the cornflower coat |
+  | Collar trim, toggle, cuffs, sparkle dots | gold `#F0D8A8` / `#D9B77A`, outline `#A88752` | |
+  | Trousers, boots | cream `#FBF8F1` with gold-line outline | |
+  | Skin | warm light `#F6E3D3`, outline `#C9A58C` | Soft blush only on `delighted` and `gentle` |
+  | Eyes | amber `#C8923E` | |
+  | Hairpin | the S1 star in gold | Above **her right ear (the viewer's left)**, tilted 12° clockwise |
+
+- **Background.** Cream `#FBF8F1`, plain, with no scene. The app places her on its own surfaces.
+- **Two framings.** A bust portrait (head and shoulders, collar visible) for the six expressions, and a full figure for the five poses. Each set shares one camera, so swapping images never jumps.
+- **Minimum size.** The 54 px medallion uses a head crop of the bust. At 54 px the eyes must stay at least 4 px tall and the pin at least 8 px; if they don't, the crop is tightened.
+- **Never:** swap the pin's side, change the eye or hair colour, add a sad or worried face, add text, or give her a background scene.
+
+Until the redraw is approved, the app keeps `assets/lumi.png`.
 
 ## S8. Region emblems (new subjects)
 

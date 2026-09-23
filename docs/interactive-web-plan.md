@@ -81,11 +81,11 @@ In LBI, the serious content is the instrument item.
 
 | Phase | Scope | Exit criteria | Size |
 |---|---|---|---|
-| **0 Direction** (no app code) | Written definitions for the first 10 symbols ([`identity/symbols.md`](identity/symbols.md)), then a style tile drawn from them ([`identity/style-tile.html`](identity/style-tile.html)). Region emblems: SVG tests versus Gemini images from [`identity/gemini-prompts.md`](identity/gemini-prompts.md), then one method for all. Lumi's style is decided after the emblems | Owner approves the symbol sheet, the style tile, the emblem set and Lumi's style | M |
+| **0 Direction** (no app code) | Written definitions for the first 10 symbols ([`identity/symbols.md`](identity/symbols.md)), then a style tile drawn from them ([`identity/style-tile.html`](identity/style-tile.html)). Region emblems: **done**, made with Gemini ([`identity/emblems/`](identity/emblems/)). Lumi: redraw in Sage & Gilt with Gemini ([`identity/gemini-prompts-lumi.md`](identity/gemini-prompts-lumi.md)) | Owner approves the symbol sheet, the style tile, the emblem set and Lumi's style | M |
 | **1 Prototype** (disposable, outside the app) | One phone-first page: tug-the-ring and burst, a chapter ending lighting up with recap cards, a Thai glint title and the Lumi caret, a rough ring → radar. A manual-clock harness through Playwright `addInitScript` (the CSP blocks inline injection) | Owner plays it on the reference devices and approves the feel. Numeric motion checks pass. The reduced-motion variant is reviewed | M |
 | **2 Foundation** | `motion.js` (loop, spring, follow, scrub; injected clock) and `views/motion-mount.js` (AbortController lifecycle, disposed in `renderActiveTab`). Clock in `tests/dom-stub.mjs`. Seven guards: every animation has a reduced path; no motion on items; no global listeners outside the mount; transform/opacity only; `APP_SHELL`/`?v=` parity; frame budget under 4× CPU; the Thai splitter keeps marks attached. The in-app Reduce-motion toggle | Tests and lint green; no visible change; `motion.js` coverage ≥ 80 % | M |
 | **3 Journey moments** | First release: region lights up, recap cards, neutral settle, emblem tab icons. Second: the Lumi caret and glint titles. Third: tug-the-ring | e2e runs pass with motion and with reduced motion; TalkBack/VoiceOver pass; contrast guards hold | M |
-| **4 Art set and ceremony** | `sprites.svg` (Star, glints, emblems, vector Lumi), the ring → radar ceremony, the share card as the map | Asset budget met (motion JS ≤ 6 KB, sprites ≤ 25 KB); no layout shift | L |
+| **4 Art set and ceremony** | `sprites.svg` (Star, glints, emblems, vector Lumi), the ring → radar ceremony, the share card as the map | Asset budget met: motion JS ≤ 6 KB, SVG sprites ≤ 25 KB, and each raster emblem or Lumi image ≤ 20 KB at its display size (WebP, lazy-loaded). No layout shift | L |
 | **5 Spread** | Weekly review, monthly ghost ring, year-review flipbook, quiet dashboard touches, one answering language | Guards hold without new exceptions | M |
 
 **Can land any time, independent of the plan:**
@@ -100,7 +100,7 @@ In LBI, the serious content is the instrument item.
 | # | Question | Decision |
 |---|---|---|
 | 1 | Identity direction | **Star Atlas structure with the Sage & Gilt look** (revised 2026-09-23) |
-| 2 | Lumi's form | **Reopened.** A flat navy vector would clash with Sage & Gilt. Choose later: Sage & Gilt line art, or the painted portraits in a gold-ringed medallion |
+| 2 | Lumi's form | **Redrawn in Sage & Gilt line art** (owner, 2026-09-23): a sage coat with gold trim; her blue-black hair stays as the one colour outside the palette. Made with Gemini from [`identity/gemini-prompts-lumi.md`](identity/gemini-prompts-lumi.md) |
 | 3 | Two densities or unify | **Two densities.** The dashboard and methodology stay quiet paper |
 | 4 | Region critters | **None for now.** Lumi is the only living thing; glints are the particles |
 | 5 | Display font | **Cormorant Garamond + Trirong** (replaces Mitr), funded by the font dedupe |
@@ -108,6 +108,6 @@ In LBI, the serious content is the instrument item.
 | 7 | In-app Reduce-motion toggle | **Yes**, in Profile. It overrides the OS setting in the "reduce" direction only |
 | 8 | Reference test devices | Layout is designed for **every phone width** (320 px and up). The devices are only for the performance check: if the owner names none, Chrome's 4× CPU throttle plus iOS Safari stand in |
 
-| 9 | How symbols are made | **Both, then pick.** SVG tests (style tile) against Gemini images from `identity/gemini-prompts.md` |
+| 9 | How symbols are made | **Gemini** (owner, 2026-09-23). The Gemini set was accepted over the SVG tests; masters in `identity/emblems/`. SVG stays only for the animated star and sparkles |
 
 Settled without asking: no device tilt, and no new libraries (the CSP blocks CDNs; `motion.js` is hand-written).

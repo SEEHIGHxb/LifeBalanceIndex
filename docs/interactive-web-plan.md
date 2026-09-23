@@ -2,6 +2,8 @@
 
 Status: **approved 2026-09-23.** Phase 0 has started; the symbol definitions are in [`identity/symbols.md`](identity/symbols.md).
 
+**Look updated the same day to "Sage & Gilt"** (owner's style reference: soft sage and gold line art). The structure below stands: the star mark, the sparkles, the eight regions and every motion rule. The flat navy stickers, bright region hues and the Mitr font are replaced; `identity/symbols.md` v2 is the source of truth for the look.
+
 This plan extends [`onboarding-flow-redesign.md`](onboarding-flow-redesign.md). That doc's Phase 3 (Lumi and the ceremony) and Phase 4 (one answering language) are folded into the phases below.
 
 It was synthesised from three brainstorms (motion, identity, engineering) and a recreation study of a playful brand site. Those were working notes and are not committed. Everything they found that matters is here.
@@ -35,14 +37,14 @@ In LBI, the serious content is the instrument item.
 | Element | LBI |
 |---|---|
 | Ownable mark | **The Lumi Star**: an 8-point star, one point per aspect in `RADAR_KEYS` order. On the share card each point stretches by its score, so **the mark is the result**. It is also Lumi's hairpin, the ring and the radar in one shape |
-| Recurring particle | **Glints**: 4-point sparkles in the region colour, 3 spin frames. Used as bursts, the ring caret and letter placeholders. They are the star dots already printed on Lumi's collar |
-| Character | **Lumi, redrawn as a flat vector mascot** about 3 heads tall. She keeps her anchors, and expressions are swappable parts |
-| Sticker language | Paper-white die-cut, **navy** outline `#1F2A44` (not black), one flat shadow |
-| Type | **Mitr** 500/600 display (covers both Thai and Latin). Body text stays Inter/Sarabun; data pages keep their serif headings |
-| Density | **One identity, two densities.** The journey is loud (region colour, big type, Lumi). The dashboard and methodology stay quiet paper; only the mark and region stickers cross over |
+| Recurring particle | **Glints**: 4-point sparkles, gold in every region (v2), 3 spin frames. Used as bursts, the ring caret and letter placeholders. They are the star dots already printed on Lumi's collar |
+| Character | **Lumi.** Her character anchors are fixed; her drawing style is open again under Sage & Gilt (see decision 2) |
+| Symbol language | **Sage & Gilt**: flat sage and pale-gold fills, fine outlines of their own colour, thin inner detail lines, an optional gold halo or sparkles. Region emblems are illustrations with new subjects (symbols.md S8) |
+| Type | **Cormorant Garamond** (Latin) and **Trirong** (Thai) display serifs. Body text stays Inter/Sarabun |
+| Density | **One identity, two densities.** The journey is loud (region colour, big type, Lumi). The dashboard and methodology stay quiet paper; only the mark and region emblems cross over |
 
-- **Palette.** The shipped region `hue`/`wash` stay, as fills only; as text on white they fail at 2.25–3.94:1. Each region gains a deep text tone (see `identity/symbols.md` §S8). The Lookout's sticker fill lightens to `#7F88D6` so navy outlines pass 3:1 against it.
-- **Font budget.** The Inter and Source Serif weight files are byte-identical copies of one variable font. Deduping them saves about 150 KB, which pays for Mitr.
+- **Palette.** Sage, gold and cream, measured from the owner's reference (tokens and contrast in `identity/symbols.md`). Regions keep only their pale shipped `wash` as a background tint and are told apart by their illustrated subject.
+- **Font budget.** The Inter and Source Serif weight files are byte-identical copies of one variable font. Deduping them saves about 150 KB, which pays for Cormorant Garamond and Trirong.
 - **Rejected directions:**
   - **"Storybook Map"** (painted everything): heavy, and it cannot move.
   - **"Riso Almanac"** (two-ink print): dates fast and muddies Thai diacritics.
@@ -79,7 +81,7 @@ In LBI, the serious content is the instrument item.
 
 | Phase | Scope | Exit criteria | Size |
 |---|---|---|---|
-| **0 Direction** (no app code) | Written definitions for the first 10 symbols ([`identity/symbols.md`](identity/symbols.md)), then a style tile drawn from them ([`identity/style-tile.html`](identity/style-tile.html)). Vector Lumi: explore with GPT only, then define the chosen sheet and redraw it in SVG | Owner approves the symbol sheet, the style tile and the Lumi sheet | M |
+| **0 Direction** (no app code) | Written definitions for the first 10 symbols ([`identity/symbols.md`](identity/symbols.md)), then a style tile drawn from them ([`identity/style-tile.html`](identity/style-tile.html)). Region emblems: SVG tests versus Gemini images from [`identity/gemini-prompts.md`](identity/gemini-prompts.md), then one method for all. Lumi's style is decided after the emblems | Owner approves the symbol sheet, the style tile, the emblem set and Lumi's style | M |
 | **1 Prototype** (disposable, outside the app) | One phone-first page: tug-the-ring and burst, a chapter ending lighting up with recap cards, a Thai glint title and the Lumi caret, a rough ring → radar. A manual-clock harness through Playwright `addInitScript` (the CSP blocks inline injection) | Owner plays it on the reference devices and approves the feel. Numeric motion checks pass. The reduced-motion variant is reviewed | M |
 | **2 Foundation** | `motion.js` (loop, spring, follow, scrub; injected clock) and `views/motion-mount.js` (AbortController lifecycle, disposed in `renderActiveTab`). Clock in `tests/dom-stub.mjs`. Seven guards: every animation has a reduced path; no motion on items; no global listeners outside the mount; transform/opacity only; `APP_SHELL`/`?v=` parity; frame budget under 4× CPU; the Thai splitter keeps marks attached. The in-app Reduce-motion toggle | Tests and lint green; no visible change; `motion.js` coverage ≥ 80 % | M |
 | **3 Journey moments** | First release: region lights up, recap cards, neutral settle, emblem tab icons. Second: the Lumi caret and glint titles. Third: tug-the-ring | e2e runs pass with motion and with reduced motion; TalkBack/VoiceOver pass; contrast guards hold | M |
@@ -97,13 +99,15 @@ In LBI, the serious content is the instrument item.
 
 | # | Question | Decision |
 |---|---|---|
-| 1 | Identity direction | **Star Atlas** |
-| 2 | Lumi's form | **Stylised flat-vector mascot.** The painted portraits stay as promo art only |
+| 1 | Identity direction | **Star Atlas structure with the Sage & Gilt look** (revised 2026-09-23) |
+| 2 | Lumi's form | **Reopened.** A flat navy vector would clash with Sage & Gilt. Choose later: Sage & Gilt line art, or the painted portraits in a gold-ringed medallion |
 | 3 | Two densities or unify | **Two densities.** The dashboard and methodology stay quiet paper |
 | 4 | Region critters | **None for now.** Lumi is the only living thing; glints are the particles |
-| 5 | Display font | **Mitr**, funded by the font dedupe |
+| 5 | Display font | **Cormorant Garamond + Trirong** (replaces Mitr), funded by the font dedupe |
 | 6 | First surface | **Onboarding chapter boundaries** |
 | 7 | In-app Reduce-motion toggle | **Yes**, in Profile. It overrides the OS setting in the "reduce" direction only |
-| 8 | Reference test devices | **Open.** Needed before Phase 1 ends: one named low-end Android and one iPhone |
+| 8 | Reference test devices | Layout is designed for **every phone width** (320 px and up). The devices are only for the performance check: if the owner names none, Chrome's 4× CPU throttle plus iOS Safari stand in |
+
+| 9 | How symbols are made | **Both, then pick.** SVG tests (style tile) against Gemini images from `identity/gemini-prompts.md` |
 
 Settled without asking: no device tilt, and no new libraries (the CSP blocks CDNs; `motion.js` is hand-written).

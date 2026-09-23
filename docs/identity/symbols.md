@@ -1,236 +1,183 @@
 # Star Atlas: symbol definitions (Phase 0)
 
-Status: **draft for owner approval, 2026-09-23.** It belongs to [`../interactive-web-plan.md`](../interactive-web-plan.md).
+Status: **draft v2 for owner approval, 2026-09-23.** It belongs to [`../interactive-web-plan.md`](../interactive-web-plan.md).
+
+**v2 changes the look, not the structure.** The owner chose a soft illustrated style, sage and gold line art, for the whole identity. What stays from v1:
+- the star mark
+- the sparkles
+- the eight regions
+- every motion rule
+
+What goes: the flat navy-outline stickers and the bright region hues. The style is called **Sage & Gilt** below.
 
 **Nothing is drawn until its entry here is approved.** Each entry gives:
 - subject
-- silhouette (in units of its own box)
+- silhouette
 - colours
-- line weight
+- line
 - frames
 - motion
 - minimum size
 - what it must never do
 
-The style tile ([`style-tile.html`](style-tile.html)) draws S1, S2, S3, S8, S9 and S10 exactly as written here. S4–S7 (Lumi) are defined here but not drawn yet. Lumi is a character redesign, so she goes through a GPT exploration sheet first, as agreed in the plan.
+**How the symbols get made: Gemini (chosen by the owner, 2026-09-23).** The SVG tests on the style tile ([`style-tile.html`](style-tile.html)) were flatter than the reference; the Gemini images from [`gemini-prompts.md`](gemini-prompts.md) were accepted. The masters (1024 px WebP) are in [`emblems/`](emblems/). The originals (2048 px JPG) stay out of the repo in `assets/icons/`. The app will get smaller, trimmed copies in Phase 4. The SVG star and sparkles stay as the *animated* forms, because a raster image can't grow per score or spin.
+
+## The style in one paragraph
+
+Soft botanical line art on warm cream. Shapes are filled with flat sage or pale gold, and every shape has a fine, slightly darker line of its own colour, never black or navy. Small inner lines (leaf veins, petal ribs, wood grain) carry the detail; there is no hatching and no heavy shading. A thin gold halo arc or a few small gold sparkles add the "light". The mood is calm, kind and a little ceremonial, like a well-made almanac.
 
 ## Shared tokens
 
+These were measured from the owner's reference image. Text contrast is checked against `cream`.
+
 | Token | Hex | Use | Contrast |
 |---|---|---|---|
-| `ink` | `#1F2A44` | Every outline; text on stickers | 13.09:1 on paper |
-| `paper` | `#F7F5F0` | Page, unchanged from the app | |
-| `diecut` | `#FFFDF8` | Sticker border, Lumi's whites | |
-| `gold` | `#F2B632` | The Star, glints on Lumi, trim | ink on gold 7.82:1 |
-| `cornflower` | `#5A78C4` | Lumi's jacket, Star facet, quiet-surface accent | ink on it 3.34:1 (outline only, never text) |
-| Region `hue` / `wash` | shipped in `views/journey.js` | Fills only | |
-| Region `deep` | see S8 | Region-coloured text | ≥ 5.43:1 on paper |
+| `cream` | `#FBF8F1` | Illustration ground, cards | |
+| `paper` | `#F7F5F0` | App page, unchanged | |
+| `sage-light` | `#C3CFB6` | Main sage fill | |
+| `sage` | `#A8B49C` | Second sage fill, shade | |
+| `sage-line` | `#6F7D64` | Lines on sage shapes | 4.13:1 (graphics ≥ 3:1) |
+| `sage-deep` | `#56634E` | Selected states, strong UI | 6.02:1; cream text on it 6.02:1 |
+| `gold-light` | `#F0D8A8` | Main gold fill | |
+| `gold` | `#D9B77A` | Second gold fill | |
+| `gold-line` | `#A88752` | Lines on gold shapes | 3.17:1 (graphics only) |
+| `label` | `#7A6440` | Serif labels and headings | 5.32:1 (5.18 on `paper`) |
+| `halo` | `#EBD3A0` | Halo arcs, glow | decoration only |
+| Region `wash` | shipped in `views/journey.js` | Soft backgrounds per region | |
+
+- **Region colour.** Regions no longer have a loud colour of their own. Each keeps its shipped pale `wash` as a background tint, and all illustrations use the same sage and gold. A region is recognised by its subject, not its colour.
+- **Line weights.** At a 200-unit illustration box:
+  - Outer lines are 1.6 units.
+  - Inner detail lines are 0.9 units at 60 % opacity.
+  - Caps and joins are round.
+
+## Type
+
+- **Display.** **Cormorant Garamond** 500/600 for Latin and **Trirong** 400/500 for Thai. Both are OFL and self-hostable, and both are classic serifs that match the reference's labels.
+- **What this replaces.** It replaces Mitr (decision 5), because a rounded sans display fights the engraved look. The font dedupe still pays for it.
+- **Body.** Stays Inter/Sarabun.
+- **Colours.** Labels and headings use `label`; body text keeps the app's ink.
 
 ## S1. The Lumi Star (the mark)
 
-- **Subject.** An 8-point star, one point per aspect, in `RADAR_KEYS` order clockwise from the top:
-  - finance (top), physical, mental, relationships
-  - personalGoals (bottom), socialContribution, environment, humanityFuture
-  - The point angles match `radarPoints` in `chart.js` exactly, so the mark and the radar can morph into each other.
-- **Silhouette (100-unit box, centre 50,50):**
-  - **Long points** at 0°, 90°, 180° and 270° reach radius 47.
-  - **Short points** on the diagonals reach radius 31.
-  - **Valleys** sit at radius 15, halfway between the points.
-  - **Centre hole:** radius 6, the "you are here" of the ring.
-  - **Highlight:** one `diecut` dot, radius 2, on the gold (left) flank of the top point (at 48.6, 26). On the blue facet it read as a hole, and the points are slim, so a larger dot would cross the outline.
-  - The four long points are Lumi's existing 4-point hairpin; the four short points are what makes it the mark.
-- **Colours.**
-  - Solid: `gold` fill, `ink` outline.
-  - Facet: the right half of each long point is `cornflower`, which carries over the blue facets of the painted pin.
-  - Mono: `ink` or `diecut` only.
-- **Line.** Outline is 3 % of the box (3 units), never under 1.25 px on screen, with round joins.
-- **Small form (below 32 px).** The valleys widen to 21 and the short points to 33, because the full-size proportions turn wiry at icon sizes (seen on the style tile).
+- **Geometry.** Unchanged from v1.
+  - An 8-point star in `RADAR_KEYS` order, finance at the top, so it can morph into the radar.
+  - Long points (radius 47) at 0°, 90°, 180° and 270°; short points (31) on the diagonals; valleys at 15.
+  - A centre hole of radius 6.
+  - Below 32 px the valleys widen to 21 and the short points to 33.
+- **Look:**
+  - `gold-light` fill with a `gold-line` outline of 1.6 units at 100.
+  - Fine engraved lines run from the centre to each tip (`gold-line`, 0.8 units, 50 %).
+  - The centre hole has a `sage-line` ring.
+  - At 64 px and above, a thin `halo` arc sits behind the upper half.
 - **Variants:**
-  1. **Solid.** The logo, the app icon and the header.
-  2. **Outline.** Used on quiet surfaces.
-  3. **Score-stretched.** Used on the share card:
-     - Every point uses the *same* base, tip radius `18 + 28 × score / 100`, with the valleys fixed at 13.
-     - The long/short rhythm is dropped here, so no aspect looks privileged by its shape before any score is applied.
-     - A score of 0 still leaves a nub; the displayed ceiling of 99 is respected.
-- **Motion:**
-  - Idle: none.
-  - The highlight dot may play the glint frames (S2) once, when the mark first appears on a screen.
-  - Score-stretched: the points grow from 0 to their score over 900 ms using `cubic-bezier(.2,.9,.25,1)`, in radar order with a 45 ms stagger.
-- **Minimum size.** 16 px. Below 32 px the centre hole and highlight are dropped. Below 24 px the facet is dropped.
+  1. **Gilt.** The version above; the logo and the header.
+  2. **Line only.** Used on quiet surfaces.
+  3. **Score-stretched.** Used on the share card, with the same rule as v1: tip `18 + 28 × score / 100`, valleys 13, the same base for every point.
+- **Motion.** Unchanged from v1.
+- **Minimum size.** 16 px. Below 32 px the engraved lines, hole and halo are dropped.
 - **Never:**
-  - rotated off-axis (finance must point up)
+  - rotated off-axis
   - drawn with 5 or 6 points
-  - drawn in a region hue (a star in one region's colour would read as that region "winning")
+  - filled with a region tint
   - used as a rating icon
 
-## S2. Glint (the recurring particle)
+## S2. Sparkle (the recurring particle)
 
-- **Subject.** A 4-point sparkle with concave sides. These are the gold star dots already printed on Lumi's collar and her earring.
-- **Silhouette (24-unit box).** `M12 0 Q13.4 10.6 24 12 Q13.4 13.4 12 24 Q10.6 13.4 0 12 Q10.6 10.6 12 0Z`. The waist is 1.4 units from the centre lines.
-- **Colours.** Region `hue` fill, or `gold` for anything that is not a region. There is no outline below 20 px; above that, a 1.5-unit `ink` outline.
-- **Frames.** Three stacked poses, switched with `step-end` like the study's duck sprites:
-  - **A:** upright, scale 1.
-  - **B:** rotated 22°, scale 0.78.
-  - **C:** rotated 45°, scale 0.5.
-  - The cycle is A-B-C-B at 110 ms a frame.
-- **Motion:**
-  - **Burst.** 8 glints, one per region hue in radar order, fly out along the 8 star angles.
-  - Distance is 70–110 px (seeded jitter), over an 800 ms life.
-  - Scale shrinks from 1 to 0.3 on an ease-out.
-  - Opacity fades from 0.5 of life.
-  - They draw *behind* the card they burst from.
-- **Minimum size.** 8 px.
-- **Never:**
-  - fired by an answer
-  - burst inside The Still Water or The Commons
-  - drawn over body text
-  - used as a bullet point in data views
+- **Subject.** A thin 4-point sparkle with concave sides, as in the reference's small gold stars. It is also the dot pattern on Lumi's collar.
+- **Silhouette (24-unit box).** `M12 0 Q13 11 24 12 Q13 13 12 24 Q11 13 0 12 Q11 11 12 0Z`, slimmer than v1. It is often paired with one or two gold dots of radius 0.8 nearby.
+- **Colours.** `gold` fill with a `gold-line` line at 20 px and above. It is gold for every region; sparkles no longer carry region colours.
+- **Frames.** Unchanged: A upright, B rotated 22° at 0.78, C rotated 45° at 0.5, cycling A-B-C-B at 110 ms.
+- **Burst.** Unchanged, except that all 8 sparkles are gold. Half of them are replaced by small gold dots, which reads softer.
+- **Never:** fired by an answer, burst in The Still Water or The Commons, or drawn over body text.
 
 ## S3. Wordmark
 
-- **Subject.** "LBI" in Mitr 600, with the Lumi Star (S1 solid) set as a companion at the top-right of the "I".
-- **Silhouette:**
-  - **Star size:** its height is 0.62 × the cap height.
-  - **Star position:** its centre sits on the cap line, with its left point touching the right side bearing of the "I".
-  - **Tracking:** −1 %.
+- **Subject.** "LBI" in Cormorant Garamond 600, with the S1 Gilt star at the top-right of the "I".
 - **Lockups:**
-  - **Stacked:** "LBI" over the full name, set in Mitr 500 at 0.26 × the "LBI" size.
-  - **Inline:** the Star (at 1.15 × the cap height) then the full name, used in the app header.
-- **Language.** The full name is locale-specific ("Life Balance Index" or "ดัชนีสมดุลชีวิต"), never both in one lockup. Thai lockups get a line height of 1.6 so the upper vowel and tone marks clear the line above.
-- **Clear space.** One star-width on every side.
-- **Minimum size.** "LBI" cap height of 14 px.
-- **Never:** letter-by-letter animation of "LBI", or outlined text.
+  - **Stacked:** "LBI" over the full name (in Cormorant 500, or Trirong 500 for "ดัชนีสมดุลชีวิต") at 0.3 × the "LBI" size.
+  - **Inline:** the star then the name, used in the app header.
+  - Language-specific, never both scripts in one lockup.
+- **Colour.** `label` for the letters.
+- **Clear space.** One star-width.
+- **Minimum size.** 14 px cap height.
 
-## S4. Lumi head, neutral front (the reference for S5–S7)
+## S4–S7. Lumi
 
-These anchors are taken from `assets/lumi_current_design/warm.png`, `full_body.png` and the other portraits. Where the portraits disagree, the majority wins, and the disagreement is noted.
+**Status: redraw in Sage & Gilt line art, draft for owner approval, 2026-09-23.** The owner chose the redraw. She is made the same way as the emblems (Gemini, prompts in [`gemini-prompts-lumi.md`](gemini-prompts-lumi.md)), with her current portraits as the character reference.
 
-- **Proportions.** The whole figure is **3 heads tall**. The head is 0.92 wide to 1 tall, with a soft pointed chin.
-- **Hair:**
-  - **Shoulder-length.** The ends sit at the shoulder line. Six portraits show this length; `full_body.png` alone shows waist-length, and is treated as drift.
-  - **Colour:** blue-black `#232238`. The lower ends show a `#3E5FC4` under-layer on both sides.
-  - **Fringe:** a side-swept lock falls across **her right brow (the viewer's left)**.
-- **Eyes:**
-  - Large, set 55 % down the head, 22 % of the head height each, with centres 0.34 head-widths apart.
-  - Iris `#C27A2C` (amber), pupil `#3B2217`, and two `diecut` highlights, the upper one larger.
-  - Lashes are a single thick upper lid line in `ink`.
-- **Skin:** `#F3D2BF`. Blush is `#F2A7A0` at 60 % opacity, as two ovals.
-- **Hairpin:**
-  - The Lumi Star (S1 solid), sitting above **her right ear (the viewer's left)**, the same side as her earring in every portrait.
-  - The identity brainstorm said "left ear"; the portraits show otherwise.
-  - The pin is tilted 12° clockwise.
-- **Earring:** a small gold glint (S2) hanging from her right ear. It is only drawn at 96 px head height or more.
-- **Line.** The outer outline is 1.25 % of the figure height in `ink`. Inner lines (fringe, mouth) are half that. There is no cel shading except one skin shade `#E3B29C` under the fringe and the chin.
-- **Minimum size.** The 54 px medallion shows the head only. At 54 px the eyes must be at least 4 px tall and the pin at least 8 px, or the head crop is enlarged.
-- **Never:** swap the pin's side, change the eye colour, or be drawn from the back in the app.
+Her *character* anchors are fixed and still hold:
+- shoulder-length blue-black hair with a cornflower under-layer
+- a side-swept fringe over her right brow
+- amber eyes
+- the Lumi Star hairpin above **her right ear (the viewer's left)**
+- a high, closed mandarin collar with gold sparkle dots and a gold toggle
+- a knee-length cornflower coat over white trousers and boots
+- six expressions (`warm`, `curious`, `encouraging`, `pleased`, `gentle`, `delighted`) that change on screen changes only, never on answers, with no sad or worried state
+- five poses (`idle`, `point`, `wave`, `read`, `cheer`)
 
-## S5. Lumi expression parts
+### How she looks in Sage & Gilt
 
-The six states from `docs/lumi/` become brow, eye and mouth swaps on the same S4 head:
+- **Style.** The same line art as the emblems: flat fills, fine outlines slightly darker than each fill (never black), a few thin inner lines for hair strands and fabric folds, and at most a very soft gradient. Her proportions stay semi-realistic, as in the current portraits, not chibi.
+- **Colours:**
 
-| State | Brows | Eyes | Mouth | Extra |
-|---|---|---|---|---|
-| `warm` | relaxed arcs | open, lids lowered 15 % | closed smile | none |
-| `curious` | her left brow raised | wide open | small neutral line | head tilts 6° |
-| `encouraging` | lifted in the middle | open | open smile | none |
-| `pleased` | relaxed | closed happy arcs | wide closed smile | none |
-| `gentle` | inner ends raised slightly | half-lidded, looking down | small soft line | blush at 40 % |
-| `delighted` | high arcs | closed happy arcs | open laugh | 3 gold glints around the head |
+  | Part | Colour | Note |
+  |---|---|---|
+  | Hair | deep blue-black `#2E3547`, under-layer muted cornflower `#6E7FA6`, outline `#1F2533` | **The one colour outside the palette.** Blue-black hair is her strongest recognition cue, so it stays |
+  | Coat | sage `#C3CFB6`, shade `#A8B49C`, outline `#6F7D64` | Replaces the cornflower coat |
+  | Collar trim, toggle, cuffs, sparkle dots | gold `#F0D8A8` / `#D9B77A`, outline `#A88752` | |
+  | Trousers, boots | cream `#FBF8F1` with gold-line outline | |
+  | Skin | warm light `#F6E3D3`, outline `#C9A58C` | Soft blush only on `delighted` and `gentle` |
+  | Eyes | amber `#C8923E` | |
+  | Hairpin | the S1 star in gold | Above **her right ear (the viewer's left)**, tilted 12° clockwise |
 
-- **Motion.** A part change is a 160 ms cross-fade.
-- **When the state changes.** Only on a *screen* change, never in response to an answer (non-negotiable 2). `gentle` holds for all of The Still Water.
-- **Never:** a sad, worried or disappointed state. Lumi does not react to how someone is doing.
+- **Background.** Cream `#FBF8F1`, plain, with no scene. The app places her on its own surfaces.
+- **Two framings.** A bust portrait (head and shoulders, collar visible) for the six expressions, and a full figure for the five poses. Each set shares one camera, so swapping images never jumps.
+- **Minimum size.** The 54 px medallion uses a head crop of the bust. At 54 px the eyes must stay at least 4 px tall and the pin at least 8 px; if they don't, the crop is tightened.
+- **Never:** swap the pin's side, change the eye or hair colour, add a sad or worried face, add text, or give her a background scene.
 
-## S6. Lumi poses
+Until the redraw is approved, the app keeps `assets/lumi.png`.
 
-- **Poses:**
-  - `idle`: arms relaxed.
-  - `point`: her right arm is raised, pointing at the ring.
-  - `wave`: used in the prologue.
-  - `read`: she holds a small card, used for the recap.
-  - `cheer`: both arms up. Used only at the end of the journey.
-- **How arms are built.** Arms are separate parts pivoting at the shoulder. Each pose swaps the forearm and hand, with no IK.
-- **Motion:**
-  - **Idle bob:** translateY 0 → −2 px, sine, over 2.4 s.
-  - **Blink:** 110 ms, every 3.2–6 s (seeded).
-  - **Pin glint:** the S2 frames play over the pin once every 9 s.
-  - **Pose change:** a 120 ms swap with a 1-frame squash (scaleY 0.97).
-- **Reduced motion.** No bob and no pin glint. The blink stays, because it is too small to trigger vestibular symptoms.
-- **Never:** jumping or spinning, or any pose held over a question item.
+## S8. Region emblems (new subjects)
 
-## S7. Lumi costume and region accent
+Each emblem is a single illustration in a 200-unit square with no frame, like the reference tiles. It follows these rules:
+- Sage for living and natural things, gold for made things and light.
+- One gold accent (a halo arc or sparkles) per emblem at most.
+- Labels are set in the app as text below the image, never drawn into it, so they stay bilingual and accessible.
 
-- **Jacket:**
-  - Knee-length and `cornflower`.
-  - A **high mandarin collar**, closed, with a `gold` edge and three gold glints on each side.
-  - A gold toggle clasp at the throat.
-  - Bell sleeves lined in `diecut`, with gold trim.
-- **Under the jacket:** `diecut` trousers and white boots. The trousers replace the portraits' short skirt; the kit's own general-audience rule already asked for this.
-- **Belt:** `ink`, with an S1 buckle.
-- **Region accent.** A **sash** tied at her left hip, with both ends hanging, filled with the current region `hue`. On quiet surfaces it is `cornflower`.
-  - The plan said "scarf". A scarf would cover the collar, which is one of her anchors, so it is a sash instead.
-- **Never:** an open collar, bare legs, or any region colour on the jacket itself.
+The subjects are **ours, not the reference's**. Where the reference drew scales, a rose and a lotus-with-flame, LBI's regions get their own.
 
-## S8. Region emblems
+| # | Region · aspect | Subject | Sage parts | Gold parts | Why this subject |
+|---|---|---|---|---|---|
+| S8.1 | The Market · finance | A woven market basket holding a few coins and a sprig of rice | basket weave, rice stalk leaves | coins, rice grains | The region is "what you have meets what it costs": an everyday basket, not wealth |
+| S8.2 | The Highlands · physical | Two soft mountain peaks with a winding path to the top and a rising sun | peaks, grass tufts | path, sun, halo arc | The body as a climb you take at your own pace |
+| S8.3 | The Still Water · mental | A lotus opening on a lily pad over three calm ripples | lily pad, ripples | petals, two sparkles | Calm without religious fire. The lotus is local and gentle |
+| S8.4 | The Commons · relationships | Two teacups side by side on a small table, their steam curling into one | table, saucers | cups, steam | Being together, not romance (the rose and hands of the reference read as dating) |
+| S8.5 | The Workshop · personalGoals | A clay pot half-made on a potter's wheel, with a small tool beside it | wheel base, tool handle | clay pot, tool blade | Goals as something you shape by hand, still unfinished |
+| S8.6 | The Crossroads · socialContribution | A wooden signpost with two arms and a lantern hanging from it, lit | post, grass | arms, lantern, glow | Lighting the way for others |
+| S8.7 | The Wildwood · environment | A broad tree with visible roots, a fern at its base and two falling leaves, inside a thin circle | canopy, fern, circle | two leaves, sun dapples | The living world around you |
+| S8.8 | The Lookout · humanityFuture | A small telescope on a tripod on a hill, pointed at three sparkles | hill, tube body | tube bands, lens, tripod, sparkles | Looking ahead. It replaces the old 5-point star motif |
 
-**Rule.** Each emblem is **the shipped `motif` path** from `views/journey.js`, stroked in `ink` at 2 units on its 24-unit grid with round caps and joins, centred on a disc of the region `hue`. The disc's radius is 12 on the 24-unit grid, and the whole emblem sits inside an S9 sticker frame.
+- **The ring and tab icons.** They keep the shipped one-line `motif` paths for now; a 24 px illustration would turn to mud. After the emblems are approved, each motif is redrawn as a single-line simplification of its new subject. The Still Water's "Wi-Fi" ripples and The Commons' "face" go away then.
+- **Minimum size.** 64 px for the illustration. Below that, use the line motif.
+- **Never:**
+  - region subjects mixed
+  - people's faces
+  - text inside the image
+  - a sad or dark scene (The Still Water and The Commons especially)
 
-Reusing the motifs means the ring, the tab icons and the stickers share one drawing.
+## S9. Illustration tile (replaces the sticker frame)
 
-| Region | Aspect | Emblem | `hue` fill | `deep` text | deep on paper | ink on fill |
-|---|---|---|---|---|---|---|
-| The Market | finance | stacked coins | `#d9a441` | `#8A5A12` | 5.43 | 6.34 |
-| The Highlands | physical | twin peaks | `#3fa796` | `#1F6B5E` | 5.80 | 4.87 |
-| The Still Water | mental | ripples | `#5b8dd9` | `#2F5DA8` | 5.93 | 4.25 |
-| The Commons | relationships | two people | `#d9738f` | `#A83A5C` | 5.63 | 4.62 |
-| The Workshop | personalGoals | ladder | `#e08a3c` | `#9A4E12` | 5.55 | 5.34 |
-| The Crossroads | socialContribution | signpost | `#8d6fd1` | `#5E43A6` | 6.81 | 3.62 |
-| The Wildwood | environment | tree | `#2e9e5b` | `#1D6B3C` | 5.98 | 4.18 |
-| The Lookout | humanityFuture | **telescope** (changed) | `#7F88D6` (lightened from `#5a63b8`) | `#3D4596` | 7.74 | 4.34 |
-
-- **Contrast.** The ratios in the table were computed against `paper` `#F7F5F0`, as WCAG relative luminance.
-- **One change to a shipped motif.** The Lookout's motif is currently a 5-point star over a horizon. With stars now belonging to the mark and the glints, it would read as "the star region", so it becomes a telescope on the same horizon line. Proposed path: `M2 20 L22 20 M6 13 L17 7 L19 10.5 L8 16.5 Z M12 14 L10 20 M12 14 L15 20`. This changes the ring too, and only needs owner approval.
-- **Minimum size.** 20 px. Below that, the disc only.
-- **For the owner (seen on the style tile).** Two shipped motifs misread as stickers:
-  - The Still Water's ripples read as a Wi-Fi icon.
-  - The Commons' two people read as a face.
-  - They are unchanged here, because they also draw the ring. Redrawing them would be a separate motif decision, like the telescope.
-- **Never:** emblems re-drawn per surface, or a hue used for text.
-
-## S9. Sticker frame
-
-- **Layers, from outside in:**
-  1. a flat shadow
-  2. a `diecut` border
-  3. an `ink` outline
-  4. the content
-- **Sizes (at a 64 px sticker):**
-  - Outline: 2.5 px.
-  - Border: 4 px.
-  - Shadow: `ink` at 15 %, 2 px down, with no blur.
-- **Scaling:**
-  - The outline is 3.9 % of the size, clamped between 1.5 and 4 px.
-  - The border is 6.25 %, clamped between 2 and 12 px.
-  - The shadow offset is 3 %, clamped between 1 and 6 px.
-  - At 32 px or smaller there is no shadow.
-- **Radius.** Round stickers are circles. Card stickers use 14 px on playful surfaces and 6 px on data surfaces.
-- **Never:** a gradient, a blurred shadow, or a double outline.
+- **Layout.** The illustration on `cream`, with no border and no shadow, and a label beneath it in Cormorant or Trirong `label`, like the reference.
+- **Surfaces:**
+  - On loud surfaces (chapter openings, endings) the tile sits on the region `wash`.
+  - On quiet surfaces it sits on `paper`.
+  - Cards around tiles use a 1 px `sage` border and a 12 px radius, with no shadow.
+- **Never:** a gradient behind the illustration, a drop shadow, or an outline around the illustration.
 
 ## S10. Answer scale
 
-This is the most constrained symbol: it sits on the instrument items.
-
-- **Subject.** The existing `.radio-option` labels in `views/instrument-forms.js`, with every option's published text visible.
-- **Silhouette.** All options are **the same size and weight**. The identity brainstorm suggested "growth per step"; that is rejected here, because size by value is a value-valent encoding.
-- **Colours:**
-  - Unselected: `diecut` fill, `ink` 1.5 px outline, `ink` text.
-  - Selected: `ink` fill with `diecut` text.
-  - No option is ever tinted by its value (no red-to-green ramp), and no region hue appears inside the scale.
-  - Focus: a 2 px `cornflower` ring, offset by 2 px.
-- **Order and direction.** As published by each instrument. `fix/likert-direction` (#67) owns this, not the identity.
-- **Motion.** The neutral settle: on tap, a translateY of 1 px over 90 ms and back, **identical for every option**. The ring sub-step is the only other feedback.
-- **Minimum target.** 44 × 44 px.
-- **Never:**
-  - sparkle, burst, emoji, colour ramp or Lumi reaction tied to a value
-  - icon-only options
-  - hover drift
+The rules are unchanged from v1: equal size, no colour by value, one identical settle, published text visible, and a 44 px minimum target. Only the colours change:
+- **Unselected:** `cream` fill, 1.5 px `sage` border, ink text.
+- **Selected:** `sage-deep` fill with `cream` text (6.02:1).
+- **Focus:** a 2 px `gold-line` ring, offset by 2 px.

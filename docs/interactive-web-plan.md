@@ -123,6 +123,19 @@ In LBI, the serious content is the instrument item.
   All five are fixed, each with a test.
 - **Exit criteria:** tests and lint green; `motion.js` coverage 96.5 % (the target is 80 %); no visible change apart from the switch. Phase 3 is next.
 
+**Phase 3, first release (2026-09-24): built, in v90 (2.38.0).**
+- **Region lights up, recap cards, neutral settle.** `views/moments.js` holds the three scenes; `views/onboarding.js` hands them the pieces. Each goes through `runScene`, so the page is always the finished state.
+- **The ring's sub-step.** It now moves one step per item answered. The settle's motion depends only on the distance moved. `tests/moments-e2e.mjs` checks that the lowest and highest answers give the same motion, frame by frame, under a hand-driven clock.
+- **Fixed on the way:** the ending screen read one region fewer than the screen before it.
+- **Tab icons (an owner call made without asking; easy to change):**
+  - Overview → the Lumi Star
+  - Weekly Review → The Lookout
+  - Goals → The Workshop
+  - Side by Side → The Commons
+
+  All four use the one-line motifs, per symbols.md S8.
+- **Still to check:** TalkBack and VoiceOver need the owner's phone. The second release (Lumi caret, glint titles) and the third (tug-the-ring) are next.
+
 ## 7. Decisions (approved 2026-09-23)
 
 | # | Question | Decision |

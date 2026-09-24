@@ -33,6 +33,7 @@ import { applyDraft, saveDraft, clearDraft, instrumentsIn } from "../draft.js";
 import { savingsRateFrom } from "../scoring.js";
 import { CHAPTERS, allScreens } from "./journey.js";
 import { ringMarkup, paintRing } from "./journey-ring.js";
+import { playEnding, settleRing, isQuietChapter } from "./moments.js";
 import { SOURCES } from "../benchmarks.js";
 import { INSTRUMENTS } from "../surveys.js";
 import { t, tp } from "../i18n.js";
@@ -141,6 +142,10 @@ function endingMarkup(chapterIndex) {
 export function renderOnboarding(containerId, onComplete) {
   const container = document.getElementById(containerId);
   if (!container) return;
+  // Motion is decoration around the assessment. If a scene throws, the page
+  // is already in its finished state (runScene renders it again), so the
+  // defect goes to the console and the reader carries on.
+  const reportMotion = (err) => console.error("Journey motion failed:", err);
 
   const screens = buildScreens();
   const total = screens.length;
@@ -255,25 +260,70 @@ export function renderOnboarding(containerId, onComplete) {
   //
   // `within` is the fraction of THIS chapter's screens the reader has passed,
   // counting the ending as one of them. Screens completed, never score.
+  //
+  // Within an instrument screen the arc also moves one sub-step per item
+  // answered: the count of answered items, never which point was chosen.
+  const itemsDone = (page) => {
+    if (!page || !page.dataset.instrument) return 0;
+    const items = page.querySelectorAll("fieldset.survey-question");
+    if (!items.length) return 0;
+    const answered = page.querySelectorAll('fieldset.survey-question input[type="radio"]:checked').length;
+    return Math.min(1, answered / items.length);
+  };
+
   const chapterProgress = (index) => {
     const screen = screens[index];
     if (screen.chapter < 0) return { chapter: -1, within: 0, endsChapter: false };
     const ofChapter = screens.filter(s => s.chapter === screen.chapter && !isSkippedScreen(s));
     const position = ofChapter.indexOf(screen);
-    // The ending screen counts its own chapter as finished: the arc fills to
+    // The ENDING screen counts its own chapter as finished: the arc fills to
     // the brim and the count increments there, at the same moment the card in
-    // front of it says the region is complete. Anywhere else those three
-    // disagreed with each other.
-    const passed = position < 0 ? 0 : position + (screen.endsChapter ? 1 : 0);
+    // front of it says the region is complete. This used to key off the last
+    // CONTENT screen's `endsChapter` flag, so the count reached 1 / 8 one screen
+    // early and fell back to 0 / 8 on the card headed "Region complete".
+    const isEnding = screen.kind === "ending";
+    const passed = position < 0 ? 0 : position + (isEnding ? 1 : itemsDone(pageEl(index)));
     return {
       chapter: screen.chapter,
       within: passed / ofChapter.length,
-      endsChapter: !!screen.endsChapter
+      endsChapter: isEnding
     };
   };
 
-  const updateRing = (index) => {
+  const ringMarker = () => container.querySelector("#ring-marker");
+  const markerAt = () => {
+    const m = ringMarker();
+    return m ? [Number(m.getAttribute("cx")), Number(m.getAttribute("cy"))] : [0, 0];
+  };
+
+  // Paints the ring in its new place at once (the finished state), then lets
+  // the marker settle there. `motion` is false on the first paint.
+  const updateRing = (index, { motion = true } = {}) => {
+    const [x0, y0] = markerAt();
     paintRing(container, { ...chapterProgress(index), chapters: CHAPTERS });
+    const [x1, y1] = markerAt();
+    const shift = [x0 - x1, y0 - y1];
+    if (motion) settleRing({ marker: ringMarker(), shift }).catch(reportMotion);
+    return shift;
+  };
+
+  // A chapter ending reached by moving forward: the region lights up and the
+  // recap is dealt. Arriving by Back, or on a resume, it is simply there.
+  const playChapterEnding = (index, shift) => {
+    const chapterIndex = screens[index].chapter;
+    const page = pageEl(index);
+    playEnding({
+      draw: () => fillRecap(chapterIndex),
+      pieces: () => ({
+        lit: container.querySelector(`#ring-lit-${chapterIndex}`),
+        marker: ringMarker(),
+        shift,
+        cards: page.querySelectorAll(".chapter-recap li"),
+        fact: page.querySelector(".chapter-fact"),
+        layer: container.querySelector(".ring-burst")
+      }),
+      quiet: isQuietChapter(CHAPTERS[chapterIndex])
+    }).catch(reportMotion);
   };
 
   // --- recap -------------------------------------------------------------
@@ -349,12 +399,15 @@ export function renderOnboarding(containerId, onComplete) {
   // nothing. The heading is the screen's name, so landing there announces it.
   // Not on the first paint: a page that grabs focus on load is its own problem.
   const showScreen = (index, { moveFocus = true } = {}) => {
+    const forward = moveFocus && index > currentScreen;
     currentScreen = index;
     screens.forEach((_, i) => pageEl(i).classList.toggle("d-none", i !== index));
     const page = pageEl(index);
     syncReveal(page);
-    if (screens[index].kind === "ending") fillRecap(screens[index].chapter);
-    updateRing(index);
+    const isEnding = screens[index].kind === "ending";
+    if (isEnding) fillRecap(screens[index].chapter);
+    const shift = updateRing(index, { motion: moveFocus && !(isEnding && forward) });
+    if (isEnding && forward) playChapterEnding(index, shift);
     paintWash(index);
     scrollIntoViewGently(container, { block: "start" });
     const heading = moveFocus && page.querySelector("h3");
@@ -429,6 +482,8 @@ export function renderOnboarding(containerId, onComplete) {
     // An answer is what advances the reveal, so this runs on every radio
     // change rather than only on the one that happens to be live.
     syncReveal(e.target.closest(".survey-page"));
+    // ...and the ring's sub-step: the same settle whichever point was chosen.
+    if (match) updateRing(currentScreen);
   });
 
   // --- draft restore, then autosave --------------------------------------

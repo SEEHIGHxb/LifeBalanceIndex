@@ -16,12 +16,13 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=89";
+} from "./ui.js?v=90";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang, graphemes } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
 import { syncReduceMotionAttr } from "./motion.js";
 import { disposeMotion } from "./views/motion-mount.js";
+import { hopTabIcon } from "./views/moments.js";
 
 const TOAST_DURATION_MS = 1600;
 const REWARD_DURATION_MS = 1900;
@@ -98,10 +99,15 @@ function applyChromeTranslations() {
   };
   setText("skip-link", t("Skip to main content"));
   setText("btn-profile", t("Profile"));
-  setText("tab-dashboard", t("Overview"));
-  setText("tab-review", t("Weekly Review"));
-  setText("tab-quests", t("Goals"));
-  setText("tab-leaderboard", t("Side by Side"));
+  // The label span only: the button also holds its icon.
+  const setTabLabel = (tab, text) => {
+    const el = document.querySelector(`#tab-${tab} .tab-label`);
+    if (el) el.textContent = text;
+  };
+  setTabLabel("dashboard", t("Overview"));
+  setTabLabel("review", t("Weekly Review"));
+  setTabLabel("quests", t("Goals"));
+  setTabLabel("leaderboard", t("Side by Side"));
   setText("footer-privacy", t("Privacy & Data"));
   setText("footer-methodology", t("Methodology"));
   setText("footer-source", t("Source code & license"));
@@ -320,6 +326,19 @@ function renderActiveTab() {
 
   announceRoute(route);
   updateAssistantBubble();
+  hopChosenTab(activeTab);
+}
+
+// The chosen tab's icon hops once, and only when the tab actually changed:
+// not on first paint, not on a re-render of the same tab. Last, after the
+// view has rendered, so the view's own mount cannot cut it short.
+let lastHoppedTab = null;
+function hopChosenTab(activeTab) {
+  const previous = lastHoppedTab;
+  lastHoppedTab = activeTab;
+  if (!activeTab || !previous || previous === activeTab) return;
+  const icon = document.querySelector(`#tab-${activeTab} .tab-icon`);
+  if (icon) hopTabIcon(icon).catch(err => console.error("Tab hop failed:", err));
 }
 
 // Announce the current view to screen readers on navigation (finding #12).

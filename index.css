@@ -359,6 +359,24 @@ header {
   font-weight: 600;
 }
 
+/* Tab icons: the one-line motifs (symbols.md S8 keeps line art below 64 px).
+ * Overview is the Lumi Star; the others borrow the region nearest in meaning. */
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tab-icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 /* Cards / panels */
 .card {
   background: var(--color-card-bg);
@@ -400,6 +418,7 @@ header {
   }
   .tab-btn {
     flex: 1 1 auto;
+    justify-content: center;
     text-align: center;
     padding: 8px 10px;
   }
@@ -1776,8 +1795,47 @@ header {
   stroke-linecap: butt;
   transition: stroke-dashoffset 0.45s ease;
 }
+/* No cx/cy transition: views/moments.js springs the marker to its new place
+ * (the neutral settle), and a transition underneath would move it twice. */
 .ring-marker {
-  transition: cx 0.45s ease, cy 0.45s ease, fill 0.45s ease;
+  transition: fill 0.45s ease;
+}
+/* The burst: eight gold particles from the ring's centre when a region ends
+ * outside the quiet zones (symbols.md S2). Parked invisible, so one stranded by
+ * an interrupted scene cannot show. */
+.ring-burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.ring-particle {
+  position: absolute;
+  left: -7px;
+  top: -7px;
+  width: 14px;
+  height: 14px;
+  opacity: 0;
+}
+.ring-particle-glint svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: #D9B77A;
+  stroke: #A88752;
+  stroke-width: 0.8;
+}
+.ring-particle-dot::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #D9B77A;
 }
 .journey-ring-centre {
   position: absolute;
@@ -2852,6 +2910,9 @@ html[data-reduce-motion] .survey-page[data-instrument] fieldset.survey-question 
 
   .tab-btn {
     display: flex;
+    /* Icon above label: the bar is a thumb target, the icon is its landmark. */
+    flex-direction: column;
+    gap: 2px;
     align-items: center;
     justify-content: center;
     text-align: center;
@@ -2866,7 +2927,7 @@ html[data-reduce-motion] .survey-page[data-instrument] fieldset.survey-question 
     overflow-wrap: anywhere;
     line-height: 1.15;
     padding: 6px 2px;
-    min-height: 54px;
+    min-height: 58px;
     margin-bottom: 0;
     border-bottom: none;
   }
@@ -2883,7 +2944,7 @@ html[data-reduce-motion] .survey-page[data-instrument] fieldset.survey-question 
   .assistant-wrapper {
     left: 12px;
     right: 12px;
-    bottom: calc(64px + env(safe-area-inset-bottom));
+    bottom: calc(68px + env(safe-area-inset-bottom));
   }
 
   .speech-bubble { max-width: none; font-size: var(--text-base); }

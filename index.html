@@ -33,8 +33,8 @@
        vendored under assets/fonts. Self-hosting removes the round-trip to
        Google on every cold load, makes the PWA genuinely offline-capable,
        and means no visitor IP is disclosed to a third party. -->
-  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=89">
-  <link rel="stylesheet" href="./index.css?v=89">
+  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=90">
+  <link rel="stylesheet" href="./index.css?v=90">
 </head>
 <body>
   <!-- Skip link (WCAG 2.4.1). href is #main-view for the semantics and for the
@@ -61,10 +61,10 @@
 
     <!-- Navigation Tab container -->
     <div id="nav-container" class="nav-tabs d-none" role="tablist" aria-label="Main navigation">
-      <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="main-view" tabindex="0">Overview</button>
-      <button class="tab-btn" id="tab-review" role="tab" aria-selected="false" aria-controls="main-view" tabindex="-1">Weekly Review</button>
-      <button class="tab-btn" id="tab-quests" role="tab" aria-selected="false" aria-controls="main-view" tabindex="-1">Goals</button>
-      <button class="tab-btn" id="tab-leaderboard" role="tab" aria-selected="false" aria-controls="main-view" tabindex="-1">Side by Side</button>
+      <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="main-view" tabindex="0"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 1.5 L13.4 8.6 L17.7 6.3 L15.4 10.6 L22.5 12 L15.4 13.4 L17.7 17.7 L13.4 15.4 L12 22.5 L10.6 15.4 L6.3 17.7 L8.6 13.4 L1.5 12 L8.6 10.6 L6.3 6.3 L10.6 8.6 Z"/></svg><span class="tab-label">Overview</span></button>
+      <button class="tab-btn" id="tab-review" role="tab" aria-selected="false" aria-controls="main-view" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 20 L22 20 M12 3 L13.8 8.2 L19 8.2 L14.8 11.6 L16.4 17 L12 13.8 L7.6 17 L9.2 11.6 L5 8.2 L10.2 8.2 Z"/></svg><span class="tab-label">Weekly Review</span></button>
+      <button class="tab-btn" id="tab-quests" role="tab" aria-selected="false" aria-controls="main-view" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 3 L8 21 M16 3 L16 21 M8 8 L16 8 M8 13 L16 13 M8 18 L16 18"/></svg><span class="tab-label">Goals</span></button>
+      <button class="tab-btn" id="tab-leaderboard" role="tab" aria-selected="false" aria-controls="main-view" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 9a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5 M16 9a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5 M3 20c0-3.5 2.2-6 5-6s5 2.5 5 6 M11 20c0-3.5 2.2-6 5-6s5 2.5 5 6"/></svg><span class="tab-label">Side by Side</span></button>
     </div>
 
     <!-- Main View Mount -->
@@ -85,7 +85,7 @@
         Loading your recommendations…
       </div>
       <div id="assistant-sr" class="sr-only" role="status" aria-live="polite"></div>
-      <img class="assistant-avatar" id="assistant-lumi-avatar" src="./assets/lumi.png?v=89" role="button" tabindex="0" aria-label="Guidance assistant" title="Guidance assistant" alt="Guidance assistant" />
+      <img class="assistant-avatar" id="assistant-lumi-avatar" src="./assets/lumi.png?v=90" role="button" tabindex="0" aria-label="Guidance assistant" title="Guidance assistant" alt="Guidance assistant" />
     </div>
 
     <!-- Footer: privacy/source/version must be reachable from the app itself,
@@ -103,6 +103,6 @@
   </div>
 
   <!-- Core Scripts -->
-  <script type="module" src="./app.js?v=89"></script>
+  <script type="module" src="./app.js?v=90"></script>
 </body>
 </html>

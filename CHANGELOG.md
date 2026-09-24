@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `89`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `90`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,38 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.38.0] — 2026-09-24 (APP_VERSION 90)
+
+Phase 3 of the interactive-web plan, first release: the journey moments.
+Everything moves toward markup that is already final, and with reduced motion
+(the device setting or the Profile switch) nothing moves at all.
+
+### Added
+
+- **A region lights up when its chapter ends.** Its arc on the ring brightens,
+  the marker settles onto the arc's end, and eight gold glints burst from the
+  ring. The Still Water and The Commons are quiet zones: no burst there.
+- **The recap is dealt as cards**, one line at a time, and the fact card turns
+  over last. It plays only when you arrive by moving forward; arriving by Back
+  or on a resume, the ending is simply there.
+- **The neutral settle.** The ring now moves one small step per item
+  answered, and its marker springs to the new place. The motion depends only
+  on how many items are answered, never on which point was chosen; a browser
+  check compares the lowest and highest answer frame by frame.
+- **Tab icons.** Overview is the Lumi Star; Weekly Review, Goals and Side by
+  Side borrow the line motifs of The Lookout, The Workshop and The Commons.
+  The chosen tab's icon hops once. On phones the icon sits above the label
+  and the bar is 58 px tall.
+- `views/moments.js` (the scenes) and `tests/moments-e2e.mjs`, a browser check
+  run in CI that drives time by hand, with motion and with reduced motion.
+
+### Fixed
+
+- **The chapter ending showed the region count one lower.** On the card headed
+  "Region complete" the ring read 0 / 8 with its arc two-thirds full, while
+  the screen before it already read 1 / 8. The ending screen now completes
+  its chapter.
 
 ## [2.37.0] — 2026-09-24 (APP_VERSION 89)
 

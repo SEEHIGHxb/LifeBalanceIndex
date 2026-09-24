@@ -60,6 +60,7 @@ export function ringMarkup(chapters) {
         ${segs}
         <circle class="ring-marker" id="ring-marker" cx="${CX}" cy="${CY - R}" r="3.2" />
       </svg>
+      <div class="ring-burst" aria-hidden="true"></div>
       <div class="journey-ring-centre">
         <span class="journey-ring-region" id="ring-region"></span>
         <span class="journey-ring-count" id="ring-count"></span>

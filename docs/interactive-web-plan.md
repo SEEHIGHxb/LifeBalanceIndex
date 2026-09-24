@@ -173,7 +173,17 @@ In LBI, the serious content is the instrument item.
 - **Asset budget:** met and held by `tests/art-set.test.mjs`. `motion.js` is 4.5 KB gzipped (budget 6), the sprites are 4 KB (budget 25), and the largest emblem is 10.6 KB (budget 20).
 - **No layout shift:** the chapter ending measures a layout shift of 0 in `tests/moments-e2e.mjs`.
 
-Phase 5 (spread) is next.
+~~Phase 5 (spread) is next.~~
+
+**Direction change (2026-09-24).** The owner said Phases 3 and 4 went the wrong way. The ask was never to add humanmade-style moments to the old LBI layout. It was to rebuild LBI inside the approved humanmade-style recreation (`hm-recreation-v7`), with that site's layout, navigation, pacing and look as the frame and LBI's content inside it.
+
+The owner confirmed four things:
+- The redesign covers the whole app.
+- The assessment questions are animated too. This replaces the old "items stay plain" rule. The quiet zones still hold.
+- The burger menu replaces the bottom tab bar.
+- The scoring engine is unchanged.
+
+The first prototype of the Landing, three journey questions and Home is in [`prototype/redesign/`](prototype/redesign/README.md). It is waiting for the owner's phone check. Phase 5 is on hold, and the Phase 3–4 code stays live until the redesign replaces it.
 
 ## 7. Decisions (approved 2026-09-23)
 

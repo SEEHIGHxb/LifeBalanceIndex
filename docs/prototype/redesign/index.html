@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LBI Redesign Prototype</title>
+<!--
+  PROTOTYPE, NOT THE APP. The approved recreation (hm-recreation-v7) is the
+  frame; LBI's content is poured into it: the Landing, three questions of the
+  journey, and Home. Nothing here reads or writes the app's saved data, and
+  the Home numbers are a fixed sample. See README.md.
+-->
+<link rel="stylesheet" href="../../../assets/fonts/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="proto.css">
+</head>
+<body>
+
+<!-- Sprite library: the gilt star is assets/sprites.svg#star, redrawn here so
+     the prototype can recolour it; the motifs are views/journey.js's paths. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="round" x="-5%" y="-10%" width="110%" height="120%">
+      <feGaussianBlur stdDeviation="4.5"/>
+      <feComponentTransfer><feFuncA type="linear" slope="6" intercept="-2.5"/></feComponentTransfer>
+    </filter>
+    <filter id="round-s" x="-5%" y="-10%" width="110%" height="120%">
+      <feGaussianBlur stdDeviation="1.1"/>
+      <feComponentTransfer><feFuncA type="linear" slope="6" intercept="-2.5"/></feComponentTransfer>
+    </filter>
+    <filter id="diecut" x="-15%" y="-15%" width="130%" height="130%">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="7" result="grow"/>
+      <feFlood flood-color="#fff"/>
+      <feComposite in2="grow" operator="in" result="border"/>
+      <feMerge><feMergeNode in="border"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <symbol id="g-star" viewBox="0 0 100 100">
+    <path d="M50 3 L55.74 36.14 L71.92 28.08 L63.86 44.26 L97 50 L63.86 55.74 L71.92 71.92 L55.74 63.86 L50 97 L44.26 63.86 L28.08 71.92 L36.14 55.74 L3 50 L36.14 44.26 L28.08 28.08 L44.26 36.14Z" fill="#F0D8A8" stroke="#A88752" stroke-width="3.2" stroke-linejoin="round"/>
+    <path d="M50 50L50 3M50 50L71.92 28.08M50 50L97 50M50 50L71.92 71.92M50 50L50 97M50 50L28.08 71.92M50 50L3 50M50 50L28.08 28.08" stroke="#A88752" stroke-width="1.6" stroke-opacity="0.5" stroke-linecap="round"/>
+    <circle cx="50" cy="50" r="6" fill="#FBF8F1" stroke="#6F7D64" stroke-width="2.4"/>
+  </symbol>
+  <symbol id="g-star-ink" viewBox="0 0 100 100">
+    <path d="M50 3 L55.74 36.14 L71.92 28.08 L63.86 44.26 L97 50 L63.86 55.74 L71.92 71.92 L55.74 63.86 L50 97 L44.26 63.86 L28.08 71.92 L36.14 55.74 L3 50 L36.14 44.26 L28.08 28.08 L44.26 36.14Z" fill="currentColor"/>
+  </symbol>
+</svg>
+
+<nav class="menu" id="menu" aria-label="Main" aria-hidden="true"></nav>
+
+<header class="header" id="header">
+  <button class="burger" id="burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu">
+    <span></span><span></span><span></span>
+  </button>
+  <a class="header__logo" id="headerLogo" href="#/">LIFE BALANCE<small>INDEX</small></a>
+  <div class="navpill" id="navpill"></div>
+  <div class="header__right" id="headerRight">
+    <button class="circlebtn" id="langBtn" type="button"></button>
+    <button class="circlebtn" id="lumiBtn" type="button" aria-disabled="true">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#g-star"/></svg>
+    </button>
+  </div>
+</header>
+
+<div id="page">
+  <main id="screen" tabindex="-1"></main>
+</div>
+
+<p class="proto-flag" id="protoFlag" aria-hidden="true">PROTOTYPE · SAMPLE DATA</p>
+
+<script src="content.js"></script>
+<script src="proto.js"></script>
+</body>
+</html>

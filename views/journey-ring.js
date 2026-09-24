@@ -37,7 +37,11 @@ function arcPath(from, to) {
   return `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${R} ${R} 0 ${large} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
 }
 
-// The static skeleton. Every segment is drawn twice: a dim track that is always
+// The static skeleton. The svg and the centre text sit in .ring-body, the
+// piece tug-the-ring moves (views/tug.js); the burst layer and the tug button
+// stay still. The button is hidden except where the toy is offered.
+//
+// Every segment is drawn twice: a dim track that is always
 // present, and a lit overlay whose dash offset moves from empty to full as the
 // chapter is answered. Painting is then pure attribute updates -- no innerHTML
 // rewriting on a keystroke, which would drop focus out of the input the reader
@@ -56,15 +60,18 @@ export function ringMarkup(chapters) {
 
   return `
     <div class="journey-ring">
-      <svg viewBox="0 0 100 100" class="journey-ring-svg" aria-hidden="true" focusable="false">
-        ${segs}
-        <circle class="ring-marker" id="ring-marker" cx="${CX}" cy="${CY - R}" r="3.2" />
-      </svg>
-      <div class="ring-burst" aria-hidden="true"></div>
-      <div class="journey-ring-centre">
-        <span class="journey-ring-region" id="ring-region"></span>
-        <span class="journey-ring-count" id="ring-count"></span>
+      <div class="ring-body">
+        <svg viewBox="0 0 100 100" class="journey-ring-svg" aria-hidden="true" focusable="false">
+          ${segs}
+          <circle class="ring-marker" id="ring-marker" cx="${CX}" cy="${CY - R}" r="3.2" />
+        </svg>
+        <div class="journey-ring-centre">
+          <span class="journey-ring-region" id="ring-region"></span>
+          <span class="journey-ring-count" id="ring-count"></span>
+        </div>
       </div>
+      <div class="ring-burst" aria-hidden="true"></div>
+      <button type="button" class="ring-tug" hidden aria-label="${t("Tug the ring, or tap it, for a burst of stars")}"></button>
       <p class="sr-only" id="ring-status" role="status" aria-live="polite"></p>
     </div>`;
 }

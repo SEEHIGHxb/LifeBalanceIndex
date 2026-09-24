@@ -142,6 +142,19 @@ In LBI, the serious content is the instrument item.
 - **Screen readers.** The title and the line each have a visually hidden full copy, and the per-letter copy is `aria-hidden`.
 - **Layout.** The caret's stops are measured once when the scene starts, never per frame.
 
+**Phase 3, third release (2026-09-24): built, in v92 (2.40.0).**
+- **Tug-the-ring.** It lives in `views/tug.js`, with its poses and scenes in `views/moments.js`. It follows the drag (rubber band, 60 px reach), snaps past 90 px, and a tap, Enter or Space bursts too.
+- **Where.** Only on the prologue and the final ending. It is never offered under reduced motion.
+- **Pointer handling.** It uses pointer capture on the button, with no global listeners.
+- **Independent review.** It found one high issue: turning the toy off mid-drag left the ring stretched. Fixed, and a test covers it.
+
+**Phase 3 status:** all three releases are built. The exit criteria:
+- **e2e with and without reduced motion:** passes (`tests/moments-e2e.mjs` in CI).
+- **Contrast guards:** hold.
+- **TalkBack/VoiceOver:** still waits on the owner's phone.
+
+Phase 4 (the art set and the ring → radar ceremony) is next.
+
 ## 7. Decisions (approved 2026-09-23)
 
 | # | Question | Decision |

@@ -1306,6 +1306,8 @@ export const TH = {
   "Data & Backup": "ข้อมูลและการสำรอง",
   "Your data lives only in this browser. Export a backup regularly — clearing site data erases it.":
     "ข้อมูลของคุณอยู่ในเบราว์เซอร์นี้เท่านั้น ควรส่งออกสำรองข้อมูลเป็นประจำ — การล้างข้อมูลเว็บไซต์จะลบข้อมูลทิ้ง",
+  // Tug-the-ring (views/tug.js): a toy on the landing and after the last region.
+  "Tug the ring, or tap it, for a burst of stars": "ดึงหรือแตะวงแหวน ให้ดาวกระจาย",
   // The in-app Reduce motion switch (Profile). It can only add reduction.
   "Motion": "การเคลื่อนไหว",
   "Reduce motion": "ลดการเคลื่อนไหว",

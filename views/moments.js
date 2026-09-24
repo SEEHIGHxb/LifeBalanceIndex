@@ -24,12 +24,15 @@
 //   Screen readers get each text once, from a visually hidden copy; the
 //   per-letter copy is aria-hidden, so it is never read out letter by letter.
 //
+// Third release: TUG-THE-RING's poses and scenes (the pointer handling is in
+// views/tug.js).
+//
 // Every scene goes through runScene (render, then park, then play), so the
 // markup on screen is always the finished state and motion only travels to it.
 // The pieces are handed in by the caller rather than looked up here: this file
 // never queries the document, which keeps it testable against the stub.
 
-import { animate, spring, easeStar, linear } from "../motion.js";
+import { animate, spring, easeStar, linear, isReduced } from "../motion.js";
 import { runScene, writeMotionStyle } from "./motion-mount.js";
 import { graphemes } from "../i18n.js";
 import { escapeHtml } from "./helpers.js";
@@ -439,5 +442,75 @@ export function playOpening({ draw, pieces }) {
     park: (scope) => parkOpening(p, scope),
     play: (scope) => playOpeningPieces(p, scope),
     reduced: "end"
+  });
+}
+
+// --- tug-the-ring (third release) ---------------------------------------------------
+
+const TUG_STRETCH = 0.1;
+const TUG_THIN = 0.05;
+const TUG_REACH_PX = 60;
+const TAP_MS = 260;
+
+// The ring under tension: moved by (x, y), stretched along the pull and thinned
+// across it, like a band. Follows the finger directly (no time involved), and
+// never under reduced motion.
+export function poseTug(body, [x, y]) {
+  if (isReduced()) return;
+  const d = Math.hypot(x, y);
+  if (d < 0.01) {
+    writeMotionStyle(body, { transform: "" });
+    return;
+  }
+  const theta = r3(Math.atan2(y, x));
+  const k = d / TUG_REACH_PX;
+  writeMotionStyle(body, {
+    transform: `translate(${r2(x)}px, ${r2(y)}px) rotate(${theta}rad) scale(${r3(1 + TUG_STRETCH * k)}, ${r3(1 - TUG_THIN * k)}) rotate(${-theta}rad)`
+  });
+}
+
+function burstScene({ layer, withBurst, park, play, body }) {
+  let parts = [];
+  const removeParts = () => { for (const part of parts) part.el.remove(); parts = []; };
+  return runScene({
+    render: () => land([body]),
+    park(scope) {
+      park();
+      parts = withBurst && layer ? makeParticles(layer) : [];
+      onAbort(scope, () => { land([body]); removeParts(); });
+    },
+    play: async (scope) => {
+      const results = await Promise.all([play(scope.signal), burst(parts, scope.signal)]);
+      removeParts();
+      const ok = results.every(Boolean);
+      if (ok) land([body]);
+      return ok;
+    },
+    reduced: "end"
+  });
+}
+
+// Let go: the ring springs home from where the finger left it, bursting if
+// it was pulled past the line.
+export function releaseTug({ body, from, layer, burst: withBurst }) {
+  return burstScene({
+    body, layer, withBurst,
+    park: () => poseTug(body, from),
+    play: (signal) => spring({ from, to: [0, 0], update: (xy) => poseTug(body, xy), signal, reduced: "end" })
+  });
+}
+
+// A tap (or Enter, or Space): the ring dips and springs back, and bursts.
+export function tapTug({ body, layer }) {
+  return burstScene({
+    body, layer, withBurst: true,
+    park: () => {},
+    play: (signal) => animate({
+      duration: TAP_MS, ease: linear, signal, reduced: "end",
+      update: (p) => {
+        const k = p < 0.35 ? 1 - 0.08 * easeOut(p / 0.35) : 0.92 + 0.08 * easeOutBack((p - 0.35) / 0.65);
+        writeMotionStyle(body, { transform: `scale(${r3(k)})` });
+      }
+    })
   });
 }

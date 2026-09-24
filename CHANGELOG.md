@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `91`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `92`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.40.0] — 2026-09-24 (APP_VERSION 92)
+
+Phase 3 of the interactive-web plan, third release: tug-the-ring. With it,
+Phase 3's three releases are all in.
+
+### Added
+
+- **Tug-the-ring.** On the first onboarding screen and on the final "every
+  region lit" ending, the ring can be dragged: it follows like a rubber band
+  (never more than 60 px), and past 90 px of finger travel it lets go, bursts
+  eight gold glints and springs home. Let go sooner and it just goes home. A
+  tap, Enter or Space bursts too.
+- It is never offered on a screen with questions, and not at all with reduced
+  motion, where a button that did nothing would only be in the way. Its label
+  says what it is, in English and Thai.
 
 ## [2.39.0] — 2026-09-24 (APP_VERSION 91)
 

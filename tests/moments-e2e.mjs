@@ -8,6 +8,8 @@
 // therefore read at an exact frame, which is what lets the neutral settle be
 // compared frame for frame across two different answers.
 //
+//   0. Tug-the-ring on the landing: a real drag past the line bursts eight
+//      glints and the ring springs home; the next screen does not offer it.
 //   1. The neutral settle: choosing the lowest or the highest point on the
 //      first item moves the ring marker identically, frame for frame.
 //   2. The Market's ending: the ring reads 1 / 8, eight particles burst, the
@@ -16,7 +18,8 @@
 //      title is spelled, the line typed and the caret home, nothing is left
 //      parked.
 //   4. The Still Water's ending: a quiet zone, so no burst at all.
-//   5. Reduced motion (the device setting): not one style is written on the
+//   5. Reduced motion (the device setting): no tug is offered, not one style
+//      is written on the
 //      ring, the region banner, the recap, the fact or a tab icon, and no
 //      frame is ever asked for.
 //
@@ -148,6 +151,35 @@ try {
   problems.push(`settle: ${err.message}`);
 }
 
+// --- 0. tug-the-ring on the landing ---------------------------------------------
+try {
+  const { context, page } = await openJourney(browser);
+  const box = await page.locator(".ring-tug").boundingBox();
+  if (!box) throw new Error("the tug is not offered on the landing");
+  const [cx, cy] = [box.x + box.width / 2, box.y + box.height / 2];
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  await page.mouse.move(cx + 120, cy, { steps: 8 });
+  await page.mouse.up();
+  const snapped = await page.evaluate(() => ({
+    parts: document.querySelectorAll(".ring-particle").length,
+    body: document.querySelector(".ring-body").style.transform
+  }));
+  if (snapped.parts !== 8) problems.push(`tug: ${snapped.parts} particles past the line, not 8`);
+  if (!snapped.body) problems.push("tug: the ring did not follow the drag");
+  await advance(page, 2000);
+  const home = await page.evaluate(() => ({
+    parts: document.querySelectorAll(".ring-particle").length,
+    body: document.querySelector(".ring-body").getAttribute("style") || ""
+  }));
+  if (home.parts || home.body) problems.push(`tug: not home after 2 s (${home.parts} particles, style "${home.body}")`);
+  await next(page);
+  if (await page.locator(".ring-tug").isVisible()) problems.push("tug: offered on a screen with instrument items nearby");
+  await context.close();
+} catch (err) {
+  problems.push(`tug: ${err.message}`);
+}
+
 // --- 2 and 3. the endings, with motion -----------------------------------------------
 try {
   const { context, page } = await openJourney(browser);
@@ -197,6 +229,7 @@ try {
 // --- 4. reduced motion ------------------------------------------------------------------
 try {
   const { context, page } = await openJourney(browser, { reduced: true });
+  if (await page.locator(".ring-tug").isVisible()) problems.push("reduced: the tug is offered with nothing to do");
   await answerAll(page);
   if (!(await walkToEnding(page, 0))) throw new Error("never reached The Market's ending");
   const at = await endingState(page);
@@ -223,4 +256,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the settle ignores the answer, The Market bursts and lands, The Highlands spells its name, The Still Water stays quiet, and reduced motion moves nothing");
+console.log("moments e2e passed: the tug bursts and comes home, the settle ignores the answer, The Market bursts and lands, The Highlands spells its name, The Still Water stays quiet, and reduced motion moves nothing");

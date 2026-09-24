@@ -12,8 +12,9 @@ const { setClock } = await import("../motion.js");
 const { disposeMotion } = await import("../views/motion-mount.js");
 const {
   settleRing, playEnding, playOpening, hopTabIcon, isQuietChapter, QUIET_ASPECTS,
-  glintTitleMarkup, caretLineMarkup
+  glintTitleMarkup, caretLineMarkup, poseTug, releaseTug, tapTug
 } = await import("../views/moments.js");
+const { bindTug, TUG_SNAP_PX } = await import("../views/tug.js");
 const { CHAPTERS } = await import("../views/journey.js");
 const { ringMarkup } = await import("../views/journey-ring.js");
 
@@ -306,6 +307,149 @@ test("hopTabIcon: with the in-app switch on, no hop", async () => {
   const icon = makeNode("svg");
   assert.equal(await hopTabIcon(icon), true);
   assert.ok(!moved(icon));
+});
+
+// --- tug-the-ring (third release) ------------------------------------------------
+
+// A button whose listeners really fire, which the stub's nodes do not do.
+function fakeButton() {
+  const on = {};
+  return {
+    hidden: true,
+    captured: null,
+    addEventListener(type, fn) { (on[type] ||= []).push(fn); },
+    fire(type, e = {}) { for (const fn of on[type] || []) fn({ pointerId: 1, detail: 1, ...e }); },
+    setPointerCapture(id) { this.captured = id; },
+    releasePointerCapture() { this.captured = null; }
+  };
+}
+
+function tugRig() {
+  const button = fakeButton();
+  const body = makeNode("div");
+  const layer = makeNode("div");
+  const errors = [];
+  const tug = bindTug({ button, body, layer, onError: (e) => errors.push(e) });
+  return { button, body, layer, tug, errors };
+}
+
+test("poseTug: follows the pull, stretched along it, and nothing under reduced motion", () => {
+  const body = makeNode("div");
+  poseTug(body, [30, 0]);
+  assert.equal(last(body, "transform"), "translate(30px, 0px) rotate(0rad) scale(1.05, 0.975) rotate(0rad)");
+  poseTug(body, [0, 0]);
+  assert.equal(last(body, "transform"), "");
+  device = true;
+  const still = makeNode("div");
+  poseTug(still, [30, 0]);
+  assert.ok(!moved(still));
+});
+
+test("bindTug: offered only where enabled, and never with reduced motion", () => {
+  const { button, tug } = tugRig();
+  assert.equal(button.hidden, true, "hidden until a screen enables it");
+  tug.setEnabled(true);
+  assert.equal(button.hidden, false);
+  tug.setEnabled(false);
+  assert.equal(button.hidden, true);
+  device = true;
+  tug.setEnabled(true);
+  assert.equal(button.hidden, true, "no toy that does nothing");
+});
+
+test("bindTug: a drag follows like a rubber band, never past its reach", () => {
+  const { button, body, tug } = tugRig();
+  tug.setEnabled(true);
+  button.fire("pointerdown", { clientX: 0, clientY: 0 });
+  assert.equal(button.captured, 1);
+  button.fire("pointermove", { clientX: 40, clientY: 0 });
+  const x = translateX(body);
+  assert.ok(x > 20 && x < 40, `follows less than the finger: ${x}`);
+  button.fire("pointermove", { clientX: TUG_SNAP_PX - 1, clientY: 0 });
+  assert.ok(translateX(body) < 60, "the band never stretches past 60px");
+});
+
+test("bindTug: past the line it lets go, bursts, and springs home", async () => {
+  const { button, body, layer, tug, errors } = tugRig();
+  tug.setEnabled(true);
+  button.fire("pointerdown", { clientX: 0, clientY: 0 });
+  button.fire("pointermove", { clientX: 0, clientY: TUG_SNAP_PX + 5 });
+  assert.equal(button.captured, null, "released at the line");
+  assert.equal(layer.childNodes.length, 8, "eight particles burst");
+  button.fire("pointerup");
+  button.fire("click");
+  assert.equal(layer.childNodes.length, 8, "the click that ends a drag is not a second tap");
+  await tick.advance(1500);
+  assert.equal(last(body, "transform"), "", "home");
+  assert.deepEqual(errors, []);
+});
+
+test("bindTug: let go short of the line, it goes home without a burst", async () => {
+  const { button, body, layer, tug } = tugRig();
+  tug.setEnabled(true);
+  button.fire("pointerdown", { clientX: 0, clientY: 0 });
+  button.fire("pointermove", { clientX: 30, clientY: 0 });
+  button.fire("pointerup");
+  assert.equal(layer.childNodes.length, 0);
+  await tick.advance(1500);
+  assert.equal(last(body, "transform"), "");
+});
+
+test("bindTug: a tap, Enter or Space bursts; a keyboard click is never swallowed", async () => {
+  const { button, body, layer, tug } = tugRig();
+  tug.setEnabled(true);
+  button.fire("pointerdown", { clientX: 0, clientY: 0 });
+  button.fire("pointerup");
+  button.fire("click");
+  assert.equal(layer.childNodes.length, 8, "a tap bursts");
+  await tick.advance(48);
+  assert.match(last(body, "transform"), /^scale\(0\.9/, "the ring dips");
+  await tick.advance(1500);
+  assert.equal(last(body, "transform"), "");
+  // A drag that snapped away leaves no click behind; Enter must still work.
+  button.fire("pointerdown", { clientX: 0, clientY: 0 });
+  button.fire("pointermove", { clientX: TUG_SNAP_PX + 5, clientY: 0 });
+  await tick.advance(1500);
+  const before = layer.childNodes.length;
+  button.fire("click", { detail: 0 });
+  assert.equal(layer.childNodes.length, before + 8, "Enter after a snap still bursts");
+  await tick.advance(1500);
+});
+
+test("bindTug: disabled, it does nothing; with no ring on the page it is inert", () => {
+  const { button, body, layer } = tugRig();
+  button.fire("pointerdown", { clientX: 0, clientY: 0 });
+  button.fire("pointermove", { clientX: 50, clientY: 0 });
+  button.fire("click");
+  assert.ok(!moved(body));
+  assert.equal(layer.childNodes.length, 0);
+  assert.doesNotThrow(() => bindTug({ button: null, body: null, layer: null }).setEnabled(true));
+});
+
+test("bindTug: switched off mid-drag, the ring lets go and springs home", async () => {
+  const { button, body, layer, tug } = tugRig();
+  tug.setEnabled(true);
+  button.fire("pointerdown", { clientX: 0, clientY: 0 });
+  button.fire("pointermove", { clientX: 50, clientY: 0 });
+  assert.ok(translateX(body) > 0);
+  tug.setEnabled(false);
+  assert.equal(button.captured, null, "capture released");
+  assert.equal(button.hidden, true);
+  assert.equal(layer.childNodes.length, 0, "no burst");
+  await tick.advance(1500);
+  assert.equal(last(body, "transform"), "", "not left stretched");
+  button.fire("pointermove", { clientX: 80, clientY: 0 });
+  assert.equal(last(body, "transform"), "", "the old drag is over");
+});
+
+test("releaseTug and tapTug: with reduced motion, home at once and no burst", async () => {
+  device = true;
+  const body = makeNode("div");
+  const layer = makeNode("div");
+  assert.equal(await releaseTug({ body, from: [20, 5], layer, burst: true }), true);
+  assert.equal(await tapTug({ body, layer }), true);
+  assert.equal(layer.childNodes.length, 0);
+  assert.ok(!moved(body));
 });
 
 // --- wiring ------------------------------------------------------------------------

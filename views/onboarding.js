@@ -33,6 +33,7 @@ import { applyDraft, saveDraft, clearDraft, instrumentsIn } from "../draft.js";
 import { savingsRateFrom } from "../scoring.js";
 import { CHAPTERS, allScreens } from "./journey.js";
 import { ringMarkup, paintRing } from "./journey-ring.js";
+import { bindTug } from "./tug.js";
 import {
   playEnding, playOpening, settleRing, isQuietChapter, glintTitleMarkup, caretLineMarkup
 } from "./moments.js";
@@ -217,6 +218,14 @@ export function renderOnboarding(containerId, onComplete) {
   `;
 
   const form = document.getElementById("onboarding-form");
+  // Tug-the-ring: offered on the landing (the prologue) and after the last
+  // region only, never on a screen that holds instrument items.
+  const tug = bindTug({
+    button: container.querySelector(".ring-tug"),
+    body: container.querySelector(".ring-body"),
+    layer: container.querySelector(".ring-burst"),
+    onError: reportMotion
+  });
   const pageEl = (i) => document.getElementById(`onb-page-${i}`);
   const errorEl = () => document.getElementById("onboarding-error");
   // Unhidden BEFORE the text is written. The line is role="alert", and a live
@@ -433,6 +442,8 @@ export function renderOnboarding(containerId, onComplete) {
     if (scene && isEnding) playChapterEnding(index, shift);
     if (scene && isOpening) playChapterOpening(index, shift);
     paintWash(index);
+    const isFinalEnding = isEnding && screens[index].chapter === CHAPTERS.length - 1;
+    tug.setEnabled(screens[index].chapter < 0 || isFinalEnding);
     scrollIntoViewGently(container, { block: "start" });
     const heading = moveFocus && page.querySelector("h3");
     if (heading) {

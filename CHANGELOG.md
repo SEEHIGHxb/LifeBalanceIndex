@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `92`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `93`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.41.0] — 2026-09-24 (APP_VERSION 93)
+
+Phase 4 of the interactive-web plan, first release: the art set.
+
+### Added
+
+- **Region emblems on every chapter ending.** Each region's illustration sits
+  beside its name on a cream tile and arrives with the ending's burst. The app
+  copies are 224 px WebP, 4-11 KB each (the budget is 20 KB), trimmed from the
+  masters by `docs/identity/make-app-emblems.mjs`. They are sized before they
+  load, so nothing shifts, and they are precached for offline use.
+- **The sprite sheet**, `assets/sprites.svg` (4 KB of a 25 KB budget): the
+  Lumi Star, the glint and the eight region motifs, each drawn once. The tab
+  icons, the glints and the new star beside the app's name all use it.
+- `tests/art-set.test.mjs` holds the asset budget: `motion.js` at most 6 KB
+  gzipped, the sprites at most 25 KB and each emblem at most 20 KB. It also
+  checks that the sprite's motifs match the chapters' and that every sprite
+  reference exists.
 
 ## [2.40.0] — 2026-09-24 (APP_VERSION 92)
 

@@ -36,6 +36,7 @@ function endingPieces(n = 3) {
     lit: makeNode("path"),
     marker: makeNode("circle"),
     shift: [4, -3],
+    emblem: makeNode("div"),
     cards: Array.from({ length: n }, () => makeNode("li")),
     fact: makeNode("div"),
     layer: makeNode("div")
@@ -127,14 +128,17 @@ test("playEnding: draws first, deals every card, turns the fact last, then lands
   assert.equal(last(p.marker, "transform"), "translate(4px, -3px)");
   for (const card of p.cards) assert.equal(last(card, "opacity"), "0");
   assert.match(last(p.fact, "transform"), /rotateY\(90deg\)/);
+  assert.equal(last(p.emblem, "opacity"), "0", "the emblem waits to arrive");
+  assert.equal(last(p.emblem, "transform"), "scale(0.86)");
 
   await tick.advance(1000);
+  assert.equal(last(p.emblem, "opacity"), "1", "the emblem has arrived with the burst");
   for (const card of p.cards) assert.equal(last(card, "opacity"), "1", "every card is dealt by now");
   assert.match(last(p.fact, "transform"), /rotateY\(90deg\)/, "the fact waits for the cards");
 
   await tick.advance(2000);
   assert.equal(await done, true);
-  for (const el of [p.lit, p.marker, ...p.cards, p.fact]) {
+  for (const el of [p.lit, p.marker, p.emblem, ...p.cards, p.fact]) {
     assert.equal(last(el, "transform") ?? "", "");
     assert.equal(last(el, "opacity") ?? "", "");
   }
@@ -168,7 +172,7 @@ test("playEnding: cut short by the next screen, every piece lands", async () => 
   const done = playEnding({ draw() {}, pieces: () => p, quiet: false });
   await tick.advance(400);
   const next = settleRing({ marker: makeNode("circle"), shift: [1, 1] });
-  for (const el of [p.lit, p.marker, ...p.cards, p.fact]) {
+  for (const el of [p.lit, p.marker, p.emblem, ...p.cards, p.fact]) {
     assert.equal(last(el, "transform") ?? "", "");
     assert.equal(last(el, "opacity") ?? "", "");
   }
@@ -184,7 +188,7 @@ test("playEnding: with reduced motion it draws the end state and moves nothing",
   assert.equal(await playEnding({ draw: () => drawn++, pieces: () => p, quiet: false }), true);
   assert.equal(drawn, 1);
   assert.equal(p.layer.childNodes.length, 0, "no burst");
-  for (const el of [p.lit, p.marker, ...p.cards, p.fact]) assert.ok(!moved(el));
+  for (const el of [p.lit, p.marker, p.emblem, ...p.cards, p.fact]) assert.ok(!moved(el));
 });
 
 test("playEnding: a piece that throws while parking puts the finished ending back", async () => {

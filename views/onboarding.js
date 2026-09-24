@@ -122,14 +122,27 @@ function regionBannerMarkup(chapter, index, showTheme) {
 // 60-word citation beneath each one would bury the beat it exists to support.
 // Folded is not hidden -- the disclosure is always present and always openable,
 // which is the standard the rest of the app's benchmark cards already meet.
+// symbols.md S8/S9: the region's illustration on a cream tile. Decorative
+// (alt=""): the region's name is the heading beside it. width and height are
+// set so nothing shifts when it loads, and it is lazy because the page it sits
+// on is hidden until the reader reaches it.
+function emblemTile(chapter) {
+  return `<div class="chapter-emblem"><img src="./assets/emblems/${chapter.art}.webp" alt="" width="96" height="96" loading="lazy" decoding="async"></div>`;
+}
+
 function endingMarkup(chapterIndex) {
   const chapter = CHAPTERS[chapterIndex];
   const source = SOURCES[chapter.fact.source];
   return `
     <div class="chapter-ending" style="--chapter-hue: ${chapter.hue};">
-      <p class="chapter-ending-eyebrow">${t("Region complete")}</p>
-      <h3 class="chapter-ending-region">${escapeHtml(chapter.region)}</h3>
-      <p class="chapter-ending-theme">${escapeHtml(chapter.theme)}</p>
+      <div class="chapter-ending-head">
+        <div>
+          <p class="chapter-ending-eyebrow">${t("Region complete")}</p>
+          <h3 class="chapter-ending-region">${escapeHtml(chapter.region)}</h3>
+          <p class="chapter-ending-theme">${escapeHtml(chapter.theme)}</p>
+        </div>
+        ${emblemTile(chapter)}
+      </div>
       <ul class="chapter-recap" id="recap-${chapterIndex}"></ul>
       <div class="chapter-fact">
         <p class="chapter-fact-label">${t("Meanwhile, in the world")}</p>
@@ -348,6 +361,7 @@ export function renderOnboarding(containerId, onComplete) {
         lit: container.querySelector(`#ring-lit-${chapterIndex}`),
         marker: ringMarker(),
         shift,
+        emblem: page.querySelector(".chapter-emblem"),
         cards: page.querySelectorAll(".chapter-recap li"),
         fact: page.querySelector(".chapter-fact"),
         layer: container.querySelector(".ring-burst")

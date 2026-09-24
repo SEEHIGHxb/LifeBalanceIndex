@@ -61,8 +61,13 @@ const BURST_COUNT = 8;
 const BURST_LIFE_MS = 800;
 const BURST_MIN_PX = 70;
 const BURST_JITTER_PX = 40;
-const GLINT_PATH = "M12 0 Q13 11 24 12 Q13 13 12 24 Q11 13 0 12 Q11 11 12 0Z";
+// The S2 silhouette lives once, in the sprite sheet (Phase 4).
+const GLINT_HREF = "./assets/sprites.svg#glint";
 const GLINT_FRAME_MS = 110;
+// The emblem arrives with the burst: fades in over its first 40 % while it
+// grows from 0.86 with a small overshoot (the prototype's timing).
+const EMBLEM_MS = 520;
+const EMBLEM_FROM = 0.86;
 // A upright, B 22° at 0.78, C 45° at 0.5, cycling A-B-C-B.
 const GLINT_FRAMES = [[0, 1], [22, 0.78], [45, 0.5], [22, 0.78]];
 const glintFrame = (ms) => GLINT_FRAMES[Math.floor(Math.max(0, ms) / GLINT_FRAME_MS) % GLINT_FRAMES.length];
@@ -132,7 +137,7 @@ export function settleRing({ marker, shift }) {
 // --- the burst ---------------------------------------------------------------------
 
 function glintMarkup() {
-  return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${GLINT_PATH}"/></svg>`;
+  return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="${GLINT_HREF}"/></svg>`;
 }
 
 // Deterministic spread: the same for every reader and every answer.
@@ -188,13 +193,21 @@ function turnFact(el, e) {
   });
 }
 
+function showEmblem(el, p) {
+  writeMotionStyle(el, {
+    opacity: r3(Math.min(1, p / 0.4)),
+    transform: `scale(${r3(EMBLEM_FROM + (1 - EMBLEM_FROM) * easeOutBack(p))})`
+  });
+}
+
 function pieceList(p) {
-  return [p.lit, p.marker, ...p.cards, p.fact];
+  return [p.lit, p.marker, p.emblem, ...p.cards, p.fact];
 }
 
 function parkEnding(p, scope, quiet) {
   if (p.lit) writeMotionStyle(p.lit, { opacity: LIGHT_FROM });
   if (p.marker) moveMarker(p.marker, p.shift);
+  if (p.emblem) showEmblem(p.emblem, 0);
   for (const el of p.cards) dealCard(el, 0);
   if (p.fact) turnFact(p.fact, 0);
   p.particles = !quiet && p.layer ? makeParticles(p.layer) : [];
@@ -213,12 +226,18 @@ async function playEndingPieces(p, scope) {
       update: (e) => writeMotionStyle(p.lit, { opacity: r3(LIGHT_FROM + (1 - LIGHT_FROM) * e) })
     })
     : Promise.resolve(true);
+  const emblemIn = p.emblem
+    ? animate({
+      duration: EMBLEM_MS, ease: linear, signal, reduced: "end",
+      update: (q) => showEmblem(p.emblem, q)
+    })
+    : Promise.resolve(true);
   const dealt = p.cards.map((el, i) => animate({
     duration: CARD_MS, delay: CARDS_AT_MS + i * CARD_STAGGER_MS, signal, reduced: "end",
     update: (q) => dealCard(el, q)
   }));
   const results = await Promise.all([
-    lightUp, settleMarker(p.marker, p.shift, signal), burst(p.particles, signal), ...dealt
+    lightUp, emblemIn, settleMarker(p.marker, p.shift, signal), burst(p.particles, signal), ...dealt
   ]);
   p.removeParticles();
   if (!results.every(Boolean)) return false;
@@ -231,8 +250,9 @@ async function playEndingPieces(p, scope) {
 }
 
 // draw():   writes the finished ending (the recap lines) into the page.
-// pieces(): returns { lit, marker, shift, cards, fact, layer } from the page
-//           as drawn. `shift` is the marker's old place minus its new one.
+// pieces(): returns { lit, marker, shift, emblem, cards, fact, layer } from
+//           the page as drawn. `shift` is the marker's old place minus its new
+//           one; `emblem` (optional) is the region's illustration tile.
 // quiet:    true in The Still Water and The Commons: no burst.
 export function playEnding({ draw, pieces, quiet }) {
   let p = null;

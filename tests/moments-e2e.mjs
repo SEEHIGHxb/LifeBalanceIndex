@@ -65,6 +65,11 @@ function installManualClock() {
   }).observe(document.documentElement, { attributes: true, attributeFilter: ["style"], subtree: true });
   if (document.documentElement) watch();
   else document.addEventListener("DOMContentLoaded", watch);
+  // Layout shift from the moment it is reset (the art set: nothing may shift).
+  globalThis.__shift = 0;
+  new PerformanceObserver(list => {
+    for (const e of list.getEntries()) if (!e.hadRecentInput) globalThis.__shift += e.value;
+  }).observe({ type: "layout-shift" });
 }
 
 async function openJourney(browser, { reduced = false } = {}) {
@@ -119,9 +124,19 @@ const endingState = (page) => page.evaluate(() => ({
   count: document.getElementById("ring-count").textContent,
   particles: document.querySelectorAll(".ring-particle").length,
   parked: [...document.querySelectorAll(
-    ".survey-page:not(.d-none) .chapter-recap li, .survey-page:not(.d-none) .chapter-fact, #ring-marker, [id^='ring-lit-']"
-  )].map(el => el.getAttribute("style")).filter(Boolean)
+    ".survey-page:not(.d-none) .chapter-recap li, .survey-page:not(.d-none) .chapter-fact, .survey-page:not(.d-none) .chapter-emblem, #ring-marker, [id^='ring-lit-']"
+  )].map(el => el.getAttribute("style")).filter(Boolean),
+  emblem: (() => {
+    const img = document.querySelector(".survey-page:not(.d-none) .chapter-emblem img");
+    return img ? { loaded: img.complete && img.naturalWidth > 0, w: img.parentElement.getBoundingClientRect().width } : null;
+  })()
 }));
+
+// A <use> into assets/sprites.svg that failed to resolve draws nothing.
+const spriteDrawn = (page, selector) => page.evaluate((sel) => {
+  const use = document.querySelector(`${sel} use`);
+  return !!use && use.getBBox().width > 0;
+}, selector);
 
 const browser = await chromium.launch();
 
@@ -189,10 +204,16 @@ try {
   if (start.count !== "1 / 8") problems.push(`market: the ending reads ${start.count}, not 1 / 8`);
   if (start.particles !== 8) problems.push(`market: ${start.particles} particles burst, not 8`);
   if (!start.parked.length) problems.push("market: nothing was parked, so nothing was dealt");
+  await page.evaluate(() => { globalThis.__shift = 0; });
   await advance(page, 3500);
   const end = await endingState(page);
   if (end.particles) problems.push(`market: ${end.particles} particles left behind`);
   if (end.parked.length) problems.push(`market: pieces left parked: ${end.parked.join(" | ")}`);
+  if (!end.emblem?.loaded) problems.push("market: the region's emblem did not load");
+  if (end.emblem && Math.round(end.emblem.w) !== 96) problems.push(`market: the emblem is ${end.emblem.w}px wide, not 96`);
+  const shifted = await page.evaluate(() => globalThis.__shift);
+  if (shifted > 0) problems.push(`market: the ending shifted the layout (CLS ${shifted.toFixed(4)})`);
+  if (!(await spriteDrawn(page, ".brand-star"))) problems.push("sprites: the header star did not draw");
 
   // The Highlands' first screen: its name is spelled and its line typed.
   await next(page);
@@ -239,6 +260,9 @@ try {
   while ((await page.locator(".survey-page:not(.d-none) .btn-onb-next").count()) && walked++ < 60) await next(page);
   await page.click('#onboarding-form button[type="submit"]');
   await page.waitForSelector("#tab-dashboard .tab-icon", { timeout: 10000 });
+  for (const tab of ["#tab-dashboard", "#tab-review", "#tab-quests", "#tab-leaderboard"]) {
+    if (!(await spriteDrawn(page, `${tab} .tab-icon`))) problems.push(`sprites: the ${tab} icon did not draw`);
+  }
   await page.click("#tab-quests");
   await page.click("#tab-dashboard");
   const writes = await page.evaluate(() => globalThis.__styleWrites);

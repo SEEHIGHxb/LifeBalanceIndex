@@ -59,6 +59,7 @@ jobs:
           npx --yes wait-on http://127.0.0.1:8181 -t 30000
           node tests/smoke.mjs http://127.0.0.1:8181
           node tests/e2e.mjs http://127.0.0.1:8181
+          node tests/motion-budget.mjs http://127.0.0.1:8181
 
   deploy:
     # Deploy the static site to GitHub Pages on every green main push.

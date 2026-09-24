@@ -107,6 +107,22 @@ In LBI, the serious content is the instrument item.
 3. **Enforce "transform and opacity only" at runtime.** The prototype's check greps the source, which misses `style["left"]` and `cssText`. The Phase 2 guard watches style writes in `tests/dom-stub.mjs` instead.
 4. **Controls are at least 44 px, and live readouts are announced.** In the prototype, the segmented toggles and the switch are 40 px, and the drag readout has no `aria-live`.
 
+**Phase 2 status (2026-09-24): built, in v89 (2.37.0).**
+- **Motion core.** `motion.js` has an injected clock, `loop`, `animate`, `spring`, `follow` and `scrub`. Every entry point throws unless it is given a reduced path.
+- **Lifecycle.** `views/motion-mount.js` keeps one live mount at a time, disposed in `renderActiveTab`. `runScene` renders, then parks, then plays, and renders again if either of the last two throws.
+- **Tests.** `tests/dom-stub.mjs` has a hand-driven clock and a log of every style write. The seven guards are in `tests/motion-guards.test.mjs`. The frame budget is `tests/motion-budget.mjs`, run in CI's smoke job (p95 16.8 ms at 4× CPU locally, against 34 ms).
+- **Reduce motion.** The switch is on Profile. It only adds reduction and is mirrored to the sheet.
+- **The four carry-forwards:**
+  - Items 1 to 3 are built into the code above.
+  - Item 4 holds for the one new control: the switch is 44 px, and the page has no live readout yet.
+- **An independent review of the Phase 2 diff** found:
+  - one high issue: a throwing `update` left the promise pending for ever
+  - three medium issues: a delayed zero-length `animate` never landed; the Profile switch had no render test; the guards' comment stripper could hide code after `,//` inside a string
+  - one low issue: a throwing `park` left the scene half-parked
+
+  All five are fixed, each with a test.
+- **Exit criteria:** tests and lint green; `motion.js` coverage 96.5 % (the target is 80 %); no visible change apart from the switch. Phase 3 is next.
+
 ## 7. Decisions (approved 2026-09-23)
 
 | # | Question | Decision |

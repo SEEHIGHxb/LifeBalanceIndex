@@ -1306,6 +1306,13 @@ export const TH = {
   "Data & Backup": "ข้อมูลและการสำรอง",
   "Your data lives only in this browser. Export a backup regularly — clearing site data erases it.":
     "ข้อมูลของคุณอยู่ในเบราว์เซอร์นี้เท่านั้น ควรส่งออกสำรองข้อมูลเป็นประจำ — การล้างข้อมูลเว็บไซต์จะลบข้อมูลทิ้ง",
+  // The in-app Reduce motion switch (Profile). It can only add reduction.
+  "Motion": "การเคลื่อนไหว",
+  "Reduce motion": "ลดการเคลื่อนไหว",
+  "Your device already asks for less motion, so it stays reduced everywhere in this app.":
+    "อุปกรณ์ของคุณตั้งค่าให้ลดการเคลื่อนไหวไว้แล้ว แอปนี้จึงลดการเคลื่อนไหวทุกหน้า",
+  "Keeps animations to quick fades and finished states. It can only reduce motion; your device's own setting always applies.":
+    "แสดงแอนิเมชันเป็นเพียงการค่อย ๆ ปรากฏ หรือแสดงผลลัพธ์สุดท้ายทันที ตัวเลือกนี้ลดการเคลื่อนไหวได้อย่างเดียว การตั้งค่าในอุปกรณ์ของคุณยังมีผลเสมอ",
   // Connected apps — the sibling apps on this origin that can pre-fill the
   // Weekly Review. App names ("Midori", "Runaway") are proper nouns and are
   // deliberately not translated.

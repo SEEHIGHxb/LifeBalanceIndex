@@ -35,6 +35,7 @@ import {
 } from "../connections.js";
 import { isoWeekKey } from "../season.js";
 import { t, tp, dateLocale } from "../i18n.js";
+import { deviceReducesMotion, isReduced, setReduceMotionPref } from "../motion.js";
 
 const AGE_MIN = 15;
 const AGE_MAX = 100;
@@ -141,6 +142,28 @@ function connectionRow(source, meta, enabled, read) {
     </div>`;
 }
 
+// --- MOTION ---
+
+// The in-app Reduce motion switch (plan decision 7). It can only ADD
+// reduction: when the device already asks for less motion the box shows
+// checked and cannot be cleared, and the note says why rather than leaving a
+// dead control unexplained.
+function motionCard() {
+  const device = deviceReducesMotion();
+  const note = device
+    ? t("Your device already asks for less motion, so it stays reduced everywhere in this app.")
+    : t("Keeps animations to quick fades and finished states. It can only reduce motion; your device's own setting always applies.");
+  return `
+      <div class="card">
+        <h3 class="card-header">${t("Motion")}</h3>
+        <label class="conn-switch">
+          <input type="checkbox" id="pf-reduce-motion"${isReduced() ? " checked" : ""}${device ? " disabled" : ""} aria-describedby="pf-reduce-motion-note">
+          <span>${t("Reduce motion")}</span>
+        </label>
+        <p class="profile-note" id="pf-reduce-motion-note">${note}</p>
+      </div>`;
+}
+
 export function renderProfile(containerId, state, onSaved) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -240,6 +263,8 @@ export function renderProfile(containerId, state, onSaved) {
         <p class="profile-note">${t("Each app has its own sharing switch too. Turning one on here only means this app may read what that app chose to share.")}</p>
       </div>
 
+      ${motionCard()}
+
       <div class="card">
         <h3 class="card-header">${t("Data & Backup")}</h3>
         <p class="onb-why">${t("Your data lives only in this browser. Export a backup regularly — clearing site data erases it.")}</p>
@@ -266,6 +291,13 @@ export function renderProfile(containerId, state, onSaved) {
       const read = readConnection(source, { isoWeek: isoWeekKey(new Date()) });
       line.textContent = connectionStatusText(connectionStatus(next[source], read), read);
     });
+  }
+
+  // Applies on change, like the connection toggles: no Save, and the form
+  // above keeps any unsaved edits.
+  const reduceBox = document.getElementById("pf-reduce-motion");
+  if (reduceBox) {
+    reduceBox.addEventListener("change", () => setReduceMotionPref(reduceBox.checked));
   }
 
   const clearErrors = () => {

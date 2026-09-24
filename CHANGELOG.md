@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `88`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `89`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.37.0] — 2026-09-24 (APP_VERSION 89)
+
+Phase 2 of the interactive-web plan (`docs/interactive-web-plan.md`): the
+motion foundation. Nothing in the app animates differently yet; this is the
+ground Phase 3's journey moments stand on, plus one visible setting.
+
+### Added
+
+- **A Reduce motion switch on Profile.** It can only add reduction: with the
+  device already asking for less motion the box shows checked and cannot be
+  cleared, and says why. It applies at once, with no Save, and is kept per
+  device (`lbi_reduce_motion`), like the language, so a restored backup does
+  not carry another screen's setting. The toast, Lumi's typewriter and the
+  smooth scrolls all honour it, and so does the sheet, through a
+  `data-reduce-motion` attribute on `<html>`.
+- **`motion.js`, the motion core.** It has an injectable clock and four ways
+  to move (`loop`, `animate`, `spring`, `follow`), plus `scrub` and the house
+  curve. Every one of them throws unless the caller names a reduced path. The
+  spring integrates at a fixed 1/240 s step, so it lands in the same place at
+  30 and 120 fps. Rewritten from the approved Phase 1 prototype with its
+  review's HIGH finding fixed: abort signals now combine correctly on engines
+  without `AbortSignal.any` (Safari before 17.4).
+- **`views/motion-mount.js`, the lifecycle.** One mount is live at a time, and
+  `renderActiveTab` ends it before drawing the next route. `runScene` renders
+  the finished markup, then parks, then plays, as three separate steps.
+  `writeMotionStyle` is the only style-write path for motion: it refuses
+  anything but transform and opacity, and any element inside an answer group
+  or the mental-health notice.
+- **The seven motion guards** (`tests/motion-guards.test.mjs`) and a CI
+  frame-budget check (`tests/motion-budget.mjs`): p95 frame under 34 ms at a
+  4x CPU throttle, best of three. `tests/dom-stub.mjs` gained a hand-driven
+  clock and a log of every style write, which also sees `style["left"]` and
+  `cssText`.
 
 ## [2.36.0] — 2026-09-24 (APP_VERSION 88)
 

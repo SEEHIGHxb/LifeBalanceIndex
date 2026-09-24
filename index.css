@@ -2706,6 +2706,15 @@ body.journey-lit .app-footer {
   .ring-marker { transition: none; }
   .survey-page[data-instrument] fieldset.survey-question { animation: none; }
 }
+/* The same five rules for the in-app Reduce motion switch on Profile, which a
+   media query cannot see: motion.js mirrors it onto <html> as this attribute.
+   tests/motion-guards.test.mjs fails if the two blocks stop listing the same
+   rules. */
+html[data-reduce-motion] .reward-pop { animation: reward-out 0.4s ease-in 1.5s both; }
+html[data-reduce-motion] body.journey-lit { transition: none; }
+html[data-reduce-motion] .ring-lit { transition: none; }
+html[data-reduce-motion] .ring-marker { transition: none; }
+html[data-reduce-motion] .survey-page[data-instrument] fieldset.survey-question { animation: none; }
 
 /* --- Wide tables scroll inside their card instead of panning the page --- */
 .table-scroll {

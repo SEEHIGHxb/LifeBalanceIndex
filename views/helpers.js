@@ -6,6 +6,7 @@ import { percentileBand } from "../benchmarks.js";
 import { CRITERION_STATUS_LABELS } from "../criteria.js";
 import { getAspectConfidence, ASPECT_KEYS } from "../aspects.js";
 import { t, tp, percentileLabel, dateLocale } from "../i18n.js";
+import { isReduced } from "../motion.js";
 
 // Escape user-provided strings before inserting into innerHTML.
 export const escapeHtml = (value) => String(value).replace(/[&<>"']/g, c => ({
@@ -25,10 +26,9 @@ export const escapeHtml = (value) => String(value).replace(/[&<>"']/g, c => ({
 // while the page is open, and this is a long-lived PWA. The typeof guards are
 // for `node --test`, which imports this module with no window at all — see the
 // preamble in tests/views-xss.test.mjs about installing globals first.
-export const prefersReducedMotion = () =>
-  typeof window !== "undefined" &&
-  typeof window.matchMedia === "function" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// Since Phase 2 this is the device setting OR the in-app Reduce motion switch
+// on Profile; motion.js owns both, so every motion site asks the same question.
+export const prefersReducedMotion = () => isReduced();
 
 // scrollIntoView with the animation dropped when the reader asked for less
 // motion. Every call site wants the same outcome — put this element on screen,

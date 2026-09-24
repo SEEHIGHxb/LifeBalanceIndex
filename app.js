@@ -16,10 +16,12 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=88";
+} from "./ui.js?v=89";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang, graphemes } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
+import { syncReduceMotionAttr } from "./motion.js";
+import { disposeMotion } from "./views/motion-mount.js";
 
 const TOAST_DURATION_MS = 1600;
 const REWARD_DURATION_MS = 1900;
@@ -138,6 +140,7 @@ function setupLanguageToggle() {
 
 function initializeApp() {
   const state = stateManager.state;
+  syncReduceMotionAttr();
   applyChromeTranslations();
   setupSkipLink();
   setupLanguageToggle();
@@ -265,6 +268,9 @@ function handleTabKeydown(e, index) {
 }
 
 function renderActiveTab() {
+  // Whatever the last view set moving ends here, before the next one draws:
+  // its springs, frame loops and window listeners all hang off this mount.
+  disposeMotion();
   const state = stateManager.state;
   const route = routeFromHash();
   const activeTab = route.type === "tab" ? route.tab : null;

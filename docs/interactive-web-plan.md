@@ -97,6 +97,16 @@ In LBI, the serious content is the instrument item.
 
 **Phase 1 status (2026-09-24):** built in [`prototype/phase1/`](prototype/phase1/README.md). It has all four moments, EN/TH, and the reduced-motion paths. `check.mjs` runs 51 numeric checks through a manual clock, and all 51 pass. **The owner played it on a phone and approved the feel on 2026-09-24, all four scenes as built.** Phase 1 is done; Phase 2 is next.
 
+**Phase 1 independent review (2026-09-24):** no critical issues, one high, one medium and four low; `check.mjs` 51/51 on the reviewer's own run. The prototype is left as the approved reference and is not patched. Two things the review found about it:
+- It has never been linted: `biome.json` ignores `docs/**`.
+- Its CSP is stricter than the app's (it has no `'unsafe-inline'`), not the "same plus fonts" its README says.
+
+**Phase 2 carries these forward from the review:**
+1. **Combine abort signals correctly everywhere.** The prototype's `either()` falls back to one signal where `AbortSignal.any` is missing (Safari before 17.4), so a spring outlives its scene. `motion.js` either subscribes to both signals and aborts a shared controller, or uses `AbortSignal.any` only where it exists. A test covers the fallback.
+2. **Separate render, park and animate.** `sceneEnding` and `sceneRadar` are about 95 lines each and mix all three. `motion-mount.js` keeps them as separate steps, with functions under 50 lines.
+3. **Enforce "transform and opacity only" at runtime.** The prototype's check greps the source, which misses `style["left"]` and `cssText`. The Phase 2 guard watches style writes in `tests/dom-stub.mjs` instead.
+4. **Controls are at least 44 px, and live readouts are announced.** In the prototype, the segmented toggles and the switch are 40 px, and the drag readout has no `aria-live`.
+
 ## 7. Decisions (approved 2026-09-23)
 
 | # | Question | Decision |

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `93`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `94`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,29 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.42.0] — 2026-09-24 (APP_VERSION 94)
+
+Phase 4 of the interactive-web plan, second release: the final ceremony.
+
+### Added
+
+- **The ring unfolds into the radar.** The first time the dashboard is seen
+  after the journey, the Aspect Radar plays once as it comes on screen: a ring
+  stands where the journey's ring was, the reader's shape takes over from it,
+  each region grows to its score in radar order while the grid blooms to full
+  size, and one burst of stars ends it. It takes about 1.5 s, the same for
+  everyone.
+- **Play and Skip.** Play in the radar card's header replays it at any time;
+  Skip shows while it plays and lands the radar at once. Neither is offered
+  with reduced motion, where the radar is simply there.
+- **Quiet beside the care notice.** When the dashboard shows the mental-health
+  notice and hotlines, the radar card sits right under them, so there the
+  ceremony never plays by itself and never bursts (non-negotiable 4). Play
+  still works for a reader who asks for it.
+- `tests/ceremony.test.mjs` (the scene against the real `chart.js` radar) and
+  a new section of `tests/moments-e2e.mjs` (a calm reader and a reader shown
+  the notice).
 
 ## [2.41.0] — 2026-09-24 (APP_VERSION 93)
 

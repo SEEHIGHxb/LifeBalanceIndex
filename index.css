@@ -1015,6 +1015,30 @@ header {
   background: var(--color-accent-glow);
 }
 
+/* The radar card's header holds Share and, where motion is allowed, Play (or
+   Skip while the ceremony plays: never both). */
+.card-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* The final ceremony (views/ceremony.js). The burst layer starts at the svg's
+   top-left and the scene moves it to the plot's centre by transform. */
+.radar-stage {
+  position: relative;
+}
+.ring-burst.radar-burst {
+  left: 0;
+  top: 0;
+}
+.radar-ring path {
+  fill: none;
+  stroke: #D9B77A;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
 /* The sheet is taller than the other popups (preview + two control rows), so
    it scrolls internally rather than pushing its buttons off a short screen. */
 .share-card {

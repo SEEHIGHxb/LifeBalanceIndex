@@ -21,7 +21,15 @@
 //   5. Reduced motion (the device setting): no tug is offered, not one style
 //      is written on the
 //      ring, the region banner, the recap, the fact or a tab icon, and no
-//      frame is ever asked for.
+//      frame is ever asked for; the radar ceremony is neither offered nor
+//      played.
+//   6. The final ceremony (Phase 4): for a calm reader the ring unfolds into
+//      the radar by itself, lands exactly on the scores and bursts once; Play
+//      replays it, Skip lands it at once, and it never autoplays twice.
+//      Beside the care notice it is quiet: no autoplay and no burst.
+//
+// The art set (Phase 4): the ending's emblem loads at its size without a
+// layout shift, and the sprite sheet's star and tab icons really draw.
 //
 // Usage: node tests/moments-e2e.mjs <base-url>
 import { chromium } from "playwright";
@@ -97,12 +105,16 @@ async function openJourney(browser, { reduced = false } = {}) {
   return { context, page };
 }
 
-const answerAll = (page) => page.evaluate(() => {
+// The first option everywhere, unless `last` names instruments to answer with
+// their last option instead (a calm reader: WHO-5 high, so no care notice).
+const answerAll = (page, { last = [] } = {}) => page.evaluate((lastKeys) => {
   document.querySelectorAll("#onboarding-form fieldset.survey-question").forEach(fs => {
-    const r = fs.querySelector('input[type="radio"]');
+    const radios = [...fs.querySelectorAll('input[type="radio"]')];
+    const key = (radios[0]?.name || "").split("-q")[0];
+    const r = lastKeys.includes(key) ? radios.at(-1) : radios[0];
     if (r && !fs.querySelector("input:checked")) { r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true })); }
   });
-});
+}, last);
 const next = (page) => page.click(".survey-page:not(.d-none) .btn-onb-next");
 const advance = (page, ms) => page.evaluate(([m, s]) => globalThis.__advance(m, s), [ms, FRAME_MS]);
 const visible = (page) => page.evaluate(() => {
@@ -247,6 +259,94 @@ try {
   problems.push(`endings: ${err.message}`);
 }
 
+// --- 6. the final ceremony: the ring unfolds into the radar ---------------------------
+const finishJourney = async (page, answers) => {
+  await answerAll(page, answers);
+  let walked = 0;
+  while ((await page.locator(".survey-page:not(.d-none) .btn-onb-next").count()) && walked++ < 60) await next(page);
+  await page.click('#onboarding-form button[type="submit"]');
+  await page.waitForSelector("#radar-chart-container svg", { timeout: 10000 });
+};
+const radarState = (page) => page.evaluate(() => ({
+  points: document.querySelector("#radar-chart-container .radar-shape").getAttribute("points"),
+  ring: !!document.querySelector("#radar-chart-container .radar-ring"),
+  styled: [...document.querySelectorAll("#radar-chart-container .radar-svg [style*='opacity'], #radar-chart-container .radar-svg [style*='transform']")].length,
+  play: !document.getElementById("btn-radar-play").hidden,
+  skip: !document.getElementById("btn-radar-skip").hidden
+}));
+try {
+  const { context, page } = await openJourney(browser);
+  await finishJourney(page, { last: ["who5"] });
+  if (await page.locator(".care-banner").count()) throw new Error("the calm reader was shown the care notice");
+  // The journey leaves the page scrolled down, so the radar is on screen
+  // straight away and the autoplay starts (waiting for it to come on screen
+  // is covered in tests/ceremony.test.mjs with a fake IntersectionObserver).
+  await page.evaluate(() => document.getElementById("radar-chart-container").scrollIntoView({ block: "center" }));
+  // Polled by hand: the IntersectionObserver answers on a rendering step.
+  let started = false;
+  for (let i = 0; i < 50 && !started; i++) {
+    started = (await radarState(page)).ring;
+    if (!started) await page.waitForTimeout(100);
+  }
+  if (!started) problems.push("ceremony: the radar was on screen and nothing played");
+  await advance(page, 3000);
+  const drawn = (await radarState(page)).points;
+  const end = await radarState(page);
+  if (end.ring || end.styled) problems.push(`ceremony: left behind (ring ${end.ring}, ${end.styled} styled pieces)`);
+  if (!end.play || end.skip) problems.push("ceremony: afterwards Play should be offered and Skip gone");
+  // Play: parks on the ring, unfolds, lands exactly, bursts once.
+  await page.click("#btn-radar-play");
+  const mid = await radarState(page);
+  if (!mid.ring || mid.points === drawn) problems.push("ceremony: Play did not park the shape on the ring");
+  if (!mid.skip || mid.play) problems.push(`ceremony: while it plays, Skip should show and Play hide (skip ${mid.skip}, play ${mid.play})`);
+  await advance(page, 1600);
+  const bursting = await page.evaluate(() => document.querySelectorAll("#radar-burst .ring-particle").length);
+  if (bursting !== 8) problems.push(`ceremony: ${bursting} particles in the final burst, not 8`);
+  await advance(page, 1200);
+  const replayed = await radarState(page);
+  if (replayed.points !== drawn) problems.push("ceremony: the shape did not land exactly on the scores");
+  if (replayed.ring || replayed.styled) problems.push("ceremony: a replay left pieces behind");
+  // Skip, from Play.
+  await page.click("#btn-radar-play");
+  await advance(page, 300);
+  await page.click("#btn-radar-skip");
+  await advance(page, 32);
+  const skipped = await radarState(page);
+  if (skipped.points !== drawn || skipped.ring || skipped.styled) problems.push("ceremony: Skip did not land the radar at once");
+  // Only once: a redrawn dashboard does not play it again by itself.
+  await page.click("#tab-quests");
+  await page.click("#tab-dashboard");
+  await page.evaluate(() => document.getElementById("radar-chart-container").scrollIntoView({ block: "center" }));
+  await advance(page, 400);
+  if ((await radarState(page)).ring) problems.push("ceremony: it autoplayed a second time");
+  await context.close();
+} catch (err) {
+  problems.push(`ceremony: ${err.message}`);
+}
+
+// ...and beside the care notice it is quiet (non-negotiable 4): it never plays
+// by itself and never bursts. Play still works for a reader who asks.
+try {
+  const { context, page } = await openJourney(browser);
+  await finishJourney(page);
+  if (!(await page.locator(".care-banner").count())) throw new Error("this reader was meant to see the care notice");
+  await page.evaluate(() => document.getElementById("radar-chart-container").scrollIntoView({ block: "center" }));
+  await advance(page, 600);
+  if ((await radarState(page)).ring) problems.push("quiet ceremony: it played by itself beside the care notice");
+  if (!(await radarState(page)).play) problems.push("quiet ceremony: Play was not offered");
+  await page.click("#btn-radar-play");
+  if (!(await radarState(page)).ring) problems.push("quiet ceremony: Play did nothing");
+  let particles = 0;
+  for (let f = 0; f < 180; f++) {
+    await advance(page, FRAME_MS);
+    particles = Math.max(particles, await page.evaluate(() => document.querySelectorAll("#radar-burst .ring-particle").length));
+  }
+  if (particles) problems.push(`quiet ceremony: ${particles} particles burst beside the care notice`);
+  await context.close();
+} catch (err) {
+  problems.push(`quiet ceremony: ${err.message}`);
+}
+
 // --- 4. reduced motion ------------------------------------------------------------------
 try {
   const { context, page } = await openJourney(browser, { reduced: true });
@@ -265,6 +365,11 @@ try {
   }
   await page.click("#tab-quests");
   await page.click("#tab-dashboard");
+  const radar = await page.evaluate(() => ({
+    play: !document.getElementById("btn-radar-play").hidden,
+    ring: !!document.querySelector(".radar-ring")
+  }));
+  if (radar.play || radar.ring) problems.push("reduced: the ceremony was offered or played");
   const writes = await page.evaluate(() => globalThis.__styleWrites);
   if (writes.length) problems.push(`reduced: styles written on moving pieces: ${writes.slice(0, 4).join(" | ")}`);
   const frames = await page.evaluate(() => globalThis.__framesRequested());
@@ -280,4 +385,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the tug bursts and comes home, the settle ignores the answer, The Market bursts and lands, The Highlands spells its name, The Still Water stays quiet, and reduced motion moves nothing");
+console.log("moments e2e passed: the tug bursts and comes home, the settle ignores the answer, The Market bursts and lands, The Highlands spells its name, The Still Water stays quiet, the ring unfolds into the radar (quietly beside the care notice), and reduced motion moves nothing");

@@ -16,12 +16,13 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=93";
+} from "./ui.js?v=94";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang, graphemes } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
 import { syncReduceMotionAttr } from "./motion.js";
 import { disposeMotion } from "./views/motion-mount.js";
+import { disposeCeremony } from "./views/ceremony.js";
 import { hopTabIcon } from "./views/moments.js";
 
 const TOAST_DURATION_MS = 1600;
@@ -40,6 +41,9 @@ const TABS = ["dashboard", "review", "quests", "leaderboard"];
 const DEFAULT_TAB = "dashboard";
 
 let lumiTypewriterInterval = null;
+// Set when the journey is finished; the first dashboard after it plays the
+// ring-to-radar ceremony and clears it.
+let ceremonyPending = false;
 let lumiDwellTimeout = null;
 
 // --- ROUTING (hash-based so GitHub Pages and the back button both work) ---
@@ -183,6 +187,9 @@ function initializeApp() {
       // Fire-and-forget: the grant is silent where supported and absent where
       // it isn't (Safari), so nothing in the UI waits on or reacts to it.
       stateManager.requestPersistentStorage();
+      // The journey is done: the next dashboard unfolds the ring into the
+      // radar (views/ceremony.js), once.
+      ceremonyPending = true;
       initializeApp();
     });
   } else {
@@ -276,7 +283,9 @@ function handleTabKeydown(e, index) {
 function renderActiveTab() {
   // Whatever the last view set moving ends here, before the next one draws:
   // its springs, frame loops and window listeners all hang off this mount.
+  // The radar ceremony's on-screen watcher is not on the mount; it ends here too.
   disposeMotion();
+  disposeCeremony();
   const state = stateManager.state;
   const route = routeFromHash();
   const activeTab = route.type === "tab" ? route.tab : null;
@@ -315,7 +324,8 @@ function renderActiveTab() {
     const resetBtn = document.getElementById("btn-reset-data");
     if (resetBtn) resetBtn.addEventListener("click", confirmReset);
   } else if (activeTab === "dashboard") {
-    renderDashboard("main-view", state, downloadBackup);
+    renderDashboard("main-view", state, downloadBackup, { ceremony: ceremonyPending });
+    ceremonyPending = false;
   } else if (activeTab === "review") {
     renderReview("main-view", state, handleReviewComplete);
   } else if (activeTab === "quests") {

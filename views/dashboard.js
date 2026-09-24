@@ -11,6 +11,7 @@ import { getTopSuggestions, getMentalHealthNotice } from "../suggestions.js";
 import { balanceIndex, balanceBand, weakestAspect, gradeAllAspects, aspectsAtOrAboveAverage, isBottomGrade } from "../grades.js";
 import { seasonPace } from "../season.js";
 import { openShareSheet } from "./share.js";
+import { bindRadarCeremony } from "./ceremony.js";
 import { t, tp, dateLocale } from "../i18n.js";
 import {
   escapeHtml, aspectLabel, confidenceBadge, benchmarkStanding,
@@ -126,12 +127,16 @@ function deepAssessmentPrompt({ deepDone, deepTotal }) {
 }
 
 // 2. RENDER THE MAIN DASHBOARD
-export function renderDashboard(containerId, state, onExportBackup) {
+// ceremony: true the first time the dashboard is drawn after the journey is
+// finished; the radar then unfolds from the ring once it is on screen.
+export function renderDashboard(containerId, state, onExportBackup, { ceremony = false } = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
   const p = state.profile;
   const pace = seasonPace(p.season);
+  // Also what keeps the radar ceremony quiet (non-negotiable 4).
+  const careNotice = getMentalHealthNotice(state);
   const benchmarks = getAllBenchmarks(state);
   const benchmarkSources = collectSources(benchmarks);
   // state.aspects is passed because finance grades off its composite score,
@@ -160,7 +165,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
   const daysSinceExport = stateManager.daysSinceLastExport();
 
   container.innerHTML = `
-    ${mentalHealthNotice(getMentalHealthNotice(state))}
+    ${mentalHealthNotice(careNotice)}
     ${actionPrompts({ reviewDue, checkinDue, needsBackup, askBirthday, daysSinceExport })}
     ${state.profile.assessmentComplete === false ? `
       <div class="quickstart-note">
@@ -220,9 +225,16 @@ export function renderDashboard(containerId, state, onExportBackup) {
 
         <div class="card dash-radar">
           <h4 class="card-header">${t("Aspect Radar")}
-            <button type="button" id="btn-share-radar" class="share-open">${t("Share")}</button>
+            <span class="card-header-actions">
+              <button type="button" id="btn-radar-play" class="share-open" hidden>${t("Play")}</button>
+              <button type="button" id="btn-radar-skip" class="share-open" hidden>${t("Skip")}</button>
+              <button type="button" id="btn-share-radar" class="share-open">${t("Share")}</button>
+            </span>
           </h4>
-          <div id="radar-chart-container"></div>
+          <div class="radar-stage">
+            <div id="radar-chart-container"></div>
+            <div class="ring-burst radar-burst" id="radar-burst" aria-hidden="true"></div>
+          </div>
         </div>
 
         ${suggestions.length > 0 ? `
@@ -302,6 +314,17 @@ export function renderDashboard(containerId, state, onExportBackup) {
   `;
 
   renderRadarChart("radar-chart-container", state.aspects, { average: AVERAGE_ASPECT_SCORES });
+  // The ring unfolds into this radar (views/ceremony.js). Decoration: if it
+  // fails, the radar as drawn is the result, and the console gets the defect.
+  bindRadarCeremony({
+    svg: document.getElementById("radar-chart-container")?.querySelector("svg"),
+    layer: document.getElementById("radar-burst"),
+    play: document.getElementById("btn-radar-play"),
+    skip: document.getElementById("btn-radar-skip"),
+    autoplay: ceremony,
+    quiet: !!careNotice,
+    onError: (err) => console.error("Radar ceremony failed:", err)
+  });
 
   // Removing the node rather than re-rendering: the flag is persisted either
   // way, and a full re-render would scroll the user back to the top of the

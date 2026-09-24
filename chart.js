@@ -315,6 +315,16 @@ export function renderRadarChart(containerId, aspects, options = {}) {
   svg.setAttribute("height", height);
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svg.style.overflow = "visible";
+  // The ceremony (views/ceremony.js) reads the plot from here and finds its
+  // pieces by these classes. Nothing about the drawing depends on them.
+  svg.setAttribute("class", "radar-svg");
+  svg.dataset.cx = String(cx);
+  svg.dataset.cy = String(cy);
+  svg.dataset.r = String(radius);
+  // The grid and the spokes, in one group so the ceremony can bloom them.
+  const bloom = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  bloom.setAttribute("class", "radar-bloom");
+  svg.appendChild(bloom);
   // Accessible name listing every score (review finding: the radar was
   // silent to AT). The old "astral-glow" filter definition — a leftover from
   // the game theme, defined but never applied — is gone.
@@ -349,7 +359,7 @@ export function renderRadarChart(containerId, aspects, options = {}) {
       polygon.setAttribute("stroke", "rgba(36, 52, 77, 0.28)"); // Navy outer rim
       polygon.setAttribute("stroke-dasharray", "4,2");
     }
-    svg.appendChild(polygon);
+    bloom.appendChild(polygon);
   });
 
   // 2. Draw 8 Axis lines & Labels
@@ -366,7 +376,7 @@ export function renderRadarChart(containerId, aspects, options = {}) {
     line.setAttribute("y2", endY);
     line.setAttribute("stroke", "rgba(32, 50, 76, 0.15)");
     line.setAttribute("stroke-width", "1");
-    svg.appendChild(line);
+    bloom.appendChild(line);
 
     // Label positioning
     // Same gap the radius solve above assumed. If these two ever diverge the
@@ -377,6 +387,7 @@ export function renderRadarChart(containerId, aspects, options = {}) {
     const ly = cy + Math.sin(angle) * labelDistance;
 
     const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("class", "radar-label");
     text.setAttribute("x", lx);
     text.setAttribute("y", ly + 4);
     text.setAttribute("text-anchor", "middle");
@@ -400,6 +411,7 @@ export function renderRadarChart(containerId, aspects, options = {}) {
     const avgPoints = radarPoints(average, ASPECT_KEYS, cx, cy, radius)
       .map(pt => `${pt.x},${pt.y}`);
     const avgPolygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+    avgPolygon.setAttribute("class", "radar-average");
     avgPolygon.setAttribute("points", avgPoints.join(" "));
     avgPolygon.setAttribute("fill", "none");
     avgPolygon.setAttribute("stroke", "rgba(32, 50, 76, 0.45)");
@@ -413,6 +425,7 @@ export function renderRadarChart(containerId, aspects, options = {}) {
   const scorePoints = vertices.map(pt => `${pt.x},${pt.y}`);
 
   const scorePolygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  scorePolygon.setAttribute("class", "radar-shape");
   scorePolygon.setAttribute("points", scorePoints.join(" "));
   scorePolygon.setAttribute("fill", "rgba(36, 52, 77, 0.10)"); // Navy translucent fill
   scorePolygon.setAttribute("stroke", "var(--color-slate)");
@@ -422,6 +435,7 @@ export function renderRadarChart(containerId, aspects, options = {}) {
   // 5. Draw Score Points (dots at vertices)
   vertices.forEach(({ value: score, x, y }) => {
     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("class", "radar-vertex");
     circle.setAttribute("cx", x);
     circle.setAttribute("cy", y);
     circle.setAttribute("r", "4");
@@ -432,6 +446,7 @@ export function renderRadarChart(containerId, aspects, options = {}) {
 
     // Score label numbers
     const scoreText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    scoreText.setAttribute("class", "radar-score");
     scoreText.setAttribute("x", x);
     scoreText.setAttribute("y", y - 8);
     scoreText.setAttribute("text-anchor", "middle");

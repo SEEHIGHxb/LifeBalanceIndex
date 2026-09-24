@@ -176,6 +176,18 @@ function burst(parts, signal) {
   });
 }
 
+// One burst on its own, for a scene that has no parked particles (the final
+// ceremony's). Made, flown and removed here; cut short, removed at once.
+export async function playBurst(layer, signal) {
+  if (!layer) return true;
+  const parts = makeParticles(layer);
+  const removeAll = () => { for (const part of parts) part.el.remove(); };
+  signal.addEventListener("abort", removeAll, { once: true });
+  const ok = await burst(parts, signal);
+  removeAll();
+  return ok;
+}
+
 // --- the chapter ending ------------------------------------------------------------
 
 function dealCard(el, p) {

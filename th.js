@@ -1308,6 +1308,9 @@ export const TH = {
     "ข้อมูลของคุณอยู่ในเบราว์เซอร์นี้เท่านั้น ควรส่งออกสำรองข้อมูลเป็นประจำ — การล้างข้อมูลเว็บไซต์จะลบข้อมูลทิ้ง",
   // Tug-the-ring (views/tug.js): a toy on the landing and after the last region.
   "Tug the ring, or tap it, for a burst of stars": "ดึงหรือแตะวงแหวน ให้ดาวกระจาย",
+  // The final ceremony (views/ceremony.js): the ring unfolds into the radar.
+  "Play": "เล่น",
+  "Skip": "ข้าม",
   // The in-app Reduce motion switch (Profile). It can only add reduction.
   "Motion": "การเคลื่อนไหว",
   "Reduce motion": "ลดการเคลื่อนไหว",

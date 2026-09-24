@@ -1,0 +1,48 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com">
+<title>Star Atlas Motion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Trirong:wght@400;500&family=Inter:wght@400;500;600&family=Sarabun:wght@400;500&display=swap">
+<link rel="stylesheet" href="proto.css">
+<script type="module" src="proto.js"></script>
+
+<!--
+  LBI Phase 1: a disposable motion prototype, outside the app.
+  See README.md in this folder. Nothing here is imported by the app.
+  Every scene renders its final state as HTML first; motion only animates
+  toward it (plan non-negotiable 8).
+-->
+
+<div class="page">
+  <header class="top">
+    <p class="kicker" data-i18n="kicker">LBI · Phase 1 prototype · disposable</p>
+    <h1 class="title" data-i18n="title">Star Atlas motion</h1>
+
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Language" id="lang-group">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="th" aria-pressed="false">ไทย</button>
+      </div>
+      <div class="seg" role="group" aria-label="Speed" id="speed-group">
+        <button type="button" data-speed="1" aria-pressed="true">1×</button>
+        <button type="button" data-speed="0.25" aria-pressed="false">¼×</button>
+      </div>
+      <label class="switch" for="reduce">
+        <input type="checkbox" id="reduce">
+        <span data-i18n="reduce">Reduce motion</span>
+      </label>
+    </div>
+
+    <nav class="tabs" aria-label="Scenes" id="tabs">
+      <a href="#tug" data-scene="tug"><span class="tab-n">1</span> <span data-i18n="tab-tug">Tug the ring</span></a>
+      <a href="#ending" data-scene="ending"><span class="tab-n">2</span> <span data-i18n="tab-ending">Chapter ending</span></a>
+      <a href="#opening" data-scene="opening"><span class="tab-n">3</span> <span data-i18n="tab-opening">Chapter opening</span></a>
+      <a href="#radar" data-scene="radar"><span class="tab-n">4</span> <span data-i18n="tab-radar">Ring to radar</span></a>
+    </nav>
+  </header>
+
+  <main id="scene" class="scene"></main>
+
+  <aside class="judge" id="judge" aria-label="What to judge"></aside>
+</div>

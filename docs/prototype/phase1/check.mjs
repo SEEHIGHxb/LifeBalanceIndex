@@ -216,14 +216,27 @@ async function checkEnding(browser) {
     .every((el) => el.style.transform === ""));
   check("ending: every element comes to rest with no transform left on it", rest);
 
+  // Replay and the region buttons re-render the scene they sit in; focus
+  // must land back on them, not on <body>.
+  await page.focus("#replay");
+  await page.keyboard.press("Enter");
+  const afterReplay = await probe(page, () => document.activeElement?.id);
+  check("ending: Replay keeps keyboard focus after re-rendering", afterReplay === "replay", afterReplay);
+  await advance(page, 3500);
+  const burstsBefore = await probe(page, () => window.__proto.bursts.filter((x) => x.scene === "ending").length);
+
   // The quiet zone: same beats, no burst (non-negotiable 4).
-  await page.click('[data-region="stillWater"]');
+  await page.focus('[data-region="stillWater"]');
+  await page.keyboard.press("Enter");
+  const afterRegion = await probe(page, () => document.activeElement?.dataset.region);
+  check("ending: a region button keeps keyboard focus after re-rendering", afterRegion === "stillWater", afterRegion);
   await advance(page, 3500);
   const quiet = await probe(page, () => ({
     bursts: window.__proto.bursts.filter((b) => b.scene === "ending").length,
     done: window.__proto.done.ending
   }));
-  check("ending: The Still Water finishes with no burst", quiet.done && quiet.bursts === 1, `${quiet.bursts - 1} new bursts`);
+  check("ending: The Still Water finishes with no burst", quiet.done && quiet.bursts === burstsBefore,
+    `${quiet.bursts - burstsBefore} new bursts`);
 
   check("ending: no page errors", errors.length === 0, errors.join(" | "));
   await context.close();

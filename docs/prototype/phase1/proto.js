@@ -667,10 +667,10 @@ async function sceneEnding(root, signal) {
   for (const btn of root.querySelectorAll("[data-region]")) {
     btn.addEventListener("click", () => {
       endingRegion = btn.dataset.region;
-      show();
+      show({ refocus: `[data-region="${endingRegion}"]` });
     }, { signal });
   }
-  root.querySelector("#replay").addEventListener("click", () => show(), { signal });
+  root.querySelector("#replay").addEventListener("click", () => show({ refocus: "#replay" }), { signal });
   pressSpring(root.querySelector("#end-continue"), signal);
 
   const seg = root.querySelector(`#end-lit-${r.index}`);
@@ -880,7 +880,7 @@ async function sceneOpening(root, signal) {
   const theme = r.theme[lang];
   root.innerHTML = openingMarkup(r, title, theme);
   root.querySelector("#opening-card").style.setProperty("--wash", r.wash);
-  root.querySelector("#replay").addEventListener("click", () => show(), { signal });
+  root.querySelector("#replay").addEventListener("click", () => show({ refocus: "#replay" }), { signal });
 
   const spans = [...root.querySelectorAll("#open-title .g:not(.g-space)")];
   const typed = root.querySelector("#open-typed");
@@ -1102,7 +1102,10 @@ function applyStatic() {
   }
 }
 
-function show() {
+// `refocus` names the control to focus after the re-render. A button that
+// re-renders its own scene is destroyed by it, which would drop keyboard and
+// screen-reader users back to <body>.
+function show({ refocus = null } = {}) {
   sceneCtl?.abort();
   sceneCtl = new AbortController();
   for (const el of document.querySelectorAll(".flyer")) el.remove();
@@ -1120,6 +1123,7 @@ function show() {
     <ul>${JUDGE[name].map((line) => `<li>${esc(line)}</li>`).join("")}</ul>
     <p class="sr-only" id="sr-status" role="status"></p>`;
   SCENES[name](sceneEl, sceneCtl.signal);
+  if (refocus) sceneEl.querySelector(refocus)?.focus({ preventScroll: true });
 }
 
 for (const b of document.querySelectorAll("[data-lang]")) {

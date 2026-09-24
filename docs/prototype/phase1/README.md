@@ -38,7 +38,7 @@ With the dev server running (`.claude/launch.json`, port 8181):
 node docs/prototype/phase1/check.mjs http://127.0.0.1:8181
 ```
 
-It checks 49 things:
+It checks 51 things:
 - **Manual clock.** Time is driven by hand, through Playwright `addInitScript`, because the CSP blocks inline injection.
 - **Tug.** Rubber band, spring settle under 1 s, snap at 90 px, burst geometry (8 particles on the star angles, 70–110 px, removed after 800 ms), and the tap and Enter forms.
 - **Chapter ending.** Card stagger (170 ms), fact-card order and flip, and no burst in the quiet zone.

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `94`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `95`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,26 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.43.0] — 2026-09-24 (APP_VERSION 95)
+
+Phase 4 of the interactive-web plan, third release: the share card as the
+map. With it, Phase 4's three releases are all in.
+
+### Changed
+
+- **The shared card's shape is the Lumi Star.** The reader's shape on the
+  story card is drawn as the score-stretched star (symbols.md S1), in gold:
+  each point reaches exactly where the chart puts that score, so the grid
+  still reads true and the card cannot disagree with the dashboard, and the
+  valleys between the points share one base. A valley never reaches past the
+  points beside it, so a very low score cannot fold the star inside out.
+- **The preview assembles the map.** When the share sheet opens, the star's
+  points grow out in radar order and then the names and scores arrive (about
+  1 s). Only the preview moves; the image that is shared or saved is always the
+  finished card, and a toggle pressed mid-way shows the finished card at once.
+  With reduced motion the preview is simply the finished card.
+- The legend's "Your scores" swatch is the star's gold line.
 
 ## [2.42.0] — 2026-09-24 (APP_VERSION 94)
 

@@ -1,6 +1,6 @@
 # LBI: interactive and creative web plan
 
-Status: **approved 2026-09-23.** Phase 0 has started; the symbol definitions are in [`identity/symbols.md`](identity/symbols.md).
+Status: **approved 2026-09-23.** Phases 1 to 4 are built (Phase 4 on 2026-09-24) and Lumi is parked; the symbol definitions are in [`identity/symbols.md`](identity/symbols.md).
 
 **Look updated the same day to "Sage & Gilt"** (owner's style reference: soft sage and gold line art). The structure below stands: the star mark, the sparkles, the eight regions and every motion rule. The flat navy stickers, bright region hues and the Mitr font are replaced; `identity/symbols.md` v2 is the source of truth for the look.
 
@@ -153,7 +153,27 @@ In LBI, the serious content is the instrument item.
 - **Contrast guards:** hold.
 - **TalkBack/VoiceOver:** deferred by the owner on 2026-09-24, until the core of the app is settled. It is not a blocker for Phase 4. The markup is built for screen readers already: hidden full-text copies, `aria-hidden` letters, a labelled tug button and focus that follows the screen. What's left is a pass on a real phone.
 
-Phase 4 (the art set and the ring → radar ceremony) is next.
+**Phase 4, first release (2026-09-24): built, in v93 (2.41.0).**
+- **The sprite sheet**, `assets/sprites.svg` (about 4 KB): the Gilt star (a new mark beside the app's name), the line star, the glint and the eight motifs. The tab icons and every glint use it. It holds no emblems (they are raster, decision 9) and no Lumi (parked).
+- **Region emblems** on every chapter ending, arriving with the burst. The app copies are 224 px WebP, 4-11 KB each, made from the masters by `docs/identity/make-app-emblems.mjs`. They are sized before they load, lazy, and precached.
+- **Found on the way:** the deploy step copied an explicit file list, so the new assets would not have shipped. The deploy's APP_SHELL check would have failed the deploy first; the copy lines are added.
+
+**Phase 4, second release (2026-09-24): built, in v94 (2.42.0).**
+- **The ring unfolds into the radar** (`views/ceremony.js`) on the dashboard's Aspect Radar: once, the first time the dashboard is seen after the journey, as the radar comes on screen; Play replays it and Skip lands it. The prototype's timings.
+- **An owner call made without asking; easy to change:** when the dashboard shows the mental-health notice, the radar card sits directly under the hotlines. There the ceremony never plays by itself and never bursts (non-negotiable 4); Play still works for a reader who asks.
+- **Independent review:** approved, with one medium issue: the on-screen watcher outlived a dashboard left before its radar was seen. Fixed, with a test.
+
+**Phase 4, third release (2026-09-24): built, in v95 (2.43.0).**
+- **The share card as the map.** The card's shape is the score-stretched Lumi Star: the tips sit exactly on the scores (the card still agrees with the chart), and the valleys share S1's base, never reaching past a neighbouring point.
+- **It assembles** in the share sheet's preview: points grow out in radar order, then names and scores. The exported image is always the finished card.
+- **An owner call made without asking; easy to change:** S1's own rule (tip `18 + 28 × score / 100`) would put a score of 0 at 39 % of the radius, so the card's grid would stop matching the dashboard. The tips were kept on the chart's scale instead, and only the valleys follow S1.
+- **Independent review:** approved, with two medium issues, both fixed. The star's round line joins leaked into later draws on the sheet's shared canvas, including the exported image after a toggle (a test now draws twice on one context). A toggle pressed and pressed back while fonts loaded restarted the assembly over the finished card.
+
+**Phase 4 status:** all three releases are built. The exit criteria:
+- **Asset budget:** met and held by `tests/art-set.test.mjs`. `motion.js` is 4.5 KB gzipped (budget 6), the sprites are 4 KB (budget 25), and the largest emblem is 10.6 KB (budget 20).
+- **No layout shift:** the chapter ending measures a layout shift of 0 in `tests/moments-e2e.mjs`.
+
+Phase 5 (spread) is next.
 
 ## 7. Decisions (approved 2026-09-23)
 

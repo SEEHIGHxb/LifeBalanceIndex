@@ -30,6 +30,7 @@
 
 import { t } from "../i18n.js";
 import { openDialog } from "./helpers.js";
+import { animate, linear, isReduced } from "../motion.js";
 import {
   renderStoryCard, drawStoryCard, storyCardData, DETAIL_LEVELS, STORY_W, STORY_H
 } from "../story-card.js";
@@ -38,6 +39,8 @@ import {
 // `lifequest_lang` is: these are display preferences, not assessment data, so
 // they should survive an erase and must not force a schema migration.
 const PREFS_KEY = "lifequest_share_prefs";
+// How long the preview takes to assemble the map when the sheet opens.
+const ASSEMBLE_MS = 1100;
 
 const DETAIL_LABELS = () => ({
   shape: t("Shape only"),
@@ -138,14 +141,44 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
   // the user gesture, and awaiting canvas.toBlob() inside the handler breaks
   // that chain - the sheet then simply never opens, with no error. Keeping a
   // ready blob means the handler can call share() straight away.
+  // The preview ASSEMBLES the map once as the sheet opens (plan §5): the star's
+  // points grow out in radar order, then the names and scores arrive. Only the
+  // preview moves. The exported image is drawn whole, on its own canvas, and a
+  // toggle pressed mid-way stops the assembly and shows the finished card.
+  let assembly = null;
+  const stopAssembly = () => { assembly?.abort(); assembly = null; };
+  const assemble = () => {
+    stopAssembly();
+    const run = new AbortController();
+    assembly = run;
+    if (!isReduced()) drawStoryCard(ctx, data, { ...prefs, grow: 0 });
+    animate({
+      duration: ASSEMBLE_MS, ease: linear, signal: run.signal, reduced: "end",
+      update: (p) => {
+        // Closed mid-way: nothing left to draw on.
+        if (!canvas.isConnected) { run.abort(); return; }
+        drawStoryCard(ctx, data, { ...prefs, grow: p });
+      }
+    });
+  };
+
+  let redraws = 0;
   const redraw = async () => {
+    redraws += 1;
+    stopAssembly();
     drawStoryCard(ctx, data, prefs);
     blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
   };
 
-  // First paint goes through renderStoryCard so document.fonts.ready is
-  // awaited once; without it the opening frame draws in a fallback face.
-  renderStoryCard(data, { ...prefs, canvas }).then(first => { blob = first; });
+  // First paint waits for document.fonts.ready (inside renderStoryCard);
+  // without it the opening frame draws in a fallback face. If a toggle was
+  // pressed while waiting (even one pressed and then pressed back), redraw()
+  // has already drawn and exported the finished card: leave it be.
+  renderStoryCard(data, { ...prefs }).then(first => {
+    if (redraws > 0) return;
+    blob = first;
+    assemble();
+  });
 
   overlay.querySelectorAll(".share-toggle").forEach(btn => {
     btn.addEventListener("click", () => {

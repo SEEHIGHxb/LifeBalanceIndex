@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 import {
-  drawStoryCard, storyCardData, fitText, wrapText,
+  drawStoryCard, storyCardData, fitText, wrapText, starPoints, assembleAt, STAR_VALLEY,
   THEMES, DETAIL_LEVELS, STORY_W, STORY_H, SAFE_TOP, SAFE_LOW
 } from "../story-card.js";
 import { radarPoints, RADAR_KEYS } from "../chart.js";
@@ -250,4 +250,78 @@ test("storyCardData formats the date and survives missing fields", () => {
 
   const dated = storyCardData({ date: new Date("2026-07-31T00:00:00Z") });
   assert.match(dated.dateText, /2026/);
+});
+
+// --- the card as the map (Phase 4): the Lumi Star, score-stretched ------------
+
+const CX = 540;
+const CY = 880;
+const R = 260;
+const dist = (pt) => Math.hypot(pt.x - CX, pt.y - CY);
+
+test("the star's points sit exactly where the chart puts each score", () => {
+  const vertices = radarPoints(ASPECTS, RADAR_KEYS, CX, CY, R);
+  const tips = starPoints(vertices, CX, CY, R).filter(pt => pt.tip);
+  assert.equal(tips.length, 8);
+  tips.forEach((tip, i) => {
+    assert.ok(Math.abs(tip.x - vertices[i].x) < 1e-9 && Math.abs(tip.y - vertices[i].y) < 1e-9,
+      `${RADAR_KEYS[i]}: the star and the chart disagree about its score`);
+  });
+});
+
+test("the valleys share one base and never fold the star inside out", () => {
+  const lows = { ...ASPECTS, personalGoals: 0, socialContribution: 4 };
+  const pts = starPoints(radarPoints(lows, RADAR_KEYS, CX, CY, R), CX, CY, R);
+  for (let i = 1; i < pts.length; i += 2) {
+    const v = dist(pts[i]);
+    assert.ok(v <= STAR_VALLEY * R + 1e-9, "a valley is never deeper than S1's base");
+    assert.ok(v <= dist(pts[i - 1]) + 1e-9 && v <= dist(pts[(i + 1) % pts.length]) + 1e-9,
+      `valley ${(i - 1) / 2} reaches past a point beside it`);
+  }
+  // With no low scores (all at least 40), every valley is the same shared base.
+  const high = Object.fromEntries(RADAR_KEYS.map((k, i) => [k, 40 + i * 7]));
+  const even = starPoints(radarPoints(high, RADAR_KEYS, CX, CY, R), CX, CY, R).filter(pt => !pt.tip);
+  for (const v of even) assert.ok(Math.abs(dist(v) - STAR_VALLEY * R) < 1e-9);
+});
+
+test("the map assembles in radar order and is whole at the end", () => {
+  assert.equal(assembleAt(0, 0, 8), 0);
+  assert.equal(assembleAt(1, 7, 8), 1);
+  const mid = RADAR_KEYS.map((_, i) => assembleAt(0.3, i, 8));
+  for (let i = 1; i < mid.length; i++) assert.ok(mid[i] <= mid[i - 1], "an earlier point is never behind a later one");
+  assert.ok(mid[0] > 0.5 && mid.at(-1) === 0, `mid-way: ${mid.map(m => m.toFixed(2)).join(" ")}`);
+  const start = starPoints(radarPoints(ASPECTS, RADAR_KEYS, CX, CY, R), CX, CY, R, 0);
+  for (const pt of start) assert.ok(dist(pt) < 1e-9, "at the start the star is a point");
+});
+
+test("the card is drawn whole unless asked for a stage of the assembly", () => {
+  const whole = draw({ detail: "full" });
+  const same = draw({ detail: "full", grow: 1 });
+  assert.deepEqual(whole.texts, same.texts);
+  assert.deepEqual(whole.points, same.points);
+  const early = draw({ detail: "full", grow: 0.2 });
+  assert.notDeepEqual(early.points, whole.points, "mid-assembly the shape is still growing");
+});
+
+test("one draw's canvas state never carries into the next (the sheet reuses its context)", () => {
+  // Record the join and the alpha in force at every stroke and fill.
+  const strokes = (ctx) => ctx.calls.filter(c => c[0] === "stroke" || c[0] === "fill");
+  const tracking = () => {
+    const ctx = stubContext();
+    ctx.lineJoin = "miter";
+    ctx.globalAlpha = 1;
+    for (const name of ["stroke", "fill"]) {
+      const orig = ctx[name];
+      ctx[name] = function () { orig.call(this); this.calls.at(-1).push(this.lineJoin, this.globalAlpha); };
+    }
+    return ctx;
+  };
+  const data = storyCardData({ name: "Jojo", aspects: ASPECTS, average: AVERAGE, index: 58, grades: GRADES });
+  const fresh = tracking();
+  drawStoryCard(fresh, data, { detail: "full" });
+  const reused = tracking();
+  drawStoryCard(reused, data, { detail: "names", grow: 0.8 });
+  reused.calls.length = 0;
+  drawStoryCard(reused, data, { detail: "full" });
+  assert.deepEqual(strokes(reused), strokes(fresh), "a second draw on the same context came out different");
 });

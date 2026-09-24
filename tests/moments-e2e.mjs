@@ -319,6 +319,31 @@ try {
   await page.evaluate(() => document.getElementById("radar-chart-container").scrollIntoView({ block: "center" }));
   await advance(page, 400);
   if ((await radarState(page)).ring) problems.push("ceremony: it autoplayed a second time");
+
+  // The share card assembles as the map, in the preview only, and ends on the
+  // finished card: the same pixels a plain redraw gives.
+  const framesBefore = await page.evaluate(() => globalThis.__framesRequested());
+  await page.click("#btn-share-radar");
+  await page.waitForSelector("#share-preview");
+  const preview = () => page.evaluate(() => document.getElementById("share-preview").toDataURL("image/png"));
+  let midCard = null;
+  for (let i = 0; i < 50 && !midCard; i++) {
+    await page.waitForTimeout(50);
+    // The assembly asks for its first frame once the fonts are ready; step in.
+    if (await page.evaluate((n) => globalThis.__framesRequested() > n, framesBefore)) {
+      await advance(page, 400);
+      midCard = await preview();
+    }
+  }
+  await advance(page, 1200);
+  const endCard = await preview();
+  if (!midCard || midCard === endCard) problems.push("share card: the preview did not assemble");
+  const detail = await page.evaluate(() => document.querySelector('.share-toggle[data-group="detail"][aria-pressed="true"]').dataset.value);
+  const other = detail === "full" ? "names" : "full";
+  await page.click(`.share-toggle[data-value="${other}"]`);
+  await page.click(`.share-toggle[data-value="${detail}"]`);
+  await page.waitForTimeout(100);
+  if ((await preview()) !== endCard) problems.push("share card: the assembly did not end on the finished card");
   await context.close();
 } catch (err) {
   problems.push(`ceremony: ${err.message}`);

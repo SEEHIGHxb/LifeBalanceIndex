@@ -55,10 +55,12 @@ export const THEMES = {
     grid: "rgba(32, 50, 76, 0.14)",
     rim: "rgba(36, 52, 77, 0.30)",
     average: "rgba(32, 50, 76, 0.55)",
-    you: "#3a5170",
-    youFill: "rgba(36, 52, 77, 0.12)",
     accent: "#6d2e3f",
-    dotRing: "#ffffff"
+    dotRing: "#ffffff",
+    // The Lumi Star in Sage & Gilt (symbols.md S1): gold-light fill, gold-line
+    // outline (3.17:1 on this ground; graphics need 3:1).
+    star: "rgba(240, 216, 168, 0.62)",
+    starLine: "#a88752"
   },
   navy: {
     bg: "#24344d",
@@ -67,10 +69,10 @@ export const THEMES = {
     grid: "rgba(247, 245, 240, 0.16)",
     rim: "rgba(247, 245, 240, 0.34)",
     average: "rgba(247, 245, 240, 0.60)",
-    you: "#e8dfd2",
-    youFill: "rgba(247, 245, 240, 0.14)",
     accent: "#c9909f",
-    dotRing: "#24344d"
+    dotRing: "#24344d",
+    star: "rgba(240, 216, 168, 0.30)",
+    starLine: "#d9b77a"
   }
 };
 
@@ -117,6 +119,51 @@ const SIDE_MARGIN = 80;
 const LABEL_MARGIN = 30;
 
 const font = (weight, size, family) => `${weight} ${size}px ${family}`;
+
+// THE CARD AS THE MAP (plan §3-§5, Phase 4). The reader's shape is drawn as the
+// Lumi Star, score-stretched (symbols.md S1): each point reaches exactly where
+// the chart puts that score, so the grid still reads true and the card cannot
+// disagree with the dashboard, while the valleys between the points sit on one
+// shared base. The mark is the result.
+//
+// S1's valley is 13 against a longest point of 46. A valley may never reach
+// past the points on either side of it, or a low score would fold the star
+// inside out, so it is also held under 0.8 of the shorter neighbour.
+export const STAR_VALLEY = 13 / 46;
+const VALLEY_UNDER_TIP = 0.8;
+
+// The share sheet's preview ASSEMBLES the map: the points grow out in radar
+// order, then the names and scores arrive. `grow` runs 0..1; each point takes
+// the first ASSEMBLE_POINT of it, staggered evenly across the rest.
+const ASSEMBLE_POINT = 0.6;
+const LABELS_FROM = 0.7;
+const clamp01 = (n) => Math.max(0, Math.min(1, n));
+const easeOut = (p) => 1 - (1 - p) ** 3;
+
+// How far point i of n has grown when the whole card is at `grow`.
+export function assembleAt(grow, i, n) {
+  if (grow >= 1) return 1;
+  const stagger = n > 1 ? (1 - ASSEMBLE_POINT) / (n - 1) : 0;
+  return easeOut(clamp01((grow - i * stagger) / ASSEMBLE_POINT));
+}
+
+// The star's outline: tip, valley, tip, valley... clockwise from the top.
+// `vertices` are radarPoints() for the reader's scores.
+export function starPoints(vertices, cx, cy, r, grow = 1) {
+  const n = vertices.length;
+  const tips = vertices.map((pt, i) => {
+    const k = assembleAt(grow, i, n);
+    return { x: cx + (pt.x - cx) * k, y: cy + (pt.y - cy) * k, len: Math.hypot(pt.x - cx, pt.y - cy) * k, angle: pt.angle };
+  });
+  const out = [];
+  tips.forEach((tip, i) => {
+    const nextTip = tips[(i + 1) % n];
+    const v = Math.min(STAR_VALLEY * r, VALLEY_UNDER_TIP * Math.min(tip.len, nextTip.len));
+    const a = tip.angle + Math.PI / n;
+    out.push({ x: tip.x, y: tip.y, tip: true }, { x: cx + Math.cos(a) * v, y: cy + Math.sin(a) * v, tip: false });
+  });
+  return out;
+}
 
 // Every axis at the same value - the rim, and each grid ring. Built through
 // radarPoints so the rings share the chart's angles too.
@@ -184,7 +231,7 @@ export function wrapText(ctx, text, maxWidth, maxLines = 2) {
   return kept;
 }
 
-function drawRadar(ctx, theme, data, detail) {
+function drawRadar(ctx, theme, data, detail, grow = 1) {
   const { radarCx: cx, radarCy: cy, radarR: r, labelRing } = LAYOUT;
 
   // Grid rings, outermost dashed to read as the 100 rim.
@@ -225,19 +272,21 @@ function drawRadar(ctx, theme, data, detail) {
     ctx.setLineDash([]);
   }
 
-  // The user's polygon.
+  // The reader's shape, as the Lumi Star.
   const vertices = radarPoints(data.aspects, RADAR_KEYS, cx, cy, r);
+  const star = starPoints(vertices, cx, cy, r, grow);
   ctx.beginPath();
-  vertices.forEach((pt, i) => (i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y)));
+  star.forEach((pt, i) => (i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y)));
   ctx.closePath();
-  ctx.fillStyle = theme.youFill;
+  ctx.fillStyle = theme.star;
   ctx.fill();
-  ctx.strokeStyle = theme.you;
-  ctx.lineWidth = 6;
+  ctx.strokeStyle = theme.starLine;
+  ctx.lineWidth = 5;
+  ctx.lineJoin = "round";
   ctx.stroke();
 
-  // Vertex dots.
-  vertices.forEach(pt => {
+  // A dot on each point's tip, where its score sits.
+  star.filter(pt => pt.tip).forEach(pt => {
     ctx.beginPath();
     ctx.arc(pt.x, pt.y, 10, 0, Math.PI * 2);
     ctx.fillStyle = theme.accent;
@@ -248,6 +297,8 @@ function drawRadar(ctx, theme, data, detail) {
   });
 
   if (detail === "shape") return;
+  // While the map assembles, the names and scores arrive last.
+  ctx.globalAlpha = clamp01((grow - LABELS_FROM) / (1 - LABELS_FROM));
 
   // Axis labels, and in `full` the grade letter beside the name. An aspect
   // with no grade (relationships is unranked by design) simply shows no
@@ -274,7 +325,7 @@ function drawRadar(ctx, theme, data, detail) {
     ctx.fillText(fitText(ctx, label, room), lx, ly);
   });
 
-  if (detail !== "full") return;
+  if (detail !== "full") { ctx.globalAlpha = 1; return; }
 
   // The 0-100 score, nudged outward along its own axis so it clears the dot.
   ctx.font = font(700, 26, SANS);
@@ -287,6 +338,7 @@ function drawRadar(ctx, theme, data, detail) {
       pt.y + Math.sin(pt.angle) * 26
     );
   });
+  ctx.globalAlpha = 1;
 }
 
 function drawLegend(ctx, theme, y) {
@@ -308,7 +360,7 @@ function drawLegend(ctx, theme, y) {
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x + swatch, y);
-    ctx.strokeStyle = dashed ? theme.average : theme.you;
+    ctx.strokeStyle = dashed ? theme.average : theme.starLine;
     ctx.lineWidth = dashed ? 4 : 6;
     ctx.setLineDash(dashed ? [10, 7] : []);
     ctx.stroke();
@@ -329,10 +381,19 @@ function drawLegend(ctx, theme, y) {
 // Draw the whole card onto any 2D context. Pure in the sense that matters: it
 // reads nothing but its arguments and touches no storage, so a recording stub
 // context can be handed in from a test with no canvas anywhere.
+// opts.grow (0..1, default 1) is how far the map has assembled; the exported
+// image is always drawn at 1.
 export function drawStoryCard(ctx, data, opts = {}) {
+  const grow = Number.isFinite(opts.grow) ? clamp01(opts.grow) : 1;
   const theme = THEMES[opts.theme] || THEMES.paper;
   const detail = DETAIL_LEVELS.includes(opts.detail) ? opts.detail : "shape";
   const maxWidth = STORY_W - SIDE_MARGIN * 2;
+
+  // The share sheet draws every frame, and the exported card, on one context.
+  // State one draw sets (the star's round joins, the labels' fade) must not
+  // carry into the next, so each draw starts from the canvas defaults.
+  ctx.globalAlpha = 1;
+  ctx.lineJoin = "miter";
 
   ctx.fillStyle = theme.bg;
   ctx.fillRect(0, 0, STORY_W, STORY_H);
@@ -352,7 +413,7 @@ export function drawStoryCard(ctx, data, opts = {}) {
     ctx.fillText(fitText(ctx, data.dateText, maxWidth), STORY_W / 2, LAYOUT.date);
   }
 
-  drawRadar(ctx, theme, data, detail);
+  drawRadar(ctx, theme, data, detail, grow);
 
   drawLegend(ctx, theme, LAYOUT.legend);
 

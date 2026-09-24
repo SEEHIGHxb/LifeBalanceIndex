@@ -95,7 +95,7 @@ In LBI, the serious content is the instrument item.
 
 **Phase 0 status:** the emblems are done (Gemini). Lumi is parked (GPT busts as the fallback, SVG takes in `identity/lumi-concepts.html`). Phase 1 does not wait for her.
 
-**Phase 1 status (2026-09-24):** built in [`prototype/phase1/`](prototype/phase1/README.md). It has all four moments, EN/TH, and the reduced-motion paths. `check.mjs` runs 51 numeric checks through a manual clock, and all 51 pass. Waiting for the owner to play it on a phone and approve the feel.
+**Phase 1 status (2026-09-24):** built in [`prototype/phase1/`](prototype/phase1/README.md). It has all four moments, EN/TH, and the reduced-motion paths. `check.mjs` runs 51 numeric checks through a manual clock, and all 51 pass. **The owner played it on a phone and approved the feel on 2026-09-24, all four scenes as built.** Phase 1 is done; Phase 2 is next.
 
 ## 7. Decisions (approved 2026-09-23)
 

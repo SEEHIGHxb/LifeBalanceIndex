@@ -1,6 +1,6 @@
 # Phase 1: motion prototype (disposable)
 
-Status: **built 2026-09-24, waiting for the owner to play it.** It belongs to [`../../interactive-web-plan.md`](../../interactive-web-plan.md) §6, Phase 1.
+Status: **approved 2026-09-24.** The owner played all four scenes on a phone and kept them as built. It belongs to [`../../interactive-web-plan.md`](../../interactive-web-plan.md) §6, Phase 1.
 
 This is one phone-first page outside the app. Nothing in the app imports it, and the deploy step doesn't ship it. Once the feel is approved, Phase 2 rewrites the motion core as `motion.js` and this folder can be deleted.
 

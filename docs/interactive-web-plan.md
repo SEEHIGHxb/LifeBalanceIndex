@@ -134,7 +134,7 @@ In LBI, the serious content is the instrument item.
   - Side by Side → The Commons
 
   All four use the one-line motifs, per symbols.md S8.
-- **Still to check:** TalkBack and VoiceOver need the owner's phone.
+- **Still to check:** TalkBack and VoiceOver (deferred; see the Phase 3 status below).
 
 **Phase 3, second release (2026-09-24): built, in v91 (2.39.0).**
 - **Glint titles and the star caret.** They play on a chapter's first screen, in `views/moments.js` (`playOpening`).
@@ -151,7 +151,7 @@ In LBI, the serious content is the instrument item.
 **Phase 3 status:** all three releases are built. The exit criteria:
 - **e2e with and without reduced motion:** passes (`tests/moments-e2e.mjs` in CI).
 - **Contrast guards:** hold.
-- **TalkBack/VoiceOver:** still waits on the owner's phone.
+- **TalkBack/VoiceOver:** deferred by the owner on 2026-09-24, until the core of the app is settled. It is not a blocker for Phase 4. The markup is built for screen readers already: hidden full-text copies, `aria-hidden` letters, a labelled tug button and focus that follows the screen. What's left is a pass on a real phone.
 
 Phase 4 (the art set and the ring → radar ceremony) is next.
 

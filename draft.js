@@ -17,6 +17,20 @@ import { APP_VERSION } from "./version.js";
 
 const PREFIX = "lifequest_draft_";
 
+// What a stored answer MEANS. Bump this, and only this, when a release changes
+// the meaning of a saved control value: a scale re-valued or reversed, items
+// reordered, an id reused for a different question. Drafts written under any
+// other schema are discarded, because restoring them would put the wrong option
+// under the reader's thumb and nothing downstream could tell.
+//
+// Adding or removing a question does NOT need a bump. A restore skips controls
+// that no longer exist, and every form re-validates before it submits, so a new
+// question is asked rather than silently left blank.
+//
+// Drafts written before this stamp existed (v87 and earlier) carry no `schema`
+// and are read as schema 1.
+export const DRAFT_SCHEMA = 1;
+
 // A draft older than this is not offered. Someone returning after a week is
 // starting again, not resuming, and a week-old half-answered mood scale is a
 // worse input than the question asked fresh.
@@ -75,6 +89,7 @@ export function saveDraft(name, formEl, extra = {}) {
     }
     store.setItem(keyFor(name), JSON.stringify({
       v: APP_VERSION,
+      schema: DRAFT_SCHEMA,
       at: new Date().toISOString(),
       named,
       ids,
@@ -89,13 +104,11 @@ export function saveDraft(name, formEl, extra = {}) {
 
 // Returns the stored draft, or null when there is nothing usable.
 //
-// DISCARDS RATHER THAN REPAIRS, in three cases, because a partly-applicable
-// draft is worse than none:
+// DISCARDS RATHER THAN REPAIRS, in three cases:
 //
-//   1. A DIFFERENT APP VERSION. Instruments get added between releases -- v73
-//      added CIT Learning to onboarding. Restoring a v72 draft into the v73
-//      form would fill everything except the new block, and the user would be
-//      looking at a form that appears finished and is not.
+//   1. A DIFFERENT ANSWER SCHEMA. See DRAFT_SCHEMA. A different APP_VERSION is
+//      not enough: until v88 every release discarded every reader's half-done
+//      form, for a CSS fix as readily as for a new instrument.
 //   2. TOO OLD. See MAX_AGE_MS.
 //   3. UNPARSEABLE. Hand-edited or truncated storage.
 export function readDraft(name) {
@@ -107,7 +120,7 @@ export function readDraft(name) {
 
     const draft = JSON.parse(raw);
     if (!draft || typeof draft !== "object") return null;
-    if (draft.v !== APP_VERSION) return null;
+    if ((draft.schema ?? 1) !== DRAFT_SCHEMA) return null;
 
     const age = Date.now() - new Date(draft.at).getTime();
     if (!Number.isFinite(age) || age < 0 || age > MAX_AGE_MS) return null;
@@ -139,10 +152,11 @@ export function clearDraft(name) {
 // "estimated". Restoring the values without restoring that bookkeeping is the
 // bug this return value exists to prevent.
 //
-// A control named in the draft but absent from the form is skipped silently:
-// the version guard in readDraft already rejects cross-version drafts, so the
-// only way here is a conditional block that is legitimately hidden right now
-// (the RAS instrument for a single user).
+// A control named in the draft but absent from the form is skipped silently.
+// Either it is a conditional block that is legitimately hidden right now (the
+// RAS instrument for a single user) or a later release removed that question.
+// A question a later release ADDED is simply blank, and the form's validation
+// asks for it before anything is submitted.
 export function applyDraft(name, formEl) {
   const draft = readDraft(name);
   if (!draft) return null;

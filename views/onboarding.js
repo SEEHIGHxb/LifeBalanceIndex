@@ -27,7 +27,7 @@
 
 import { stateManager } from "../state.js";
 import { buildProvidedFlags, buildAnsweredFlags } from "../validation.js";
-import { collectInstrument, validateScope } from "./instrument-forms.js";
+import { collectInstrument, validateScope, clearScopeErrors } from "./instrument-forms.js";
 import { escapeHtml, scrollIntoViewGently } from "./helpers.js";
 import { applyDraft, saveDraft, clearDraft, instrumentsIn } from "../draft.js";
 import { savingsRateFrom } from "../scoring.js";
@@ -203,14 +203,16 @@ export function renderOnboarding(containerId, onComplete) {
       <form id="onboarding-form">
         ${screens.map(screenMarkup).join("")}
       </form>
-      <p id="onboarding-error" class="d-none" style="color: var(--color-crimson); margin-top: 12px; font-weight: 600;"></p>
+      <p id="onboarding-error" class="d-none" role="alert" style="color: var(--color-crimson); margin-top: 12px; font-weight: 600;"></p>
     </div>
   `;
 
   const form = document.getElementById("onboarding-form");
   const pageEl = (i) => document.getElementById(`onb-page-${i}`);
   const errorEl = () => document.getElementById("onboarding-error");
-  const showError = (msg) => { const el = errorEl(); el.textContent = msg; el.classList.remove("d-none"); };
+  // Unhidden BEFORE the text is written. The line is role="alert", and a live
+  // region that is display:none when its text changes announces nothing.
+  const showError = (msg) => { const el = errorEl(); el.classList.remove("d-none"); el.textContent = msg; };
   const hideError = () => errorEl().classList.add("d-none");
 
   // --- the couples-only block --------------------------------------------
@@ -341,7 +343,12 @@ export function renderOnboarding(containerId, onComplete) {
     }
   };
 
-  const showScreen = (index) => {
+  // FOCUS FOLLOWS THE SCREEN when the reader moved it. Hiding the old screen
+  // otherwise drops focus to <body>, and #ring-status reads the same on every
+  // screen of a chapter, so a screen-reader user pressed Next and heard
+  // nothing. The heading is the screen's name, so landing there announces it.
+  // Not on the first paint: a page that grabs focus on load is its own problem.
+  const showScreen = (index, { moveFocus = true } = {}) => {
     currentScreen = index;
     screens.forEach((_, i) => pageEl(i).classList.toggle("d-none", i !== index));
     const page = pageEl(index);
@@ -350,6 +357,11 @@ export function renderOnboarding(containerId, onComplete) {
     updateRing(index);
     paintWash(index);
     scrollIntoViewGently(container, { block: "start" });
+    const heading = moveFocus && page.querySelector("h3");
+    if (heading) {
+      heading.setAttribute("tabindex", "-1");
+      heading.focus({ preventScroll: true });
+    }
   };
 
   // Walks past a screen the reader is not being asked (today: the couples-only
@@ -441,15 +453,31 @@ export function renderOnboarding(containerId, onComplete) {
     document.getElementById("onb-resume").classList.remove("d-none");
   }
 
-  // Screens are far finer than the old six steps, so a draft written by the v80
-  // pager carries a `step` of 0..5 that means something else here. Clamping is
-  // deliberately all this does: a resumed reader lands inside their own
-  // answers rather than on a screen that does not exist, and every screen
-  // behind them is still swept by the final validation before submit.
-  const resumeAt = restored && Number.isInteger(restored.step)
+  // WHERE A RESUMED READER LANDS: the screen they saved on, or the first screen
+  // before it with anything unanswered, whichever comes first.
+  //
+  // The saved step alone is not enough. Drafts survive releases since v88, and
+  // a release can add a question to a screen the reader already passed or move
+  // screens around; landing on the saved step would put them past a blank, and
+  // a chapter ending past a blank recaps answers that were never given. The
+  // clamp covers a release with fewer screens than the draft remembers.
+  //
+  // Checking a screen with validateScope paints its error messages, so they
+  // are cleared straight away: the reader has not tried to leave anything yet.
+  const firstIncompleteUpTo = (limit) => {
+    for (let i = 0; i < limit; i++) {
+      if (isSkipped(i)) continue;
+      const invalid = validateScope(pageEl(i));
+      clearScopeErrors(pageEl(i));
+      if (invalid) return i;
+    }
+    return limit;
+  };
+  const savedStep = restored && Number.isInteger(restored.step)
     ? Math.min(Math.max(restored.step, 0), lastIndex)
     : 0;
-  showScreen(isSkipped(resumeAt) ? (nextVisible(resumeAt, 1) ?? 0) : resumeAt);
+  const resumeAt = firstIncompleteUpTo(savedStep);
+  showScreen(isSkipped(resumeAt) ? (nextVisible(resumeAt, 1) ?? 0) : resumeAt, { moveFocus: false });
 
   // Start over: drop the draft and put the form back to the blank-first state
   // the markup was rendered in. form.reset() is exactly right here BECAUSE of
@@ -481,9 +509,15 @@ export function renderOnboarding(containerId, onComplete) {
       if (isSkipped(i)) continue;
       const invalid = validateScope(pageEl(i));
       if (invalid) {
-        showScreen(i);
+        // Focus goes to the first blank itself, not the heading: the scroll
+        // below centres that control, and focus must agree with it.
+        showScreen(i, { moveFocus: false });
         showError(t("Please answer every question before submitting."));
         scrollIntoViewGently(invalid, { block: "center" });
+        const control = invalid.matches("input, select, textarea")
+          ? invalid
+          : invalid.querySelector("input, select, textarea");
+        if (control) control.focus({ preventScroll: true });
         return;
       }
     }

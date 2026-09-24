@@ -5,6 +5,8 @@
 //
 // smoke.mjs proves the app boots; this proves the three flows a real user
 // actually depends on still work end-to-end (finding #13e):
+//   0. onboarding a11y     -> the error is announced, Next moves focus, and a
+//                             resumed draft lands on its first blank screen
 //   1. express onboarding  -> dashboard renders with a real baseline + radar average
 //   2. weekly review       -> measured quantities land, pledges grade, points pay
 //   3. EN -> TH toggle     -> persists across a full reload
@@ -37,6 +39,77 @@ page.on("console", msg => {
 
 const readState = () => page.evaluate(() =>
   JSON.parse(localStorage.getItem("lifequest_state") || "null"));
+
+// --- FLOW 0: onboarding is usable without sight, and a resume is honest ---
+// Own browser context, so its half-finished draft never leaks into flow 1.
+//   a. The error line is announced: role="alert". It used to be a bare <p>.
+//   b. Next moves focus to the new screen's heading. showScreen used to leave
+//      focus on <body>, and #ring-status reads the same on every screen of a
+//      chapter, so a screen-reader user heard nothing when the page changed.
+//   c. A draft resumes at the first screen with anything unanswered, even when
+//      it says it was further on -- and even when an earlier release wrote it.
+//      Resuming onto the saved step alone could put the reader past blanks,
+//      onto a chapter ending whose recap had nothing to recap.
+try {
+  const ctx0 = await browser.newContext();
+  const p0 = await ctx0.newPage();
+  p0.on("pageerror", err => problems.push(`flow0 uncaught: ${err.message}`));
+  await p0.goto(BASE, { waitUntil: "networkidle" });
+  await p0.waitForSelector("#onboarding-form", { timeout: 10000 });
+
+  if ((await p0.getAttribute("#onboarding-error", "role")) !== "alert") {
+    problems.push('flow0: #onboarding-error is not role="alert", so a blocked Next is silent to a screen reader');
+  }
+
+  // Answer the prologue only.
+  await p0.fill("#onb-name", "Resume Runner");
+  await p0.evaluate(() => {
+    const first = document.getElementById("onb-page-0");
+    first.querySelectorAll('input[type="number"]').forEach(i => {
+      i.value = i.min !== "" ? i.min : "1";
+      i.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    first.querySelectorAll("select").forEach(s => {
+      const opt = Array.from(s.options).find(o => o.value !== "");
+      if (opt) { s.value = opt.value; s.dispatchEvent(new Event("change", { bubbles: true })); }
+    });
+  });
+  await p0.click("#onb-page-0 .btn-onb-next");
+  const focused = await p0.evaluate(() => {
+    const el = document.activeElement;
+    return { tag: el?.tagName, page: el?.closest(".survey-page")?.id };
+  });
+  if (focused.tag !== "H3" || focused.page !== "onb-page-1") {
+    problems.push(`flow0: after Next, focus is on ${focused.tag} in ${focused.page}, not the heading of onb-page-1`);
+  }
+
+  // Claim the reader got to screen 12, from an older release, then reload.
+  await p0.evaluate(() => {
+    const key = "lifequest_draft_onboarding";
+    const draft = JSON.parse(localStorage.getItem(key));
+    localStorage.setItem(key, JSON.stringify({ ...draft, v: "1", step: 12 }));
+  });
+  await p0.reload({ waitUntil: "networkidle" });
+  await p0.waitForSelector("#onboarding-form", { timeout: 10000 });
+  const resumed = await p0.evaluate(() => ({
+    page: document.querySelector(".survey-page:not(.d-none)")?.id,
+    name: document.getElementById("onb-name").value,
+    visibleErrors: Array.from(document.querySelectorAll(".survey-page:not(.d-none) .field-error"))
+      .filter(e => !e.classList.contains("d-none")).length
+  }));
+  if (resumed.name !== "Resume Runner") {
+    problems.push("flow0: a draft from an earlier release was discarded instead of restored");
+  }
+  if (resumed.page !== "onb-page-1") {
+    problems.push(`flow0: resumed on ${resumed.page}; the first screen with anything unanswered is onb-page-1`);
+  }
+  if (resumed.visibleErrors > 0) {
+    problems.push(`flow0: the resumed screen opened with ${resumed.visibleErrors} error message(s) the reader did nothing to earn`);
+  }
+  await ctx0.close();
+} catch (err) {
+  problems.push(`flow0 (onboarding focus and resume): ${err.message}`);
+}
 
 // --- FLOW 1: full onboarding -> dashboard ---
 // Blank-first: nothing is pre-filled, every required field must be answered,

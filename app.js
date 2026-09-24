@@ -16,9 +16,9 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=87";
+} from "./ui.js?v=88";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
-import { t, tp, getLang, setLang } from "./i18n.js";
+import { t, tp, getLang, setLang, graphemes } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
 
 const TOAST_DURATION_MS = 1600;
@@ -680,10 +680,13 @@ function triggerLumiMessage(message, { announce = false } = {}) {
 
   bubble.textContent = "";
 
+  // One grapheme per tick, not one UTF-16 unit: charAt split every Thai tone
+  // mark from its consonant for a frame. See graphemes() in i18n.js.
+  const letters = graphemes(message);
   let idx = 0;
   lumiTypewriterInterval = setInterval(() => {
-    if (idx < message.length) {
-      bubble.textContent += message.charAt(idx);
+    if (idx < letters.length) {
+      bubble.textContent += letters[idx];
       idx++;
     } else {
       clearInterval(lumiTypewriterInterval);

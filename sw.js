@@ -15,7 +15,7 @@
 // nothing changed, so the bandwidth is negligible and the version can never
 // tear. Do NOT "optimise" this back to a plain fetch(req).
 
-const CACHE_NAME = "lifequest-v87";
+const CACHE_NAME = "lifequest-v88";
 
 const APP_SHELL = [
   "./",
@@ -63,7 +63,7 @@ const APP_SHELL = [
   "./i18n.js",
   "./th.js",
   "./manifest.webmanifest",
-  "./assets/lumi.png?v=87",
+  "./assets/lumi.png?v=88",
   // The eight region chapter plates. 0.73 MB for the set, which is why they
   // are band-cropped JPEGs and not the 10.3 MB of source PNGs they came from.
   "./assets/regions/market.jpg",
@@ -83,13 +83,8 @@ const APP_SHELL = [
   // codepoints our own copy never contains, so precaching them would add
   // ~415 KB to every install to cover user-typed names alone.
   "./assets/fonts/fonts.css",
-  "./assets/fonts/inter-latin-400.woff2",
-  "./assets/fonts/inter-latin-500.woff2",
-  "./assets/fonts/inter-latin-600.woff2",
-  "./assets/fonts/inter-latin-700.woff2",
-  "./assets/fonts/source-serif-4-latin-400.woff2",
-  "./assets/fonts/source-serif-4-latin-600.woff2",
-  "./assets/fonts/source-serif-4-latin-700.woff2",
+  "./assets/fonts/inter-latin.woff2",
+  "./assets/fonts/source-serif-4-latin.woff2",
   "./assets/fonts/sarabun-thai-400.woff2",
   "./assets/fonts/sarabun-thai-500.woff2",
   "./assets/fonts/sarabun-thai-600.woff2",

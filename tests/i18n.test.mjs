@@ -1,7 +1,7 @@
 // Tests for the EN/TH localization layer (node --test)
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { t, tp, getLang, setLang, percentileLabel, dateLocale } from "../i18n.js";
+import { t, tp, getLang, setLang, percentileLabel, dateLocale, graphemes } from "../i18n.js";
 import { TH } from "../th.js";
 
 function installMockStorage(initial = {}) {
@@ -79,5 +79,27 @@ test("every Thai value is a non-empty string and preserves {placeholders}", () =
     const keyTokens = (key.match(/\{(\w+)\}/g) || []).sort();
     const valTokens = (value.match(/\{(\w+)\}/g) || []).sort();
     assert.deepEqual(valTokens, keyTokens, `${key} keeps the same placeholders`);
+  }
+});
+
+// --- graphemes: what a per-letter effect may split on ----------------------
+//
+// Lumi's tip used to be typed out with message.charAt(i), one UTF-16 unit per
+// tick. Thai stacks vowels and tone marks on the consonant before them, so for
+// one frame in every few the reader saw a bare consonant and then a mark
+// dropping onto it -- and a mark typed after a space landed on nothing, as a
+// dotted circle. docs/interactive-web-plan.md makes this a rule for every
+// per-letter effect: split on graphemes, never characters.
+test("graphemes keep Thai marks on the consonant they belong to", () => {
+  assert.deepEqual(graphemes("ที่นี่"), ["ที่", "นี่"]);
+  assert.equal(graphemes("น้ำ").length, 1, "น้ำ is one consonant carrying two marks");
+  for (const g of graphemes("ดัชนีสมดุลชีวิต")) {
+    assert.doesNotMatch(g, /^[ัิ-ฺ็-๎]/, `a grapheme starts with a combining mark: "${g}"`);
+  }
+});
+
+test("graphemes rebuild the original text exactly", () => {
+  for (const text of ["Hello, Lumi.", "ลองดูอีกนิด 🌱 ok", ""]) {
+    assert.equal(graphemes(text).join(""), text);
   }
 });

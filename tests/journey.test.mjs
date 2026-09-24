@@ -494,3 +494,57 @@ test("the footer Methodology link is hidden until onboarding is finished", () =>
     "the ones for whom it does nothing."
   );
 });
+
+// --- A RECAP STATES WHAT WAS SAID, NOT WHAT WAS LEFT BLANK ----------------
+//
+// read.answers() returns null for an unanswered item and read.num() returns
+// null for an empty field. highCount used to drop the nulls and count what was
+// left, so five unanswered money questions came out as "Of five statements
+// about money, 0 described you well." -- a sentence about answers the reader
+// never gave, in the most deflating direction available. The Still Water went
+// further and added "That is recorded exactly as you gave it."
+//
+// Today Next-validation and the draft version guard keep a reader from
+// reaching an ending with blanks behind it. Those are two other modules that do
+// not know the recap depends on them, and letting drafts survive a release
+// removes one of them. So the recap has to be honest on its own.
+function blankReader() {
+  return {
+    num: () => null,
+    answers: (key) => INSTRUMENTS[key].items.map(() => null)
+  };
+}
+
+test("with nothing answered, no recap line claims an answer", () => {
+  for (const chapter of CHAPTERS) {
+    for (const line of chapter.recap(blankReader())) {
+      assert.doesNotMatch(
+        line, /\d/,
+        `${chapter.aspect}: stated a number over blank answers: "${line}"`
+      );
+      assert.doesNotMatch(
+        line, /\b(None|No money|Nothing)\b/,
+        `${chapter.aspect}: stated a zero over blank answers: "${line}"`
+      );
+    }
+  }
+});
+
+test("one unanswered item drops that instrument's count line, not the others", () => {
+  // Every item at the top of the scale except the first CFPB item. The count
+  // would say 4 of 5; the reader answered 4, so the sentence about "five" is
+  // not one they can have earned.
+  const partial = {
+    num: () => 1000,
+    answers: (key) => INSTRUMENTS[key].items.map((_, i) => (key === "cfpb" && i === 0 ? null : 4))
+  };
+  const market = CHAPTERS.find(c => c.aspect === "finance").recap(partial);
+  assert.ok(
+    market.every(line => !line.includes("statements about money")),
+    `the CFPB count was stated over an unanswered item: ${JSON.stringify(market)}`
+  );
+  assert.ok(
+    market.some(line => line.includes("baht")),
+    "the income line should still be there; only the incomplete instrument is dropped"
+  );
+});

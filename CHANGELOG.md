@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `87`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `88`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,47 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.36.0] — 2026-09-24 (APP_VERSION 88)
+
+The onboarding fix queue parked since the two-sided UX review, plus three small
+fixes the interactive-web plan (`docs/interactive-web-plan.md`) wants landed
+before any motion work touches the same files.
+
+### Fixed
+
+- **A half-finished form no longer disappears on every release.** `readDraft`
+  discarded any draft whose `v` differed from `APP_VERSION`, and that number
+  moves on every shipped change, so a reader part-way through the 85-answer
+  baseline lost it to a one-line CSS fix. Drafts are now stamped with
+  `DRAFT_SCHEMA`, which is bumped only when a release changes what a saved
+  answer *means* (a scale re-valued, items reordered). A new question is not a
+  reason to discard: every form validates before it submits.
+- **A resumed reader lands on the first screen with anything unanswered.** It
+  used to be the saved step, clamped, which with drafts now surviving releases
+  could put a reader past a question added since. The clamp's comment described
+  a v80 draft that could no longer arrive; it now describes what it guards.
+- **Chapter recaps never state answers the reader did not give.** `highCount`
+  treated an unanswered item as "no", so five blanks read "Of five statements
+  about money, 0 described you well." It now returns null unless every item
+  was answered, and every recap drops that line. The same rule reaches the
+  weekly-movement line (all six activity fields or nothing) and "No money and
+  no hours" (only when both were given as zero).
+- **Onboarding is navigable with a screen reader.** Next and Back move focus to
+  the new screen's heading instead of dropping it to `<body>`, and the error
+  line is `role="alert"` and unhidden before its text is written.
+- **Lumi's typewriter keeps Thai tone marks on their consonant.** It typed with
+  `charAt`, one UTF-16 unit per tick; it now types graphemes (`graphemes()` in
+  `i18n.js`, `Intl.Segmenter`).
+- **Full-height boxes fit phones with the toolbar showing.** Every `100vh` now
+  has a `100dvh` override.
+
+### Changed
+
+- **Fonts: about 580 KB of duplicate files removed.** Inter and Source Serif 4
+  are variable fonts, and each weight file was a byte-identical copy. They are
+  now one `@font-face` per subset with a `400 700` weight range; the service
+  worker precaches two font files where it cached seven.
 
 ## [2.35.0] — 2026-09-17 (APP_VERSION 87)
 

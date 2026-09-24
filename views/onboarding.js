@@ -33,7 +33,9 @@ import { applyDraft, saveDraft, clearDraft, instrumentsIn } from "../draft.js";
 import { savingsRateFrom } from "../scoring.js";
 import { CHAPTERS, allScreens } from "./journey.js";
 import { ringMarkup, paintRing } from "./journey-ring.js";
-import { playEnding, settleRing, isQuietChapter } from "./moments.js";
+import {
+  playEnding, playOpening, settleRing, isQuietChapter, glintTitleMarkup, caretLineMarkup
+} from "./moments.js";
 import { SOURCES } from "../benchmarks.js";
 import { INSTRUMENTS } from "../surveys.js";
 import { t, tp } from "../i18n.js";
@@ -105,8 +107,10 @@ function regionBannerMarkup(chapter, index, showTheme) {
         <path d="${chapter.motif}" />
       </svg>
       <p class="region-banner-eyebrow">${tp("Region {n} of {total}", { n: index + 1, total: CHAPTERS.length })}</p>
-      <h4 class="region-banner-name">${escapeHtml(chapter.region)}</h4>
-      ${showTheme ? `<p class="region-banner-theme">${escapeHtml(chapter.theme)}</p>` : ""}
+      ${showTheme
+        ? `<h4 class="region-banner-name">${glintTitleMarkup(chapter.region)}</h4>
+      <p class="region-banner-theme">${caretLineMarkup(chapter.theme)}</p>`
+        : `<h4 class="region-banner-name">${escapeHtml(chapter.region)}</h4>`}
     </div>`;
 }
 
@@ -307,6 +311,23 @@ export function renderOnboarding(containerId, onComplete) {
     return shift;
   };
 
+  // A chapter's first screen reached by moving forward: its name is spelled
+  // in glints and its theme line typed, the caret flying home to the marker.
+  const playChapterOpening = (index, shift) => {
+    const page = pageEl(index);
+    playOpening({
+      draw() {},
+      pieces: () => ({
+        pairs: [...page.querySelectorAll(".region-banner-name .g")].map(g =>
+          [g.querySelector(".g-letter"), g.querySelector(".g-glint")]),
+        letters: page.querySelectorAll(".region-banner-theme .t"),
+        caret: page.querySelector(".region-banner-theme .star-caret"),
+        marker: ringMarker(),
+        shift
+      })
+    }).catch(reportMotion);
+  };
+
   // A chapter ending reached by moving forward: the region lights up and the
   // recap is dealt. Arriving by Back, or on a resume, it is simply there.
   const playChapterEnding = (index, shift) => {
@@ -406,8 +427,11 @@ export function renderOnboarding(containerId, onComplete) {
     syncReveal(page);
     const isEnding = screens[index].kind === "ending";
     if (isEnding) fillRecap(screens[index].chapter);
-    const shift = updateRing(index, { motion: moveFocus && !(isEnding && forward) });
-    if (isEnding && forward) playChapterEnding(index, shift);
+    const isOpening = !isEnding && !!screens[index].startsChapter;
+    const scene = forward && (isEnding || isOpening);
+    const shift = updateRing(index, { motion: moveFocus && !scene });
+    if (scene && isEnding) playChapterEnding(index, shift);
+    if (scene && isOpening) playChapterOpening(index, shift);
     paintWash(index);
     scrollIntoViewGently(container, { block: "start" });
     const heading = moveFocus && page.querySelector("h3");

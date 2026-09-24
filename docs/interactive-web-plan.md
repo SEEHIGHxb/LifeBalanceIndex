@@ -134,7 +134,13 @@ In LBI, the serious content is the instrument item.
   - Side by Side → The Commons
 
   All four use the one-line motifs, per symbols.md S8.
-- **Still to check:** TalkBack and VoiceOver need the owner's phone. The second release (Lumi caret, glint titles) and the third (tug-the-ring) are next.
+- **Still to check:** TalkBack and VoiceOver need the owner's phone.
+
+**Phase 3, second release (2026-09-24): built, in v91 (2.39.0).**
+- **Glint titles and the star caret.** They play on a chapter's first screen, in `views/moments.js` (`playOpening`).
+- **Lumi's line.** For now it is the chapter's theme line, since Lumi's art is parked.
+- **Screen readers.** The title and the line each have a visually hidden full copy, and the per-letter copy is `aria-hidden`.
+- **Layout.** The caret's stops are measured once when the scene starts, never per frame.
 
 ## 7. Decisions (approved 2026-09-23)
 

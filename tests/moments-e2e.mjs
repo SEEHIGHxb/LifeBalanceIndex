@@ -12,9 +12,13 @@
 //      first item moves the ring marker identically, frame for frame.
 //   2. The Market's ending: the ring reads 1 / 8, eight particles burst, the
 //      cards are dealt, and afterwards nothing is left parked or on screen.
-//   3. The Still Water's ending: a quiet zone, so no burst at all.
-//   4. Reduced motion (the device setting): not one style is written on the
-//      ring, the recap, the fact or a tab icon, and no frame is ever asked for.
+//   3. The Highlands' opening: every title letter starts hidden, and once the
+//      title is spelled, the line typed and the caret home, nothing is left
+//      parked.
+//   4. The Still Water's ending: a quiet zone, so no burst at all.
+//   5. Reduced motion (the device setting): not one style is written on the
+//      ring, the region banner, the recap, the fact or a tab icon, and no
+//      frame is ever asked for.
 //
 // Usage: node tests/moments-e2e.mjs <base-url>
 import { chromium } from "playwright";
@@ -51,7 +55,7 @@ function installManualClock() {
   const watch = () => new MutationObserver(records => {
     for (const r of records) {
       const el = r.target;
-      if (el.closest?.(".journey-ring, .chapter-recap, .chapter-fact, .tab-btn")) {
+      if (el.closest?.(".journey-ring, .region-banner, .chapter-recap, .chapter-fact, .tab-btn")) {
         globalThis.__styleWrites.push(`${el.id || el.className?.baseVal || el.className}: ${el.getAttribute("style")}`);
       }
     }
@@ -158,6 +162,27 @@ try {
   if (end.particles) problems.push(`market: ${end.particles} particles left behind`);
   if (end.parked.length) problems.push(`market: pieces left parked: ${end.parked.join(" | ")}`);
 
+  // The Highlands' first screen: its name is spelled and its line typed.
+  await next(page);
+  const bannerStyles = () => page.evaluate(() => [...document.querySelectorAll(
+    ".survey-page:not(.d-none) .region-banner [style], #ring-marker[style]"
+  )].map(el => el.getAttribute("style")).filter(Boolean));
+  const opening = await page.evaluate(() => {
+    const pg = document.querySelector(".survey-page:not(.d-none)");
+    return {
+      chapter: pg.dataset.chapter,
+      hidden: [...pg.querySelectorAll(".region-banner-name .g-letter")].filter(el => el.style.opacity === "0").length,
+      letters: pg.querySelectorAll(".region-banner-name .g-letter").length
+    };
+  });
+  if (opening.chapter !== "1") problems.push(`opening: landed on chapter ${opening.chapter}, not The Highlands`);
+  if (!opening.letters || opening.hidden !== opening.letters) {
+    problems.push(`opening: ${opening.hidden} of ${opening.letters} title letters parked; all should start hidden`);
+  }
+  await advance(page, 7000);
+  const leftover = await bannerStyles();
+  if (leftover.length) problems.push(`opening: pieces left parked: ${leftover.slice(0, 3).join(" | ")}`);
+
   if (!(await walkToEnding(page, 2))) throw new Error("never reached The Still Water's ending");
   const quiet = await endingState(page);
   if (quiet.count !== "3 / 8") problems.push(`still water: the ending reads ${quiet.count}, not 3 / 8`);
@@ -198,4 +223,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the settle ignores the answer, The Market bursts and lands, The Still Water stays quiet, and reduced motion moves nothing");
+console.log("moments e2e passed: the settle ignores the answer, The Market bursts and lands, The Highlands spells its name, The Still Water stays quiet, and reduced motion moves nothing");

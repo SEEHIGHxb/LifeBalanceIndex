@@ -1,6 +1,7 @@
-// views/moments.js - the journey's moments, first release.
-// docs/interactive-web-plan.md §6, Phase 3.
+// views/moments.js - the journey's moments. docs/interactive-web-plan.md §6,
+// Phase 3.
 //
+// First release:
 //   * A region LIGHTS UP when its chapter ends: its arc on the ring brightens,
 //     the marker settles onto the arc's end, and (outside the quiet zones) eight
 //     gold glints burst from the ring's centre.
@@ -13,6 +14,16 @@
 //     thing that settles.
 //   * A tab's icon HOPS once when its tab is chosen.
 //
+// Second release, on a chapter's first screen:
+//   * The REGION TITLE IS SPELLED IN GLINTS: each grapheme appears as a gold
+//     glint, then turns into its letter. Split with graphemes(), so a Thai
+//     cluster such as "ที่" is one letter, never three (non-negotiable 10).
+//   * The STAR CARET on Lumi's line: the theme line is revealed one grapheme
+//     at a time with a glint riding at its end; then the caret lifts off and
+//     arcs into the ring's marker, which takes the light with one pulse.
+//   Screen readers get each text once, from a visually hidden copy; the
+//   per-letter copy is aria-hidden, so it is never read out letter by letter.
+//
 // Every scene goes through runScene (render, then park, then play), so the
 // markup on screen is always the finished state and motion only travels to it.
 // The pieces are handed in by the caller rather than looked up here: this file
@@ -20,6 +31,8 @@
 
 import { animate, spring, easeStar, linear } from "../motion.js";
 import { runScene, writeMotionStyle } from "./motion-mount.js";
+import { graphemes } from "../i18n.js";
+import { escapeHtml } from "./helpers.js";
 
 // The Still Water and The Commons: no bursts (non-negotiable 4, symbols.md S2).
 export const QUIET_ASPECTS = Object.freeze(["mental", "relationships"]);
@@ -49,6 +62,7 @@ const GLINT_PATH = "M12 0 Q13 11 24 12 Q13 13 12 24 Q11 13 0 12 Q11 11 12 0Z";
 const GLINT_FRAME_MS = 110;
 // A upright, B 22° at 0.78, C 45° at 0.5, cycling A-B-C-B.
 const GLINT_FRAMES = [[0, 1], [22, 0.78], [45, 0.5], [22, 0.78]];
+const glintFrame = (ms) => GLINT_FRAMES[Math.floor(Math.max(0, ms) / GLINT_FRAME_MS) % GLINT_FRAMES.length];
 
 const easeOut = (p) => 1 - (1 - p) ** 3;
 const easeOutBack = (p) => 1 + 2.4 * (p - 1) ** 3 + 1.4 * (p - 1) ** 2;
@@ -135,7 +149,7 @@ function makeParticles(layer) {
 
 function placeParticle(part, p) {
   const travel = easeOut(p);
-  const [rot, k] = part.glint ? GLINT_FRAMES[Math.floor((p * BURST_LIFE_MS) / GLINT_FRAME_MS) % GLINT_FRAMES.length] : [0, 1];
+  const [rot, k] = part.glint ? glintFrame(p * BURST_LIFE_MS) : [0, 1];
   const scale = (1 - 0.7 * travel) * k;
   writeMotionStyle(part.el, {
     transform: `translate(${r2(part.dx * travel)}px, ${r2(part.dy * travel)}px) rotate(${rot}deg) scale(${r3(scale)})`,
@@ -246,6 +260,184 @@ export function hopTabIcon(icon) {
       if (ok) land([icon]);
       return ok;
     },
+    reduced: "end"
+  });
+}
+
+// --- the chapter opening (second release) ---------------------------------------------
+
+const LETTER_STAGGER_MS = 55;
+const GLINT_IN_MS = 140;
+const LETTER_FLIP_AT_MS = 300;
+const LETTER_IN_MS = 160;
+const TYPE_MS = 34;
+const TYPE_DELAY_MS = 150;
+const FLIGHT_DELAY_MS = 260;
+const FLIGHT_MS = 720;
+const FLIGHT_MIN_LIFT_PX = 80;
+const PULSE_MS = 360;
+
+// The title, one span per grapheme. Spaces stay plain text so the line still
+// wraps. As rendered, every letter shows and every glint is hidden by the
+// stylesheet: that is the finished title.
+//
+// Each word is kept whole (.g-word does not wrap inside), because a line may
+// break between any two inline-blocks and "ที่ราบสูง" must never split mid-word.
+export function glintTitleMarkup(title) {
+  const letter = (g) => `<span class="g"><span class="g-letter">${escapeHtml(g)}</span><span class="g-glint">${glintMarkup()}</span></span>`;
+  const row = String(title).split(/(\s+)/).filter(Boolean).map((part) => (part.trim() === ""
+    ? escapeHtml(part)
+    : `<span class="g-word">${graphemes(part).map(letter).join("")}</span>`)).join("");
+  return `<span class="sr-only">${escapeHtml(title)}</span><span class="g-row" aria-hidden="true">${row}</span>`;
+}
+
+// Lumi's line, one span per grapheme, with the caret after it (hidden when
+// the line is finished: the caret has already flown home).
+export function caretLineMarkup(line) {
+  const letters = graphemes(line).map((g) => `<span class="t">${escapeHtml(g)}</span>`).join("");
+  return `<span class="sr-only">${escapeHtml(line)}</span><span class="t-row" aria-hidden="true">${letters}<span class="star-caret">${glintMarkup()}</span></span>`;
+}
+
+function poseLetter([letter, glint], t) {
+  if (t < 0) {
+    writeMotionStyle(letter, { opacity: 0 });
+    writeMotionStyle(glint, { opacity: 0 });
+    return;
+  }
+  if (t < LETTER_FLIP_AT_MS) {
+    const [rot, k] = glintFrame(t);
+    const grow = easeOut(Math.min(1, t / GLINT_IN_MS));
+    writeMotionStyle(letter, { opacity: 0 });
+    writeMotionStyle(glint, { opacity: r3(grow), transform: `rotate(${rot}deg) scale(${r3(grow * k)})` });
+    return;
+  }
+  const e = easeOut(Math.min(1, (t - LETTER_FLIP_AT_MS) / LETTER_IN_MS));
+  writeMotionStyle(glint, { opacity: r3(1 - e), transform: `rotate(45deg) scale(${r3(0.5 * (1 - e))})` });
+  writeMotionStyle(letter, {
+    opacity: r3(e),
+    transform: `translate(0, ${r3(0.18 * (1 - e))}em) scale(${r3(0.85 + 0.15 * e)})`
+  });
+}
+
+function spellTitle(pairs, signal) {
+  if (!pairs.length) return Promise.resolve(true);
+  const total = (pairs.length - 1) * LETTER_STAGGER_MS + LETTER_FLIP_AT_MS + LETTER_IN_MS;
+  return animate({
+    duration: total, ease: linear, signal, reduced: "end",
+    update: (p) => pairs.forEach((pair, i) => poseLetter(pair, p * total - i * LETTER_STAGGER_MS))
+  });
+}
+
+// Where the caret sits before each letter and after the last, relative to its
+// resting place at the end of the line. Measured once, at park: the letters
+// never move while they are revealed, and measuring every frame would force a
+// layout per frame.
+function caretStops(letters, caret) {
+  const home = caret.getBoundingClientRect();
+  const homeMid = home.top + home.height / 2;
+  const rel = (x, r) => [x - home.left, r.top + r.height / 2 - homeMid];
+  const first = letters[0].getBoundingClientRect();
+  return [rel(first.left, first), ...letters.map((el) => {
+    const r = el.getBoundingClientRect();
+    return rel(r.right, r);
+  })];
+}
+
+function typeLine(p, signal) {
+  const { letters, caret, stops } = p;
+  const total = letters.length * TYPE_MS;
+  let shown = 0;
+  return animate({
+    duration: total, delay: TYPE_DELAY_MS, ease: linear, signal, reduced: "end",
+    update: (q) => {
+      const n = Math.min(letters.length, Math.floor(q * letters.length + 1e-9));
+      for (; shown < n; shown++) writeMotionStyle(letters[shown], { opacity: "" });
+      const [x, y] = stops[n];
+      const [rot, k] = glintFrame(q * total);
+      writeMotionStyle(caret, { opacity: 1, transform: `translate(${r2(x)}px, ${r2(y)}px) rotate(${rot}deg) scale(${k})` });
+    }
+  });
+}
+
+// The caret lifts off and arcs into the ring's marker on a quadratic curve.
+function flyCaret(caret, marker, signal) {
+  const from = caret.getBoundingClientRect();
+  const to = marker.getBoundingClientRect();
+  const end = [
+    to.left + to.width / 2 - (from.left + from.width / 2),
+    to.top + to.height / 2 - (from.top + from.height / 2)
+  ];
+  const lift = Math.max(FLIGHT_MIN_LIFT_PX, Math.hypot(end[0], end[1]) * 0.35);
+  const mid = [end[0] / 2, Math.min(0, end[1]) - lift];
+  return animate({
+    duration: FLIGHT_MS, delay: FLIGHT_DELAY_MS, ease: easeStar, signal, reduced: "end",
+    update: (e) => {
+      const u = 1 - e;
+      const [rot, k] = glintFrame(e * FLIGHT_MS);
+      writeMotionStyle(caret, {
+        opacity: r3(1 - e * e),
+        transform: `translate(${r2(2 * u * e * mid[0] + e * e * end[0])}px, ${r2(2 * u * e * mid[1] + e * e * end[1])}px) rotate(${rot}deg) scale(${r3(k * (1 - 0.3 * e))})`
+      });
+    }
+  });
+}
+
+// The marker takes the light. Scaled about its own centre (index.css gives
+// it transform-box: fill-box).
+function pulse(marker, signal) {
+  return animate({
+    duration: PULSE_MS, ease: linear, signal, reduced: "end",
+    update: (q) => writeMotionStyle(marker, { transform: `scale(${r3(1 + 0.8 * Math.sin(q * Math.PI))})` })
+  });
+}
+
+function openingPieces(p) {
+  return [...p.pairs.flat(), ...p.letters, p.caret, p.marker];
+}
+
+function parkOpening(p, scope) {
+  for (const pair of p.pairs) poseLetter(pair, -1);
+  for (const el of p.letters) writeMotionStyle(el, { opacity: 0 });
+  if (p.caret && p.letters.length) p.stops = caretStops(p.letters, p.caret);
+  if (p.marker) moveMarker(p.marker, p.shift);
+  onAbort(scope, () => land(openingPieces(p)));
+}
+
+async function playOpeningPieces(p, scope) {
+  const { signal } = scope;
+  const [settled, spelled] = await Promise.all([settleMarker(p.marker, p.shift, signal), spellTitle(p.pairs, signal)]);
+  if (!settled || !spelled) return false;
+  land(p.pairs.flat());
+  if (!p.caret || !p.letters.length) return true;
+  if (!(await typeLine(p, signal))) return false;
+  if (p.marker && !(await flyCaret(p.caret, p.marker, signal))) return false;
+  const pulsed = !p.marker || await pulse(p.marker, signal);
+  if (pulsed) land(openingPieces(p));
+  return pulsed;
+}
+
+// draw():   writes the finished screen (already rendered by the view, so
+//           usually nothing).
+// pieces(): { pairs: [[letter, glint], ...], letters, caret, marker, shift }
+//           from the page as drawn. `shift` is the marker's old place minus
+//           its new one; the caret, the line and the marker are optional.
+export function playOpening({ draw, pieces }) {
+  let p = null;
+  return runScene({
+    render() {
+      draw();
+      const got = pieces();
+      p = {
+        pairs: [...(got.pairs || [])],
+        letters: [...(got.letters || [])],
+        caret: got.caret || null,
+        marker: got.marker || null,
+        shift: liveShift(got.marker, got.shift || [0, 0])
+      };
+      land(openingPieces(p));
+    },
+    park: (scope) => parkOpening(p, scope),
+    play: (scope) => playOpeningPieces(p, scope),
     reduced: "end"
   });
 }

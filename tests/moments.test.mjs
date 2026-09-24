@@ -10,7 +10,10 @@ let tick;
 installDom();
 const { setClock } = await import("../motion.js");
 const { disposeMotion } = await import("../views/motion-mount.js");
-const { settleRing, playEnding, hopTabIcon, isQuietChapter, QUIET_ASPECTS } = await import("../views/moments.js");
+const {
+  settleRing, playEnding, playOpening, hopTabIcon, isQuietChapter, QUIET_ASPECTS,
+  glintTitleMarkup, caretLineMarkup
+} = await import("../views/moments.js");
 const { CHAPTERS } = await import("../views/journey.js");
 const { ringMarkup } = await import("../views/journey-ring.js");
 
@@ -198,6 +201,91 @@ test("playEnding: a piece that throws while parking puts the finished ending bac
   await assert.rejects(playEnding({ draw: () => drawn++, pieces: () => p, quiet: true }), /boom/);
   assert.equal(drawn, 2, "rendered again after the failure");
   assert.equal(last(p.cards[0], "opacity"), "", "the card parked before it landed");
+});
+
+// --- the chapter opening (second release) -----------------------------------------
+
+test("glintTitleMarkup: one letter per Thai cluster, read once, words kept whole", () => {
+  const th = glintTitleMarkup("ที่ราบสูง");
+  const letters = [...th.matchAll(/<span class="g-letter">([^<]*)<\/span>/g)].map(m => m[1]);
+  assert.deepEqual(letters, ["ที่", "ร", "า", "บ", "สู", "ง"]);
+  assert.match(th, /^<span class="sr-only">ที่ราบสูง<\/span><span class="g-row" aria-hidden="true">/);
+  const en = glintTitleMarkup("The Still Water");
+  assert.equal((en.match(/class="g-word"/g) || []).length, 3, "one unbreakable group per word");
+  assert.match(en, /<\/span> <span class="g-word">/, "the spaces between words stay plain text");
+  assert.match(glintTitleMarkup("A & <b>"), /A &amp; &lt;b&gt;/);
+});
+
+test("caretLineMarkup: one span per grapheme, a hidden full copy, and the caret last", () => {
+  const html = caretLineMarkup("สู้ ๆ");
+  assert.match(html, /^<span class="sr-only">สู้ ๆ<\/span><span class="t-row" aria-hidden="true">/);
+  const letters = [...html.matchAll(/<span class="t">([^<]*)<\/span>/g)].map(m => m[1]);
+  assert.deepEqual(letters, ["สู้", " ", "ๆ"]);
+  assert.match(html, /<span class="star-caret"><svg[^>]*aria-hidden="true"/);
+});
+
+function openingPieces(nTitle = 4, nLine = 6) {
+  return {
+    pairs: Array.from({ length: nTitle }, () => [makeNode("span"), makeNode("span")]),
+    letters: Array.from({ length: nLine }, () => makeNode("span")),
+    caret: makeNode("span"),
+    marker: makeNode("circle"),
+    shift: [3, 1]
+  };
+}
+
+test("playOpening: spells the title, types the line, flies the caret, pulses the marker, lands", async () => {
+  const p = openingPieces();
+  const done = playOpening({ draw() {}, pieces: () => p });
+  // Parked: every letter and glint hidden, the line hidden, the marker at its old place.
+  for (const [letter, glint] of p.pairs) {
+    assert.equal(last(letter, "opacity"), "0");
+    assert.equal(last(glint, "opacity"), "0");
+  }
+  for (const t of p.letters) assert.equal(last(t, "opacity"), "0");
+  assert.equal(last(p.marker, "transform"), "translate(3px, 1px)");
+
+  await tick.advance(96);
+  assert.ok(Number(last(p.pairs[0][1], "opacity")) > 0, "the first letter is a glint first");
+  assert.equal(last(p.pairs[3][1], "opacity"), "0", "the last has not started");
+
+  await tick.advance(1000);
+  for (const [letter] of p.pairs) assert.equal(last(letter, "opacity") ?? "", "", "every letter turned");
+  await tick.advance(400);
+  assert.ok(p.letters.slice(0, 3).every(t => last(t, "opacity") === ""), "the line is being revealed in order");
+
+  await tick.advance(3000);
+  assert.equal(await done, true);
+  assert.ok(p.marker.style.writes.some(w => /^scale\(1\.[1-8]/.test(w.value)), "the marker pulsed");
+  for (const el of [...p.pairs.flat(), ...p.letters, p.caret, p.marker]) {
+    assert.equal(last(el, "transform") ?? "", "");
+    assert.equal(last(el, "opacity") ?? "", "");
+  }
+});
+
+test("playOpening: with reduced motion the title and line are simply there", async () => {
+  device = true;
+  const p = openingPieces();
+  assert.equal(await playOpening({ draw() {}, pieces: () => p }), true);
+  for (const el of [...p.pairs.flat(), ...p.letters, p.caret, p.marker]) assert.ok(!moved(el));
+});
+
+test("playOpening: cut short mid-line, nothing stays hidden", async () => {
+  const p = openingPieces();
+  const done = playOpening({ draw() {}, pieces: () => p });
+  await tick.advance(1300);
+  const next = settleRing({ marker: makeNode("circle"), shift: [1, 0] });
+  for (const el of [...p.pairs.flat(), ...p.letters, p.caret]) assert.equal(last(el, "opacity") ?? "", "");
+  await tick.advance(1500);
+  assert.equal(await done, false);
+  await next;
+});
+
+test("playOpening: a screen with a title but no line ends after the spelling", async () => {
+  const p = { ...openingPieces(), letters: [], caret: null };
+  const done = playOpening({ draw() {}, pieces: () => p });
+  await tick.advance(2000);
+  assert.equal(await done, true);
 });
 
 // --- the tab hop -----------------------------------------------------------------

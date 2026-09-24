@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `90`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `91`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.39.0] — 2026-09-24 (APP_VERSION 91)
+
+Phase 3 of the interactive-web plan, second release: the chapter opening.
+
+### Added
+
+- **The region's name is spelled in glints.** On a chapter's first screen,
+  each letter appears as a small gold sparkle and then turns into itself.
+  Letters are split by grapheme, so a Thai cluster such as "ที่" stays one
+  letter, and each word stays on one line.
+- **Lumi's star caret.** The chapter's theme line is revealed a letter at a
+  time with a sparkle riding at its end; then the sparkle arcs up into the
+  ring's marker, which pulses once.
+- Both play only when you arrive by moving forward, and the rendered page is
+  already the finished title and line. Screen readers read each text once,
+  whole, from a hidden copy; the letter-by-letter copy is hidden from them.
+  With reduced motion nothing moves.
 
 ## [2.38.0] — 2026-09-24 (APP_VERSION 90)
 

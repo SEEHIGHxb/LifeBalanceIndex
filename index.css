@@ -1799,6 +1799,9 @@ header {
  * (the neutral settle), and a transition underneath would move it twice. */
 .ring-marker {
   transition: fill 0.45s ease;
+  /* The pulse scales it about its own centre, not the ring's origin. */
+  transform-box: fill-box;
+  transform-origin: center;
 }
 /* The burst: eight gold particles from the ring's centre when a region ends
  * outside the quiet zones (symbols.md S2). Parked invisible, so one stranded by
@@ -2011,6 +2014,42 @@ body.journey-lit .app-footer {
   font-size: var(--text-lg);
   color: var(--color-navy);
   margin: 0;
+}
+/* The glint title and the star caret (views/moments.js). As rendered, every
+ * letter shows and every glint is hidden: the finished state. A transform only
+ * applies to an inline-block, hence the letters' display. */
+.g-word { white-space: nowrap; }
+.g {
+  position: relative;
+  display: inline-block;
+}
+.g-letter { display: inline-block; }
+.g-glint {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.8em;
+  height: 0.8em;
+  margin: -0.4em 0 0 -0.4em;
+  opacity: 0;
+  pointer-events: none;
+}
+.star-caret {
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-left: 2px;
+  vertical-align: -0.05em;
+  opacity: 0;
+}
+.g-glint svg,
+.star-caret svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: #D9B77A;
+  stroke: #A88752;
+  stroke-width: 0.8;
 }
 .region-banner-theme {
   font-family: var(--font-sans);

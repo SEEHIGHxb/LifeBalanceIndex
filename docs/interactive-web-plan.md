@@ -88,12 +88,12 @@ In LBI, the serious content is the instrument item.
 | **4 Art set and ceremony** | `sprites.svg` (Star, glints, emblems, vector Lumi), the ring → radar ceremony, the share card as the map | Asset budget met: motion JS ≤ 6 KB, SVG sprites ≤ 25 KB, and each raster emblem or Lumi image ≤ 20 KB at its display size (WebP, lazy-loaded). No layout shift | L |
 | **5 Spread** | Weekly review, monthly ghost ring, year-review flipbook, quiet dashboard touches, one answering language | Guards hold without new exceptions | M |
 
-**Can land any time, independent of the plan:**
-- The Thai typewriter bug: `app.js` types with `charAt`, which detaches tone marks for a frame.
-- The font dedupe.
-- `100vh` → `dvh` in `index.css`.
+**Landed in v88 (2.36.0), 2026-09-24:**
+- The quick wins: the Thai typewriter now types graphemes (`graphemes()` in `i18n.js`), the font dedupe (about 580 KB), and `100vh` → `dvh`.
+- The onboarding fix queue that had to land before Phase 3: recaps never state answers that weren't given, drafts survive releases (`DRAFT_SCHEMA`), a resume lands on the first incomplete screen, and focus follows the screen.
+- Checked and dropped: the suspected relationship-switch bug on the RAS screen is unreachable. The relationship select lives on the prologue, so nobody can change it while standing on RAS.
 
-**Before Phase 3:** the parked onboarding fix queue touches the same files, so it lands first. That queue is the journey recap null handling, the draft version discard, and the onboarding clamp and focus.
+**Phase 0 status:** the emblems are done (Gemini). Lumi is parked (GPT busts as the fallback, SVG takes in `identity/lumi-concepts.html`). Phase 1 does not wait for her.
 
 ## 7. Decisions (approved 2026-09-23)
 

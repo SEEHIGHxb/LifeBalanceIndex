@@ -102,11 +102,24 @@ function sum(values) {
   return values.reduce((a, v) => a + (Number(v) || 0), 0);
 }
 
+// Every item of an instrument has an answer. read.answers() returns null for
+// an unanswered item, and a blank is not the same as the lowest option.
+function isComplete(values) {
+  return values.length > 0 && values.every(v => v !== null && v !== undefined);
+}
+
 // How many of an instrument's items the reader put at "Often" or "Very often".
 // A count, not a score: it says how many times they said yes, which is a fact
 // about their own answers rather than a judgement of them.
+//
+// NULL UNLESS EVERY ITEM WAS ANSWERED, and every caller drops its line on null.
+// Counting only the answered items turned five blanks into "0 described you
+// well" -- a sentence about answers the reader never gave. Today Next-
+// validation keeps blanks out of an ending, but that is another module's rule;
+// the recap must not depend on it.
 function highCount(values, floor = 3) {
-  return values.filter(v => v !== null && Number(v) >= floor).length;
+  if (!isComplete(values)) return null;
+  return values.filter(v => Number(v) >= floor).length;
 }
 
 export const CHAPTERS = [
@@ -142,8 +155,10 @@ export const CHAPTERS = [
           annual: Math.round(savings * 12).toLocaleString()
         }));
       }
-      const cfpb = read.answers("cfpb");
-      lines.push(tp("Of five statements about money, {n} described you well.", { n: highCount(cfpb) }));
+      const wellCount = highCount(read.answers("cfpb"));
+      if (wellCount !== null) {
+        lines.push(tp("Of five statements about money, {n} described you well.", { n: wellCount }));
+      }
       return lines;
     },
     fact: {
@@ -211,9 +226,11 @@ export const CHAPTERS = [
           hours: sleep, annual: Math.round(sleep * 365).toLocaleString()
         }));
       }
-      const days = ["onb-vig-days", "onb-mod-days", "onb-walk-days"].map(id => read.num(id) || 0);
-      const mins = ["onb-vig-mins", "onb-mod-mins", "onb-walk-mins"].map(id => read.num(id) || 0);
-      const weekly = days[0] * mins[0] + days[1] * mins[1] + days[2] * mins[2];
+      const days = ["onb-vig-days", "onb-mod-days", "onb-walk-days"].map(id => read.num(id));
+      const mins = ["onb-vig-mins", "onb-mod-mins", "onb-walk-mins"].map(id => read.num(id));
+      const weekly = isComplete([...days, ...mins])
+        ? days[0] * mins[0] + days[1] * mins[1] + days[2] * mins[2]
+        : 0;
       if (weekly > 0) {
         lines.push(tp("You move for about {mins} minutes in a normal week.", { mins: Math.round(weekly) }));
       }
@@ -257,11 +274,16 @@ export const CHAPTERS = [
       const lines = [];
       const st5 = read.answers("st5");
       const who5 = read.answers("who5");
-      lines.push(tp("You answered {n} questions about the past few weeks.", { n: st5.length + who5.length }));
+      const answered = [...st5, ...who5].filter(v => v !== null).length;
+      if (answered > 0) {
+        lines.push(tp("You answered {n} questions about the past few weeks.", { n: answered }));
+      }
       const good = highCount(who5);
-      lines.push(good > 0
-        ? tp("In {n} of the five well-being questions, you said that was true of you most of the time or more.", { n: good })
-        : t("None of the five well-being questions landed in the upper half for you. That is recorded exactly as you gave it."));
+      if (good !== null) {
+        lines.push(good > 0
+          ? tp("In {n} of the five well-being questions, you said that was true of you most of the time or more.", { n: good })
+          : t("None of the five well-being questions landed in the upper half for you. That is recorded exactly as you gave it."));
+      }
       return lines;
     },
     fact: {
@@ -290,12 +312,15 @@ export const CHAPTERS = [
     recap(read) {
       const lines = [];
       const lsns = read.answers("lsns");
-      lines.push(tp("Across the six network questions your answers add up to {n}.", { n: sum(lsns) }));
-      const ucla = read.answers("ucla");
-      const lonely = highCount(ucla, 2);
-      lines.push(lonely === 0
-        ? t("None of the three loneliness questions described you often.")
-        : tp("{n} of the three loneliness questions described you at least some of the time.", { n: lonely }));
+      if (isComplete(lsns)) {
+        lines.push(tp("Across the six network questions your answers add up to {n}.", { n: sum(lsns) }));
+      }
+      const lonely = highCount(read.answers("ucla"), 2);
+      if (lonely !== null) {
+        lines.push(lonely === 0
+          ? t("None of the three loneliness questions described you often.")
+          : tp("{n} of the three loneliness questions described you at least some of the time.", { n: lonely }));
+      }
       return lines;
     },
     fact: {
@@ -335,8 +360,10 @@ export const CHAPTERS = [
             })
           : t("No hours set aside for learning this week. It is a week, not a verdict."));
       }
-      const gse = read.answers("gse");
-      lines.push(tp("Of six statements about handling difficulty, {n} were true of you.", { n: highCount(gse) }));
+      const coped = highCount(read.answers("gse"));
+      if (coped !== null) {
+        lines.push(tp("Of six statements about handling difficulty, {n} were true of you.", { n: coped }));
+      }
       return lines;
     },
     fact: {
@@ -381,7 +408,7 @@ export const CHAPTERS = [
           hours, annual: Math.round(hours * 12)
         }));
       }
-      if (!donations && !hours) {
+      if (donations === 0 && hours === 0) {
         lines.push(t("No money and no hours this month — recorded as given, and not weighed against anything."));
       }
       return lines;
@@ -426,8 +453,10 @@ export const CHAPTERS = [
             })
           : t("Nothing single-use on an ordinary day."));
       }
-      const geb = read.answers("geb");
-      lines.push(tp("Of six green habits, {n} are ones you do often or very often.", { n: highCount(geb) }));
+      const habits = highCount(read.answers("geb"));
+      if (habits !== null) {
+        lines.push(tp("Of six green habits, {n} are ones you do often or very often.", { n: habits }));
+      }
       return lines;
     },
     fact: {
@@ -449,9 +478,11 @@ export const CHAPTERS = [
       instrumentScreen("lfis", t("Six last questions. The furthest ahead this whole journey asks you to look."))
     ],
     recap(read) {
-      const lfis = read.answers("lfis");
+      const longTerm = highCount(read.answers("lfis"));
       return [
-        tp("Of six questions about the long term, {n} described something you do often.", { n: highCount(lfis) }),
+        ...(longTerm === null ? [] : [
+          tp("Of six questions about the long term, {n} described something you do often.", { n: longTerm })
+        ]),
         t("That is the last of them. Every region on the ring is lit.")
       ];
     },

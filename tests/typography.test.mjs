@@ -287,3 +287,23 @@ test("the share card draws Thai in the same serif as the app", () => {
   }
 });
 
+
+test("no font file ships twice under two names", async () => {
+  // Until v88 Inter and Source Serif 4 shipped one byte-identical copy of the
+  // same variable font per weight: four Inter files, three Source Serif, per
+  // subset. Different URLs are different downloads, so the service worker
+  // precached the same 48 KB four times and a page using three weights fetched
+  // it three times. A variable face is declared once with a weight RANGE.
+  const { createHash } = await import("node:crypto");
+  const seen = new Map();
+  for (const face of fontFaces()) {
+    const bytes = readFileSync(join(root, "assets/fonts", face.src));
+    const digest = createHash("sha256").update(bytes).digest("hex");
+    const first = seen.get(digest);
+    assert.ok(
+      !first || first === face.src,
+      `${face.src} is byte-identical to ${first}; declare one @font-face with a font-weight range instead`
+    );
+    seen.set(digest, face.src);
+  }
+});

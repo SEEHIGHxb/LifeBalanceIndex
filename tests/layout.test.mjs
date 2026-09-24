@@ -245,3 +245,21 @@ const STATE = {
   },
   reviews: []
 };
+
+test("every 100vh is followed by a dvh override in the same rule", () => {
+  // On iOS Safari and Chrome for Android, 100vh is the viewport with the
+  // browser toolbar HIDDEN. While the toolbar shows, a 100vh box is taller than
+  // the screen, so a full-height overlay's bottom edge (and anything pinned to
+  // it) sits under the toolbar. dvh tracks the toolbar. vh stays as the
+  // fallback line for browsers without dvh.
+  const css = read("index.css");
+  const rules = css.split("}");
+  for (const rule of rules) {
+    const vh = rule.match(/^\s*(min-height|height):\s*100vh;/m);
+    if (!vh) continue;
+    assert.match(
+      rule, new RegExp(`${vh[1]}:\\s*100dvh;`),
+      `a ${vh[1]}: 100vh rule has no ${vh[1]}: 100dvh after it:\n${rule.trim().slice(0, 120)}`
+    );
+  }
+});

@@ -72,3 +72,18 @@ export function percentileLabel(n) {
 export function dateLocale() {
   return currentLang === "th" ? "th-TH" : "en-US";
 }
+
+// Splits text into what a reader sees as single letters. Any per-letter effect
+// (Lumi's typewriter, a title spelled in glints) must split on these, never on
+// charAt or split(""): Thai stacks vowels and tone marks on the consonant before
+// them, and a split between the two shows a bare consonant with the mark
+// dropping onto it a frame later. Code points are the fallback where
+// Intl.Segmenter is missing -- they still split marks, but never a surrogate pair.
+const segmenter = typeof Intl !== "undefined" && typeof Intl.Segmenter === "function"
+  ? new Intl.Segmenter(undefined, { granularity: "grapheme" })
+  : null;
+
+export function graphemes(text) {
+  const str = String(text ?? "");
+  return segmenter ? Array.from(segmenter.segment(str), s => s.segment) : Array.from(str);
+}

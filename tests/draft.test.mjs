@@ -24,7 +24,7 @@ import assert from "node:assert/strict";
 
 import { APP_VERSION } from "../version.js";
 import {
-  serializeForm, saveDraft, readDraft, clearDraft, applyDraft, instrumentsIn
+  serializeForm, saveDraft, readDraft, clearDraft, applyDraft, instrumentsIn, DRAFT_SCHEMA
 } from "../draft.js";
 
 const KEY = "lifequest_draft_onboarding";
@@ -111,18 +111,54 @@ test("extra data rides along, so onboarding can restore the step too", () => {
 
 // --- the discard rules ---------------------------------------------------
 
-test("a draft written by a different app version is discarded, not repaired", () => {
-  // THE CONCRETE CASE: v73 added the CIT Learning block to onboarding. A v72
-  // draft restored into the v73 form would fill every block except that one,
-  // and the user would be looking at a form that appears complete and is not.
-  // Silently. Discarding costs them a retake; restoring costs them a wrong
-  // Personal Goals score they cannot see the cause of.
+test("a draft written by an earlier release is kept", () => {
+  // UNTIL v88 THIS WAS DISCARDED, on every release, for every reader part-way
+  // through a form: `draft.v !== APP_VERSION`, and APP_VERSION moves on any
+  // shipped change, a one-character CSS fix included. The worry it answered was
+  // real -- v73 added CIT Learning, and a v72 draft restored into the v73 form
+  // would have looked complete -- but every form that restores a draft now
+  // validates before it submits (onboarding per screen and in a final sweep,
+  // the check-in and the deep sections on submit), and onboarding resumes at
+  // the first screen with anything unanswered. A new block is asked, not
+  // skipped. Discarding cost a retake for a problem that no longer exists.
   const store = installStorage();
   store[KEY] = JSON.stringify({
     v: "an older version", at: new Date().toISOString(),
     named: { "who5-q0": "3" }, ids: {}
   });
+  const draft = readDraft("onboarding");
+  assert.ok(draft, "a draft from the previous release was thrown away");
+  assert.equal(draft.named["who5-q0"], "3");
+});
+
+test("a draft whose answers meant something else is discarded", () => {
+  // What still justifies a discard: a release that changes what a STORED ANSWER
+  // means -- a scale re-valued or reversed, items reordered. Restoring then puts
+  // the wrong option under the reader's thumb and nothing would catch it.
+  // Those releases bump DRAFT_SCHEMA; nothing else does.
+  const store = installStorage();
+  store[KEY] = JSON.stringify({
+    v: APP_VERSION, schema: DRAFT_SCHEMA + 1, at: new Date().toISOString(),
+    named: { "who5-q0": "3" }, ids: {}
+  });
   assert.equal(readDraft("onboarding"), null);
+});
+
+test("a draft is stamped with the answer schema it was written under", () => {
+  const store = installStorage();
+  saveDraft("onboarding", makeForm([radio("who5-q0", "3", true)]));
+  assert.equal(JSON.parse(store[KEY]).schema, DRAFT_SCHEMA);
+});
+
+test("a draft written before the schema stamp existed counts as schema 1", () => {
+  // Every draft in a reader's storage today was written by v87 or earlier and
+  // carries no `schema`. Those answers mean what schema 1 says they mean.
+  const store = installStorage();
+  store[KEY] = JSON.stringify({
+    v: "87", at: new Date().toISOString(), named: { "who5-q0": "3" }, ids: {}
+  });
+  assert.equal(DRAFT_SCHEMA, 1, "bumping DRAFT_SCHEMA must also decide what an unstamped draft is");
+  assert.ok(readDraft("onboarding"));
 });
 
 test("a draft older than a week is discarded", () => {

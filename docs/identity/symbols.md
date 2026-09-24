@@ -138,6 +138,8 @@ Her *character* anchors are fixed and still hold:
 
 Until the redraw is approved, the app keeps `assets/lumi.png`.
 
+**Parked 2026-09-24.** The owner generated four GPT busts (`assets/lumi_current_design/`: warm, curious, encouraging, pleased). They're acceptable but close to the old design. Three quick SVG takes (A star sprite, B paper portrait, C constellation) are in [`lumi-concepts.html`](lumi-concepts.html). Lumi's final form is decided later; the rest of the plan does not wait for it.
+
 ## S8. Region emblems (new subjects)
 
 Each emblem is a single illustration in a 200-unit square with no frame, like the reference tiles. It follows these rules:

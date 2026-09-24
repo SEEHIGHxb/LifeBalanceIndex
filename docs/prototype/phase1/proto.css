@@ -1,0 +1,511 @@
+/* LBI Phase 1 motion prototype. Sage & Gilt tokens from docs/identity/symbols.md.
+   Disposable: nothing here is imported by the app. */
+
+:root {
+  color-scheme: light;
+  --cream: #fbf8f1;
+  --paper: #f7f5f0;
+  --ink: #2f372b;
+  --ink-soft: #5b6453;
+  --sage-light: #c3cfb6;
+  --sage: #a8b49c;
+  --sage-line: #6f7d64;
+  --sage-deep: #56634e;
+  --gold-light: #f0d8a8;
+  --gold: #d9b77a;
+  --gold-line: #a88752;
+  --label: #7a6440;
+  --halo: #ebd3a0;
+  --wash: #f2e2bb;
+
+  --display: "Cormorant Garamond", "Trirong", Georgia, serif;
+  --body: "Inter", "Sarabun", system-ui, sans-serif;
+  --radius: 18px;
+}
+
+:root:lang(th) {
+  --display: "Trirong", "Cormorant Garamond", Georgia, serif;
+  --body: "Sarabun", "Inter", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 16px/1.55 var(--body);
+  -webkit-text-size-adjust: 100%;
+}
+
+.page {
+  max-width: 30rem;
+  margin: 0 auto;
+  padding-inline: 16px;
+  padding-block: 20px 56px;
+  display: grid;
+  gap: 18px;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+:focus-visible { outline: 2px solid var(--sage-deep); outline-offset: 2px; }
+
+/* --- header ------------------------------------------------------------ */
+
+.top { display: grid; gap: 12px; }
+
+.kicker {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--label);
+}
+
+.title {
+  margin: 0;
+  font: 600 34px/1.1 var(--display);
+  color: var(--label);
+  text-wrap: balance;
+}
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--sage-line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.seg button {
+  min-height: 40px;
+  min-width: 48px;
+  padding: 0 14px;
+  border: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font: 500 14px var(--body);
+  cursor: pointer;
+}
+
+.seg button + button { border-left: 1px solid var(--sage-line); }
+.seg button[aria-pressed="true"] { background: var(--sage-deep); color: var(--cream); }
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--sage-light);
+  border-radius: 999px;
+  background: var(--cream);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.switch input { width: 18px; height: 18px; accent-color: var(--sage-deep); margin: 0; }
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+@media (min-width: 30rem) {
+  .tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.tabs a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--sage-light);
+  background: var(--cream);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.tabs a[aria-current="page"] {
+  border-color: var(--gold-line);
+  background: var(--gold-light);
+}
+
+.tab-n {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--sage-light);
+  color: var(--sage-deep);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* --- shared stage pieces -------------------------------------------------- */
+
+.scene { display: grid; gap: 14px; }
+
+.stage {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--sage-light);
+  background: var(--cream);
+}
+
+.stage-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid var(--sage-line);
+  background: var(--cream);
+  color: var(--ink);
+  font: 500 15px var(--body);
+  cursor: pointer;
+}
+
+.btn-primary {
+  border-color: var(--sage-deep);
+  background: var(--sage-deep);
+  color: var(--cream);
+}
+
+.hint { margin: 0; font-size: 14px; color: var(--ink-soft); }
+
+.readout {
+  margin: 0;
+  font-size: 13px;
+  color: var(--label);
+  font-variant-numeric: tabular-nums;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--label);
+}
+
+:lang(th) .eyebrow, :lang(th) .kicker { letter-spacing: 0; text-transform: none; }
+
+.region-name {
+  margin: 0;
+  font: 600 32px/1.15 var(--display);
+  color: var(--label);
+}
+
+/* Bursts draw BEHIND the thing they burst from (symbols.md S2). */
+.burst-layer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform, opacity;
+}
+
+.particle-glint { width: 20px; height: 20px; margin: -10px 0 0 -10px; }
+.particle-dot {
+  width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 0.8px var(--gold-line);
+}
+
+.glint-svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.glint-svg path { fill: var(--gold); stroke: var(--gold-line); stroke-width: 0.9; stroke-linejoin: round; }
+
+/* --- scene 1: tug-the-ring ----------------------------------------------- */
+
+.stage-tug {
+  height: 340px;
+  touch-action: none;
+  background:
+    radial-gradient(circle at 50% 50%, var(--cream) 0 38%, transparent 70%),
+    var(--wash);
+}
+
+.tug {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 176px;
+  height: 176px;
+  margin: -88px 0 0 -88px;
+  z-index: 1;
+  border-radius: 50%;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: transform;
+}
+
+.tug:active { cursor: grabbing; }
+.tug:focus-visible { outline-offset: 6px; border-radius: 50%; }
+.tug svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.threshold {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  margin: -90px 0 0 -90px;
+  border-radius: 50%;
+  left: 0;
+  top: 0;
+  border: 1.5px dashed var(--gold-line);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* --- ring + star (SVG) ----------------------------------------------------- */
+
+.ring-track { fill: none; stroke: var(--sage-light); stroke-width: 7; stroke-linecap: round; }
+.ring-lit { fill: none; stroke: var(--gold); stroke-width: 7; stroke-linecap: butt; }
+.ring-lit-edge { fill: none; stroke: var(--gold-line); stroke-width: 0.8; opacity: 0.6; }
+.ring-marker { fill: var(--gold-light); stroke: var(--gold-line); stroke-width: 1.2; }
+.star-body { fill: var(--gold-light); stroke: var(--gold-line); stroke-width: 1.6; stroke-linejoin: round; }
+.star-engrave { stroke: var(--gold-line); stroke-width: 0.8; opacity: 0.5; stroke-linecap: round; }
+.star-hole { fill: var(--cream); stroke: var(--sage-line); stroke-width: 1.2; }
+.star-halo { fill: none; stroke: var(--halo); stroke-width: 2; stroke-linecap: round; }
+
+/* --- scene 2: chapter ending ------------------------------------------------ */
+
+.stage-ending {
+  display: grid;
+  gap: 14px;
+  padding: 22px 18px 20px;
+  background: linear-gradient(180deg, var(--wash) 0, var(--cream) 220px);
+}
+
+.ending-head {
+  position: relative;
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.emblem-wrap { position: relative; width: 112px; height: 112px; }
+
+.emblem {
+  position: relative;
+  z-index: 1;
+  width: 112px;
+  height: 112px;
+  border-radius: 22px;
+  border: 1px solid var(--sage-light);
+  background: var(--cream);
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+.emblem img { display: block; width: 100%; height: 100%; }
+
+.mini-ring { width: 46px; height: 46px; }
+.mini-ring svg { display: block; width: 100%; height: 100%; }
+
+.head-text { display: grid; gap: 4px; align-content: center; }
+.count-row { display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; color: var(--label); font-size: 14px; }
+
+.quiet-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--sage-deep);
+  font-style: italic;
+}
+
+.recap { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+.card {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--sage-light);
+  background: var(--cream);
+  font-size: 15px;
+  will-change: transform, opacity;
+}
+
+.flip { perspective: 900px; }
+
+.flip-inner {
+  position: relative;
+  display: grid;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.face-front {
+  background: var(--cream);
+  border: 1px solid var(--gold-line);
+}
+
+.face-back {
+  transform: rotateY(180deg);
+  border: 1px solid var(--sage-line);
+  background-color: var(--sage-light);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24'%3E%3Cpath d='M12 5 Q12.6 11.4 19 12 Q12.6 12.6 12 19 Q11.4 12.6 5 12 Q11.4 11.4 12 5Z' fill='%23D9B77A' stroke='%23A88752' stroke-width='0.6'/%3E%3C/svg%3E");
+  background-size: 28px 28px;
+}
+
+.fact-label {
+  margin: 0 0 4px;
+  font: 600 13px var(--body);
+  color: var(--label);
+  letter-spacing: 0.04em;
+}
+
+.fact-text { margin: 0; font-size: 15px; }
+
+.spring { will-change: transform; }
+
+/* --- scene 3: chapter opening ------------------------------------------------ */
+
+.stage-opening {
+  display: grid;
+  gap: 14px;
+  padding: 22px 18px 24px;
+  background: linear-gradient(180deg, var(--wash) 0, var(--cream) 240px);
+}
+
+.opening-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+.opening-emblem {
+  width: 96px;
+  height: 96px;
+  border-radius: 20px;
+  border: 1px solid var(--sage-light);
+  background: var(--cream);
+  overflow: hidden;
+}
+
+.opening-emblem img { display: block; width: 100%; height: 100%; }
+
+.stage-opening .mini-ring { width: 64px; height: 64px; }
+
+.glint-title { font-size: 40px; }
+
+.g { position: relative; display: inline-block; white-space: pre; }
+.g-letter { display: inline-block; will-change: transform, opacity; }
+
+.g-glint {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 0.62em;
+  height: 0.62em;
+  margin: -0.31em 0 0 -0.31em;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.lumi-line { display: grid; grid-template-columns: 48px 1fr; gap: 10px; align-items: start; }
+
+.lumi-medallion {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold-line);
+  background: var(--cream);
+  display: grid;
+  place-items: center;
+}
+
+.lumi-medallion svg { width: 34px; height: 34px; }
+
+.bubble {
+  position: relative;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 4px 16px 16px 16px;
+  border: 1px solid var(--sage-light);
+  background: var(--cream);
+  font-size: 16px;
+  min-height: 3.2em;
+}
+
+.caret {
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-left: 2px;
+  vertical-align: -0.05em;
+  will-change: transform, opacity;
+}
+
+.flyer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  z-index: 50;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* --- scene 4: ring to radar -------------------------------------------------- */
+
+.stage-radar { padding: 14px 10px 10px; }
+.radar-svg { display: block; width: 100%; max-width: 100%; height: auto; overflow: visible; }
+.radar-bloom { transform-origin: 180px 165px; }
+.ring-marker { transform-box: fill-box; transform-origin: center; }
+.radar-grid { fill: none; stroke: var(--sage-light); stroke-width: 1; }
+.radar-spoke { stroke: var(--sage-light); stroke-width: 1; }
+.radar-shape { fill: var(--gold-light); fill-opacity: 0.7; stroke: var(--gold-line); stroke-width: 1.6; stroke-linejoin: round; }
+.radar-vertex { fill: var(--gold); stroke: var(--gold-line); stroke-width: 1; }
+.radar-label { fill: var(--label); font: 500 11px var(--body); }
+.radar-value { fill: var(--ink-soft); font: 400 10px var(--body); font-variant-numeric: tabular-nums; }
+
+/* --- judge notes ------------------------------------------------------------ */
+
+.judge {
+  border-top: 1px dashed var(--sage);
+  padding-top: 12px;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.judge h2 { margin: 0 0 6px; font: 600 13px var(--body); color: var(--label); letter-spacing: 0.04em; }
+.judge ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }

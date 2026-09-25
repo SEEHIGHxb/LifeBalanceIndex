@@ -11,7 +11,16 @@
 //
 // Now: one instrument (or one small group of numbers) per screen, items within
 // an instrument revealed one at a time, and every chapter ending with a recap
-// of the reader's own answers plus one cited fact. The ring replaces the bar.
+// of the reader's own answers plus one cited fact.
+//
+// THE MISSION PANEL (redesign R2, v97). Every screen is a panel in its region's
+// wash: the region and its emblem on the left, the screen's title typed in on
+// the right, and the answers as pills. A chapter ending wipes the region's
+// photograph up and bursts its motifs. The progress star sits in the header.
+// The Still Water and The Commons are quiet: nothing types, rises or bursts
+// there. Every answer pill rises and presses the same way whichever is chosen,
+// and all of that is CSS on the item (css/journey.css); script motion never
+// touches an item (views/motion-mount.js STILL_SELECTOR).
 //
 // Blank-first policy (v2.3.0) is untouched: every field starts empty, every
 // mandatory field carries a red "*", and no screen can be left until each
@@ -32,11 +41,11 @@ import { escapeHtml, scrollIntoViewGently } from "./helpers.js";
 import { applyDraft, saveDraft, clearDraft, instrumentsIn } from "../draft.js";
 import { savingsRateFrom } from "../scoring.js";
 import { CHAPTERS, allScreens } from "./journey.js";
-import { ringMarkup, paintRing } from "./journey-ring.js";
-import { bindTug } from "./tug.js";
-import {
-  playEnding, playOpening, settleRing, isQuietChapter, glintTitleMarkup, caretLineMarkup
-} from "./moments.js";
+import { progressMarkup, paintProgress } from "./journey-progress.js";
+import { isQuietChapter } from "./moments.js";
+import { mountMotion, writeMotionStyle } from "./motion-mount.js";
+import { typedMarkup, typeIn, settleIn, burst, onAbort, SPRITES } from "./stage.js";
+import { animate, easeStar, isReduced } from "../motion.js";
 import { SOURCES } from "../benchmarks.js";
 import { INSTRUMENTS } from "../surveys.js";
 import { t, tp } from "../i18n.js";
@@ -46,6 +55,11 @@ import { t, tp } from "../i18n.js";
 // the baseline is accepted -- from then on state.js is the record, and a draft
 // would be a stale second copy of assessment data.
 const DRAFT_KEY = "onboarding";
+
+// The screen title types in at this pace; the ending's photograph wipes up
+// over WIPE_MS before the region bursts (the prototype's timing).
+const TYPE_MS_PER_CHAR = 32;
+const WIPE_MS = 700;
 
 // Maps each validated numeric field (validation.js FIELD_CONSTRAINTS keys) to
 // its onboarding input id — used for reading and coverage tracking. The inputs
@@ -84,74 +98,72 @@ function buildScreens() {
   return out;
 }
 
-// The region banner: what turns 22 answering screens from a form into a place.
-//
-// Before this, a chapter's colour and name appeared ONLY on its ending card, so
-// the reader crossed The Wildwood on the same off-white page as every other
-// screen and met the forest for one screen out of four. The name was present in
-// the ring's centre the whole time, but at --text-sm inside a 132px ring it sits
-// below everything else in the hierarchy.
-//
-// The theme line shows on the chapter's FIRST screen only. It is an arrival
-// beat; repeated on all four screens of a chapter it stops being one.
-//
-// The motif is decorative and aria-hidden: it carries no information the region
-// name does not already carry in text.
-// The region's art is NOT rendered here. It is a page background, painted on
-// <body> by paintWash below, so it fills the viewport behind and around the
-// card rather than sitting in a band inside it. This function renders only the
-// text: which region, its name, and on the arrival screen its theme line.
-function regionBannerMarkup(chapter, index, showTheme) {
+// The region's emblem. Decorative (alt=""): the region's name is beside it.
+// Sized so nothing shifts when it loads, and lazy because every screen but one
+// is hidden.
+function emblemImg(chapter, cls) {
+  return `<img class="${cls}" src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async">`;
+}
+
+// The panel's left column: which region, where in the journey, and on the
+// chapter's FIRST screen only, its theme line (an arrival beat; repeated on
+// every screen of a chapter it stops being one). The prologue is outside the
+// eight regions, so it carries the gilt star instead of an emblem.
+function sideMarkup(chapter, index, showTheme) {
+  if (!chapter) {
+    return `
+      <div class="q-side">
+        <p class="label">(${escapeHtml(t("Setting out"))})</p>
+        <svg class="q-emblem q-emblem-star" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><use href="${SPRITES}#star"/></svg>
+      </div>`;
+  }
   return `
-    <div class="region-banner">
-      <svg class="region-motif" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d="${chapter.motif}" />
-      </svg>
-      <p class="region-banner-eyebrow">${tp("Region {n} of {total}", { n: index + 1, total: CHAPTERS.length })}</p>
-      ${showTheme
-        ? `<h4 class="region-banner-name">${glintTitleMarkup(chapter.region)}</h4>
-      <p class="region-banner-theme">${caretLineMarkup(chapter.theme)}</p>`
-        : `<h4 class="region-banner-name">${escapeHtml(chapter.region)}</h4>`}
+    <div class="q-side">
+      <p class="label">(${escapeHtml(chapter.region)})</p>
+      ${emblemImg(chapter, "q-emblem")}
+      <p class="q-count">${tp("Region {n} of {total}", { n: index + 1, total: CHAPTERS.length })}</p>
+      ${showTheme ? `<p class="q-theme">${escapeHtml(chapter.theme)}</p>` : ""}
     </div>`;
 }
 
-// A chapter ending: the reader's own answers, then one fact about the world.
+// A chapter ending: the region's photograph, then the reader's own answers and
+// one fact about the world.
+//
+// No text sits on the photograph: it carries only the emblem, so no answer or
+// fact depends on the contrast of a picture. The curtain is what the wipe
+// moves (transform only); at rest it is scaled to nothing.
 //
 // The citation is real and links out, but it is folded into a <details> rather
 // than printed under every fact. A chapter ending is four lines of writing; a
 // 60-word citation beneath each one would bury the beat it exists to support.
-// Folded is not hidden -- the disclosure is always present and always openable,
-// which is the standard the rest of the app's benchmark cards already meet.
-// symbols.md S8/S9: the region's illustration on a cream tile. Decorative
-// (alt=""): the region's name is the heading beside it. width and height are
-// set so nothing shifts when it loads, and it is lazy because the page it sits
-// on is hidden until the reader reaches it.
-function emblemTile(chapter) {
-  return `<div class="chapter-emblem"><img src="./assets/emblems/${chapter.art}.webp" alt="" width="96" height="96" loading="lazy" decoding="async"></div>`;
-}
-
-function endingMarkup(chapterIndex) {
+function endingMarkup(chapterIndex, nav) {
   const chapter = CHAPTERS[chapterIndex];
   const source = SOURCES[chapter.fact.source];
   return `
-    <div class="chapter-ending" style="--chapter-hue: ${chapter.hue};">
-      <div class="chapter-ending-head">
-        <div>
-          <p class="chapter-ending-eyebrow">${t("Region complete")}</p>
-          <h3 class="chapter-ending-region">${escapeHtml(chapter.region)}</h3>
-          <p class="chapter-ending-theme">${escapeHtml(chapter.theme)}</p>
-        </div>
-        ${emblemTile(chapter)}
+    <div class="ending-photo" style="background-image: url('./assets/regions/${chapter.art}.jpg');" aria-hidden="true">
+      <i class="ending-curtain"></i>
+      ${emblemImg(chapter, "ending-emblem")}
+    </div>
+    <div class="burst-layer" aria-hidden="true"></div>
+    <div class="q-split">
+      <div class="q-side">
+        <p class="label">(${escapeHtml(t("Region complete"))})</p>
+        <p class="q-count">${tp("Region {n} of {total}", { n: chapterIndex + 1, total: CHAPTERS.length })}</p>
       </div>
-      <ul class="chapter-recap" id="recap-${chapterIndex}"></ul>
-      <div class="chapter-fact">
-        <p class="chapter-fact-label">${t("Meanwhile, in the world")}</p>
-        <p class="chapter-fact-text">${escapeHtml(chapter.fact.text)}</p>
-        ${source ? `
-        <details class="chapter-fact-source">
-          <summary>${t("Where this comes from")}</summary>
-          <p><a href="${source.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(source.label)}</a></p>
-        </details>` : ""}
+      <div class="q-main">
+        <h3 class="ending-region">${escapeHtml(chapter.region)}</h3>
+        <p class="ending-theme">${escapeHtml(chapter.theme)}</p>
+        <ul class="chapter-recap" id="recap-${chapterIndex}"></ul>
+        <div class="chapter-fact">
+          <p class="chapter-fact-label">${t("Meanwhile, in the world")}</p>
+          <p class="chapter-fact-text">${escapeHtml(chapter.fact.text)}</p>
+          ${source ? `
+          <details class="chapter-fact-source">
+            <summary>${t("Where this comes from")}</summary>
+            <p><a href="${source.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(source.label)}</a></p>
+          </details>` : ""}
+        </div>
+        ${nav}
       </div>
     </div>`;
 }
@@ -160,9 +172,9 @@ function endingMarkup(chapterIndex) {
 export function renderOnboarding(containerId, onComplete) {
   const container = document.getElementById(containerId);
   if (!container) return;
-  // Motion is decoration around the assessment. If a scene throws, the page
-  // is already in its finished state (runScene renders it again), so the
-  // defect goes to the console and the reader carries on.
+  // Motion is decoration around the assessment. If a scene throws, the screen
+  // is already in its finished state, so the defect goes to the console and
+  // the reader carries on.
   const reportMotion = (err) => console.error("Journey motion failed:", err);
 
   const screens = buildScreens();
@@ -183,13 +195,13 @@ export function renderOnboarding(containerId, onComplete) {
 
     const chapter = screen.chapter >= 0 ? CHAPTERS[screen.chapter] : null;
     const themed = chapter ? ` style="--chapter-hue: ${chapter.hue}; --chapter-wash: ${chapter.wash};"` : "";
+    const quiet = chapter && isQuietChapter(chapter) ? " data-quiet" : "";
 
     if (screen.kind === "ending") {
       return `
-        <div class="survey-page survey-page-ending d-none" id="onb-page-${i}" data-chapter="${screen.chapter}"${themed}>
-          ${endingMarkup(screen.chapter)}
-          ${nav}
-        </div>`;
+        <section class="survey-page survey-page-ending d-none" id="onb-page-${i}" data-chapter="${screen.chapter}"${quiet}${themed}>
+          ${endingMarkup(screen.chapter, nav)}
+        </section>`;
     }
 
     // The couples-only RAS block keeps its conditional wrapper INSIDE the
@@ -201,24 +213,24 @@ export function renderOnboarding(containerId, onComplete) {
       : screen.body;
 
     return `
-      <div class="survey-page d-none" id="onb-page-${i}" data-chapter="${screen.chapter}"${themed}
+      <section class="survey-page d-none" id="onb-page-${i}" data-chapter="${screen.chapter}"${quiet}${themed}
         ${screen.instrument ? `data-instrument="${screen.instrument}"` : ""}
         ${screen.conditional ? `data-conditional="${screen.conditional}"` : ""}>
-        ${chapter ? regionBannerMarkup(chapter, screen.chapter, screen.startsChapter) : ""}
-        <h3 class="card-header">${escapeHtml(screen.title)}</h3>
-        <p class="onb-why">${escapeHtml(screen.stem)}</p>
-        ${body}
-        ${nav}
-      </div>`;
+        <div class="q-split">
+          ${sideMarkup(chapter, screen.chapter, screen.startsChapter)}
+          <div class="q-main">
+            <h3 class="q-title">${typedMarkup(screen.title)}</h3>
+            <p class="onb-why">${escapeHtml(screen.stem)}</p>
+            ${body}
+            ${nav}
+          </div>
+        </div>
+      </section>`;
   };
 
   container.innerHTML = `
-    <div class="onboarding-container card">
-      <div class="brand" style="text-align: center; margin-bottom: 18px;">
-        <h1>${t("PERSONAL WELLBEING ASSESSMENT")}</h1>
-        <p>${t("Baseline Assessment")}</p>
-      </div>
-      ${ringMarkup(CHAPTERS)}
+    <div class="journey">
+      <p class="sr-only" id="journey-status" role="status" aria-live="polite"></p>
       <div id="onb-resume" class="onb-resume d-none">
         <span>${t("Picked up where you left off. Your answers were saved on this device.")}</span>
         <button type="button" class="btn btn-sm" id="onb-resume-clear">${t("Start over")}</button>
@@ -226,19 +238,19 @@ export function renderOnboarding(containerId, onComplete) {
       <form id="onboarding-form">
         ${screens.map(screenMarkup).join("")}
       </form>
-      <p id="onboarding-error" class="d-none" role="alert" style="color: var(--color-crimson); margin-top: 12px; font-weight: 600;"></p>
+      <p id="onboarding-error" class="onboarding-error d-none" role="alert"></p>
     </div>
   `;
 
   const form = document.getElementById("onboarding-form");
-  // Tug-the-ring: offered on the landing (the prologue) and after the last
-  // region only, never on a screen that holds instrument items.
-  const tug = bindTug({
-    button: container.querySelector(".ring-tug"),
-    body: container.querySelector(".ring-body"),
-    layer: container.querySelector(".ring-burst"),
-    onError: reportMotion
-  });
+  // The header's progress pill (index.html). Absent outside the app shell,
+  // which is fine: the status line carries the same count.
+  const pill = document.getElementById("journey-progress");
+  if (pill) {
+    pill.innerHTML = progressMarkup(CHAPTERS);
+    pill.classList.remove("d-none");
+  }
+  const statusEl = document.getElementById("journey-status");
   const pageEl = (i) => document.getElementById(`onb-page-${i}`);
   const errorEl = () => document.getElementById("onboarding-error");
   // Unhidden BEFORE the text is written. The line is role="alert", and a live
@@ -282,92 +294,60 @@ export function renderOnboarding(containerId, onComplete) {
     }
   };
 
-  // --- the ring ----------------------------------------------------------
+  // --- progress ----------------------------------------------------------
   //
-  // `within` is the fraction of THIS chapter's screens the reader has passed,
-  // counting the ending as one of them. Screens completed, never score.
+  // Regions finished, never score. The ENDING screen counts its own chapter as
+  // finished, at the same moment the panel in front of it says so.
+  const updateProgress = (index) => paintProgress({
+    chapter: screens[index].chapter,
+    endsChapter: screens[index].kind === "ending",
+    chapters: CHAPTERS,
+    pill,
+    status: statusEl
+  });
+
+  // --- scenes ------------------------------------------------------------
   //
-  // Within an instrument screen the arc also moves one sub-step per item
-  // answered: the count of answered items, never which point was chosen.
-  const itemsDone = (page) => {
-    if (!page || !page.dataset.instrument) return 0;
-    const items = page.querySelectorAll("fieldset.survey-question");
-    if (!items.length) return 0;
-    const answered = page.querySelectorAll('fieldset.survey-question input[type="radio"]:checked').length;
-    return Math.min(1, answered / items.length);
+  // Played only when the reader moved FORWARD onto a screen outside the quiet
+  // regions. Arriving by Back, on a resume, or in a quiet region, the screen is
+  // simply there. Each scene hangs off a fresh mount, so moving on mid-scene
+  // lands every piece in its finished state (views/stage.js onAbort).
+
+  // A question screen: the emblem settles and the title types in. The answer
+  // pills rise by CSS, the same for every option.
+  const playArrival = (page, signal) => {
+    settleIn(page.querySelector(".q-emblem"), { signal }).catch(reportMotion);
+    typeIn(page.querySelector(".q-title .typed"), { msPerChar: TYPE_MS_PER_CHAR, signal }).catch(reportMotion);
   };
 
-  const chapterProgress = (index) => {
-    const screen = screens[index];
-    if (screen.chapter < 0) return { chapter: -1, within: 0, endsChapter: false };
-    const ofChapter = screens.filter(s => s.chapter === screen.chapter && !isSkippedScreen(s));
-    const position = ofChapter.indexOf(screen);
-    // The ENDING screen counts its own chapter as finished: the arc fills to
-    // the brim and the count increments there, at the same moment the card in
-    // front of it says the region is complete. This used to key off the last
-    // CONTENT screen's `endsChapter` flag, so the count reached 1 / 8 one screen
-    // early and fell back to 0 / 8 on the card headed "Region complete".
-    const isEnding = screen.kind === "ending";
-    const passed = position < 0 ? 0 : position + (isEnding ? 1 : itemsDone(pageEl(index)));
-    return {
-      chapter: screen.chapter,
-      within: passed / ofChapter.length,
-      endsChapter: isEnding
-    };
+  // A chapter ending: the photograph wipes up from the bottom (a curtain
+  // shrinking away, so transform only), then the region's motifs burst from
+  // its emblem.
+  const playEnding = (page, chapter, signal) => {
+    const curtain = page.querySelector(".ending-curtain");
+    const settle = () => writeMotionStyle(curtain, { transform: "" });
+    onAbort(signal, settle);
+    writeMotionStyle(curtain, { transform: "scaleY(1)" });
+    animate({
+      duration: WIPE_MS, ease: easeStar, signal,
+      update: (p) => writeMotionStyle(curtain, { transform: p >= 1 ? "" : `scaleY(${(1 - p).toFixed(4)})` }),
+      reduced: "end"
+    }).then(done => {
+      if (!done) return false;
+      return burst(page.querySelector(".burst-layer"), page.querySelector(".ending-emblem"), {
+        motifs: [{ motif: chapter.aspect, hue: chapter.hue }], signal
+      });
+    }).catch(err => { settle(); reportMotion(err); });
   };
 
-  const ringMarker = () => container.querySelector("#ring-marker");
-  const markerAt = () => {
-    const m = ringMarker();
-    return m ? [Number(m.getAttribute("cx")), Number(m.getAttribute("cy"))] : [0, 0];
-  };
-
-  // Paints the ring in its new place at once (the finished state), then lets
-  // the marker settle there. `motion` is false on the first paint.
-  const updateRing = (index, { motion = true } = {}) => {
-    const [x0, y0] = markerAt();
-    paintRing(container, { ...chapterProgress(index), chapters: CHAPTERS });
-    const [x1, y1] = markerAt();
-    const shift = [x0 - x1, y0 - y1];
-    if (motion) settleRing({ marker: ringMarker(), shift }).catch(reportMotion);
-    return shift;
-  };
-
-  // A chapter's first screen reached by moving forward: its name is spelled
-  // in glints and its theme line typed, the caret flying home to the marker.
-  const playChapterOpening = (index, shift) => {
+  // Reduced motion: the screen as rendered, with not one style written.
+  const playScene = (index, forward) => {
+    const scope = mountMotion();
+    const chapter = CHAPTERS[screens[index].chapter];
+    if (!forward || isReduced() || (chapter && isQuietChapter(chapter))) return;
     const page = pageEl(index);
-    playOpening({
-      draw() {},
-      pieces: () => ({
-        pairs: [...page.querySelectorAll(".region-banner-name .g")].map(g =>
-          [g.querySelector(".g-letter"), g.querySelector(".g-glint")]),
-        letters: page.querySelectorAll(".region-banner-theme .t"),
-        caret: page.querySelector(".region-banner-theme .star-caret"),
-        marker: ringMarker(),
-        shift
-      })
-    }).catch(reportMotion);
-  };
-
-  // A chapter ending reached by moving forward: the region lights up and the
-  // recap is dealt. Arriving by Back, or on a resume, it is simply there.
-  const playChapterEnding = (index, shift) => {
-    const chapterIndex = screens[index].chapter;
-    const page = pageEl(index);
-    playEnding({
-      draw: () => fillRecap(chapterIndex),
-      pieces: () => ({
-        lit: container.querySelector(`#ring-lit-${chapterIndex}`),
-        marker: ringMarker(),
-        shift,
-        emblem: page.querySelector(".chapter-emblem"),
-        cards: page.querySelectorAll(".chapter-recap li"),
-        fact: page.querySelector(".chapter-fact"),
-        layer: container.querySelector(".ring-burst")
-      }),
-      quiet: isQuietChapter(CHAPTERS[chapterIndex])
-    }).catch(reportMotion);
+    if (screens[index].kind === "ending") playEnding(page, chapter, scope.signal);
+    else playArrival(page, scope.signal);
   };
 
   // --- recap -------------------------------------------------------------
@@ -412,34 +392,9 @@ export function renderOnboarding(containerId, onComplete) {
   // --- navigation --------------------------------------------------------
   let currentScreen = 0;
 
-  // Paints the region's colour across the whole page. Set on <body>, not on the
-  // container: a wash that stops at the card edge reads as a tinted panel
-  // rather than as somewhere the reader has travelled to.
-  //
-  // The prologue is outside the ring and keeps the app's own paper, which is
-  // what makes crossing into The Market feel like a departure.
-  const paintWash = (index) => {
-    const chapter = screens[index].chapter >= 0 ? CHAPTERS[screens[index].chapter] : null;
-    if (chapter) {
-      document.body.style.setProperty("--journey-wash", chapter.wash);
-      // The region's art, as a background layer on <body>. Set here rather
-      // than in the screen markup because a background has to be behind AND
-      // around the card to read as a place; anything rendered inside the card
-      // is a picture in a frame instead. The wash stays set as the colour
-      // underneath it, which is what shows while the JPEG is still loading
-      // and what a reader with images disabled gets.
-      document.body.style.setProperty(
-        "--journey-art", `url("./assets/regions/${chapter.art}.jpg")`
-      );
-      document.body.classList.add("journey-lit");
-    } else {
-      document.body.classList.remove("journey-lit");
-    }
-  };
-
   // FOCUS FOLLOWS THE SCREEN when the reader moved it. Hiding the old screen
-  // otherwise drops focus to <body>, and #ring-status reads the same on every
-  // screen of a chapter, so a screen-reader user pressed Next and heard
+  // otherwise drops focus to <body>, and the status line reads the same on
+  // every screen of a chapter, so a screen-reader user pressed Next and heard
   // nothing. The heading is the screen's name, so landing there announces it.
   // Not on the first paint: a page that grabs focus on load is its own problem.
   const showScreen = (index, { moveFocus = true } = {}) => {
@@ -448,16 +403,9 @@ export function renderOnboarding(containerId, onComplete) {
     screens.forEach((_, i) => pageEl(i).classList.toggle("d-none", i !== index));
     const page = pageEl(index);
     syncReveal(page);
-    const isEnding = screens[index].kind === "ending";
-    if (isEnding) fillRecap(screens[index].chapter);
-    const isOpening = !isEnding && !!screens[index].startsChapter;
-    const scene = forward && (isEnding || isOpening);
-    const shift = updateRing(index, { motion: moveFocus && !scene });
-    if (scene && isEnding) playChapterEnding(index, shift);
-    if (scene && isOpening) playChapterOpening(index, shift);
-    paintWash(index);
-    const isFinalEnding = isEnding && screens[index].chapter === CHAPTERS.length - 1;
-    tug.setEnabled(screens[index].chapter < 0 || isFinalEnding);
+    if (screens[index].kind === "ending") fillRecap(screens[index].chapter);
+    updateProgress(index);
+    playScene(index, forward);
     scrollIntoViewGently(container, { block: "start" });
     const heading = moveFocus && page.querySelector("h3");
     if (heading) {
@@ -499,7 +447,7 @@ export function renderOnboarding(containerId, onComplete) {
 
   relationshipSelect.addEventListener("change", () => {
     syncCoupleBlock();
-    updateRing(currentScreen);
+    updateProgress(currentScreen);
   });
 
   // --- coverage capture --------------------------------------------------
@@ -531,8 +479,6 @@ export function renderOnboarding(containerId, onComplete) {
     // An answer is what advances the reveal, so this runs on every radio
     // change rather than only on the one that happens to be live.
     syncReveal(e.target.closest(".survey-page"));
-    // ...and the ring's sub-step: the same settle whichever point was chosen.
-    if (match) updateRing(currentScreen);
   });
 
   // --- draft restore, then autosave --------------------------------------
@@ -688,11 +634,6 @@ export function renderOnboarding(containerId, onComplete) {
       // draft would be a stale second copy of assessment data, and on a retake
       // it would repopulate the form with the previous run.
       clearDraft(DRAFT_KEY);
-      // The journey is finished and the dashboard is not a region. Leaving the
-      // wash on would tint every screen after this one with whichever chapter
-      // happened to be last.
-      document.body.classList.remove("journey-lit");
-      document.body.style.removeProperty("--journey-wash");
       onComplete();
     } catch (err) {
       console.error("Onboarding submission failed:", err);

@@ -60,9 +60,9 @@ const group = (top, subs = []) => `
     ${subs.length ? `<ul class="menu-sub">${subs.map(s => `<li>${s}</li>`).join("")}</ul>` : ""}
   </div>`;
 
-// Before onboarding every in-app route re-renders the journey, so the only
-// links offered are the journey itself and the static Privacy page (the same
-// reason app.js hides the footer's Methodology link until then).
+// Before onboarding the only screens are the Landing and the journey
+// (app.js renderFirstRun), so those two and the static Privacy page are all the
+// menu offers (the same reason app.js hides the footer's Methodology link).
 //
 // Privacy & Data is a sub line, not a heading: a line never wraps (a wrap
 // between letter cells can split a Thai word), and at heading size the Thai
@@ -70,7 +70,9 @@ const group = (top, subs = []) => `
 function menuHtml(onboarded) {
   const privacy = link("./privacy.html", t("Privacy & Data"));
   if (!onboarded) {
-    return `<div class="menu-cols"><div>${group(link("#/", t("The journey"), "menu-top"), [privacy])}</div></div>`;
+    const start = group(link("#/", t("Start"), "menu-top"));
+    const journey = group(link("#/journey", t("The journey"), "menu-top"), [privacy]);
+    return `<div class="menu-cols"><div>${start}${journey}</div></div>`;
   }
   const home = group(link("#/dashboard", t("Overview"), "menu-top"), [
     link("#/review", t("Weekly Review")),

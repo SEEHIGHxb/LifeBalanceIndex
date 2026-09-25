@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `96`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `97`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,39 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.45.0] — 2026-09-25 (APP_VERSION 97)
+
+The redesign, second release (R2 of [docs/redesign-build-plan.md](docs/redesign-build-plan.md)):
+the Landing and the journey.
+
+### Added
+
+- **The Landing.** Anyone who has not onboarded sees it at every route: the
+  lockup (move the pointer and it follows; tap the star and it bursts), the
+  mission line typing in, how it works, the eight regions as cards, a photo
+  band and a call to start. The call reads "Continue the journey" when a draft
+  exists. The journey itself lives at `#/journey`.
+- **The progress star** in the nav pill fills one point per region completed
+  and reads "n / 8".
+
+### Changed
+
+- **Every journey question sits in the mission panel**: the region's emblem
+  and count on the left, the question typing in on the right, on the region's
+  own wash. Answers are pills that rise in when their item opens; pressing
+  one moves every option the same way.
+- **The chapter ending** wipes the region's photograph up, then bursts its
+  stars and motifs from the emblem. Quiet regions (and reduced motion) skip
+  both.
+- The motion budget is now "the motion modules ≤ 20 KB gzipped" (owner
+  decision); they measure about 15 KB.
+
+### Removed
+
+- Tug-the-ring and the journey ring (`views/tug.js`, `views/journey-ring.js`),
+  the glint titles, the Lumi caret, the dealt recap cards and the full-screen
+  region light-up.
 
 ## [2.44.0] — 2026-09-25 (APP_VERSION 96)
 

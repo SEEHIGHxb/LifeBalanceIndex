@@ -1,0 +1,362 @@
+/* css/landing.css - the Landing (redesign R2, views/landing.js), ported from
+   the approved prototype (docs/prototype/redesign/proto.css).
+
+   Geometry keeps the prototype's reference scale: --px is one prototype
+   pixel, 1/2545 of the page's width on a laptop and 1/820 on a phone, so
+   every measurement below is the prototype's own number. It is measured with
+   container units against #main-view, so it is the same width the script's
+   pointer maths uses (no scrollbar difference). */
+
+/* The first-run screens are full-bleed pages. */
+body.first-run .app-container {
+  max-width: none;
+  padding: 0;
+}
+body.first-run #main-view { container-type: inline-size; }
+
+.landing {
+  --px: calc(100cqw / 2545);
+  --panel-r: calc(40 * var(--px));
+  --join-r: calc(30 * var(--px));
+  --photo-r: calc(55 * var(--px));
+  --card-r: calc(35.5 * var(--px));
+  --gutter: calc(136 * var(--px));
+  /* The grey the rounded panels sit on: it shows only at their corners. */
+  background: #808080;
+  color: var(--frame-ink);
+  font-family: var(--font-sans);
+  overflow-x: clip;
+}
+
+.landing .panel {
+  background: var(--frame-page);
+  border-radius: var(--panel-r);
+  position: relative;
+  margin-top: calc(-2 * var(--px));
+}
+.landing .wrap {
+  width: calc(2273 * var(--px));
+  margin-inline: auto;
+}
+.landing .split {
+  display: grid;
+  grid-template-columns: calc(var(--col) * var(--px)) minmax(0, 1fr);
+  align-items: start;
+}
+.landing .label {
+  margin: 0;
+  font-size: max(11px, calc(17 * var(--px)));
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- hero */
+.hero {
+  position: relative;
+  height: calc(1311 * var(--px));
+  overflow: hidden;
+  background: var(--frame-page);
+  border-radius: var(--panel-r) var(--panel-r) var(--join-r) var(--join-r);
+}
+.hero-stage { position: absolute; inset: 0; }
+.hero .lockup,
+.hero .part {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+.hero .lockup { transform-origin: 0 0; }
+.hero .part-mark { transform-origin: calc(1272.5 * var(--px)) calc(470 * var(--px)); }
+.hero .mark,
+.hero .mark-hit {
+  position: absolute;
+  left: calc(1092 * var(--px));
+  top: calc(290 * var(--px));
+  width: calc(361 * var(--px));
+  aspect-ratio: 1;
+}
+.hero .mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+/* The star can be tapped: on a phone there is no pointer for it to follow. */
+.hero .mark-hit {
+  z-index: 2;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+.hero .mark-hit:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 6px; }
+.hero .word,
+.hero .inc {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  font-family: var(--frame-word);
+  font-weight: 400;
+  line-height: 1;
+  white-space: pre;
+  color: var(--frame-ink);
+}
+.hero .word { top: calc(740 * var(--px)); font-size: calc(170 * var(--px)); }
+.hero .inc { top: calc(910 * var(--px)); font-size: calc(124 * var(--px)); }
+
+/* ------------------------------------------------ why and how it works */
+.mission {
+  padding: calc(300 * var(--px)) 0 calc(320 * var(--px));
+  overflow-x: clip;
+}
+.mission .split { --col: 771; }
+.landing .headline {
+  margin: 0;
+  font-weight: 700;
+  font-size: calc(40 * var(--px));
+  line-height: 1.8;
+  white-space: nowrap;
+}
+.statement { padding: calc(170 * var(--px)) 0 calc(150 * var(--px)); }
+.statement .split { --col: 704; }
+.statement .label { margin-top: calc(16 * var(--px)); }
+.statement p {
+  max-width: calc(1300 * var(--px));
+  margin: 0 0 calc(104 * var(--px));
+  font-weight: 500;
+  font-size: calc(32 * var(--px));
+  line-height: 2.05;
+  letter-spacing: 0.02em;
+}
+.statement p:last-child { margin-bottom: 0; }
+
+/* ------------------------------------------------- the eight regions */
+.projects {
+  position: relative;
+  margin-top: calc(-2 * var(--px));
+  background: var(--frame-page);
+  border-radius: var(--join-r) var(--join-r) 0 0;
+}
+.projects .inner { padding: calc(300 * var(--px)) 0 calc(651 * var(--px)); }
+.projects .label { margin: 0 0 calc(19 * var(--px)) calc(136 * var(--px)); }
+.cardblock {
+  width: calc(2112 * var(--px));
+  margin-left: calc(135 * var(--px));
+}
+.lcard {
+  position: relative;
+  background: var(--frame-card);
+  border-radius: var(--card-r);
+  will-change: transform;
+}
+.region-card + .region-card { margin-top: calc(40 * var(--px)); }
+.brand-visual {
+  height: calc(768 * var(--px));
+  overflow: hidden;
+}
+.brand-logo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: calc(938 * var(--px));
+  display: grid;
+  place-items: center;
+}
+.brand-logo img {
+  display: block;
+  width: calc(300 * var(--px));
+  height: auto;
+  border-radius: 18%;
+  box-shadow: 0 calc(10 * var(--px)) calc(30 * var(--px)) rgba(0, 0, 0, 0.08);
+}
+.brand-photo {
+  position: absolute;
+  left: calc(938 * var(--px));
+  right: calc(72 * var(--px));
+  top: calc(74 * var(--px));
+  bottom: calc(74 * var(--px));
+  border-radius: calc(20 * var(--px));
+  background-color: #dddddd;
+  background-size: cover;
+  background-position: center;
+}
+.info {
+  display: grid;
+  grid-template-columns: calc(634 * var(--px)) minmax(0, 1fr) auto;
+  align-items: start;
+  min-height: calc(236 * var(--px));
+  padding: calc(70 * var(--px)) calc(71 * var(--px));
+}
+.card-title {
+  margin: 0;
+  font-size: max(16px, calc(30 * var(--px)));
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.card-desc {
+  max-width: calc(900 * var(--px));
+  margin: 0;
+  font-weight: 600;
+  font-size: max(14px, calc(19 * var(--px)));
+  line-height: 1.8;
+  color: #111111;
+}
+.info-links { display: flex; align-items: center; align-self: center; margin: 0; }
+/* The aspect's name in ink, ringed in its hue: several hues are too light to
+   carry small text on white themselves. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: calc(52 * var(--px));
+  min-height: 32px;
+  padding: 0 max(12px, calc(26 * var(--px)));
+  border: 1.5px solid;
+  border-radius: 999px;
+  font-size: max(11px, calc(14 * var(--px)));
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.allprojects { margin: calc(183 * var(--px)) 0 0; }
+
+.landing .pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: max(8px, calc(14 * var(--px)));
+  min-height: 48px;
+  height: calc(88 * var(--px));
+  padding: 0 max(22px, calc(46 * var(--px)));
+  border-radius: 999px;
+  background: var(--frame-dark);
+  color: #ffffff;
+  font-size: max(13px, calc(18 * var(--px)));
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.landing .pill::after {
+  content: "";
+  flex: none;
+  width: max(6px, calc(10 * var(--px)));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: currentColor;
+}
+.landing .pill-xl {
+  min-width: calc(372 * var(--px));
+  height: calc(118 * var(--px));
+  background: var(--frame-card);
+  color: var(--frame-ink);
+  font-size: max(14px, calc(24 * var(--px)));
+}
+.landing .pill:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 4px; }
+
+/* ------------------------------------------------------------ photo band
+   Three photographs stacked; the upper two wipe in as the band scrolls
+   (views/landing.js). Each window <i> moves up while its picture <b> moves
+   down by the same amount, so the edge sweeps and the picture holds still. */
+.photoband {
+  position: relative;
+  z-index: 2;
+  height: calc(1742 * var(--px));
+  margin-top: calc(-487 * var(--px));
+  overflow: hidden;
+  border-radius: var(--photo-r);
+}
+.photoband i,
+.photoband b {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  will-change: transform;
+}
+.photoband b {
+  background-size: cover;
+  background-position: center;
+}
+.photoband span {
+  position: absolute;
+  left: var(--gutter);
+  bottom: calc(120 * var(--px));
+  font-family: var(--frame-word);
+  font-weight: 400;
+  font-size: calc(150 * var(--px));
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* ------------------------------------------------------------- begin */
+.careers { padding: calc(198 * var(--px)) 0 calc(160 * var(--px)); }
+.careers .split { --col: 470; }
+.careers-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: calc(60 * var(--px));
+}
+.careers-head {
+  margin: calc(-13 * var(--px)) 0 0;
+  font-weight: 700;
+  font-size: calc(38 * var(--px));
+  line-height: 1.8;
+  letter-spacing: 0.02em;
+}
+
+/* ------------------------------------------------------------- phones */
+@container (max-width: 900px) {
+  .landing {
+    --px: calc(100cqw / 820);
+    --gutter: calc(40 * var(--px));
+  }
+  .landing .wrap { width: calc(740 * var(--px)); }
+  .landing .split { grid-template-columns: minmax(0, 1fr); gap: calc(40 * var(--px)); }
+  .landing .label { font-size: max(11px, calc(22 * var(--px))); }
+  .landing .headline { white-space: normal; font-size: calc(46 * var(--px)); }
+  .mission { padding: calc(160 * var(--px)) 0; }
+  .statement .label { margin-top: 0; }
+  .statement p { font-size: max(15px, calc(34 * var(--px))); }
+  .hero { height: calc(1000 * var(--px)); }
+  .hero .mark,
+  .hero .mark-hit { left: calc(270 * var(--px)); top: calc(230 * var(--px)); width: calc(280 * var(--px)); }
+  .hero .part-mark { transform-origin: calc(410 * var(--px)) calc(370 * var(--px)); }
+  .hero .word { top: calc(580 * var(--px)); font-size: calc(118 * var(--px)); }
+  .hero .inc { top: calc(716 * var(--px)); font-size: calc(84 * var(--px)); }
+  .cardblock { width: auto; margin: 0 calc(20 * var(--px)); }
+  .projects .inner { padding-top: calc(200 * var(--px)); }
+  .projects .label { margin-left: calc(20 * var(--px)); }
+  .brand-visual { height: auto; display: grid; }
+  .brand-logo,
+  .brand-photo { position: static; width: auto; }
+  .brand-logo { height: calc(360 * var(--px)); }
+  .brand-logo img { width: calc(240 * var(--px)); }
+  .brand-photo { height: calc(420 * var(--px)); margin: 0 calc(30 * var(--px)) calc(30 * var(--px)); }
+  .card-title { font-size: max(16px, calc(40 * var(--px))); }
+  .card-desc { font-size: max(14px, calc(28 * var(--px))); }
+  .info { grid-template-columns: minmax(0, 1fr); gap: calc(24 * var(--px)); padding: calc(50 * var(--px)); }
+  .info-links { align-self: start; }
+  .careers { padding: calc(120 * var(--px)) 0; }
+  .careers-row { flex-direction: column; gap: calc(40 * var(--px)); }
+  .careers-head { font-size: calc(44 * var(--px)); }
+}
+
+/* ------------------------------------------------------------- Thai
+   No tracking and no uppercase for Thai (the Thai block in index.css), and
+   the wordmark face has no Thai, so the band's names fall back to Sarabun. */
+html[lang="th"] .landing .label,
+html[lang="th"] .statement p,
+html[lang="th"] .card-title,
+html[lang="th"] .tag,
+html[lang="th"] .landing .pill,
+html[lang="th"] .careers-head {
+  letter-spacing: normal;
+}
+html[lang="th"] .photoband span { font-weight: 700; }

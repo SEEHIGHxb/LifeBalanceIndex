@@ -56,6 +56,11 @@ R1 and R2 each end with a phone check by you before the next one starts. After t
 - **Privacy & Data is a line under YOU, not a heading.** A menu line never wraps (a wrap between letter cells could split a Thai word), and at heading size the Thai name is wider than a column.
 - **The header is sticky on the page colour, not transparent over the content** as in the prototype. The screens inside are still the old ones until R2–R5.
 
+**R2 as built (v97, 2.45.0):** the Landing, every question in the mission panel, the chapter ending's wipe and burst, and the progress star.
+- **The journey moved to `#/journey`.** Before onboarding, every other route shows the Landing, and the menu offers both.
+- **"Continue the journey" / "เดินทางต่อ" is new copy** that is not in the prototype. It replaces the Landing's call when a draft exists, so a returning reader is not told to start over.
+- **The region photograph is only on the chapter ending.** No text sits on it, so the veil and its contrast table are gone. The secondary ink is held to 4.5:1 on every wash by a test.
+
 ## 3. How the code is organised
 
 - **Motion:** the prototype's helpers go into the existing `motion.js` / `views/motion-mount.js`:

@@ -5,6 +5,7 @@
 // and the versioned "./ui.js?v=N" import path in app.js stable, so the
 // cache-busting release scheme is unchanged.
 export { renderOnboarding } from "./views/onboarding.js";
+export { renderLanding } from "./views/landing.js";
 export { renderDashboard } from "./views/dashboard.js";
 export { renderAspectPage } from "./views/aspect.js";
 export { renderCheckin, renderDeepAssessment } from "./views/assessments.js";

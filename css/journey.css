@@ -1,0 +1,473 @@
+/* css/journey.css - the journey as mission panels (redesign R2,
+   views/onboarding.js), the progress star in the header, and the stage
+   pieces shared with the Landing (views/stage.js: typed letters and the
+   burst). Ported from the approved prototype's .q, .ending and .progress
+   rules (docs/prototype/redesign/proto.css).
+
+   Every screen is a panel in its region's wash with the app's ink on it:
+   tests/journey.test.mjs measures both inks below against every wash. */
+
+.journey {
+  --journey-muted: #444444;
+  --journey-r: clamp(16px, 1.6vw, 40px);
+  --journey-w: min(1240px, calc(100% - 2 * var(--frame-gutter)));
+  position: relative;
+  background: #808080;
+  color: var(--frame-ink);
+  font-family: var(--font-sans);
+  overflow-x: clip;
+}
+
+/* ---------------------------------------------------------- the panel */
+.journey .survey-page {
+  position: relative;
+  min-height: calc(100vh - var(--frame-header-h));
+  min-height: calc(100dvh - var(--frame-header-h));
+  padding: clamp(40px, 7vw, 120px) 0 clamp(56px, 7vw, 120px);
+  background: var(--chapter-wash, var(--frame-page));
+  border-radius: var(--journey-r);
+}
+.q-split {
+  width: var(--journey-w);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(180px, 28%) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 64px);
+  align-items: start;
+}
+.q-side {
+  position: sticky;
+  top: calc(var(--frame-header-h) + 24px);
+  display: grid;
+  gap: 14px;
+  justify-items: start;
+}
+.journey .label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.q-emblem {
+  display: block;
+  width: clamp(72px, 9vw, 140px);
+  height: auto;
+  border-radius: 18%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+.q-emblem-star {
+  aspect-ratio: 1;
+  border-radius: 0;
+  box-shadow: none;
+}
+.q-count,
+.q-theme {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--journey-muted);
+}
+.q-theme { max-width: 32ch; font-style: italic; }
+.q-main { min-width: 0; max-width: 820px; }
+.q-title {
+  margin: 0 0 12px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: clamp(24px, 2.6vw, 40px);
+  line-height: 1.3;
+}
+.q-title:focus { outline: none; }
+.journey .onb-why {
+  margin: 0 0 32px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--journey-muted);
+}
+
+/* The typed letters (views/stage.js). Hidden, not removed, so a line keeps
+   its full width while it types and nothing below it moves. */
+.typed .tc.off { visibility: hidden; }
+
+/* ------------------------------------------------------------- items
+   The reveal rhythm: every answered question plus exactly one that is not.
+   DISPLAY, NOT OPACITY, for the pending ones: a faded question is still in
+   the tab order and still read aloud, so a keyboard or screen-reader user
+   would meet all of them at once while a sighted reader met one. */
+.journey .survey-page[data-instrument] fieldset.q-pending { display: none; }
+.journey fieldset.survey-question {
+  margin: 0 0 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.journey fieldset.survey-question legend {
+  margin: 0 0 14px;
+  padding: 0;
+  font-size: clamp(17px, 1.5vw, 21px);
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--frame-ink);
+}
+.journey .radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+/* The answers are pills. The radio stays a real, focusable control inside
+   each one; only its drawing changes. */
+.journey .radio-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  margin: 0;
+  padding: 10px 22px 10px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--frame-card);
+  color: var(--frame-ink);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: background-color 200ms linear, color 200ms linear, transform 120ms ease;
+}
+.journey .radio-option:hover { background: #ececec; }
+.journey .radio-option input[type="radio"] {
+  appearance: none;
+  flex: none;
+  display: grid;
+  place-content: center;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  opacity: 1;
+}
+.journey .radio-option input[type="radio"]:checked::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.journey .radio-option:has(input:checked) {
+  background: var(--frame-dark);
+  color: #ffffff;
+}
+.journey .radio-option:has(input:focus-visible) {
+  outline: 2px solid var(--frame-ink);
+  outline-offset: 3px;
+}
+/* The same press whichever answer it is. */
+.journey .radio-option:active { transform: scale(0.96); }
+
+/* ANSWERED ITEMS KEEP FULL-STRENGTH INK. No opacity on the fieldset or its
+   text (tests/journey.test.mjs): the answer left unchosen loses its fill,
+   not its contrast. */
+.journey fieldset.q-answered {
+  padding-left: 14px;
+  border-left: 3px solid var(--chapter-hue, var(--frame-dark));
+}
+.journey fieldset.q-answered .radio-option:not(:has(input:checked)) {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.22);
+}
+
+/* The live question's answers rise in one after another, the same for every
+   option and outside the quiet regions only. `backwards`, not `both`: once
+   risen, the animation lets go, so the press above still works. */
+.journey .survey-page:not([data-quiet]) fieldset.survey-question:not(.q-answered):not(.q-pending) .radio-option {
+  animation: pill-rise 420ms cubic-bezier(0.2, 0.9, 0.25, 1) backwards;
+}
+.journey .radio-option:nth-child(2) { animation-delay: 60ms; }
+.journey .radio-option:nth-child(3) { animation-delay: 120ms; }
+.journey .radio-option:nth-child(4) { animation-delay: 180ms; }
+.journey .radio-option:nth-child(5) { animation-delay: 240ms; }
+.journey .radio-option:nth-child(6) { animation-delay: 300ms; }
+.journey .radio-option:nth-child(7) { animation-delay: 360ms; }
+@keyframes pill-rise {
+  from { opacity: 0; transform: translateY(24px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ------------------------------------------------------------ numbers */
+.journey .form-group label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--frame-ink);
+}
+.journey .form-control {
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1.5px solid rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  background: var(--frame-card);
+  color: var(--frame-ink);
+  font-size: 16px;
+}
+.journey .form-control:focus-visible {
+  outline: 2px solid var(--frame-ink);
+  outline-offset: 2px;
+}
+.journey .field-note { color: var(--journey-muted); }
+
+/* ------------------------------------------------------------ Next / Back */
+.journey .onb-nav { margin-top: 40px; }
+.journey .onb-nav .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--frame-card);
+  color: var(--frame-ink);
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.journey .onb-nav .btn-primary {
+  background: var(--frame-dark);
+  color: #ffffff;
+}
+.journey .onb-nav .btn-primary::after {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.journey .onb-nav .btn-onb-prev {
+  padding: 0 12px;
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+.journey .onb-nav .btn:focus-visible {
+  outline: 2px solid var(--frame-ink);
+  outline-offset: 3px;
+}
+
+/* A draft picked up again, and the message when a screen is incomplete. The
+   message sticks to the bottom of the screen, since the panel above it can
+   be taller than the phone it is on. */
+.journey .onb-resume {
+  width: var(--journey-w);
+  margin: 16px auto;
+  background: var(--frame-card);
+  color: var(--frame-ink);
+}
+.onboarding-error {
+  position: sticky;
+  bottom: 16px;
+  z-index: 5;
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  margin: 0 auto;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: #8a1c1c;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------- the chapter ending
+   The region's photograph with only its emblem on it, then the words. The
+   curtain is the wipe: it covers the photograph and shrinks upward, so the
+   picture is revealed from the bottom up; at rest it is scaled to nothing. */
+.journey .survey-page-ending { padding-top: clamp(16px, 2vw, 32px); }
+.ending-photo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--journey-w);
+  height: clamp(240px, 42vw, 560px);
+  margin: 0 auto clamp(32px, 5vw, 72px);
+  overflow: hidden;
+  border-radius: clamp(16px, 2.2vw, 55px);
+  background-color: var(--chapter-wash, var(--frame-page));
+  background-size: cover;
+  background-position: center;
+}
+.ending-curtain {
+  position: absolute;
+  inset: 0;
+  background: var(--chapter-wash, var(--frame-page));
+  transform: scaleY(0);
+  transform-origin: top;
+}
+.ending-emblem {
+  position: relative;
+  width: clamp(96px, 12vw, 180px);
+  height: auto;
+  border-radius: 18%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+.ending-region {
+  margin: 0 0 12px;
+  font-family: var(--frame-word);
+  font-weight: 400;
+  font-size: clamp(40px, 6.7vw, 110px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+.ending-theme {
+  margin: 0 0 28px;
+  font-size: clamp(17px, 1.5vw, 22px);
+  font-weight: 600;
+  line-height: 1.5;
+}
+.journey .chapter-recap {
+  margin: 0 0 28px;
+  padding: 0;
+  list-style: none;
+}
+.journey .chapter-recap li {
+  padding: 14px 0;
+  border-bottom: 1px dashed #262626;
+  font-size: 17px;
+  line-height: 1.6;
+}
+.journey .chapter-fact {
+  padding: 22px 24px;
+  border-radius: 20px;
+  background: var(--frame-card);
+}
+.journey .chapter-fact-label {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--frame-muted);
+}
+.journey .chapter-fact-text { margin: 0; font-size: 16px; line-height: 1.6; }
+/* Folded, not hidden: the disclosure is always present and openable. */
+.journey .chapter-fact-source { margin-top: 12px; font-size: 13px; }
+.journey .chapter-fact-source summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--frame-muted);
+  cursor: pointer;
+}
+.journey .chapter-fact-source p { margin: 4px 0 0; line-height: 1.5; }
+
+/* ------------------------------------------- shared stage: the burst
+   A positioned, pointer-less layer the particles fly in (views/stage.js). */
+.burst-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: visible;
+  pointer-events: none;
+}
+.spr {
+  --spr: clamp(40px, 4.7vw, 68px);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--spr);
+  height: var(--spr);
+  margin: calc(var(--spr) / -2) 0 0 calc(var(--spr) / -2);
+  pointer-events: none;
+}
+.spr svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.spr--motif svg {
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ------------------------------- the progress star in the header pill
+   Shown on the journey only (app.js renderFirstRun); on a phone it takes
+   the nav pill's place, which is otherwise hidden there. */
+.journey-progress { gap: 10px; }
+.progress-star {
+  width: 28px;
+  height: 28px;
+  overflow: visible;
+}
+.progress-star .pt {
+  fill: #e9e5dc;
+  stroke: #A88752;
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  transition: fill 400ms linear;
+}
+.progress-count {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------- phones */
+@media (max-width: 900px) {
+  .journey-progress {
+    display: flex;
+    position: static;
+    transform: none;
+    margin-left: auto;
+    padding: 0 14px;
+  }
+  .journey-progress + .header-actions { margin-left: 8px; }
+  .q-split {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .q-side {
+    position: static;
+    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-areas: "emblem label" "emblem count" "theme theme";
+    align-items: center;
+    column-gap: 14px;
+    row-gap: 4px;
+  }
+  .q-side .label { grid-area: label; }
+  .q-side .q-emblem { grid-area: emblem; width: 64px; }
+  .q-side .q-count { grid-area: count; }
+  .q-side .q-theme { grid-area: theme; margin-top: 8px; }
+  .survey-page-ending .q-side {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "label" "count";
+  }
+  .journey .radio-group { display: grid; }
+  .journey .radio-option { width: 100%; }
+}
+
+/* ------------------------------------------------------------- Thai
+   No tracking or uppercase for Thai, and the wordmark face has no Thai, so
+   the region's name falls back to Sarabun and takes its bold. */
+html[lang="th"] .journey .label,
+html[lang="th"] .journey .onb-nav .btn,
+html[lang="th"] .journey .chapter-fact-label,
+html[lang="th"] .progress-count {
+  letter-spacing: normal;
+}
+html[lang="th"] .ending-region {
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* ------------------------------------------------------ reduced motion
+   The device setting and the in-app switch both show the end state: the
+   answers are simply there and presses do not move. */
+@media (prefers-reduced-motion: reduce) {
+  .journey .radio-option { animation: none; transition: none; }
+  .journey .radio-option:active { transform: none; }
+  .progress-star .pt { transition: none; }
+}
+html[data-reduce-motion] .journey .radio-option { animation: none; transition: none; }
+html[data-reduce-motion] .journey .radio-option:active { transform: none; }
+html[data-reduce-motion] .progress-star .pt { transition: none; }

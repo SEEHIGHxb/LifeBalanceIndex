@@ -183,7 +183,7 @@ body.menu-open .site-menu {
 }
 body.menu-open #page { transform: translateX(var(--frame-menu-w)); }
 /* Over the dark panel the header's marks turn white and its page colour goes.
-   Two classes and an element outrank the journey's veil on the header. */
+   Two classes and an element, so no screen's own header rule can win. */
 body.menu-open > .site-header {
   background: transparent;
   -webkit-backdrop-filter: none;

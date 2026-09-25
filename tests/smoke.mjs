@@ -33,7 +33,9 @@ page.on("requestfailed", req => {
 // process before the far more useful listener output (the 404 for the module
 // that actually failed) is ever printed. Record and continue so the report
 // below names the real cause.
-await page.goto(BASE, { waitUntil: "networkidle" });
+// The journey's own route: the bare URL is the Landing, which loads less of
+// the module graph's behaviour than the journey does.
+await page.goto(`${BASE}/#/journey`, { waitUntil: "networkidle" });
 try {
   await page.waitForSelector("#onboarding-mount", { timeout: 10000 });
 } catch {

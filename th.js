@@ -116,10 +116,6 @@ export const TH = {
   "Coupled": "มีคู่",
 
   // --- Onboarding ---
-  "PERSONAL WELLBEING ASSESSMENT": "แบบประเมินสุขภาวะส่วนบุคคล",
-  "Baseline Assessment": "แบบประเมินพื้นฐาน",
-  "Step {n} of {total}": "ขั้นที่ {n} จาก {total}",
-  "About 5 minutes total": "ใช้เวลาทั้งหมดประมาณ 5 นาที",
   "Quick-start results.": "ผลลัพธ์แบบเริ่มเร็ว",
   "Aspects beyond your first sections use baseline estimates. Submit a Weekly Review to shape them, and monthly re-assessments refine your survey scores over time.": "ด้านที่อยู่นอกเหนือช่วงแรกใช้ค่าประมาณพื้นฐาน ส่งการทบทวนรายสัปดาห์เพื่อปรับให้ตรงขึ้น และการประเมินซ้ำรายเดือนจะปรับคะแนนแบบสอบถามของคุณให้แม่นยำขึ้นเมื่อเวลาผ่านไป",
   "points": "คะแนน",
@@ -1314,8 +1310,27 @@ export const TH = {
   "Data & Backup": "ข้อมูลและการสำรอง",
   "Your data lives only in this browser. Export a backup regularly — clearing site data erases it.":
     "ข้อมูลของคุณอยู่ในเบราว์เซอร์นี้เท่านั้น ควรส่งออกสำรองข้อมูลเป็นประจำ — การล้างข้อมูลเว็บไซต์จะลบข้อมูลทิ้ง",
-  // Tug-the-ring (views/tug.js): a toy on the landing and after the last region.
-  "Tug the ring, or tap it, for a burst of stars": "ดึงหรือแตะวงแหวน ให้ดาวกระจาย",
+  // The Landing (views/landing.js, redesign R2). The copy is the approved
+  // prototype's (docs/prototype/redesign/content.js), Thai included.
+  "Play with the star": "เล่นกับดาว",
+  "Why": "ทำไม",
+  "Eight parts of one life,": "ชีวิตหนึ่งชีวิต แปดด้าน",
+  "measured against the evidence.": "วัดเทียบกับหลักฐานจริง",
+  "How it works": "ทำงานอย่างไร",
+  "A journey through eight places, from The Market to The Lookout. Each one asks about one part of your life.":
+    "การเดินทางผ่านแปดสถานที่ ตั้งแต่ตลาดไปจนถึงจุดชมวิว แต่ละแห่งถามถึงชีวิตคุณหนึ่งด้าน",
+  "Your answers are compared with cited Thai and international benchmarks.":
+    "คำตอบของคุณถูกเทียบกับเกณฑ์อ้างอิงของไทยและนานาชาติที่มีแหล่งที่มา",
+  "Local-first: your answers never leave your device, and there is no account.":
+    "ข้อมูลอยู่ในเครื่องคุณเท่านั้น ไม่มีการส่งออกไปที่ใด และไม่ต้องสมัครบัญชี",
+  "Begin": "เริ่มต้น",
+  "Eight chapters.": "แปดบท",
+  "One star at the end.": "และดาวหนึ่งดวงในตอนจบ",
+  "Start the journey": "เริ่มการเดินทาง",
+  // Not in the prototype: the same call when a draft of the journey is saved.
+  "Continue the journey": "เดินทางต่อ",
+  // The menu before the journey is finished (views/menu.js).
+  "Start": "เริ่มต้น",
   // The final ceremony (views/ceremony.js): the ring unfolds into the radar.
   "Play": "เล่น",
   "Skip": "ข้าม",

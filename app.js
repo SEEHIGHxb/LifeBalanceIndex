@@ -3,6 +3,7 @@
 import { stateManager } from "./state.js";
 import {
   renderOnboarding,
+  renderLanding,
   renderDashboard,
   renderReview,
   renderYearReview,
@@ -16,7 +17,7 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=96";
+} from "./ui.js?v=97";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang, graphemes } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -24,6 +25,7 @@ import { syncReduceMotionAttr } from "./motion.js";
 import { disposeMotion } from "./views/motion-mount.js";
 import { disposeCeremony } from "./views/ceremony.js";
 import { bindMenu, renderMenu, closeMenu, syncMenuRoute } from "./views/menu.js";
+import { readDraft } from "./draft.js";
 
 const TOAST_DURATION_MS = 1600;
 const REWARD_DURATION_MS = 1900;
@@ -143,49 +145,71 @@ function initializeApp() {
   renderMenu({ onboarded: state.onboarded });
   maybeOfferRecovery();
 
+  // The first-run screens are full-bleed pages; everything after them sits in
+  // the app's centred column.
+  document.body.classList.toggle("first-run", !state.onboarded);
   if (!state.onboarded) {
-    // Show Onboarding Survey
     document.getElementById("navpill").classList.add("d-none");
-    document.getElementById("main-view").innerHTML = `<div id="onboarding-mount"></div>`;
     document.getElementById("assistant-mount").classList.add("d-none");
-    // Every in-app route resolves through initializeApp, which re-renders
-    // onboarding while !onboarded, so a link to one would be pressed and never
-    // respond. The menu offers only the journey and the static Privacy page
-    // until then (views/menu.js), and the wordmark stops being a link: an <a>
-    // with no href is not focusable and is not announced as one. The language
-    // toggle stays: a Thai reader needs it on the very first screen.
-    document.getElementById("brand-home").removeAttribute("href");
-    // Same defect, same reason, one floor down: the footer's Methodology link
-    // points at #/methodology, which resolves through initializeApp and so
-    // re-renders onboarding while !onboarded. Clicking it changed the hash and
-    // nothing else -- a dead control, and the one a hesitant reader reaches for
+    // Before the journey is finished the only screens are the Landing and the
+    // journey itself (renderFirstRun), and the menu offers just those and the
+    // static Privacy page (views/menu.js). The wordmark leads to the Landing.
+    // The language toggle stays: a Thai reader needs it on the very first
+    // screen.
+    document.getElementById("brand-home").setAttribute("href", "#/");
+    // The footer's Methodology link points at #/methodology, which is not a
+    // first-run screen, so clicking it would land on the Landing -- a link that
+    // quietly goes somewhere else, and the one a hesitant reader reaches for
     // before handing over eighty-five answers about their income and their
-    // mood. Hidden rather than wired, because renderMethodology replaces
-    // #main-view, which is where the onboarding mount lives: making the link
-    // work as-is would throw the reader out of the flow mid-assessment. Giving
-    // them a way to read the methodology BEFORE starting is worth doing and is
-    // its own change, not a line in this one. Privacy & Data beside it is a
-    // static page and works throughout.
+    // mood. Hidden rather than wired, because renderMethodology needs a
+    // baseline to describe. Giving them a way to read the methodology BEFORE
+    // starting is worth doing and is its own change. Privacy & Data beside it
+    // is a static page and works throughout.
     document.getElementById("footer-methodology").classList.add("d-none");
-
-    renderOnboarding("onboarding-mount", () => {
-      // Now that there is data worth keeping, ask the browser not to evict it.
-      // Fire-and-forget: the grant is silent where supported and absent where
-      // it isn't (Safari), so nothing in the UI waits on or reacts to it.
-      stateManager.requestPersistentStorage();
-      // The journey is done: the next dashboard unfolds the ring into the
-      // radar (views/ceremony.js), once.
-      ceremonyPending = true;
-      initializeApp();
-    });
+    renderFirstRun();
   } else {
     document.getElementById("navpill").classList.remove("d-none");
+    document.getElementById("journey-progress").classList.add("d-none");
+    document.body.classList.remove("on-journey");
     document.getElementById("assistant-mount").classList.remove("d-none");
     document.getElementById("brand-home").setAttribute("href", "#/dashboard");
     document.getElementById("footer-methodology").classList.remove("d-none");
     setupAssistant();
     renderActiveTab();
   }
+}
+
+// The two first-run screens: the journey at #/journey, and the Landing at any
+// other route (a bookmark to #/dashboard from before a reset included).
+function renderFirstRun() {
+  disposeMotion();
+  const onJourney = routeHashPath() === "journey";
+  document.body.classList.toggle("on-journey", onJourney);
+  // renderOnboarding fills and shows the progress pill; the Landing has none.
+  document.getElementById("journey-progress").classList.add("d-none");
+  syncMenuRoute(onJourney ? "journey" : "");
+  if (!onJourney) {
+    renderLanding("main-view", { resume: readDraft("onboarding") !== null });
+    return;
+  }
+  document.getElementById("main-view").innerHTML = `<div id="onboarding-mount"></div>`;
+  renderOnboarding("onboarding-mount", () => {
+    // Now that there is data worth keeping, ask the browser not to evict it.
+    // Fire-and-forget: the grant is silent where supported and absent where
+    // it isn't (Safari), so nothing in the UI waits on or reacts to it.
+    stateManager.requestPersistentStorage();
+    // The journey is done: the next dashboard unfolds the star into the
+    // radar (views/ceremony.js), once. The hash moves to the dashboard's own
+    // without a hashchange, so the address matches the screen.
+    ceremonyPending = true;
+    history.replaceState(null, "", "#/dashboard");
+    initializeApp();
+  });
+}
+
+// The hash without "#/".
+function routeHashPath() {
+  return window.location.hash.replace(/^#\/?/, "");
 }
 
 // Reset is the only irreversible action in the app, and localStorage is the
@@ -714,6 +738,11 @@ window.addEventListener("lifequest_storage_error", () => {
 // Re-render when the route changes (back/forward buttons, menu links). A route
 // change with the menu still open (the back button) closes it and puts focus
 // on the new view, where a followed link would have put it.
+//
+// Before the journey is finished a route change swaps the Landing and the
+// journey, which are whole pages: the new one starts at its top, and focus
+// goes to it, since the link that was pressed (the Landing's call to begin) is
+// gone.
 window.addEventListener("hashchange", () => {
   if (document.body.classList.contains("menu-open")) {
     closeMenu({ restoreFocus: false });
@@ -721,7 +750,11 @@ window.addEventListener("hashchange", () => {
   }
   if (stateManager.state.onboarded) {
     renderActiveTab();
+    return;
   }
+  renderFirstRun();
+  window.scrollTo(0, 0);
+  document.getElementById("main-view")?.focus({ preventScroll: true });
 });
 
 // PWA: offline support via the network-first service worker.

@@ -60,17 +60,54 @@ async function goTo(route) {
   throw new Error("the page never slid back after the menu closed");
 }
 
-// Onboarded: the wordmark becomes a link home only once there is a home.
-const ONBOARDED = "#brand-home[href]";
+// Onboarded: the wordmark leads to the dashboard once there is one (before
+// that it leads to the Landing).
+const ONBOARDED = '#brand-home[href="#/dashboard"]';
 
 const readState = () => page.evaluate(() =>
   JSON.parse(localStorage.getItem("lifequest_state") || "null"));
+
+// --- FLOW L: the Landing (redesign R2) ---
+// A first visit lands on the Landing, not in the assessment. It must fit a
+// phone and a laptop in both languages, and its call to begin must open the
+// journey with focus on the new page and the progress star in the header.
+try {
+  const ctxL = await browser.newContext({ viewport: { width: 375, height: 812 } });
+  const pL = await ctxL.newPage();
+  pL.on("pageerror", err => problems.push(`flowL uncaught: ${err.message}`));
+  const pans = () => pL.evaluate(() =>
+    document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+  await pL.goto(BASE, { waitUntil: "networkidle" });
+  await pL.waitForSelector(".landing", { timeout: 10000 });
+  if (await pL.$("#onboarding-form")) problems.push("flowL: a first visit opened the assessment, not the Landing");
+  if (!(await pL.getAttribute(".hero .mark-hit", "aria-label"))) problems.push("flowL: the star's button has no name");
+  if (await pans()) problems.push("flowL: the Landing scrolls sideways at 375px");
+  await pL.click("#btn-lang");
+  await pL.waitForSelector("html[lang='th'] .landing", { timeout: 10000 });
+  if (await pans()) problems.push("flowL: the Thai Landing scrolls sideways at 375px");
+  await pL.setViewportSize({ width: 1440, height: 900 });
+  if (await pans()) problems.push("flowL: the Landing scrolls sideways at 1440px");
+  await pL.click(".allprojects a");
+  await pL.waitForSelector("#onboarding-form", { timeout: 10000 });
+  const opened = await pL.evaluate(() => ({
+    hash: location.hash,
+    focus: document.activeElement?.id,
+    pill: !document.getElementById("journey-progress").classList.contains("d-none"),
+    count: document.getElementById("progress-count")?.textContent
+  }));
+  if (opened.hash !== "#/journey") problems.push(`flowL: the call to begin went to ${opened.hash}`);
+  if (opened.focus !== "main-view") problems.push(`flowL: after beginning, focus is on #${opened.focus}, not the page`);
+  if (!opened.pill || opened.count !== "0 / 8") problems.push(`flowL: the progress star is not showing 0 / 8 (${opened.count})`);
+  await ctxL.close();
+} catch (err) {
+  problems.push(`flowL (Landing): ${err.message}`);
+}
 
 // --- FLOW 0: onboarding is usable without sight, and a resume is honest ---
 // Own browser context, so its half-finished draft never leaks into flow 1.
 //   a. The error line is announced: role="alert". It used to be a bare <p>.
 //   b. Next moves focus to the new screen's heading. showScreen used to leave
-//      focus on <body>, and #ring-status reads the same on every screen of a
+//      focus on <body>, and #journey-status reads the same on every screen of a
 //      chapter, so a screen-reader user heard nothing when the page changed.
 //   c. A draft resumes at the first screen with anything unanswered, even when
 //      it says it was further on -- and even when an earlier release wrote it.
@@ -80,7 +117,7 @@ try {
   const ctx0 = await browser.newContext();
   const p0 = await ctx0.newPage();
   p0.on("pageerror", err => problems.push(`flow0 uncaught: ${err.message}`));
-  await p0.goto(BASE, { waitUntil: "networkidle" });
+  await p0.goto(`${BASE}/#/journey`, { waitUntil: "networkidle" });
   await p0.waitForSelector("#onboarding-form", { timeout: 10000 });
 
   if ((await p0.getAttribute("#onboarding-error", "role")) !== "alert") {
@@ -142,7 +179,7 @@ try {
 // and there is no express shortcut. Fill every screen at once, even the hidden
 // ones, then walk the whole flow and submit.
 try {
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/#/journey`, { waitUntil: "networkidle" });
   await page.waitForSelector("#onboarding-form", { timeout: 10000 });
   await page.fill("#onb-name", "E2E Runner");
 
@@ -609,4 +646,4 @@ if (problems.length) {
   console.error("E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("e2e passed: onboarding, the weekly review, TH persistence, the share card, the phone layout, the connected pre-fill, and the site menu all work");
+console.log("e2e passed: the Landing, onboarding, the weekly review, TH persistence, the share card, the phone layout, the connected pre-fill, and the site menu all work");

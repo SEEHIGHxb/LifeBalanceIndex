@@ -109,6 +109,23 @@ test("guard 2: the modules that render items do not import motion", () => {
   }
 });
 
+// Guard 2 as the owner changed it on 2026-09-24 (docs/redesign-build-plan.md
+// §3): the journey's questions are animated too. The answers may rise in and
+// a pressed answer may move, but only in the stylesheet and only in ways that
+// are the same for every option; script motion still never touches an item
+// (the still selector above). So no rule keyed on WHICH answer is checked may
+// move anything, and the quiet regions get no rise at all.
+test("guard 2: answer pills move only by CSS, the same for every option", () => {
+  const rules = [...read("css/journey.css").matchAll(/([^{}]+)\{([^}]*)\}/g)]
+    .map(([, sel, body]) => ({ sel: sel.trim(), body }));
+  const moves = ({ body }) => /(animation|transform)\s*:\s*(?!none)/.test(body);
+  const byAnswer = rules.filter(r => moves(r) && /radio-option|survey-question/.test(r.sel) && /checked/.test(r.sel));
+  assert.deepEqual(byAnswer.map(r => r.sel), [], "a rule moves an answer depending on which one is chosen");
+  const rise = rules.find(r => /animation:\s*pill-rise/.test(r.body));
+  assert.ok(rise, "the answer pills no longer rise");
+  assert.match(rise.sel, /:not\(\[data-quiet\]\)/, "the pills rise in the quiet regions too");
+});
+
 // --- 3. no global listeners outside the mount --------------------------------
 
 test("guard 3: views listen on window or document only through the mount", () => {

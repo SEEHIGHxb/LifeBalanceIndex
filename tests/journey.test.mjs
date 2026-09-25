@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import { readFileSync, existsSync, statSync } from "node:fs";
 
 import { CHAPTERS, PROLOGUE, allScreens } from "../views/journey.js";
-import { regionsComplete } from "../views/journey-ring.js";
+import { regionsComplete } from "../views/journey-progress.js";
 import { RADAR_KEYS } from "../chart.js";
 import { SOURCES } from "../benchmarks.js";
 import { INSTRUMENTS } from "../surveys.js";
@@ -206,130 +206,53 @@ test("every chapter declares art that is present, in budget and precached", () =
   assert.equal(seen.size, 8, "expected eight distinct region images");
 });
 
-test("the region art is a background, not an element inside the card", () => {
-  // The whole point of the v85 change. An <img> in the card is a picture in a
-  // frame; a fixed background layer is a place the reader is standing in.
-  // Reverting to an element would also put art back in the scroll flow,
-  // pushing the first question down the screen again.
+test("the region art is the ending's photograph, and carries no text", () => {
+  // Redesign R2. The art used to be a full-screen layer behind the questions,
+  // which is why every surface over it needed a measured veil (and why
+  // assets/regions/contrast.json existed, deleted in R2). Now each question sits on its
+  // region's plain wash, and the photograph appears only on the chapter
+  // ending, as a panel holding nothing but the emblem. No word anywhere
+  // depends on the contrast of a picture, so there is no veil to keep honest.
+  // This fails if text lands on the photograph or the background layer is
+  // brought back.
   const src = readFileSync(new URL("../views/onboarding.js", import.meta.url), "utf8");
-  assert.doesNotMatch(
-    src, /<img[^>]*region/,
-    "the region art is being rendered as an <img> again. It belongs on <body> " +
-    "as a background so it fills the viewport behind and around the card."
-  );
-  assert.match(
-    src, /setProperty\([\s\S]{0,40}"--journey-art"/,
-    "views/onboarding.js no longer sets --journey-art on <body>, so no region " +
-    "paints its background"
-  );
-  const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");
-  assert.match(
-    css, /body\.journey-lit::before \{[\s\S]*?position:\s*fixed/,
-    "the art layer must be position: fixed on a pseudo-element -- " +
-    "background-attachment: fixed is broken on iOS Safari"
-  );
-});
-
-test("the card veil keeps the app's own ink readable over the darkest art", () => {
-  // THIS IS THE GUARD THAT MAKES ART-BEHIND-TEXT SAFE, and it is why the veil
-  // is 0.86 rather than a number that looked nice.
-  //
-  // The reader's questions sit on a translucent card over a full-screen
-  // painting. Open the card up to show more art, or add a ninth image darker
-  // than the current eight, and the helper text silently stops being readable
-  // -- silently, because whoever makes the change is looking at a bright
-  // region on a good monitor. Measured: at 0.86 the secondary ink clears
-  // 4.80:1; at 0.82 it falls to 4.47:1 and fails the 4.5:1 small-text
-  // minimum. There is almost no room here, which is exactly why it is a test.
-  //
-  // Node has no JPEG decoder, so the darkest tile of each image is recorded in
-  // assets/regions/contrast.json alongside the byte size it was measured from.
-  // The size check is what makes that record trustworthy: swap an image and
-  // the recorded size stops matching, so this fails and tells you to
-  // re-measure rather than passing on a stale number.
-  const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");
-  // The rule lists every surface that carries text over the art: the card,
-  // the header and the footer. Read the selectors as well as the alpha, so a
-  // surface dropped from the list is caught here rather than by a reader.
-  const rule = css.match(
-    /((?:body\.journey-lit [^{,]+,\s*)*body\.journey-lit [^{]+)\{[^}]*?rgba\(\s*255,\s*255,\s*255,\s*([\d.]+)\s*\)[^}]*?backdrop-filter/
-  );
-  assert.ok(rule, "no white rgba veil with a backdrop-filter is applied over the region art");
-  const alpha = Number(rule[2]);
-  const veiled = rule[1];
-
-  // Every surface that can hold text on a journey screen. The footer was
-  // measured at 1.07:1 on raw art before it was veiled, so a missing entry
-  // here is not cosmetic.
-  for (const surface of [".onboarding-container.card", "header", ".app-footer"]) {
-    assert.ok(
-      veiled.includes(surface),
-      `${surface} is no longer veiled over the region art. Text on it would sit ` +
-      "directly on an illustrated background -- the footer links measured 1.07:1 " +
-      "that way, against a 4.5:1 floor."
-    );
-  }
-
-  const measured = JSON.parse(
-    readFileSync(new URL("../assets/regions/contrast.json", import.meta.url), "utf8")
-  ).regions;
-
-  const toHex = rgb => "#" + rgb.map(c => c.toString(16).padStart(2, "0")).join("");
-  // Both inks that land on the onboarding card. Small text in either needs
-  // 4.5:1; the stems and helper lines use the secondary colour, and they are
-  // the ones that actually bind.
-  const inks = ["--color-navy", "--color-text-secondary"].map(name => {
-    const m = css.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, "i"));
-    assert.ok(m, `index.css no longer defines ${name}, which the veil is measured against`);
-    return { name, hex: m[1] };
-  });
-
-  for (const chapter of CHAPTERS) {
-    const rec = measured[chapter.art];
-    assert.ok(
-      rec,
-      `assets/regions/contrast.json has no entry for "${chapter.art}". A new region ` +
-      "background needs its darkest tile measured before it can be shipped."
-    );
-    const file = new URL(`../assets/regions/${chapter.art}.jpg`, import.meta.url);
-    assert.equal(
-      statSync(file).size, rec.bytes,
-      `assets/regions/${chapter.art}.jpg is ${statSync(file).size} bytes but ` +
-      `contrast.json was measured against ${rec.bytes}. The image changed, so its ` +
-      "recorded darkest tile is stale -- re-measure it, do not edit the number."
-    );
-
-    const over = rec.darkestTile.map(c => Math.round(alpha * 255 + (1 - alpha) * c));
-    for (const ink of inks) {
-      const ratio = contrastRatio(ink.hex, toHex(over));
-      assert.ok(
-        ratio >= 4.5,
-        `${ink.name} on the card over ${chapter.art}.jpg is ${ratio.toFixed(2)}:1, below ` +
-        `the 4.5:1 small-text minimum. Either the card veil (now ${alpha}) was opened ` +
-        "up to show more art, or this image is darker than the set it joined. Raise " +
-        "the veil or lighten the image -- do not lower the threshold."
-      );
-    }
+  assert.doesNotMatch(src, /--journey-art/, "the region art is being painted behind the questions again");
+  const photo = src.match(/<div class="ending-photo"[\s\S]*?\n {4}<\/div>/);
+  assert.ok(photo, "the chapter ending no longer shows its region's photograph");
+  assert.match(photo[0], /aria-hidden="true"/, "the photograph is decoration and must be hidden from readers");
+  const words = photo[0].replace(/\$\{[^}]+\}/g, "").replace(/<[^>]+>/g, "").trim();
+  assert.equal(words, "", `text sits on the photograph: "${words}"`);
+  for (const sheet of ["../index.css", "../css/journey.css"]) {
+    const css = readFileSync(new URL(sheet, import.meta.url), "utf8");
+    assert.doesNotMatch(css, /journey-lit/, `${sheet} still styles the retired full-screen art layer`);
   }
 });
 
-test("every region wash keeps the app's own ink readable on it", () => {
+test("every region wash keeps the journey's inks readable on it", () => {
+  // Each question panel is painted in its region's wash with the ink straight
+  // on it (css/journey.css). Navy stands in for the app's ink at a 7:1 floor;
+  // the secondary ink (stems, counts, theme lines) is small text and is held
+  // to 4.5:1 on every wash.
   const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");
   const navy = css.match(/--color-navy:\s*(#[0-9a-f]{6})/i);
   assert.ok(navy, "index.css no longer defines --color-navy, which every wash is measured against");
+  const journeyCss = readFileSync(new URL("../css/journey.css", import.meta.url), "utf8");
+  const muted = journeyCss.match(/--journey-muted:\s*(#[0-9a-f]{6})/i);
+  assert.ok(muted, "css/journey.css no longer defines --journey-muted, which every wash is measured against");
 
   const washes = new Set();
   for (const chapter of CHAPTERS) {
     assert.match(chapter.wash, /^#[0-9a-f]{6}$/i, `${chapter.aspect}: wash is not a hex colour`);
     const ratio = contrastRatio(chapter.wash, navy[1]);
-    // 7:1 is AAA for body text. The floor is deliberately above the 4.5:1
-    // minimum: the wash sits under a 22-screen form of small radio labels, and
-    // the card over it is only 86% opaque, so the real composite is lighter
-    // than this measurement rather than darker.
     assert.ok(
       ratio >= 7,
       `${chapter.aspect}: navy ink on wash ${chapter.wash} is ${ratio.toFixed(2)}:1, below 7:1. ` +
       "A wash this deep needs a different ink, not a darker page."
+    );
+    const secondary = contrastRatio(chapter.wash, muted[1]);
+    assert.ok(
+      secondary >= 4.5,
+      `${chapter.aspect}: --journey-muted on wash ${chapter.wash} is ${secondary.toFixed(2)}:1, below 4.5:1`
     );
     washes.add(chapter.wash.toLowerCase());
   }
@@ -388,7 +311,7 @@ test("answered questions keep full-strength ink over the region art", () => {
   // itself. Dimming a non-text child — the radio controls, which WCAG 1.4.11
   // holds to 3:1 rather than 4.5:1 — is allowed, and is how the answered state
   // still reads as settled.
-  const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");
+  const css = readFileSync(new URL("../css/journey.css", import.meta.url), "utf8");
   const rules = [...css.matchAll(/fieldset\.q-answered([^{]*)\{([^}]*)\}/g)];
   assert.ok(rules.length, "the .q-answered state has disappeared from the stylesheet");
 
@@ -412,7 +335,7 @@ test("answered questions keep full-strength ink over the region art", () => {
   assert.ok(checkedFieldsetRule, "no rule targets fieldset.q-answered itself any more");
 });
 
-test("the ring counts a region complete only when its ending is reached", () => {
+test("the progress star counts a region complete only when its ending is reached", () => {
   // The count used the in-progress chapter INDEX as the number of chapters
   // completed, so the ring read "0 / 8" on the screen whose card is headed
   // "Region complete", and "7 / 8" on the last screen of the journey, whose

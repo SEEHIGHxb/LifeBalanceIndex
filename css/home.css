@@ -140,7 +140,8 @@
 .home-news .newsrow-thumb { width: calc(120 * var(--px)); border-radius: calc(14 * var(--px)); }
 
 /* ------------------------------------------------------- the pledge wall */
-.home-pledges { padding: calc(100 * var(--px)) 0 calc(90 * var(--px)); }
+/* A strip, not a screen: the count, then one row of stickers drifting. */
+.home-pledges { padding: calc(70 * var(--px)) 0 calc(60 * var(--px)); }
 .home-pledges .split { --col: 704; }
 .pledge-count {
   display: flex;
@@ -155,13 +156,15 @@
   position: relative;
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  height: calc(980 * var(--px));
+  height: calc(360 * var(--px));
   overflow: hidden;
   border-radius: var(--panel-r);
   background: #ffffff;
 }
 .wall::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.5); pointer-events: none; }
-.wall-col { display: flex; flex-direction: column; gap: calc(70 * var(--px)); will-change: transform; }
+/* Each column starts above the strip by more than it drifts (WALL_DRIFT in
+   views/dashboard.js), so no drift opens a gap at the top. */
+.wall-col { display: flex; flex-direction: column; gap: calc(70 * var(--px)); margin-top: calc(-150 * var(--px)); will-change: transform; }
 .sticker { display: grid; place-items: center; height: calc(300 * var(--px)); }
 .sticker:nth-child(3n + 1) { justify-items: start; padding-left: 14%; }
 .sticker:nth-child(3n + 2) { justify-items: end; padding-right: 10%; }
@@ -170,8 +173,8 @@
 @container (max-width: 900px) {
   .home .statement,
   .home .home-aspects,
-  .home-news,
-  .home-pledges { padding: calc(90 * var(--px)) 0 calc(80 * var(--px)); }
+  .home-news { padding: calc(90 * var(--px)) 0 calc(80 * var(--px)); }
+  .home-pledges { padding: calc(70 * var(--px)) 0 calc(60 * var(--px)); }
   .home-top { padding: calc(80 * var(--px)) 0; }
   /* The star beside the index; the rest runs the full width under them. */
   .home-top-grid { grid-template-columns: calc(230 * var(--px)) minmax(0, 1fr); gap: calc(30 * var(--px)) calc(40 * var(--px)); align-items: center; }

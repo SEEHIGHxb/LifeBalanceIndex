@@ -141,6 +141,10 @@ test("the pledge wall appears only with pledges, and says in words what it shows
   const html = render({ ...STATE, goals: [{ id: "g", templateId: "sleep", target: 7 }] });
   assert.match(html, /<section class="wall" aria-hidden="true">/);
   assert.match(html, /1 active this week/);
+  // A strip, not a screen: a few stickers per column, not a wall of them.
+  const perColumn = html.split('class="wall-col"').slice(1).map(c => (c.match(/class="sticker/g) || []).length);
+  assert.equal(perColumn.length, 6);
+  assert.ok(perColumn.every(n => n <= 3), `columns hold ${perColumn.join(",")} stickers`);
 });
 
 test("the care notice leads the page, before your star", () => {

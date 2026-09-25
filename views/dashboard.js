@@ -47,12 +47,15 @@ import {
 
 const RECENT_ROWS = 5;
 const WALL_COLUMNS = 6;
-const WALL_ROWS = 8;
+// The wall is a strip about one sticker tall (css/home.css); three per column
+// cover it through the whole drift.
+const WALL_ROWS = 3;
 // Every fourth sticker is the gilt star, as on the prototype's wall.
 const STAR_STICKER_EVERY = 4;
 // How far a wall column drifts across the wall's pass through the screen, in
-// prototype px (1/2545 of the page's width).
-const WALL_DRIFT = 420;
+// prototype px (1/2545 of the page's width). Kept under the columns' head
+// start above the strip (.wall-col's margin in css/home.css).
+const WALL_DRIFT = 120;
 const DESKTOP_REF = 2545;
 
 // --- your star ------------------------------------------------------------

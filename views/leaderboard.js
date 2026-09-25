@@ -123,7 +123,7 @@ function peopleMarkup(friends, pick, confirm) {
     return `<button type="button" class="linkbtn friend-remove" data-friend-id="${id}">${tp("Remove {name}", { name })}</button>`;
   }).join("");
   return `
-    <div class="people" role="radiogroup" aria-label="${escapeHtml(t("Whose star to lay over yours"))}">${pills}</div>
+    <div class="people" role="radiogroup" aria-label="${escapeHtml(t("Whose star shares yours"))}">${pills}</div>
     <div class="people-rm">${removes}</div>`;
 }
 
@@ -143,7 +143,7 @@ function duoSection(state, friends, pick, confirm) {
   return `
     <section class="panel statement duo"><div class="wrap split">
       <div>
-        ${label(t("Over each other"))}
+        ${label(t("Ray by ray"))}
         <p class="duo-note">${them ? t("Pick whose star shares yours: in each ray your side is gold and theirs is dark. The dashed line is the population average.") : t("Not a ranking. Each column is one person's eight aspects, marked against the population average — so you can see where you differ, not who is ahead.")}</p>
         <p class="duo-share"><button type="button" id="btn-share-radar" class="pill pill-light">${escapeHtml(t("Share your star"))}</button></p>
       </div>

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `103`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `104`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.50.1] — 2026-09-26 (APP_VERSION 104)
+
+### Changed
+- **Side by Side says "share", not "lay over".** Its section label is now
+  "Ray by ray" (was "Over each other") and the picker's spoken label "Whose
+  star shares yours" (was "Whose star to lay over yours"), with Thai, to match
+  the split rays of 2.50.0.
+- **Home's pledge wall is a strip.** One row of stickers about 200px tall on a
+  laptop (was a 550px wall of eight per column), three stickers per column,
+  drifting 120 prototype px instead of 420; each column starts above the strip
+  by more than it drifts, so no gap opens at the top.
 
 ## [2.50.0] — 2026-09-26 (APP_VERSION 103)
 

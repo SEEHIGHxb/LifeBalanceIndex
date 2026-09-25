@@ -79,9 +79,9 @@ function menuHtml(onboarded) {
     link("#/quests", t("Goals")),
     link("#/leaderboard", t("Side by Side"))
   ]);
-  const regions = group(`<p class="menu-top">${lineHtml(t("Aspects"))}</p>`,
+  const regions = group(`<h2 class="menu-top">${lineHtml(t("Aspects"))}</h2>`,
     REGIONS.map(([key, region]) => link(`#/aspect/${key}`, t(region))));
-  const you = group(`<p class="menu-top">${lineHtml(t("You"))}</p>`, [
+  const you = group(`<h2 class="menu-top">${lineHtml(t("You"))}</h2>`, [
     link("#/profile", t("Profile")),
     link("#/year", t("Your year")),
     link("#/methodology", t("Methodology")),

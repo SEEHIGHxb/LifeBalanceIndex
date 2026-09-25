@@ -175,7 +175,7 @@ try {
     const el = document.activeElement;
     return { tag: el?.tagName, page: el?.closest(".survey-page")?.id };
   });
-  if (focused.tag !== "H3" || focused.page !== "onb-page-1") {
+  if (focused.tag !== "H2" || focused.page !== "onb-page-1") {
     problems.push(`flow0: after Next, focus is on ${focused.tag} in ${focused.page}, not the heading of onb-page-1`);
   }
 

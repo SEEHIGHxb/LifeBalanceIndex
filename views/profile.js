@@ -25,7 +25,7 @@
 // that reaches a score.
 
 import { stateManager } from "../state.js";
-import { numberField } from "./instrument-forms.js";
+import { numberField, markField } from "./instrument-forms.js";
 import { birthdayFields, escapeHtml } from "./helpers.js";
 import { validateProfile } from "../validation.js";
 import { sanitizeBirthday } from "../sanitize.js";
@@ -290,18 +290,18 @@ export function renderProfile(containerId, state, onSaved) {
     reduceBox.addEventListener("change", () => setReduceMotionPref(reduceBox.checked));
   }
 
-  const clearErrors = () => {
-    for (const id of Object.values(ERR_IDS)) {
-      const el = document.getElementById(id);
-      if (el) { el.textContent = ""; el.classList.add("d-none"); }
-    }
-    const err = document.getElementById("profile-error");
-    if (err) err.classList.add("d-none");
+  // Each error span is "<control id>-err"; the birthday's covers both selects.
+  const showFieldError = (field, message) => {
+    const errEl = document.getElementById(ERR_IDS[field]);
+    const base = ERR_IDS[field].replace(/-err$/, "");
+    const ctrls = field === "birthday" ? [`${base}-month`, `${base}-day`] : [base];
+    for (const id of ctrls) markField(document.getElementById(id), errEl, message);
   };
 
-  const showFieldError = (field, message) => {
-    const el = document.getElementById(ERR_IDS[field]);
-    if (el) { el.textContent = message; el.classList.remove("d-none"); }
+  const clearErrors = () => {
+    for (const field of Object.keys(ERR_IDS)) showFieldError(field, "");
+    const err = document.getElementById("profile-error");
+    if (err) err.classList.add("d-none");
   };
 
   document.getElementById("pf-save").addEventListener("click", () => {

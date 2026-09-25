@@ -30,7 +30,7 @@ function instrumentScreen(key, stem) {
   return {
     id: `instr-${key}`,
     instrument: key,
-    // t() here because this string is rendered as the screen's <h3> by the
+    // t() here because this string is rendered as the screen's <h2> by the
     // engine, which escapes but does not translate. Untranslated, every Thai
     // instrument screen headlined an English acronym.
     title: t(INSTRUMENTS[key].title),

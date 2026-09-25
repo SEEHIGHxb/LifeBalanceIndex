@@ -25,7 +25,7 @@
 import { stateManager } from "../state.js";
 import { validateProfile, FIELD_CONSTRAINTS } from "../validation.js";
 import { t, tp, dateLocale } from "../i18n.js";
-import { numberField } from "./instrument-forms.js";
+import { numberField, markField } from "./instrument-forms.js";
 import { escapeHtml, scrollIntoViewGently } from "./helpers.js";
 import { savingsAmountFrom, savingsRateFrom } from "../scoring.js";
 import {
@@ -406,9 +406,7 @@ export function renderReview(containerId, state, onComplete) {
       const input = document.getElementById(FIELD_IDS[field]);
       const span = document.getElementById(`${FIELD_IDS[field]}-err`);
       const message = errors[field] || "";
-      if (span) { span.textContent = message; span.classList.toggle("d-none", !message); }
-      if (message) input?.setAttribute("aria-invalid", "true");
-      else input?.removeAttribute("aria-invalid");
+      markField(input, span, message);
     }
     const bad = fields.find(f => errors[f]) || null;
     if (bad) showError(t("Please fix the highlighted fields before continuing."));

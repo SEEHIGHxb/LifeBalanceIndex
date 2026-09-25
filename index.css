@@ -228,17 +228,6 @@ html {
 }
 #main-view { container-type: inline-size; }
 
-header {
-  border-bottom: 1px solid var(--color-card-border);
-  padding: 4px 4px 18px;
-  margin-bottom: 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
 /* symbols.md S1: 32 px is the smallest size that keeps the engraved lines and
    the hole. width/height are also on the element, so nothing shifts while the
    sprite loads. */
@@ -1527,8 +1516,6 @@ header {
   margin: -6px 0 12px;
 }
 
-/* --- Radar chart + legend (you vs population average) --- */
-
 /* ==========================================================================
    MOBILE LAYER — phones (max-width: 640px)
    ==========================================================================
@@ -1558,20 +1545,6 @@ header {
     padding-bottom: 8px;
     margin-bottom: 12px;
   }
-
-  /* --- Header ------------------------------------------------------------
-     124px of an 812px screen was masthead. The subtitle repeats what the page
-     title already says, so it goes on phones; the wordmark stays. */
-  header {
-    padding: 2px 0 12px;
-    margin-bottom: 14px;
-    align-items: center;
-    flex-wrap: nowrap;
-    gap: 10px;
-  }
-
-  
-  
 
   /* --- Forms -------------------------------------------------------------
      THE iOS ZOOM FIX. Safari zooms the viewport whenever a focused field is

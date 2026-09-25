@@ -83,8 +83,9 @@ set in Sarabun.
   stale and never used
 - **Backup**: one-click JSON export / import, on the Profile & Data page
 - **Hash routing** (`#/dashboard`, `#/review`, `#/aspect/<key>`, `#/checkin`, ...) — browser back/forward work
-- **Radar chart**: dependency-free SVG rendering of the 8 aspects
-- **Shareable story card**: exports the radar as a 1080×1920 PNG for Instagram
+- **Your star**: Home's hero star, whose eight points are your eight aspects,
+  drawn in dependency-free SVG; Side by Side lays two stars over each other
+- **Shareable story card**: exports your star as a 1080×1920 PNG for Instagram
   Stories and the like, drawn on a canvas (an SVG rasterised through an `<img>`
   loses both the CSS custom properties and the self-hosted fonts). You choose
   light or dark and how much is legible — shape only, shape plus aspect names,
@@ -111,13 +112,10 @@ set in Sarabun.
   whole population scores low on (like social contribution) no longer anchors
   your balance down. The *Add a Pledge* catalog leads with pledges for your
   lowest-graded aspects
-- **Built for a phone, not shrunk onto one**: below 640px the app switches to a
-  mobile layout — a fixed bottom tab bar within thumb reach at any scroll
-  position, the radar and Balance Index first, and the action prompts reduced to
-  a single "next step" with the rest demoted to compact rows. Form fields are
-  16px because iOS Safari zooms anything smaller on focus, every tap target
-  clears 44px, and nothing is set below 12px. The desktop layout is deliberately
-  unchanged by it
+- **Built for a phone, not shrunk onto one**: every page reflows to a single
+  column down to 320px with no sideways scroll, the burger menu stays in the
+  header within reach, and form fields are 16px because iOS Safari zooms
+  anything smaller on focus
 - **PWA**: installable with offline support — a network-first service worker
   always serves fresh files online and the cached shell offline
 - **Bilingual (EN / ไทย)**: a header toggle re-renders the whole app in
@@ -178,7 +176,7 @@ Headings are set in **Source Serif 4**, body text in **Inter**, and Thai in
 | `i18n.js` / `th.js` | EN/TH localization layer and the Thai dictionary |
 | `sw.js` / `manifest.webmanifest` | PWA: offline service worker and install manifest |
 | `surveys.js` | Survey instrument question banks and option scales |
-| `ui.js` | View rendering: onboarding, dashboard, weekly review, pledges, peer comparison |
-| `chart.js` | SVG radar chart renderer, and the shared `radarPoints` geometry |
+| `ui.js` | Barrel that re-exports the view modules under `views/` |
+| `chart.js` | The aspects' labels, their order, and the `radarPoints` geometry the story card uses |
 | `story-card.js` | Canvas renderer for the 1080×1920 shareable story card |
 | `tests/` | Node test suite for assessment/scoring logic |

@@ -266,8 +266,8 @@ export function renderLeaderboard(containerId, state, onRefresh, view = {}) {
       const live = result.updated ? tp("{name} updated.", { name: friend.name }) : tp("{name} added.", { name: friend.name });
       redraw({ pick: at, focus: '.people [aria-checked="true"]', live });
     } catch (err) {
-      errorEl.textContent = err.message;
       errorEl.classList.remove("d-none");
+      errorEl.textContent = err.message;
       input.setAttribute("aria-invalid", "true");
       input.setAttribute("aria-describedby", "friend-error");
       input.focus();

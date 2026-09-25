@@ -356,7 +356,7 @@ test("the progress star counts a region complete only when its ending is reached
 });
 
 test("an instrument screen names its instrument exactly once, translated", () => {
-  // The engine prints the screen's own <h3>, and instrumentBlock printed the
+  // The engine prints the screen's own <h2>, and instrumentBlock printed the
   // title again — so the name appeared twice. In Thai it appeared twice in TWO
   // LANGUAGES, because the engine's copy was passed through no t() while the
   // block's was: a Thai reader met "CFPB Financial Well-Being Assessment" as
@@ -382,7 +382,7 @@ test("an instrument screen names its instrument exactly once, translated", () =>
   assert.match(
     src, /title: t\(INSTRUMENTS\[key\]\.title\)/,
     "the instrument screen's title is no longer wrapped in t(). It is rendered " +
-    "as the screen's <h3> by an engine that escapes but does not translate, so " +
+    "as the screen's <h2> by an engine that escapes but does not translate, so " +
     "without t() every Thai instrument screen headlines an English acronym."
   );
 

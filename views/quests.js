@@ -245,6 +245,8 @@ export function renderQuests(containerId, state, view = {}) {
         const err = root.querySelector(`#cat-err-${add}`);
         err.classList.remove("d-none");
         err.textContent = result.reason;
+        input.setAttribute("aria-invalid", "true");
+        input.setAttribute("aria-describedby", err.id);
         return;
       }
       const id = result.pledge.id;

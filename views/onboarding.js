@@ -150,7 +150,7 @@ function endingMarkup(chapterIndex, nav) {
         <p class="q-count">${tp("Region {n} of {total}", { n: chapterIndex + 1, total: CHAPTERS.length })}</p>
       </div>
       <div class="q-main">
-        <h3 class="ending-region">${escapeHtml(chapter.region)}</h3>
+        <h2 class="ending-region">${escapeHtml(chapter.region)}</h2>
         <p class="ending-theme">${escapeHtml(chapter.theme)}</p>
         <ul class="chapter-recap" id="recap-${chapterIndex}"></ul>
         <div class="chapter-fact">
@@ -218,7 +218,7 @@ export function renderOnboarding(containerId, onComplete) {
         <div class="q-split">
           ${sideMarkup(chapter, screen.chapter, screen.startsChapter)}
           <div class="q-main">
-            <h3 class="q-title">${typedMarkup(screen.title)}</h3>
+            <h2 class="q-title">${typedMarkup(screen.title)}</h2>
             <p class="onb-why">${escapeHtml(screen.stem)}</p>
             ${body}
             ${nav}
@@ -406,7 +406,7 @@ export function renderOnboarding(containerId, onComplete) {
     updateProgress(index);
     playScene(index, forward);
     scrollIntoViewGently(container, { block: "start" });
-    const heading = moveFocus && page.querySelector("h3");
+    const heading = moveFocus && page.querySelector("h2");
     if (heading) {
       heading.setAttribute("tabindex", "-1");
       heading.focus({ preventScroll: true });

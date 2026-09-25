@@ -172,6 +172,19 @@ function setError(errEl, message, ctrl) {
   ctrl.setAttribute("aria-describedby", ids.join(" "));
 }
 
+// Show or clear one field's inline error, keeping the control wired to it, so
+// a screen reader reads the reason with the field rather than just "invalid".
+export function markField(ctrl, errEl, message) {
+  if (message) { setError(errEl, message, ctrl); return; }
+  if (errEl) { errEl.textContent = ""; errEl.classList.add("d-none"); }
+  if (!ctrl) return;
+  ctrl.removeAttribute("aria-invalid");
+  const kept = (ctrl.getAttribute("aria-describedby") || "")
+    .split(/\s+/).filter(id => id && id !== errEl?.id);
+  if (kept.length) ctrl.setAttribute("aria-describedby", kept.join(" "));
+  else ctrl.removeAttribute("aria-describedby");
+}
+
 export function clearScopeErrors(scopeEl) {
   scopeEl.querySelectorAll(".field-error").forEach(e => {
     e.textContent = "";

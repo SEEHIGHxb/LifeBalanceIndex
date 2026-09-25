@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `101`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `102`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,37 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.49.1] — 2026-09-26 (APP_VERSION 102)
+
+Fixes from a five-way review of the whole redesign (R1–R6): accessibility and
+leftovers. Nothing looks different: a before/after screenshot comparison of
+eight routes, the menu and the journey, on a phone and a laptop in both
+languages, is pixel-identical.
+
+### Fixed
+- **The language button's spoken name contains the word it shows.** It was
+  always "Switch language / เปลี่ยนภาษา", so a voice-control user saying "click
+  ไทย" or "click EN" matched nothing. It now reads "Switch language: ไทย" or
+  "เปลี่ยนภาษา: EN", and the shown word carries its own `lang`, so a screen
+  reader speaks it in the right voice.
+- **Field errors are read with their field.** Weekly Review, Profile and the
+  pledge catalog marked a bad field invalid (or not at all) without linking the
+  reason, so a screen reader said "invalid" and nothing more. A shared
+  `markField` (views/instrument-forms.js) now wires and unwires the error, and
+  keeps any `-note` caption the field already points at.
+- **The friend-code error is announced.** Its text was written while the
+  element was still hidden, which a live region does not announce.
+- **Heading order.** The journey's screen titles and the ending's region name
+  are `<h2>` under the header's `<h1>` (they skipped to `<h3>`), and the
+  menu's "Aspects" and "You" group titles are headings, not paragraphs.
+
+### Removed
+- The bare `header {…}` rules in index.css, desktop and phone. `.site-header`
+  overrode all of them but one: `justify-content: space-between`, which now
+  lives on `.site-header` itself.
+- A stale "Radar chart + legend" comment, and the README's radar chart, bottom
+  tab bar and `ui.js`/`chart.js` descriptions.
 
 ## [2.49.0] — 2026-09-25 (APP_VERSION 101)
 

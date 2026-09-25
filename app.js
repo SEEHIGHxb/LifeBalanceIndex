@@ -16,7 +16,7 @@ import {
   renderMethodology,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=101";
+} from "./ui.js?v=102";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -85,8 +85,14 @@ function applyChromeTranslations() {
   setText("footer-source", t("Source code & license"));
   setText("footer-local", t("Stored only in this browser"));
   setText("footer-version", tp("Version {v}", { v: APP_VERSION }));
-  // The toggle shows the language you would switch TO.
-  setText("btn-lang", getLang() === "th" ? "EN" : "ไทย");
+  // The toggle shows the language you would switch TO, in that language. Its
+  // spoken name ends with the word it shows, so voice control can say it.
+  const lang = document.getElementById("btn-lang");
+  if (lang) {
+    lang.innerHTML = getLang() === "th"
+      ? '<span class="sr-only">เปลี่ยนภาษา: </span><span lang="en">EN</span>'
+      : '<span class="sr-only">Switch language: </span><span lang="th">ไทย</span>';
+  }
 }
 
 // The skip link moves FOCUS to <main>, it does not navigate. Following the

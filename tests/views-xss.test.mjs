@@ -41,6 +41,12 @@ beforeEach(() => installGlobals());
 const PAYLOAD = '<img src=x onerror=alert(1)>';
 const BREAKOUT = '"><script>alert(1)</script>';
 
+// A hostile tag arriving unescaped: any <img> or <svg> carrying an event
+// handler (in any attribute order), or any <script> or <iframe>. Not "any
+// <img or <svg": the redesigned pages (R3, R4) legitimately carry emblem
+// pictures and sprite stars, none of which has a handler.
+const HOSTILE_TAG = /<(img|svg)\b[^>]*\bon[a-z]+\s*=|<script\b|<iframe\b/i;
+
 // What actually makes a payload dangerous is an unescaped `<` opening a tag
 // the parser will act on. Once escapeHtml has done its job the output still
 // contains the literal text "onerror=" inside `&lt;img src=x onerror=alert(1)&gt;`
@@ -51,7 +57,7 @@ const BREAKOUT = '"><script>alert(1)</script>';
 // test pass for the wrong reason).
 function assertEscaped(html, payload, label) {
   assert.ok(!html.includes(payload), `${label}: raw payload reached innerHTML verbatim`);
-  assert.ok(!/<(img|script|svg|iframe)\b/i.test(html), `${label}: an unescaped tag opener reached innerHTML`);
+  assert.ok(!HOSTILE_TAG.test(html), `${label}: an unescaped tag opener reached innerHTML`);
   assert.ok(html.includes("&lt;"), `${label}: expected the payload to appear escaped`);
 }
 
@@ -73,7 +79,7 @@ test("renderQuests drops a pledge whose templateId names no template", async () 
     goals: [{ id: "g1", templateId: PAYLOAD, target: 1, streak: 0, lastResult: null }]
   });
   assert.ok(!captured.html.includes(PAYLOAD), "hostile templateId reached innerHTML");
-  assert.ok(!/<(img|script|svg|iframe)\b/i.test(captured.html), "no unescaped tag opener");
+  assert.ok(!HOSTILE_TAG.test(captured.html), "no unescaped tag opener");
 });
 
 test("renderQuests escapes a hostile target — tp() interpolation does not protect", async () => {
@@ -137,7 +143,7 @@ test("renderYearReview escapes a hostile season total on the pace line", async (
   // seasonPace coerces non-finite XP to 0, so the payload must not survive at
   // all — asserting on its absence, not on an escaped form.
   assert.ok(!captured.html.includes(PAYLOAD), "hostile earnedXp reached innerHTML");
-  assert.ok(!/<(img|script|svg|iframe)\b/i.test(captured.html), "no unescaped tag opener");
+  assert.ok(!HOSTILE_TAG.test(captured.html), "no unescaped tag opener");
 });
 
 test("renderYearReview asks for the birthday when unknown, and never offers a year field", async () => {
@@ -250,7 +256,7 @@ test("the guideline-checks card holds both defences against a hostile profile", 
   assert.ok(html.length > 0, "the physical card should render");
   assert.ok(!html.includes(PAYLOAD), "raw payload reached innerHTML verbatim");
   assert.ok(!html.includes(BREAKOUT), "raw breakout reached innerHTML verbatim");
-  assert.ok(!/<(img|script|svg|iframe)\b/i.test(html), "an unescaped tag opener reached innerHTML");
+  assert.ok(!HOSTILE_TAG.test(html), "an unescaped tag opener reached innerHTML");
   // Coercion means the payload is absent entirely rather than present-escaped,
   // so this card is deliberately NOT checked with assertEscaped(), which
   // requires "&lt;" to prove the value was rendered rather than dropped.

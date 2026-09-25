@@ -226,11 +226,15 @@ test("guard 7: a region title splits into whole Thai clusters", () => {
 // --- the sheet's half of reduced motion ------------------------------------------
 
 test("the in-app switch mirrors every rule of the device's reduced block", () => {
-  const css = read("index.css");
-  const block = css.match(/@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n\}/)[1];
-  const rules = s => s.trim().split("\n").map(l => l.trim()).filter(Boolean);
-  const device = rules(block);
-  const app = [...css.matchAll(/^html\[data-reduce-motion\] (.+)$/gm)].map(m => m[1].trim());
-  assert.ok(device.length > 0);
-  assert.deepEqual(app, device);
+  // index.css's block went with its last rule, the review's reward pop-up
+  // (redesign R4); the journey's sheet carries its own pair. Either way a
+  // sheet's two lists must match, rule for rule.
+  for (const sheet of ["index.css", "css/journey.css"]) {
+    const css = read(sheet);
+    const block = css.match(/@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n\}/);
+    const rules = s => s.trim().split("\n").map(l => l.trim()).filter(Boolean);
+    const device = block ? rules(block[1]) : [];
+    const app = [...css.matchAll(/^html\[data-reduce-motion\] (.+)$/gm)].map(m => m[1].trim());
+    assert.deepEqual(app, device, sheet);
+  }
 });

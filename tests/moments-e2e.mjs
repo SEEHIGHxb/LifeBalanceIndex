@@ -20,6 +20,10 @@
 //   5. Reduced motion (the device setting): not one style is written on a
 //      moving piece of the journey or Home, no frame is ever asked for, and
 //      Home's star stays put when tapped.
+//   7. The weekly loop (R4): an aspect page's emblem bursts and comes home, and
+//      a quiet region's page does not; Goals' stickers stick on and settle;
+//      the Weekly Review wipes the next region's photograph over and away,
+//      and its ending lifts its curtain and bursts, leaving nothing parked.
 //   6. Home: a tap on your star bursts sixteen stars and motifs and it comes
 //      home; the pledge wall drifts with the scroll; the share card assembles
 //      in its preview. Beside the care notice Home is still: nothing typed,
@@ -63,7 +67,7 @@ function installManualClock() {
   const watch = () => new MutationObserver(records => {
     for (const r of records) {
       const el = r.target;
-      if (el.closest?.(".q-side, .q-title, .ending-photo, .burst-layer, .chapter-recap, .chapter-fact, .hero, .region-card, .photoband, .wall")) {
+      if (el.closest?.(".q-side, .q-title, .ending-photo, .burst-layer, .chapter-recap, .chapter-fact, .hero, .region-card, .photoband, .wall, .pledge-list, .rv-wipe, .rv-ending")) {
         globalThis.__styleWrites.push(`${el.id || el.className?.baseVal || el.className}: ${el.getAttribute("style")}`);
       }
     }
@@ -363,6 +367,99 @@ try {
   problems.push(`quiet home: ${err.message}`);
 }
 
+// --- 7. the weekly loop -----------------------------------------------------------------
+// Makes this week's review due: a baseline from last week and no review yet.
+const reviewDue = async (page) => {
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem("lifequest_state"));
+    s.baseline.date = new Date(Date.now() - 8 * 86400000).toISOString();
+    s.reviews = [];
+    localStorage.setItem("lifequest_state", JSON.stringify(s));
+  });
+  await page.reload({ waitUntil: "networkidle" });
+};
+const openHash = async (page, hash, selector) => {
+  await page.evaluate((h) => { location.hash = h; }, hash);
+  await page.waitForSelector(selector, { timeout: 10000 });
+  await page.evaluate(() => window.scrollTo(0, 0));
+};
+const pieceState = (page, root) => page.evaluate((r) => ({
+  particles: document.querySelectorAll(`${r} .spr`).length,
+  styled: [...document.querySelectorAll(`${r} .lockup, ${r} .part, ${r} .pledge-sticker i, ${r} .rv-ending-curtain, .rv-wipe-window, .rv-wipe-window b`)]
+    .map(el => el.getAttribute("style") || "").filter(Boolean)
+}), root);
+try {
+  const { context, page } = await openJourney(browser);
+  await finishJourney(page, { last: ["who5"] });
+
+  // An aspect page: its emblem bursts its region's motifs and comes home.
+  await openHash(page, "#/aspect/physical", ".aspect-page .hero .mark img");
+  await page.click(".aspect-page .mark-hit");
+  await advance(page, FRAME_MS * 3);
+  const tapped = await pieceState(page, ".aspect-page");
+  if (tapped.particles !== 16) problems.push(`aspect: ${tapped.particles} particles burst from the emblem, not 16`);
+  await advance(page, 2500);
+  const rested = await pieceState(page, ".aspect-page");
+  if (rested.particles || rested.styled.length) problems.push(`aspect: the emblem did not come home (${rested.styled.join(" | ")})`);
+  // A quiet region's page is still.
+  await openHash(page, "#/aspect/relationships", ".aspect-page .hero .mark img");
+  await page.click(".aspect-page .mark-hit");
+  await advance(page, 400);
+  const hush = await pieceState(page, ".aspect-page");
+  if (hush.particles || hush.styled.length) problems.push("aspect: The Commons' page moved or burst");
+
+  // Goals: the stickers stick on when the list comes into view, then settle.
+  await openHash(page, "#/quests", ".goals .pledge-list .pledge");
+  await page.evaluate(() => document.querySelector(".goals .pledge-list").scrollIntoView({ block: "center" }));
+  await page.waitForTimeout(150);
+  await advance(page, FRAME_MS * 4);
+  const sticking = await pieceState(page, ".goals");
+  if (!sticking.styled.length) problems.push("goals: no sticker stuck on");
+  await advance(page, 3000);
+  const stuck = await pieceState(page, ".goals");
+  if (stuck.styled.length) problems.push(`goals: stickers left mid-motion: ${stuck.styled.slice(0, 3).join(" | ")}`);
+
+  // The Weekly Review: the next region's photograph wipes over and away.
+  await reviewDue(page);
+  await openHash(page, "#/review", "#rv-step-0:not(.d-none)");
+  await page.click("#rv-step-0 .rv-next");
+  await advance(page, 300);
+  const wiping = await page.evaluate(() => ({
+    on: !!document.querySelector(".rv-wipe.on"),
+    photo: !!document.querySelector(".rv-wipe-window b")?.style.backgroundImage
+  }));
+  if (!wiping.on || !wiping.photo) problems.push("review: the next region's photograph did not wipe over");
+  await advance(page, 2500);
+  const landed = await page.evaluate(() => ({
+    step: document.querySelector(".rv-step:not(.d-none)")?.dataset.step,
+    wipe: !!document.querySelector(".rv-wipe.on") || !!document.querySelector(".rv-wipe").children.length
+  }));
+  if (landed.step !== "1" || landed.wipe) problems.push(`review: after the wipe, screen ${landed.step}, wipe left: ${landed.wipe}`);
+  // Through the rest, then the ending: the curtain lifts and the regions burst.
+  for (let i = 0; i < 8 && (await page.locator(".rv-step:not(.d-none) .rv-next").count()); i++) {
+    await page.click(".rv-step:not(.d-none) .rv-next");
+    await advance(page, 2500);
+  }
+  await page.click('#weekly-review-form button[type="submit"]');
+  await advance(page, FRAME_MS * 3);
+  const lifting = await pieceState(page, "#rv-ending");
+  if (!lifting.styled.length) problems.push("review: the ending's curtain did not lift");
+  let burstMax = 0;
+  for (let f = 0; f < 90; f++) {
+    await advance(page, FRAME_MS);
+    burstMax = Math.max(burstMax, (await pieceState(page, "#rv-ending")).particles);
+  }
+  if (!burstMax) problems.push("review: the ending burst nothing");
+  await advance(page, 3000);
+  const ended = await pieceState(page, "#rv-ending");
+  if (ended.particles || ended.styled.length) problems.push(`review: the ending left pieces behind (${ended.particles} particles)`);
+  await page.click("#rv-ending .rv-continue");
+  await page.waitForSelector("#rv-done-head", { timeout: 5000 });
+  await context.close();
+} catch (err) {
+  problems.push(`weekly loop: ${err.message}`);
+}
+
 // --- 4. reduced motion ------------------------------------------------------------------
 try {
   const { context, page } = await openJourney(browser, { reduced: true });
@@ -383,6 +480,15 @@ try {
   await advance(page, 400);
   const still = await heroState(page);
   if (still.particles || still.styled.length || still.hidden) problems.push("reduced: Home moved (a burst, a pose or a parked headline)");
+  // The review changes screen with no wipe at all.
+  await reviewDue(page);
+  await openHash(page, "#/review", "#rv-step-0:not(.d-none)");
+  await page.click("#rv-step-0 .rv-next");
+  const hop = await page.evaluate(() => ({
+    step: document.querySelector(".rv-step:not(.d-none)")?.dataset.step,
+    wipe: !!document.querySelector(".rv-wipe.on")
+  }));
+  if (hop.step !== "1" || hop.wipe) problems.push(`reduced: the review wiped or did not move on (screen ${hop.step})`);
   const writes = await page.evaluate(() => globalThis.__styleWrites);
   if (writes.length) problems.push(`reduced: styles written on moving pieces: ${writes.slice(0, 4).join(" | ")}`);
   const frames = await page.evaluate(() => globalThis.__framesRequested());
@@ -398,4 +504,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star bursts and comes home (and stays still beside the care notice), and reduced motion moves nothing");
+console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star bursts and comes home (and stays still beside the care notice), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, and reduced motion moves nothing");

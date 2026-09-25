@@ -1,9 +1,17 @@
-// views/review.js - the Weekly Review tab (#/review): ONE measured
-// self-report per ISO week replaces the old daily activity logging. The form
-// asks for rough weekly quantities ("about 2 L of water a day"), prefilled
-// with the current profile values so an unchanged week takes seconds; the
-// submission re-measures the behavior-driven aspects through the shared
-// scoring formulas and grades every pledge at once.
+// views/review.js - the Weekly Review (#/review): ONE measured self-report per
+// ISO week. The form asks for rough weekly quantities ("about 2 L of water a
+// day"), prefilled with the current profile values so an unchanged week takes
+// seconds; the submission re-measures the behavior-driven aspects through the
+// shared scoring formulas and grades every pledge at once.
+//
+// THE REDESIGN (R4, v99). One region per screen, in the journey's mission
+// panel: The Market, The Highlands (moving, then day to day: the owner split
+// it on 2026-09-25 because nine boxes are long on a phone), The Workshop, The
+// Crossroads and The Wildwood. Moving forward into a new region, its
+// photograph wipes up over the screen and away. Submitting ends on one screen
+// where every reviewed region bursts, the same whatever the numbers were:
+// motion never rewards or scolds an answer. The screens are all in one form,
+// so the submit path reads every box exactly as it always has.
 //
 // A connected sibling app (see connections.js) can PRE-FILL some of those boxes:
 // Midori fills monthly savings, Runaway fills the two vigorous-exercise boxes.
@@ -18,13 +26,18 @@ import { stateManager } from "../state.js";
 import { validateProfile, FIELD_CONSTRAINTS } from "../validation.js";
 import { t, tp, dateLocale } from "../i18n.js";
 import { numberField } from "./instrument-forms.js";
-import { aspectLabel } from "./helpers.js";
+import { escapeHtml, scrollIntoViewGently } from "./helpers.js";
 import { savingsAmountFrom, savingsRateFrom } from "../scoring.js";
 import {
   CONNECTION_SOURCES, SOURCE_NAMES, readConnection, readConnectionPrefs,
   connectionStatus, connectionPrefills, incomeDrifted
 } from "../connections.js";
 import { isoWeekKey } from "../season.js";
+import { mountMotion, writeMotionStyle } from "./motion-mount.js";
+import { typedMarkup, typeIn, settleIn, burst, onAbort, SPRITES, isQuietChapter } from "./stage.js";
+import { label } from "./stage-page.js";
+import { chapterOf, dotDate, shiftSummary, starThumb, newsRow } from "./news.js";
+import { animate, easeStar, isReduced } from "../motion.js";
 
 // Form ids are "rev-<profileField>" so errors from validateProfile (keyed by
 // field name) map straight onto the numberField error spans.
@@ -44,6 +57,26 @@ const FIELD_IDS = {
   monthlyDonations: "rev-monthlyDonations",
   volunteeringHours: "rev-volunteeringHours"
 };
+
+// The screens, one region each, and every field above on exactly one of them
+// (tests/weekly-loop.test.mjs holds that). `title` replaces the region question
+// where a region has two screens; `sub` is the old form's section heading.
+export const REVIEW_STEPS = Object.freeze([
+  { aspect: "finance", fields: ["monthlySavings"] },
+  {
+    aspect: "physical", sub: "Activity this week",
+    fields: ["weeklyVigorousDays", "weeklyVigorousMins", "weeklyModerateDays", "weeklyModerateMins", "weeklyWalkingDays", "weeklyWalkingMins"]
+  },
+  {
+    aspect: "physical", title: "And day to day: sleep, water, vegetables.", sub: "Daily habits (weekly average)",
+    fields: ["sleepHours", "waterLiters", "vegetablePortions"]
+  },
+  { aspect: "personalGoals", fields: ["weeklyLearningHours"] },
+  { aspect: "socialContribution", sub: "Monthly habits (update when they change)", fields: ["monthlyDonations", "volunteeringHours"] },
+  { aspect: "environment", fields: ["singleUsePlastics"] }
+]);
+const STEPS = REVIEW_STEPS;
+export const REVIEW_FIELDS = Object.freeze(Object.keys(FIELD_IDS));
 
 // The onboarding label strings are reused verbatim so the review form needs no
 // new translations and the two forms can never phrase the same field two ways.
@@ -75,6 +108,19 @@ const FIELD_LABELS = {
 };
 
 const FIELD_STEPS = { sleepHours: 0.5, waterLiters: 0.1, weeklyLearningHours: 0.5, volunteeringHours: 0.5 };
+
+// The prototype's timings: the title types at this pace; the next region's
+// photograph wipes up, holds, then wipes away; the ending's curtain lifts and
+// each reviewed region bursts a beat after the one before.
+const TYPE_MS_PER_CHAR = 32;
+const WIPE_IN_MS = 560;
+const WIPE_HOLD_MS = 260;
+const WIPE_OUT_MS = 520;
+const ENDING_MS = 700;
+const BURST_STAGGER_MS = 140;
+const PAST_ROWS = 8;
+
+const stepChapter = (i) => chapterOf(STEPS[i].aspect);
 
 // --- CONNECTED APPS ---
 
@@ -158,8 +204,8 @@ function reviewField(field, profile, prefills = {}) {
   // ambiguity that the v77 relabel fixed bites here more often than it does at
   // onboarding, where it is read once. When a connected source prefilled the
   // box, both notes are shown: the provenance and the unit are different facts.
-  const own_note = FIELD_NOTES[field] ? t(FIELD_NOTES[field]) : "";
-  const note = [pre ? prefillNote(pre) : "", own_note].filter(Boolean).join(" ");
+  const ownNote = FIELD_NOTES[field] ? t(FIELD_NOTES[field]) : "";
+  const note = [pre ? prefillNote(pre) : "", ownNote].filter(Boolean).join(" ");
   return numberField(
     FIELD_IDS[field],
     `${t(FIELD_LABELS[field])}${chip}`,
@@ -178,141 +224,283 @@ export function nextReviewDate() {
   return next.toLocaleDateString(dateLocale(), { day: "numeric", month: "short" });
 }
 
-function shiftSummary(shifts) {
-  const parts = Object.entries(shifts || {})
-    .map(([key, v]) => `${aspectLabel(key)} ${v > 0 ? "+" : ""}${v}`);
-  return parts.length ? parts.join(" · ") : t("scores steady");
-}
+// --- the screens --------------------------------------------------------------
 
-function reviewHistory(reviews) {
-  if (!reviews.length) return "";
-  const rows = reviews.slice(-8).reverse().map(r => {
-    const met = r.goals.filter(g => g.met).length;
-    return `
-      <div class="terminal-line">
-        <span class="terminal-gold">[${new Date(r.date).toLocaleDateString(dateLocale(), { day: "numeric", month: "short" })}]</span>
-        ${shiftSummary(r.shifts)} · ${tp("{met}/{total} pledges met", { met, total: r.goals.length })} · ${tp("+{xp} points", { xp: r.xp })}
-      </div>`;
-  }).join("");
+function stepMarkup(step, i, box, intro) {
+  const chapter = stepChapter(i);
+  const last = i === STEPS.length - 1;
+  const title = step.title ? t(step.title) : tp("How was {region} this week?", { region: chapter.region });
+  const quiet = isQuietChapter(chapter) ? " data-quiet" : "";
   return `
-    <div class="card">
-      <h4 class="card-header">${t("Past Reviews")}</h4>
-      <div class="terminal">${rows}</div>
-    </div>`;
+    <section class="survey-page rv-step${i ? " d-none" : ""}" id="rv-step-${i}" data-step="${i}"${quiet}
+      style="--chapter-hue: ${chapter.hue}; --chapter-wash: ${chapter.wash};">
+      <div class="q-split">
+        <div class="q-side">
+          <p class="label">(${escapeHtml(chapter.region)})</p>
+          <img class="q-emblem" src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async">
+          <p class="q-count">${escapeHtml(tp("Weekly Review · {i} / {n}", { i: i + 1, n: STEPS.length }))}</p>
+        </div>
+        <div class="q-main">
+          <h3 class="q-title" tabindex="-1">${typedMarkup(title)}</h3>
+          ${i === 0 ? intro : ""}
+          ${step.sub ? `<p class="onb-why">${t(step.sub)}</p>` : ""}
+          <div class="rv-fields">${step.fields.map(box).join("")}</div>
+          <div class="onb-nav">
+            ${i > 0 ? `<button type="button" class="btn btn-onb-prev rv-back">${t("Back")}</button>` : "<span></span>"}
+            <div class="onb-nav-right">
+              ${last
+                ? `<button type="submit" class="btn btn-primary">${t("Complete Weekly Review")}</button>`
+                : `<button type="button" class="btn btn-primary rv-next">${t("Next")}</button>`}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>`;
 }
 
-export function renderReview(containerId, state, onComplete) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  const due = stateManager.isWeeklyReviewDue();
-
-  if (!due) {
-    const checkinDue = stateManager.isCheckinDue();
-    container.innerHTML = `
-      <div class="card">
-        <h3 class="card-header">${t("Weekly Review")}</h3>
-        <p style="font-size: var(--text-md); margin-bottom: 6px;">✅ <strong>${t("Reviewed this week.")}</strong></p>
-        <p style="font-size: var(--text-base); color: var(--color-text-secondary);">
-          ${tp("Nothing to do here until {date} — live your week; the app can wait.", { date: nextReviewDate() })}
-        </p>
-        ${checkinDue ? `
-          <p style="font-size: var(--text-base); margin-top: 10px;">
-            ${t("One thing while you're here: the monthly re-assessment is due.")}
-            <a href="#/checkin">${t("Start Re-assessment")}</a>
-          </p>` : ""}
-      </div>
-      ${reviewHistory(state.reviews)}
-    `;
-    return;
-  }
-
+function formMarkup(state) {
   // One read of the sibling apps for the whole render: values for the boxes a
   // connection fills, plus the status needed to explain an empty-handed one.
   const conn = readConnections(new Date());
   const box = field => reviewField(field, state.profile, conn.prefills);
-
-  container.innerHTML = `
-    <div class="card">
-      <h3 class="card-header">${t("Weekly Review")}</h3>
-      <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin-bottom: 15px;">
-        ${t("Report a rough weekly average for each habit — no daily logging needed. Every value is prefilled with last week's answer, so only touch what changed. Takes about two minutes.")}
-      </p>
-      ${connectionBanner(conn, state.profile)}
-      <form id="weekly-review-form">
-        <h4 class="card-header" style="margin-top: 4px;">${t("Activity this week")}</h4>
-        <div class="grid-2">
-          ${box("weeklyVigorousDays")}
-          ${box("weeklyVigorousMins")}
-        </div>
-        <div class="grid-2">
-          ${box("weeklyModerateDays")}
-          ${box("weeklyModerateMins")}
-        </div>
-        <div class="grid-2">
-          ${box("weeklyWalkingDays")}
-          ${box("weeklyWalkingMins")}
-        </div>
-
-        <h4 class="card-header">${t("Daily habits (weekly average)")}</h4>
-        <div class="grid-2">
-          ${box("sleepHours")}
-          ${box("waterLiters")}
-        </div>
-        <div class="grid-2">
-          ${box("vegetablePortions")}
-          ${box("singleUsePlastics")}
-        </div>
-        <div class="grid-2">
-          ${box("weeklyLearningHours")}
-          ${box("monthlySavings")}
-        </div>
-
-        <details style="margin: 10px 0;">
-          <summary style="cursor: pointer; font-weight: 600; font-size: var(--text-md);">${t("Monthly habits (update when they change)")}</summary>
-          <div class="grid-2" style="margin-top: 10px;">
-            ${box("monthlyDonations")}
-            ${box("volunteeringHours")}
-          </div>
-        </details>
-
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">${t("Complete Weekly Review")}</button>
+  const intro = `
+    <p class="onb-why">${t("Report a rough weekly average for each habit — no daily logging needed. Every value is prefilled with last week's answer, so only touch what changed. Takes about two minutes.")}</p>
+    ${connectionBanner(conn, state.profile)}`;
+  return `
+    <div class="journey review">
+      <form id="weekly-review-form" novalidate>
+        ${STEPS.map((step, i) => stepMarkup(step, i, box, intro)).join("")}
       </form>
-      <p id="review-error" class="d-none" style="color: var(--color-crimson); margin-top: 12px; font-weight: 600;"></p>
-    </div>
-    ${reviewHistory(state.reviews)}
-  `;
+      <p id="review-error" class="onboarding-error d-none" role="alert"></p>
+      <section class="rv-ending d-none" id="rv-ending" aria-labelledby="rv-ending-title"></section>
+      <div class="rv-wipe" id="rv-wipe" aria-hidden="true"></div>
+    </div>`;
+}
 
-  document.getElementById("weekly-review-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const errorEl = document.getElementById("review-error");
-    errorEl.classList.add("d-none");
+// The review is done for the week: the past reviews as a dated list.
+function doneMarkup(state) {
+  const rows = (state.reviews || []).slice(-PAST_ROWS).reverse().map(r => newsRow({
+    date: dotDate(r.date),
+    kind: t("Weekly Review"),
+    thumb: starThumb(),
+    title: shiftSummary(r.shifts),
+    sub: `${tp("{met}/{total} pledges met", { met: r.goals.filter(g => g.met).length, total: r.goals.length })} · ${tp("+{xp} points", { xp: r.xp })}`
+  })).join("");
+  const checkin = stateManager.isCheckinDue() ? `
+    <p class="rv-done-note">${t("One thing while you're here: the monthly re-assessment is due.")}
+      <a href="#/checkin">${t("Start Re-assessment")}</a></p>` : "";
+  return `
+    <div class="stage-page review-done">
+      <section class="panel news rv-done">
+        <div class="wrap split news-block">
+          <div class="news-side">${label(t("Past Reviews"))}</div>
+          <div>
+            <h2 class="rv-done-head" id="rv-done-head" tabindex="-1">${t("Reviewed this week.")}</h2>
+            <p class="rv-done-note">${tp("Nothing to do here until {date} — live your week; the app can wait.", { date: nextReviewDate() })}</p>
+            ${checkin}
+            ${rows ? `<ul class="newslist">${rows}</ul>` : ""}
+            <p class="rv-done-links"><a class="pill" href="#/dashboard">${t("See Home")}</a></p>
+          </div>
+        </div>
+      </section>
+    </div>`;
+}
 
-    const inputs = {};
-    for (const [field, id] of Object.entries(FIELD_IDS)) {
-      inputs[field] = document.getElementById(id)?.value;
+function endingMarkup(record) {
+  const met = record.goals.filter(g => g.met).length;
+  return `
+    <i class="rv-ending-curtain" aria-hidden="true"></i>
+    <div class="burst-layer" aria-hidden="true"></div>
+    <div class="rv-ending-in">
+      <span class="rv-ending-star" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="${SPRITES}#star"/></svg></span>
+      <h2 id="rv-ending-title" tabindex="-1">${t("Reviewed this week.")}</h2>
+      <p>${escapeHtml(shiftSummary(record.shifts))}</p>
+      ${record.goals.length ? `<p>${escapeHtml(tp("{met}/{total} pledges met", { met, total: record.goals.length }))}</p>` : ""}
+      <p class="rv-ending-xp">${escapeHtml(tp("+{xp} points", { xp: record.xp }))}</p>
+      <button type="button" class="rv-continue">${t("Continue")}</button>
+    </div>`;
+}
+
+// --- motion -------------------------------------------------------------------
+
+// The next region's photograph wipes up over the screen, the screen changes
+// under it (`land`), and it wipes away upward. The window moves while the
+// picture inside moves the other way, so the edge sweeps and the picture holds
+// still: a wipe in transforms alone. Resolves when the wipe is over.
+function wipeTo(overlay, chapter, land, signal) {
+  overlay.innerHTML = `<i class="rv-wipe-window"><b style="background-image: url('./assets/regions/${chapter.art}.jpg'); background-color: ${chapter.wash};"><span>${escapeHtml(chapter.region)}</span></b></i>`;
+  const win = overlay.firstElementChild;
+  const pic = win.firstElementChild;
+  let landed = false;
+  const arrive = () => { if (!landed) { landed = true; land(); } };
+  const clear = () => { overlay.classList.remove("on"); overlay.innerHTML = ""; };
+  // A wipe cut short still lands the reader on the screen they asked for.
+  onAbort(signal, () => { arrive(); clear(); });
+  // k = 1 below the screen, 0 covering it, -1 gone above it.
+  const pose = (k) => {
+    const y = k * (overlay.clientHeight || innerHeight);
+    writeMotionStyle(win, { transform: k ? `translateY(${y.toFixed(1)}px)` : "" });
+    writeMotionStyle(pic, { transform: k ? `translateY(${(-y).toFixed(1)}px)` : "" });
+  };
+  pose(1);
+  overlay.classList.add("on");
+  return animate({ duration: WIPE_IN_MS, ease: easeStar, signal, reduced: "end", update: p => pose(1 - p) })
+    .then(done => {
+      if (!done) return false;
+      arrive();
+      return animate({ duration: WIPE_HOLD_MS, update: () => {}, signal, reduced: "end" });
+    })
+    .then(done => done && animate({ duration: WIPE_OUT_MS, ease: easeStar, signal, reduced: "end", update: p => pose(-p) }))
+    .finally(clear);
+}
+
+// The ending: a curtain lifts off it, then every reviewed region bursts from
+// the star in turn. The regions are the screens', not the answers'.
+function playEnding(ending, signal) {
+  const curtain = ending.querySelector(".rv-ending-curtain");
+  const layer = ending.querySelector(".burst-layer");
+  const star = ending.querySelector(".rv-ending-star");
+  onAbort(signal, () => writeMotionStyle(curtain, { transform: "" }));
+  writeMotionStyle(curtain, { transform: "scaleY(1)" });
+  const regions = [...new Set(STEPS.map(s => s.aspect))].map(chapterOf).filter(c => c && !isQuietChapter(c));
+  return animate({
+    duration: ENDING_MS, ease: easeStar, signal, reduced: "end",
+    update: (p) => writeMotionStyle(curtain, { transform: p >= 1 ? "" : `scaleY(${(1 - p).toFixed(4)})` })
+  }).then(done => done && Promise.all(regions.map((c, k) => animate({
+    duration: 1, delay: k * BURST_STAGGER_MS, update: () => {}, signal, reduced: "end"
+  }).then(go => go && burst(layer, star, { motifs: [{ motif: c.aspect, hue: c.hue }], signal })))));
+}
+
+// --- the view -----------------------------------------------------------------
+
+export function renderReview(containerId, state, onComplete) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (!stateManager.isWeeklyReviewDue()) {
+    container.innerHTML = doneMarkup(state);
+    return;
+  }
+  container.innerHTML = formMarkup(state);
+
+  const form = document.getElementById("weekly-review-form");
+  const errorEl = document.getElementById("review-error");
+  const page = (i) => document.getElementById(`rv-step-${i}`);
+  const reportMotion = (err) => console.error("Review motion failed:", err);
+  let current = 0;
+  let busy = false;
+
+  // Unhidden BEFORE the text is written: a live region that is display:none
+  // when its text changes announces nothing.
+  const showError = (msg) => { errorEl.classList.remove("d-none"); errorEl.textContent = msg; };
+  const hideError = () => errorEl.classList.add("d-none");
+
+  const readFields = (fields) => Object.fromEntries(fields.map(f => [f, document.getElementById(FIELD_IDS[f])?.value]));
+
+  // Same inline-error pattern as onboarding: per-field messages and a banner.
+  // Returns the first field in error on this screen, or null.
+  const checkStep = (i) => {
+    const { fields } = STEPS[i];
+    const { errors } = validateProfile(readFields(fields));
+    for (const field of fields) {
+      const input = document.getElementById(FIELD_IDS[field]);
+      const span = document.getElementById(`${FIELD_IDS[field]}-err`);
+      const message = errors[field] || "";
+      if (span) { span.textContent = message; span.classList.toggle("d-none", !message); }
+      if (message) input?.setAttribute("aria-invalid", "true");
+      else input?.removeAttribute("aria-invalid");
     }
+    const bad = fields.find(f => errors[f]) || null;
+    if (bad) showError(t("Please fix the highlighted fields before continuing."));
+    else hideError();
+    return bad;
+  };
+
+  // Focus follows the screen, so a screen-reader user hears where they are.
+  // Under a wipe the arrival shares the wipe's scope: a fresh mount here would
+  // abort the wipe before its second half.
+  const land = (i, { forward, signal = null }) => {
+    current = i;
+    STEPS.forEach((_, k) => page(k).classList.toggle("d-none", k !== i));
+    scrollIntoViewGently(container, { block: "start" });
+    page(i).querySelector(".q-title")?.focus({ preventScroll: true });
+    const live = signal || mountMotion().signal;
+    if (!forward || isReduced() || isQuietChapter(stepChapter(i))) return;
+    settleIn(page(i).querySelector(".q-emblem"), { signal: live }).catch(reportMotion);
+    typeIn(page(i).querySelector(".q-title .typed"), { msPerChar: TYPE_MS_PER_CHAR, signal: live }).catch(reportMotion);
+  };
+
+  const goForward = (i) => {
+    const chapter = stepChapter(i);
+    const newRegion = chapter !== stepChapter(current);
+    if (!newRegion || isReduced() || isQuietChapter(chapter)) {
+      land(i, { forward: true });
+      return;
+    }
+    busy = true;
+    const scope = mountMotion();
+    wipeTo(document.getElementById("rv-wipe"), chapter, () => land(i, { forward: true, signal: scope.signal }), scope.signal)
+      .catch(err => { land(i, { forward: true }); reportMotion(err); })
+      .finally(() => { busy = false; });
+  };
+
+  const showEnding = (record, onContinue) => {
+    const ending = document.getElementById("rv-ending");
+    ending.innerHTML = endingMarkup(record);
+    form.classList.add("d-none");
+    hideError();
+    ending.classList.remove("d-none");
+    scrollIntoViewGently(container, { block: "start" });
+    ending.querySelector("#rv-ending-title")?.focus({ preventScroll: true });
+    ending.querySelector(".rv-continue")?.addEventListener("click", onContinue, { once: true });
+    const scope = mountMotion();
+    if (isReduced()) return;
+    playEnding(ending, scope.signal).catch(reportMotion);
+  };
+
+  form.addEventListener("click", (e) => {
+    if (busy) return;
+    if (e.target.closest(".rv-next")) {
+      const bad = checkStep(current);
+      if (bad) document.getElementById(FIELD_IDS[bad])?.focus();
+      else goForward(current + 1);
+    } else if (e.target.closest(".rv-back")) {
+      hideError();
+      land(current - 1, { forward: false });
+    }
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (busy) return;
+    // Every screen, not only this one: an earlier screen could have been left
+    // invalid. The first screen in error is shown, with its messages.
+    for (let i = 0; i < STEPS.length; i++) {
+      const bad = checkStep(i);
+      if (!bad) continue;
+      if (i !== current) land(i, { forward: false });
+      checkStep(i);
+      document.getElementById(FIELD_IDS[bad])?.focus();
+      return;
+    }
+
+    const inputs = readFields(REVIEW_FIELDS);
     // Convert the baht box back to the stored rate BEFORE validation, so
     // validateProfile and submitWeeklyReview see the same savingsRate they
     // always have. Income is not a weekly-review field, so it comes from the
     // saved profile.
     inputs.savingsRate = savingsRateFrom(inputs.monthlySavings, stateManager.state.profile.income);
-
-    // Same inline-error pattern as onboarding: per-field messages + a banner.
-    const { ok, errors } = validateProfile(inputs);
-    for (const id of Object.values(FIELD_IDS)) {
-      const span = document.getElementById(`${id}-err`);
-      if (span) { span.textContent = ""; span.classList.add("d-none"); }
-    }
-    if (!ok) {
-      for (const [field, message] of Object.entries(errors)) {
-        const span = document.getElementById(`${FIELD_IDS[field]}-err`);
-        if (span) { span.textContent = message; span.classList.remove("d-none"); }
-      }
-      errorEl.textContent = t("Please fix the highlighted fields before continuing.");
-      errorEl.classList.remove("d-none");
+    if (!validateProfile(inputs).ok) {
+      showError(t("Please fix the highlighted fields before continuing."));
       return;
     }
-
-    onComplete(stateManager.submitWeeklyReview(inputs));
+    const record = stateManager.submitWeeklyReview(inputs);
+    // Already recorded this week, or the save was refused: nothing to
+    // celebrate, and the app says why (a toast, or the storage warning).
+    if (!record || record.persisted === false) {
+      onComplete(record);
+      return;
+    }
+    showEnding(record, () => onComplete(record));
   });
 }

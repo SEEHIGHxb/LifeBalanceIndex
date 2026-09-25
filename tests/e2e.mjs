@@ -63,6 +63,38 @@ async function goTo(route) {
 
 // Onboarded: the wordmark leads to the dashboard once there is one (before
 // that it leads to the Landing).
+// The Weekly Review is one region per screen (redesign R4): fill what is on
+// each screen as it comes up, press Next through the wipes, submit from the
+// last, and leave the ending by its Continue button. `fill` maps input ids to
+// values. Resolves once the review is saved and the done page is up.
+async function walkReview(fill = {}) {
+  const current = () => page.evaluate(() => document.querySelector(".rv-step:not(.d-none)")?.dataset.step);
+  for (let guard = 0; guard < 12; guard++) {
+    for (const [id, value] of Object.entries(fill)) {
+      if (await page.isVisible(`#${id}`)) await page.fill(`#${id}`, value);
+    }
+    const next = page.locator(".rv-step:not(.d-none) .rv-next");
+    if (!(await next.count())) break;
+    const was = await current();
+    await next.click();
+    // Polled from here: waitForFunction with an argument trips the app's CSP.
+    for (let t = 0; t < 100; t++) {
+      const moved = (await current()) !== was;
+      const wiping = await page.evaluate(() => !!document.querySelector(".rv-wipe.on"));
+      if (moved && !wiping) break;
+      await page.waitForTimeout(50);
+    }
+  }
+  await page.click('#weekly-review-form button[type="submit"]');
+  await page.waitForFunction(() => {
+    const s = JSON.parse(localStorage.getItem("lifequest_state") || "{}");
+    return s.reviews && s.reviews.length > 0;
+  }, { timeout: 5000 });
+  await page.waitForSelector("#rv-ending:not(.d-none) .rv-continue", { timeout: 5000 });
+  await page.click("#rv-ending .rv-continue");
+  await page.waitForSelector("#rv-done-head", { timeout: 5000 });
+}
+
 const ONBOARDED = '#brand-home[href="#/dashboard"]';
 
 const readState = () => page.evaluate(() =>
@@ -282,12 +314,7 @@ try {
   await page.waitForSelector("#weekly-review-form", { timeout: 10000 });
 
   // The form is prefilled; only touch what changed this week.
-  await page.fill("#rev-waterLiters", "2.5");
-  await page.click('#weekly-review-form button[type="submit"]');
-  await page.waitForFunction(() => {
-    const s = JSON.parse(localStorage.getItem("lifequest_state") || "{}");
-    return s.reviews && s.reviews.length > 0;
-  }, { timeout: 5000 });
+  await walkReview({ "rev-waterLiters": "2.5" });
   // The 60+ points can trigger the level-up dialog; Escape dismisses it.
   await page.keyboard.press("Escape");
 
@@ -562,11 +589,7 @@ try {
 
   // Submitting must still go through the ordinary gate: the answer is the
   // user's, so it lands in the profile and the review exactly like a typed one.
-  await page.click('#weekly-review-form button[type="submit"]');
-  await page.waitForFunction(() => {
-    const s = JSON.parse(localStorage.getItem("lifequest_state") || "{}");
-    return s.reviews && s.reviews.length > 0;
-  }, { timeout: 5000 });
+  await walkReview();
   await page.keyboard.press("Escape");
 
   const after = await readState();

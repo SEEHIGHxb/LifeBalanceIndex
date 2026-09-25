@@ -28,11 +28,13 @@ import {
   isBottomGrade, relativeToPopulation
 } from "../grades.js";
 import { goalTemplate } from "../goals.js";
-import { ASPECT_LABELS } from "../chart.js";
 import { seasonPace } from "../season.js";
 import { openShareSheet } from "./share.js";
 import { CHAPTERS } from "./journey.js";
 import { SPRITES, onAbort } from "./stage.js";
+import {
+  chapterOf, aspectName, dotDate, shiftSummary, motifIcon, motifThumb, starThumb, newsRow
+} from "./news.js";
 import { heroMarkup, missionMarkup, bandMarkup, label, renderStagePage } from "./stage-page.js";
 import { writeMotionStyle } from "./motion-mount.js";
 import { nextReviewDate } from "./review.js";
@@ -71,24 +73,6 @@ export function yourStarSvg(scores) {
     `<circle cx="50" cy="50" r="6" fill="#FBF8F1" stroke="#6F7D64" stroke-width="2.4"/></svg>`;
 }
 
-const motifIcon = (aspect) =>
-  `<svg viewBox="0 0 24 24" aria-hidden="true"><use href="${SPRITES}#motif-${aspect}"/></svg>`;
-const chapterOf = (aspect) => CHAPTERS.find(c => c.aspect === aspect);
-// The aspect's name as plain text, for places that escape it themselves
-// (helpers.js's aspectLabel returns it already escaped, for raw HTML sinks).
-const aspectName = (key) => t(ASPECT_LABELS[key] || key);
-// "2026.09.21", the prototype's news-list date, the same in both languages.
-const dotDate = (iso) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const two = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}.${two(d.getMonth() + 1)}.${two(d.getDate())}`;
-};
-const shiftSummary = (shifts) => {
-  const parts = Object.entries(shifts || {})
-    .map(([key, v]) => `${aspectName(key)} ${v > 0 ? "+" : ""}${v}`);
-  return parts.length ? parts.join(" · ") : t("scores steady");
-};
 // The aspect a record moved most, for its thumbnail; null when none moved.
 const biggestShift = (shifts) => {
   const moved = Object.entries(shifts || {}).filter(([k, v]) => v && chapterOf(k));
@@ -276,21 +260,8 @@ function aspectsSection(h) {
     </section>`;
 }
 
-// One row of a news list. `thumb` is trusted markup; the rest is text.
-function newsRow({ date = "", kind, thumb, title, sub = "", href = "" }) {
-  const inner = `
-    <span class="newsrow-meta">${date ? `<span class="newsrow-date">${escapeHtml(date)}</span>` : ""}<span class="newsrow-kind">${escapeHtml(kind)}</span></span>
-    ${thumb}
-    <span class="newsrow-title">${escapeHtml(title)}${sub ? `<small>${escapeHtml(sub)}</small>` : ""}</span>`;
-  return href ? `<li><a class="newsrow" href="${href}">${inner}</a></li>` : `<li class="newsrow">${inner}</li>`;
-}
-
-function thumbFor(aspect, h) {
-  const chapter = aspect && chapterOf(aspect);
-  return chapter
-    ? `<span class="newsrow-thumb" style="background: ${chapter.wash}; --hue: ${chapter.hue};">${motifIcon(aspect)}</span>`
-    : `<span class="newsrow-thumb newsrow-star">${yourStarSvg(h.scores)}</span>`;
-}
+// A record's thumbnail: the region it moved most, or your star.
+const thumbFor = (aspect, h) => (aspect && chapterOf(aspect) ? motifThumb(aspect) : starThumb(yourStarSvg(h.scores)));
 
 // Reviews, re-assessments and the journey, newest first. Pledges carry no
 // date, so they are on the wall below rather than in this list.

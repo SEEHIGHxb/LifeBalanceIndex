@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `98`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `99`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,41 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.47.0] — 2026-09-25 (APP_VERSION 99)
+
+The redesign, fourth release (R4 of [docs/redesign-build-plan.md](docs/redesign-build-plan.md)):
+the weekly loop, with the section-to-content map the owner approved on
+2026-09-25 (Body split into two screens).
+
+### Changed
+
+- **Aspect pages** are long pages on their region's wash: the emblem and
+  score, the standing typed in, what the aspect measures (grade, confidence,
+  guideline checks, estimate notes), the percentile gauge with its sources,
+  one card per component, the region's photograph, the weekly snapshots as a
+  dated list (replacing the SVG trend chart), suggested focus, and how the
+  aspect is re-measured. The Still Water and The Commons, and the Mental page
+  beside the care notice, stay still.
+- **The Weekly Review** asks one region per screen in the journey's panel:
+  The Market, The Highlands (moving, then day to day), The Workshop, The
+  Crossroads and The Wildwood. The next region's photograph wipes over between
+  regions; errors are checked per screen; Back keeps answers; connected-app
+  pre-fills stay on their boxes. Submitting ends on one screen where every
+  reviewed region bursts, listing the score shifts, pledges met and points.
+  Done for the week, the past reviews are a dated list.
+- **Goals**: your pledges as die-cut stickers that stick on, every pledge type
+  as a card with its own target box (lowest-graded aspects first), and
+  removing a pledge asks on the page instead of in a browser pop-up.
+- The dated news list moved to `views/news.js`; the shared long-page styles
+  (news list, score and meter, secondary pill, stickers, care notice) moved
+  to `css/stage-page.css`. New sheet: `css/weekly.css`.
+
+### Removed
+
+- The review's reward pop-up and "Weekly review saved" toast (the ending
+  replaces them), `renderTrendChart` in `chart.js`, and index.css's reduced-
+  motion block, which held only the pop-up.
 
 ## [2.46.0] — 2026-09-25 (APP_VERSION 98)
 

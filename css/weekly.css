@@ -1,0 +1,308 @@
+/* css/weekly.css - the weekly loop (redesign R4): the aspect pages
+   (views/aspect.js) and Goals (views/quests.js) as stage pages, and the
+   Weekly Review (views/review.js) in the journey's mission panel. Ported from
+   the approved prototype (docs/prototype/redesign/weekly.css). --px is the
+   stage page's prototype pixel (css/stage-page.css). */
+
+/* ============================================================ aspect page */
+
+/* The hero's mark is the region's emblem, a picture rather than a sprite. */
+.aspect-page .hero .mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 18%;
+  box-shadow: 0 calc(14 * var(--px)) calc(40 * var(--px)) rgba(0, 0, 0, 0.12);
+}
+
+/* The long sections carry prose and small print, not one statement each: a
+   tighter measure than the Landing's. */
+.aspect-page .statement p,
+.aspect-page .statement li {
+  max-width: calc(1400 * var(--px));
+  margin: 0 0 calc(36 * var(--px));
+  font-weight: 500;
+  font-size: max(15px, calc(24 * var(--px)));
+  line-height: 1.8;
+  letter-spacing: normal;
+}
+.aspect-lead {
+  display: flex;
+  gap: calc(70 * var(--px));
+  align-items: flex-start;
+  margin: 0 0 calc(70 * var(--px));
+}
+.aspect-page .aspect-score-badge {
+  border: 0;
+  border-radius: calc(24 * var(--px));
+  background: var(--frame-card);
+  padding: max(12px, calc(30 * var(--px))) max(18px, calc(44 * var(--px)));
+}
+.aspect-page .aspect-title {
+  margin: 0 0 calc(24 * var(--px));
+  font-family: var(--font-sans);
+  font-size: max(20px, calc(46 * var(--px)));
+  font-weight: 700;
+  color: var(--frame-ink);
+}
+.aspect-page .aspect-theme { font-style: italic; }
+.aspect-page .grade-explainer { margin: 0 0 calc(50 * var(--px)); }
+.aspect-page .grade-explainer-note,
+.aspect-page .gauge-note,
+.aspect-page .gauge-summary { color: #444444; }
+.aspect-page .aspect-note { padding-left: calc(30 * var(--px)); border-left: 3px solid var(--frame-ink); }
+.aspect-page .aspect-note strong { color: inherit; }
+/* The guideline checks keep their rows but lose the old boxed card. */
+.aspect-page .criteria-card {
+  margin: calc(80 * var(--px)) 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.aspect-page .criteria-card .card-header {
+  margin: 0 0 calc(24 * var(--px));
+  font-size: max(16px, calc(30 * var(--px)));
+  color: var(--frame-ink);
+}
+.aspect-society .gauge-track { max-width: calc(1400 * var(--px)); }
+.aspect-sources,
+.aspect-page .criteria-card details { margin-top: calc(40 * var(--px)); font-size: max(14px, calc(22 * var(--px))); }
+.aspect-sources summary { cursor: pointer; font-weight: 700; }
+.aspect-sources ul { padding-left: 1.2em; }
+
+/* One card per component: its score, a meter in the region's hue, and what
+   it is made of. */
+.aspect-part { padding: calc(70 * var(--px)) calc(71 * var(--px)); }
+.part-card + .part-card { margin-top: calc(40 * var(--px)); }
+.part-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px calc(30 * var(--px)); }
+.aspect-part .score-figure { margin-top: calc(40 * var(--px)); }
+.aspect-part .score-figure b { font-size: calc(180 * var(--px)); }
+.aspect-part .card-desc { margin-top: calc(34 * var(--px)); max-width: calc(1500 * var(--px)); }
+.fact-list { margin: calc(30 * var(--px)) 0 0; padding: 0; list-style: none; }
+.fact-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px calc(40 * var(--px));
+  padding: calc(30 * var(--px)) 0;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.25);
+}
+.fact-row:last-child { border-bottom: 0; }
+.fact-label { font-weight: 700; font-size: max(15px, calc(24 * var(--px))); }
+.fact-value { font-size: max(15px, calc(24 * var(--px))); }
+.fact-detail { grid-column: 1 / -1; font-size: max(13px, calc(19 * var(--px))); line-height: 1.7; color: #444444; }
+.aspect-page .aspect-parts .cardblock > .aspect-note { max-width: calc(1400 * var(--px)); font-size: max(15px, calc(24 * var(--px))); }
+
+.focus-list { margin: 0; padding: 0; list-style: none; }
+.aspect-page .focus-row { max-width: none; margin: 0; padding: calc(40 * var(--px)) 0; border-bottom: 1px dashed rgba(0, 0, 0, 0.25); }
+.aspect-page .focus-row:first-child { padding-top: 0; }
+.aspect-page .focus-row p { margin: 0; }
+.aspect-page .focus-title { font-weight: 700; }
+.aspect-page .focus-meta { font-size: max(13px, calc(19 * var(--px))); color: #444444; }
+.careers-note { margin: 0; font-weight: 600; font-size: max(14px, calc(22 * var(--px))); }
+
+/* ================================================================= goals */
+
+.goals-intro { color: #444444; }
+.pledge-list { display: grid; gap: calc(60 * var(--px)); margin-top: calc(60 * var(--px)); }
+.goals .statement .pledge-list p { max-width: none; margin: 0 0 calc(14 * var(--px)); font-size: max(15px, calc(24 * var(--px))); line-height: 1.7; }
+.pledge {
+  display: grid;
+  grid-template-columns: calc(260 * var(--px)) minmax(0, 1fr);
+  gap: calc(60 * var(--px));
+  align-items: start;
+  padding-bottom: calc(60 * var(--px));
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.25);
+}
+.pledge:last-child { border-bottom: 0; padding-bottom: 0; }
+.pledge .card-title:focus-visible,
+.goals .label:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 4px; }
+.pledge .card-title:focus:not(:focus-visible),
+.goals .label:focus:not(:focus-visible) { outline: none; }
+/* The sticker's tilt is on the wrapper; the sticking-on moves the <i> inside,
+   so the tilt survives the motion ending. */
+.pledge-sticker { display: inline-block; line-height: 0; }
+.pledge-sticker i { display: block; will-change: transform; }
+.goals .statement .pledge-aspect,
+.pledge-aspect {
+  margin: 0 0 calc(10 * var(--px));
+  font-size: max(11px, calc(16 * var(--px)));
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.goals .statement .pledge-result { font-weight: 700; }
+.pledge-met { color: #1d6b3a; }
+.pledge-missed { color: #8a1c1c; }
+.goals .statement .pledge-meta { color: #444444; font-size: max(13px, calc(20 * var(--px))); }
+.pledge-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: calc(24 * var(--px)); }
+.pledge-ask { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.goals .statement .pledge-ask p { flex-basis: 100%; margin: 0; font-weight: 700; }
+
+.goals-note { margin: 0 0 calc(40 * var(--px)); font-weight: 600; font-size: max(14px, calc(22 * var(--px))); }
+.cat {
+  display: grid;
+  grid-template-columns: calc(340 * var(--px)) minmax(0, 1fr) calc(620 * var(--px));
+  gap: calc(50 * var(--px));
+  align-items: center;
+  padding: calc(60 * var(--px)) calc(71 * var(--px));
+}
+.cat-card + .cat-card { margin-top: calc(40 * var(--px)); }
+.cat .pledge-sticker { justify-self: center; }
+.cat .card-desc { margin-top: calc(16 * var(--px)); }
+.cat-form { display: grid; gap: 12px; justify-items: start; }
+.cat-form .form-group { width: 100%; margin: 0; }
+.cat-form label { font-size: max(13px, calc(19 * var(--px))); font-weight: 700; }
+.cat-form .form-control {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1.5px solid rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  background: #ffffff;
+  color: var(--frame-ink);
+  font-size: 16px;
+}
+.cat-form .form-control:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
+.cat-error { margin: 0; color: #8a1c1c; font-weight: 600; }
+.stage-page .pill:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ========================================================= weekly review */
+
+.review .rv-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+}
+.review .form-group { margin-bottom: 20px; }
+.review .field-error { color: #8a1c1c; font-weight: 600; }
+.review .conn-banner { margin: 0 0 28px; background: var(--frame-card); border-radius: 16px; }
+.review .q-title[tabindex]:focus { outline: none; }
+
+/* The next region's photograph wipes over the screen between regions. Hidden
+   until a wipe runs; the window and the picture move in opposite directions
+   (views/review.js wipeTo). */
+.rv-wipe {
+  position: fixed;
+  inset: var(--frame-header-h) 0 0;
+  z-index: 30;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+.rv-wipe.on { visibility: visible; pointer-events: auto; }
+.rv-wipe-window,
+.rv-wipe-window b {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  will-change: transform;
+}
+.rv-wipe-window b { background-size: cover; background-position: center; }
+.rv-wipe-window span {
+  position: absolute;
+  left: clamp(20px, 5vw, 136px);
+  bottom: clamp(24px, 6vh, 90px);
+  font-family: var(--frame-word);
+  font-weight: 400;
+  font-size: clamp(44px, 8vw, 150px);
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* The ending: dark, the star, what moved and the way on. The curtain lifts
+   off it (transform only); at rest it is scaled to nothing. */
+.rv-ending {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - var(--frame-header-h));
+  min-height: calc(100dvh - var(--frame-header-h));
+  padding: 48px 20px;
+  overflow: hidden;
+  border-radius: var(--journey-r);
+  background: #1b1b1b;
+  color: #ffffff;
+}
+.rv-ending-curtain {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: #808080;
+  transform: scaleY(0);
+  transform-origin: top;
+}
+.rv-ending-in { position: relative; z-index: 1; max-width: 720px; text-align: center; }
+.rv-ending-star { display: inline-block; width: clamp(88px, 10vw, 140px); aspect-ratio: 1; }
+.rv-ending-star svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.rv-ending h2 {
+  margin: 24px 0 20px;
+  font-family: var(--frame-word);
+  font-weight: 400;
+  font-size: clamp(40px, 6vw, 96px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+.rv-ending h2:focus { outline: none; }
+.rv-ending p { margin: 0 0 10px; font-size: 18px; line-height: 1.6; }
+.rv-ending-xp { font-weight: 700; }
+.rv-continue {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  margin-top: 24px;
+  padding: 0 32px;
+  border: 0;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--frame-ink);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.rv-continue::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.rv-continue:focus-visible { outline: 2px solid #ffffff; outline-offset: 4px; }
+
+/* Done for the week: the past reviews. */
+.rv-done-head {
+  margin: 0 0 calc(30 * var(--px));
+  font-family: var(--frame-word);
+  font-weight: 400;
+  font-size: max(34px, calc(110 * var(--px)));
+  line-height: 1;
+  text-transform: uppercase;
+}
+.rv-done-head:focus { outline: none; }
+.rv-done-note { margin: 0 0 calc(24 * var(--px)); font-size: max(15px, calc(24 * var(--px))); line-height: 1.8; }
+.rv-done-links { margin: calc(80 * var(--px)) 0 0; }
+
+/* ================================================================ phones */
+@container (max-width: 900px) {
+  .aspect-lead { flex-direction: column; gap: calc(40 * var(--px)); }
+  .aspect-page .statement p,
+  .aspect-page .statement li { font-size: max(15px, calc(30 * var(--px))); }
+  .aspect-part { padding: calc(50 * var(--px)); }
+  .aspect-part .score-figure b { font-size: calc(160 * var(--px)); }
+  .pledge { grid-template-columns: minmax(0, 1fr); gap: calc(30 * var(--px)); }
+  .cat { grid-template-columns: minmax(0, 1fr); gap: calc(30 * var(--px)); padding: calc(50 * var(--px)); }
+  .cat .pledge-sticker { justify-self: start; }
+  .goals .statement .pledge-list p { font-size: max(15px, calc(30 * var(--px))); }
+}
+@media (max-width: 900px) {
+  .review .rv-fields { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ================================================================= Thai
+   No tracking for Thai, and the wordmark face has no Thai, so those headings
+   fall back to Sarabun at a heavier weight. */
+html[lang="th"] .pledge-aspect,
+html[lang="th"] .rv-continue { letter-spacing: normal; }
+html[lang="th"] .rv-ending h2,
+html[lang="th"] .rv-done-head,
+html[lang="th"] .rv-wipe-window span { font-weight: 700; }

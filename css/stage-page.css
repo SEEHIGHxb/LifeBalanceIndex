@@ -1,5 +1,5 @@
-/* css/stage-page.css - the redesign's long pages: the Landing (R2) and Home
-   (R3), built from views/stage-page.js. Ported from
+/* css/stage-page.css - the redesign's long pages: the Landing (R2), Home
+   (R3), the aspect pages and Goals (R4), built from views/stage-page.js. Ported from
    the approved prototype (docs/prototype/redesign/proto.css).
 
    Geometry keeps the prototype's reference scale: --px is one prototype
@@ -312,6 +312,168 @@ body.bleed #main-view { container-type: inline-size; }
   letter-spacing: 0.02em;
 }
 
+/* ------------------------------------------------ the care notice, still, on top (Home and the Mental page) */
+.stage-page .notice-panel {
+  z-index: 1;
+  padding: calc(250 * var(--px)) 0 calc(130 * var(--px));
+  background: var(--frame-card);
+}
+.stage-page .care-banner {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+.stage-page .care-banner-title {
+  margin: 0 0 calc(30 * var(--px));
+  max-width: calc(1500 * var(--px));
+  font-size: max(20px, calc(46 * var(--px)));
+  line-height: 1.45;
+  font-weight: 700;
+}
+.stage-page .care-banner-text {
+  margin: 0 0 calc(56 * var(--px));
+  max-width: calc(1500 * var(--px));
+  font-size: max(15px, calc(24 * var(--px)));
+  line-height: 1.8;
+}
+.stage-page .care-resources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(34 * var(--px)) calc(90 * var(--px));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.stage-page .care-resources li { display: grid; gap: 6px; }
+.stage-page .care-resource-label { order: 2; font-size: max(13px, calc(17 * var(--px))); font-weight: 600; }
+.stage-page .care-resource-tel {
+  font-family: var(--frame-word);
+  font-size: max(34px, calc(84 * var(--px)));
+  line-height: 1.05;
+  color: var(--frame-ink);
+  text-decoration: none;
+}
+.stage-page .care-resource-tel:hover { text-decoration: underline; text-underline-offset: 0.12em; }
+.stage-page .care-resource-tel:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 4px; }
+
+/* --------------------------------------------- shared by the long pages
+   The secondary pill, a score with its meter, the dated news list and the
+   die-cut sticker: Home (R3), the aspect pages and Goals (R4). */
+/* A light pill beside a dark one: the secondary action. */
+.stage-page .pill-light {
+  border: 1.5px solid var(--frame-ink);
+  background: transparent;
+  color: var(--frame-ink);
+}
+.stage-page button.pill { cursor: pointer; font-family: inherit; }
+.stage-page button.pill:not(.pill-light) { border: 0; }
+
+.brand-score {
+  position: absolute;
+  left: calc(938 * var(--px));
+  right: calc(72 * var(--px));
+  top: calc(74 * var(--px));
+  bottom: calc(74 * var(--px));
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  padding-left: calc(90 * var(--px));
+  border-radius: calc(20 * var(--px));
+  background: #ffffff;
+}
+.score-figure { display: grid; margin: 0; }
+.score-figure b { font-family: var(--frame-word); font-weight: 400; font-size: calc(300 * var(--px)); line-height: 0.9; }
+.score-figure small,
+.score-average {
+  margin: calc(20 * var(--px)) 0 0;
+  font-size: max(11px, calc(17 * var(--px)));
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.meter {
+  display: block;
+  width: calc(700 * var(--px));
+  max-width: 90%;
+  height: calc(10 * var(--px));
+  min-height: 6px;
+  margin-top: calc(34 * var(--px));
+  overflow: hidden;
+  border-radius: 99px;
+  background: rgba(0, 0, 0, 0.12);
+}
+.meter i { display: block; height: 100%; border-radius: inherit; }
+
+/* --------------------------------------------------------------- news */
+.news {
+  position: relative;
+  z-index: 2;
+  padding: calc(262 * var(--px)) 0 calc(150 * var(--px));
+}
+.news .split { --col: 704; }
+.news-block + .news-block { margin-top: calc(200 * var(--px)); }
+.news-note { margin: calc(24 * var(--px)) calc(80 * var(--px)) 0 0; font-size: max(12px, calc(16 * var(--px))); line-height: 1.7; }
+.newslist { margin: 0; padding: 0; list-style: none; }
+.newsrow {
+  display: grid;
+  grid-template-columns: calc(333 * var(--px)) calc(371 * var(--px)) minmax(0, 1fr);
+  align-items: start;
+  min-height: calc(388 * var(--px));
+  padding-top: calc(72 * var(--px));
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.25);
+  color: var(--frame-ink);
+  text-decoration: none;
+}
+.newslist > li:first-child > .newsrow,
+.newslist > .newsrow:first-child { min-height: calc(359 * var(--px)); padding-top: calc(52 * var(--px)); }
+a.newsrow:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 4px; }
+a.newsrow:hover .newsrow-title { text-decoration: underline; text-underline-offset: 0.15em; }
+.newsrow-empty { display: block; min-height: 0; font-weight: 600; }
+.newsrow-meta { display: grid; gap: calc(14 * var(--px)); }
+.newsrow-date { font-size: max(11px, calc(15 * var(--px))); font-weight: 700; letter-spacing: 0.06em; }
+.newsrow-kind { font-size: max(12px, calc(18 * var(--px))); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.newsrow-thumb {
+  display: grid;
+  place-items: center;
+  width: calc(234 * var(--px));
+  aspect-ratio: 1;
+  border-radius: calc(18 * var(--px));
+  background: #ffffff;
+}
+.newsrow-thumb svg {
+  width: 44%;
+  height: 44%;
+  fill: none;
+  stroke: var(--hue, var(--frame-ink));
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.newsrow-star svg { width: 62%; height: 62%; }
+.newsrow-title { font-weight: 700; font-size: max(15px, calc(22 * var(--px))); line-height: 1.7; }
+.newsrow-title small { display: block; font-weight: 500; font-size: 0.8em; color: #444444; }
+
+/* Die-cut: the hue disc with a white edge, the motif in white on it. */
+.sticker svg,
+.diecut svg {
+  box-sizing: border-box;
+  width: calc(230 * var(--px));
+  height: calc(230 * var(--px));
+  padding: calc(55 * var(--px));
+  border: calc(12 * var(--px)) solid #ffffff;
+  border-radius: 50%;
+  background: var(--hue);
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 calc(8 * var(--px)) calc(12 * var(--px)) rgba(0, 0, 0, 0.22));
+}
+.sticker-star svg { padding: 0; border: 0; background: none; overflow: visible; }
+
 /* ------------------------------------------------------------- phones */
 @container (max-width: 900px) {
   .stage-page {
@@ -319,6 +481,7 @@ body.bleed #main-view { container-type: inline-size; }
     --gutter: calc(40 * var(--px));
   }
   .stage-page .wrap { width: calc(740 * var(--px)); }
+  .stage-page .notice-panel { padding: calc(200 * var(--px)) 0 calc(90 * var(--px)); }
   .stage-page .split { grid-template-columns: minmax(0, 1fr); gap: calc(40 * var(--px)); }
   .stage-page .label { font-size: max(11px, calc(22 * var(--px))); }
   .stage-page .headline { white-space: normal; font-size: calc(46 * var(--px)); }
@@ -347,6 +510,26 @@ body.bleed #main-view { container-type: inline-size; }
   .careers { padding: calc(120 * var(--px)) 0; }
   .careers-row { flex-direction: column; gap: calc(40 * var(--px)); }
   .careers-head { font-size: calc(44 * var(--px)); }
+  .brand-score { position: static; padding: calc(40 * var(--px)) calc(50 * var(--px)); }
+  .score-figure b { font-size: calc(220 * var(--px)); }
+  .score-figure small,
+  .score-average { font-size: max(11px, calc(22 * var(--px))); }
+  .meter { width: 100%; }
+  .news { padding: calc(160 * var(--px)) 0 calc(120 * var(--px)); }
+  .news-note { margin-right: 0; font-size: max(13px, calc(26 * var(--px))); }
+  .newsrow,
+  .newslist > li:first-child > .newsrow,
+  .newslist > .newsrow:first-child {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: calc(24 * var(--px));
+    min-height: 0;
+    padding: calc(34 * var(--px)) 0;
+  }
+  .newsrow-meta { grid-column: 1 / -1; display: flex; gap: calc(24 * var(--px)); }
+  .newsrow-date,
+  .newsrow-kind { font-size: max(11px, calc(22 * var(--px))); }
+  .newsrow-thumb { width: calc(150 * var(--px)); }
+  .newsrow-title { font-size: max(15px, calc(30 * var(--px))); }
 }
 
 /* ------------------------------------------------------------- Thai
@@ -361,3 +544,7 @@ html[lang="th"] .careers-head {
   letter-spacing: normal;
 }
 html[lang="th"] .photoband span { font-weight: 700; }
+html[lang="th"] .newsrow-kind,
+html[lang="th"] .newsrow-date,
+html[lang="th"] .score-figure small,
+html[lang="th"] .score-average { letter-spacing: normal; }

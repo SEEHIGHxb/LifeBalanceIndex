@@ -38,10 +38,10 @@ test("setLang persists to its own storage key and rejects junk", () => {
 });
 
 test("tp interpolates named placeholders in both languages", () => {
-  const key = "Weekly review saved: {met}/{total} pledges met.";
-  assert.equal(tp(key, { met: 3, total: 5 }), "Weekly review saved: 3/5 pledges met.");
+  const key = "{met}/{total} pledges met";
+  assert.equal(tp(key, { met: 3, total: 5 }), "3/5 pledges met");
   setLang("th");
-  assert.equal(tp(key, { met: 3, total: 5 }), "บันทึกการทบทวนรายสัปดาห์แล้ว: ทำได้ 3/5 คำมั่น");
+  assert.equal(tp(key, { met: 3, total: 5 }), "ทำได้ 3/5 คำมั่น");
 });
 
 test("tp interpolates an empty value without leaving a gap", () => {

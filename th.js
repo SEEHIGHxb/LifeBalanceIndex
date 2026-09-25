@@ -35,7 +35,6 @@ export const TH = {
   // longer implies it does (review LOW finding).
   "Age": "อายุ",
   // --- Chart accessible names (review finding: SVGs were silent to AT) ---
-  "Trend chart: {n} weekly snapshot(s), latest score {latest} of 100": "แผนภูมิแนวโน้ม: สแนปช็อตรายสัปดาห์ {n} รายการ คะแนนล่าสุด {latest} จาก 100",
   "Radar chart of the eight aspect scores: {summary}": "แผนภูมิเรดาร์คะแนนทั้งแปดด้าน: {summary}",
   "Radar chart of the eight aspect scores: {summary}. Dashed outline shows the population average: {avgSummary}": "แผนภูมิเรดาร์คะแนนทั้งแปดด้าน: {summary} เส้นประแสดงค่าเฉลี่ยของประชากร: {avgSummary}",
   // --- Radar legend (population-average overlay) ---
@@ -502,7 +501,6 @@ export const TH = {
   "Component Breakdown": "องค์ประกอบย่อย",
   "Baseline survey data needed for this breakdown.": "ต้องมีข้อมูลแบบประเมินพื้นฐานจึงจะแสดงส่วนนี้ได้",
   "Suggested Focus": "จุดที่ควรโฟกัส",
-  "Trend (Weekly Snapshots)": "แนวโน้ม (ภาพรวมรายสัปดาห์)",
   "No snapshots yet — trends appear after your first weekly sync.": "ยังไม่มีภาพรวม — แนวโน้มจะแสดงหลังซิงก์รายสัปดาห์ครั้งแรก",
 
   // --- Confidence & completeness (Phase 2) ---
@@ -590,8 +588,6 @@ export const TH = {
   "Start Weekly Review": "เริ่มทบทวนรายสัปดาห์",
   "No weekly reviews yet — your first one opens the week after onboarding.": "ยังไม่มีการทบทวนรายสัปดาห์ — ครั้งแรกจะเปิดในสัปดาห์ถัดจากการประเมินเริ่มต้น",
   "This week's review is already recorded — come back next week.": "บันทึกการทบทวนของสัปดาห์นี้ไปแล้ว — กลับมาใหม่สัปดาห์หน้า",
-  "Weekly review saved: {met}/{total} pledges met.": "บันทึกการทบทวนรายสัปดาห์แล้ว: ทำได้ {met}/{total} คำมั่น",
-  "Weekly review saved.": "บันทึกการทบทวนรายสัปดาห์แล้ว",
   "Here to help. One short weekly review keeps your scores honest — about two minutes, once a week.": "พร้อมช่วยเสมอ การทบทวนรายสัปดาห์สั้น ๆ ช่วยให้คะแนนของคุณตรงกับความจริง — ราวสองนาที สัปดาห์ละครั้ง",
   "Complete your weekly review to keep your assessment current and track your progress.": "ทำการทบทวนรายสัปดาห์เพื่อให้การประเมินเป็นปัจจุบันและติดตามความคืบหน้าของคุณ",
   // --- Goals tab (weekly pledges) ---
@@ -600,10 +596,8 @@ export const TH = {
   "No pledges yet — add one from the catalog.": "ยังไม่มีคำมั่น — เพิ่มจากรายการได้เลย",
   "Add a Pledge": "เพิ่มคำมั่นใหม่",
   "Pledges for the aspects you're graded lowest on are listed first.": "คำมั่นสำหรับด้านที่คุณได้เกรดต่ำที่สุดจะแสดงก่อน",
-  "Pledge type": "ประเภทคำมั่น",
   "Weekly target": "เป้าหมายรายสัปดาห์",
   "Add Pledge": "เพิ่มคำมั่น",
-  "Every pledge type is already in use.": "คำมั่นทุกประเภทถูกใช้งานแล้ว",
   "Remove": "ลบ",
   "Remove this pledge? Its streak will be lost.": "ลบคำมั่นนี้หรือไม่? สถิติต่อเนื่องจะหายไป",
   "Met last week ({value} {unit})": "สัปดาห์ที่แล้วทำได้ ({value} {unit})",
@@ -1351,6 +1345,27 @@ export const TH = {
   "Done for this week.": "สัปดาห์นี้เสร็จแล้ว",
   "The next one opens {date}.": "ครั้งถัดไปเปิด {date}",
   "Start check-in": "เริ่มเช็กอิน",
+  // The weekly loop (views/aspect.js, review.js, quests.js; redesign R4). The
+  // prototype's Thai where it had the line (aStanding, aHead, aCovers, aTrend,
+  // aTrendRow, aTrendSame, aTrendDelta, aKind, aQuiet, rHead, rStep, rSeeHome,
+  // gInc, gAdded, gGraded); the rest is new and awaits the owner's review.
+  "Standing": "สถานะ",
+  "{n} out of 100.": "{n} จาก 100",
+  "What it measures": "สิ่งที่วัด",
+  "Trend": "แนวโน้ม",
+  "Score {n}": "คะแนน {n}",
+  "Same as the week before": "เท่ากับสัปดาห์ก่อน",
+  "{d} on the week before": "{d} จากสัปดาห์ก่อน",
+  "Weekly snapshot": "ภาพรวมรายสัปดาห์",
+  "This region is kept still on purpose.": "พื้นที่นี้ตั้งใจให้นิ่ง",
+  "How was {region} this week?": "สัปดาห์นี้{region}เป็นอย่างไรบ้าง",
+  "Weekly Review · {i} / {n}": "ทบทวนรายสัปดาห์ · {i} / {n}",
+  "And day to day: sleep, water, vegetables.": "และในแต่ละวัน: การนอน น้ำดื่ม และผัก",
+  "See Home": "ไปหน้าหลัก",
+  "{n} active": "{n} รายการ",
+  "Added": "เพิ่มแล้ว",
+  "Removed": "ลบแล้ว",
+  "Graded weekly": "ตรวจทุกสัปดาห์",
   // The in-app Reduce motion switch (Profile). It can only add reduction.
   "Motion": "การเคลื่อนไหว",
   "Reduce motion": "ลดการเคลื่อนไหว",

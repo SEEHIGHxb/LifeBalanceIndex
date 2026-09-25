@@ -17,7 +17,7 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=98";
+} from "./ui.js?v=99";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang, graphemes } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -27,7 +27,6 @@ import { bindMenu, renderMenu, closeMenu, syncMenuRoute } from "./views/menu.js"
 import { readDraft } from "./draft.js";
 
 const TOAST_DURATION_MS = 1600;
-const REWARD_DURATION_MS = 1900;
 const TYPEWRITER_SPEED_MS = 15;
 
 // How long the tip stays on screen after it has finished typing, before the
@@ -250,7 +249,9 @@ function renderActiveTab() {
   const state = stateManager.state;
   const route = routeFromHash();
   const activeTab = route.type === "tab" ? route.tab : null;
-  document.body.classList.toggle("bleed", activeTab === "dashboard");
+  // The redesigned screens are full-bleed; the rest still sit in the old frame
+  // until their release (docs/redesign-build-plan.md).
+  document.body.classList.toggle("bleed", route.type === "aspect" || ["dashboard", "review", "quests"].includes(activeTab));
 
   // Mark the current route in the menu and the quick links (aria-current).
   syncMenuRoute(routePath(route));
@@ -280,7 +281,7 @@ function renderActiveTab() {
   } else if (activeTab === "review") {
     renderReview("main-view", state, handleReviewComplete);
   } else if (activeTab === "quests") {
-    renderQuests("main-view", state, renderActiveTab);
+    renderQuests("main-view", state);
   } else if (activeTab === "leaderboard") {
     renderLeaderboard("main-view", state, renderActiveTab);
   }
@@ -341,16 +342,12 @@ function handleReviewComplete(record) {
     renderActiveTab();
     return;
   }
-  // Only celebrate a write that actually persisted. When storage rejected it,
-  // the lifequest_storage_error listener below warns the user instead.
-  if (record.persisted !== false) {
-    showReward(record.xp, record.shifts || {});
-    const met = record.goals.filter(g => g.met).length;
-    showToast(record.goals.length
-      ? tp("Weekly review saved: {met}/{total} pledges met.", { met, total: record.goals.length })
-      : t("Weekly review saved."));
-  }
+  // A write that persisted was already celebrated by the review's own ending
+  // (views/review.js), which said what moved; the reader pressed Continue to
+  // get here, so focus lands on the page they return to. When storage rejected
+  // the write, the lifequest_storage_error listener below warns them instead.
   renderActiveTab();
+  document.getElementById("rv-done-head")?.focus();
 }
 
 // A profile edit re-renders the page (so the new values + scores show) and
@@ -517,47 +514,6 @@ function showToast(text, variant = "success") {
   );
 
   setTimeout(() => popup.remove(), TOAST_DURATION_MS);
-}
-
-// Rewarding confirmation when a weekly review is submitted: a card pops in with the
-// points earned and the aspects that improved, then rises and fades. Built
-// with textContent (no innerHTML) since it renders live user/session values.
-function showReward(xp, impacts, detail = "") {
-  const gains = Object.entries(impacts)
-    .filter(([, change]) => change > 0)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 2)
-    .map(([aspect, change]) => `${t(ASPECT_META[aspect]?.label || aspect)} +${change}`);
-
-  const card = document.createElement("div");
-  card.className = "reward-pop";
-  card.setAttribute("role", "status");
-  card.setAttribute("aria-live", "polite");
-
-  const check = document.createElement("span");
-  check.className = "reward-check";
-  check.setAttribute("aria-hidden", "true");
-  check.textContent = "✓";
-  card.appendChild(check);
-
-  const body = document.createElement("span");
-  body.className = "reward-body";
-
-  const xpLine = document.createElement("span");
-  xpLine.className = "reward-xp";
-  xpLine.textContent = `+${xp} ${t("points")}${detail}`;
-  body.appendChild(xpLine);
-
-  if (gains.length) {
-    const gainLine = document.createElement("span");
-    gainLine.className = "reward-gains";
-    gainLine.textContent = gains.join("  ·  ");
-    body.appendChild(gainLine);
-  }
-
-  card.appendChild(body);
-  document.body.appendChild(card);
-  setTimeout(() => card.remove(), REWARD_DURATION_MS);
 }
 
 // --- ASSISTANT MANAGEMENT ---

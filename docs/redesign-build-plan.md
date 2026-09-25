@@ -1,6 +1,6 @@
 # LBI redesign: building it into the app
 
-Status: **approved by the owner on 2026-09-25**, all four open decisions as recommended (§4). **R1 (the frame) is built, in v96 (2.44.0); R2 (Landing and journey) in v97 (2.45.0); R3 (Home) in v98 (2.46.0).**
+Status: **approved by the owner on 2026-09-25**, all four open decisions as recommended (§4). **R1 (the frame) is built, in v96 (2.44.0); R2 (Landing and journey) in v97 (2.45.0); R3 (Home) in v98 (2.46.0); R4 (the weekly loop) in v99 (2.47.0).**
 
 The prototype in [`prototype/redesign/`](prototype/redesign/README.md) is approved. It covers every screen on the confirmed map, and the dark pinned star was turned off on 2026-09-25. This plan moves the real app into that design one release at a time.
 
@@ -69,6 +69,13 @@ R1 and R2 each end with a phone check by you before the next one starts. After t
 - **The news list holds reviews, re-assessments and the journey.** Pledges carry no date, so they are on the wall instead of in the list.
 - **`views/moments.js` and `views/ceremony.js` are deleted**, earlier than R5, because nothing imported them any more. The quiet-region rule moved to `views/stage.js`.
 - **New Thai copy** for Home (the lines the prototype did not have) is marked in `th.js` and awaits the owner's review.
+
+**R4 as built (v99, 2.47.0):** the aspect pages, the Weekly Review and Goals, with the map the owner approved on 2026-09-25 ("Split the Body screen").
+- **The Weekly Review has six screens, not five.** The Highlands asks its nine boxes over two screens (moving, then sleep, water and vegetables); the photograph wipes only when the region changes. All six screens stay in one form, so the submit path is unchanged.
+- **The ending replaces the reward pop-up and toast.** Every reviewed region bursts whatever was entered; the words say what moved.
+- **The trend is a dated list.** `renderTrendChart` is gone from `chart.js`.
+- **Removing a pledge asks on the page.** The page redraws itself after a change and puts focus back on the pledge or the list.
+- **New Thai copy** for the three screens is marked in `th.js` and awaits the owner's review.
 
 ## 3. How the code is organised
 

@@ -1,7 +1,8 @@
 // views/stage-page.js - the sections the redesign's long pages share (redesign
 // R3; docs/prototype/redesign/proto.js heroHTML, missionHTML, bandHTML and
-// their mounts). The Landing (views/landing.js) and Home (views/dashboard.js)
-// are both built from them.
+// their mounts). The Landing (views/landing.js), Home (views/dashboard.js),
+// the aspect pages (views/aspect.js) and Goals (views/quests.js) are built
+// from them.
 //
 // A stage page is a finished HTML string first. The motion here only animates
 // toward it: reduced motion leaves it exactly so, and every piece of motion
@@ -57,11 +58,12 @@ export const EVERY_MOTIF = CHAPTERS.map(c => ({ motif: c.aspect, hue: c.hue }));
 // "(WHY)": the prototype's section label, in brackets.
 export const label = (text) => `<h2 class="label">(${escapeHtml(text)})</h2>`;
 
-// The hero. `mark` is trusted SVG markup built by the caller; every other
+// The hero. `mark` is trusted markup built by the caller, and `wash` a
+// chapter's own colour (an aspect page sits on its region's wash); every other
 // value is text and is escaped here.
-export function heroMarkup({ mark, word, inc, srTitle, tapLabel }) {
+export function heroMarkup({ mark, word, inc, srTitle, tapLabel, wash = "" }) {
   return `
-    <section class="hero">
+    <section class="hero"${wash ? ` style="background: ${wash};"` : ""}>
       <div class="hero-stage">
         <h2 class="sr-only">${escapeHtml(srTitle)}</h2>
         <div class="burst-layer" aria-hidden="true"></div>

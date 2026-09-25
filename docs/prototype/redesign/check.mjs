@@ -18,24 +18,41 @@ const errors = [];
 const watch = (page, label) => {
   page.on("pageerror", e => errors.push(`${label}: ${e.message}`));
   page.on("console", m => { if (m.type() === "error") errors.push(`${label}: ${m.text()}`); });
-  page.on("requestfailed", r => errors.push(`${label}: failed ${r.url()}`));
+  // a lazy image cut off by the next navigation is aborted, not broken
+  page.on("requestfailed", r => {
+    if (r.failure()?.errorText !== "net::ERR_ABORTED") errors.push(`${label}: failed ${r.url()}`);
+  });
 };
 
 try {
-  for (const [label, viewport, mobile] of [["phone", { width: 390, height: 844 }, true], ["laptop", { width: 1440, height: 900 }, false]]) {
+  const phone = { width: 390, height: 844 };
+  for (const [label, viewport, mobile, lang] of [["phone", phone, true, "en"], ["phone TH", phone, true, "th"],
+    ["laptop", { width: 1440, height: 900 }, false, "en"]]) {
     const ctx = await browser.newContext({ viewport, isMobile: mobile, hasTouch: mobile });
     const page = await ctx.newPage();
     watch(page, label);
-    for (const route of ["", "home", "journey"]) {
+    await page.goto(base);
+    await page.evaluate(l => localStorage.setItem("lbi_proto_lang", l), lang);
+    for (const route of ["", "home", "journey", "aspect/market", "aspect/still-water", "review", "goals"]) {
       await page.goto(`${base}#/${route}`);
+      await page.reload();
       await page.waitForTimeout(600);
+      // Scrolls through once, then waits for the headline to finish typing
+      // and its star caret to fly off (it lands to the right of the line).
       const over = await page.evaluate(async () => {
         let worst = 0;
         const H = document.documentElement.scrollHeight;
+        const measure = () => { worst = Math.max(worst, document.documentElement.scrollWidth - innerWidth); };
         for (let y = 0; y < H; y += innerHeight) {
           scrollTo(0, y);
           await new Promise(r => setTimeout(r, 60));
-          worst = Math.max(worst, document.documentElement.scrollWidth - innerWidth);
+          measure();
+        }
+        const head = document.querySelector(".mission__head");
+        if (head) {
+          head.scrollIntoView({ block: "center" });
+          await new Promise(r => setTimeout(r, 4500));
+          measure();
         }
         return worst;
       });
@@ -97,6 +114,75 @@ try {
     await ctx.close();
   }
 
+  // The weekly loop on a laptop: aspect pages, the Weekly Review, Goals.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const page = await ctx.newPage();
+    watch(page, "weekly");
+    await page.goto(`${base}#/aspect/market`);
+    await page.waitForTimeout(400);
+    const loud = await page.evaluate(() => ({
+      chapter: document.querySelector(".heroStage").getAttribute("data-chapter"),
+      tap: !!document.querySelector(".markHit"), cards: document.querySelectorAll(".comp").length
+    }));
+    check("The Market's page: its own hero and its component cards", loud.chapter === "0" && loud.tap && loud.cards === 2, JSON.stringify(loud));
+    await page.goto(`${base}#/aspect/still-water`);
+    await page.waitForTimeout(400);
+    await page.evaluate(() => scrollTo(0, 900));
+    await page.waitForTimeout(300);
+    const still = await page.evaluate(() => ({
+      quiet: document.querySelector(".heroStage").hasAttribute("data-quiet"),
+      tap: !!document.querySelector(".markHit"),
+      hidden: document.querySelectorAll(".mission__head .off").length,
+      seed: document.documentElement.classList.contains("seed-on")
+    }));
+    check("The Still Water's page stays still (no tap burst, headline not typed)",
+      still.quiet && !still.tap && still.hidden === 0 && !still.seed, JSON.stringify(still));
+
+    await page.goto(`${base}#/review`);
+    await page.waitForTimeout(2600);
+    await page.fill("#rv-monthlySavings", "-5");
+    await page.click(".rv__nav .pill");
+    const err = await page.evaluate(() => ({
+      invalid: document.getElementById("rv-monthlySavings").getAttribute("aria-invalid"),
+      msg: document.getElementById("rvErr").textContent, focused: document.activeElement.id
+    }));
+    check("review: a bad number is flagged, described and focused",
+      err.invalid === "true" && err.msg.length > 0 && err.focused === "rv-monthlySavings", JSON.stringify(err));
+    await page.fill("#rv-monthlySavings", "6000");
+    await page.click(".rv__nav .pill");
+    await page.waitForTimeout(2600);
+    const step2 = await page.evaluate(() => document.querySelector(".q__stem").textContent);
+    check("review: a good number moves on to the next region", /2 \/ 5/.test(step2), step2);
+    for (let k = 0; k < 4; k++) { await page.click(".rv__nav .pill"); await page.waitForTimeout(2400); }
+    await page.waitForTimeout(600);
+    const end = await page.evaluate(() => ({
+      on: document.getElementById("ending").classList.contains("on"),
+      inert: document.getElementById("q").hasAttribute("inert") && document.getElementById("header").hasAttribute("inert"),
+      text: document.querySelector("#ending p").textContent
+    }));
+    check("review: submitting opens a modal ending", end.on && end.inert, JSON.stringify(end));
+    check("review: the ending counts the one changed number", /^1 number changed/.test(end.text), end.text);
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(900);
+    const done = await page.evaluate(() => document.activeElement.id);
+    check("review: Escape continues to the done page", done === "rvDoneHead", done);
+
+    await page.goto(`${base}#/goals`);
+    await page.waitForTimeout(400);
+    const count = () => page.evaluate(() => document.querySelectorAll("#gMine .pledge").length);
+    const before = await count();
+    await page.locator('#gMine .pledge[data-id="sleep"] [data-remove]').click();
+    await page.locator('#gMine .pledge[data-id="sleep"] [data-yes]').click();
+    const afterRemove = await count();
+    await page.locator('.cat[data-id="water"] [data-add]').click();
+    const afterAdd = await count();
+    const water = await page.evaluate(() => document.querySelector('.cat[data-id="water"] [data-add]').disabled);
+    check("goals: remove asks first, then add puts a sticker back",
+      before === 3 && afterRemove === 2 && afterAdd === 3 && water, `${before} -> ${afterRemove} -> ${afterAdd}`);
+    await ctx.close();
+  }
+
   // Reduced motion: everything is already where it ends.
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
@@ -121,6 +207,15 @@ try {
     await page.waitForTimeout(150);
     const seedOn = await page.evaluate(() => document.documentElement.classList.contains("seed-on"));
     check("reduced: the headline does not travel", !seedOn);
+    await page.goto(`${base}#/review`);
+    await page.waitForTimeout(150);
+    const faded = await page.evaluate(() => [...document.querySelectorAll(".field, .rv__nav")]
+      .filter(el => getComputedStyle(el).opacity !== "1").length);
+    await page.click(".rv__nav .pill");
+    await page.waitForTimeout(50);
+    const jumped = await page.evaluate(() => document.querySelector(".q__stem").textContent);
+    check("reduced: review fields are shown at once and the next region has no wipe",
+      faded === 0 && /2 \/ 5/.test(jumped), `${faded} faded, ${jumped}`);
     await ctx.close();
   }
 } finally {

@@ -1,6 +1,6 @@
 # Redesign prototype (disposable)
 
-Status: **waiting for the owner's phone check.**
+Status: **second batch (the weekly loop) built; waiting for the owner's phone check of both batches.** The owner confirmed the map for the rest of the app on 2026-09-25 ("just proceed").
 
 This is LBI's content inside the approved humanmade-style recreation (`hm-recreation-v7`). The recreation is the frame: its layout, navigation, pacing and motion stay. LBI supplies everything that fills it. The owner confirmed the section-to-content map on 2026-09-24, including two decisions:
 - The burger menu replaces the bottom tab bar.
@@ -30,13 +30,26 @@ Open it with the dev server running (`.claude/launch.json`, port 8181): <http://
 | | Sticker wall | Goals as die-cut stickers |
 | | Big pill | This week's check-in |
 | **Menu** | Menu where every letter starts as a duck | The app's navigation. Every letter starts as a small gilt star. Items not built yet are dimmed and marked. |
+| **Aspect page** `#/aspect/<region>` (second batch) | Hero lockup | The region's emblem in the star's place, its name and score. It follows the pointer and bursts only that region's motifs. |
+| | Travelling typed headline | The score, and the standing: "Ahead of 41% of people like you", or "Not ranked — on purpose." |
+| | Statement | What the aspect measures (the app's blurb) and the region's theme |
+| | Pinned shape and cards | Your star behind the component cards (the app's component names, with sample scores) |
+| | Photo band, news list, big pill | The region's photograph; the weekly trend; Lumi's tip for that aspect, and the pill to the Weekly Review (the Re-assessment for the two quiet regions) |
+| **Weekly Review** `#/review` (second batch) | Mission panel, one per region | The app's real review fields, one region per screen: The Market, The Highlands, The Workshop, The Crossroads, The Wildwood. The heading types itself and the fields rise in. |
+| | Photo-band wipe | The next region's photograph wipes up as the divider between screens |
+| | Chapter ending | "Reviewed this week." Every reviewed region bursts, and the line counts the numbers you changed |
+| | News list | Past reviews |
+| **Goals** `#/goals` (second batch) | Hero lockup | WEEKLY PLEDGES and how many are active |
+| | Sticker wall | Your pledges as die-cut stickers that stick on as they come into view, with the streak and a Remove that asks first |
+| | Pinned shape and cards | The app's pledge catalog, each card with its weekly target and ADD PLEDGE |
 
 All three screens have EN / ไทย in the header.
 
 ## Rules it keeps
 
 - **Quiet zones.** The Still Water and The Commons don't burst, type, spring or slide in, on any screen. Their journey question arrives whole, and a line says the stillness is on purpose.
-- **The answer doesn't change the motion.** Every option moves the same way. The quiet chapter has no press at all.
+- **The answer doesn't change the motion.** Every option moves the same way. The quiet chapter has no press at all. The Weekly Review's ending bursts every reviewed region, whatever the numbers were, rather than only the regions that moved: bursting for "moved" would celebrate a drop as much as a rise.
+- **The quiet regions aren't in the Weekly Review.** The app re-assesses The Still Water and The Commons monthly, so their aspect pages point to the Re-assessment instead. Their pages have no tap burst, no typing and no sliding cards.
 - **Answer pills aren't magnetic.** Only the recreation's call-to-action pills lean toward the pointer. Choices don't.
 - **Reduced motion** shows every screen in its final state. The chapter ending is simply there, with no burst.
 - **Thai types by whole characters** (`Intl.Segmenter` graphemes), so a vowel or tone mark is never split off.
@@ -48,6 +61,8 @@ Chapter names, themes, colours, motifs, blurbs, questions and answers are copied
 
 The headlines, the "how it works" lines and the Home feed are **new prototype copy**, marked `NEW` in `content.js`. The Thai for them hasn't been reviewed yet.
 
+The second batch reuses the app's own words wherever it has them: the review field labels and their note, the pledge catalog, the component names, Lumi's per-aspect tips, and "Reviewed this week." The sample scores, percentiles, streaks and trend are invented.
+
 The Anton wordmark font comes from Google Fonts. Inter and Sarabun are the app's self-hosted files.
 
 ## Checks
@@ -56,8 +71,17 @@ The Anton wordmark font comes from Google Fonts. Inter and Sarabun are the app's
 node docs/prototype/redesign/check.mjs http://127.0.0.1:8181
 ```
 
-18 checks: no sideways scroll on a phone or a laptop on any screen, Thai grapheme typing, the press spring on answer pills, the modal chapter ending, a burst in The Market but none in The Still Water, the progress star, the reduced-motion final states, and no page errors or failed requests.
+42 checks:
+- No sideways scroll on any screen: on a phone in English, on a phone in Thai (after the headline's star caret has flown off), and on a laptop.
+- Thai grapheme typing, the press spring on answer pills, the modal chapter ending, a burst in The Market but none in The Still Water, and the progress star.
+- The Market's page against The Still Water's, which stays still.
+- The Weekly Review: a bad number is flagged, described and focused; the next region; the modal ending and its count; Escape to the done page.
+- Goals: removing asks first, and adding disables the catalog card.
+- The reduced-motion final states, including the review with no wipe.
+- No page errors or failed requests.
+
+The Weekly Review stays done once submitted, as in the app. Reload the page to go through it again.
 
 ## Not in it yet
 
-The weekly review, goals, compare, aspect pages, profile, method, year in review, Lumi, the share card, and the mental-health notice. Each will get its own mapping once this frame is approved.
+Compare (Side by Side), profile, method, year in review, Lumi, the share card, and the mental-health notice, following the confirmed map. The Re-assessment is shown by the journey's question screens.

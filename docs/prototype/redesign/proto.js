@@ -218,7 +218,9 @@
 
   var mountHero = function (root) {
     var stage = $(".heroStage", root);
-    if (!stage) return null;
+    /* a quiet region's hero neither follows nor bursts */
+    if (!stage || stage.hasAttribute("data-quiet")) return null;
+    var chapter = stage.hasAttribute("data-chapter") ? +stage.getAttribute("data-chapter") : null;
     var burstEl = $(".burst", stage), markEl = $(".mark", stage);
     var parts = [
       { id: "mark", el: $("[data-part=mark]", stage), keys: ["x", "y"], rest: { x: 0, y: 0 } },
@@ -288,7 +290,7 @@
       var f = HERO.field;
       if (!(x >= f.x0 && x <= f.x1 && y >= f.y0 && y <= f.y1)) {
         if (!hero.engaged) return;
-        if (!fromScroll) { fireBurst(burstEl, markEl); hero.coolUntil = performance.now() + HERO.cooldownMs; }
+        if (!fromScroll) { fireBurst(burstEl, markEl, chapter); hero.coolUntil = performance.now() + HERO.cooldownMs; }
         springHome();
         return;
       }
@@ -301,7 +303,7 @@
     var hit = $(".markHit", stage);
     if (hit) hit.addEventListener("click", function () {
       if (reduced) return;
-      fireBurst(burstEl, markEl);
+      fireBurst(burstEl, markEl, chapter);
       if (byId.group) { byId.group.vr = 90; byId.group.vs = 1.4; }
       if (byId.mark) byId.mark.vy = -600;
       hero.mode = "spring"; run();
@@ -352,7 +354,8 @@
      scroll. Phone: it types itself once when it comes into view. */
   var mountMission = function (root) {
     var head = $(".mission__head", root), seed = $(".seed", root);
-    if (!head) return null;
+    /* a quiet region's headline is simply there, whole */
+    if (!head || head.hasAttribute("data-quiet")) return null;
     var lines = JSON.parse(head.getAttribute("data-lines"));
     var flystar = $(".flystar", head);
     var flown = false;
@@ -629,8 +632,13 @@
       '<div class="footer__meta"><span>' + esc(s.footLocal) + "</span><span>© Life Balance Index</span></div>" +
       "</div></footer>";
   };
-  var heroHTML = function (markSvg, word, inc, srTitle, tapLabel) {
-    return '<section class="hero"><div class="heroStage">' +
+  /* opts (optional): chapter, the region whose motifs burst; quiet, a hero
+     that neither follows nor bursts; cls and style for the section */
+  var heroHTML = function (markSvg, word, inc, srTitle, tapLabel, opts) {
+    opts = opts || {};
+    var attrs = (opts.chapter != null ? ' data-chapter="' + opts.chapter + '"' : "") + (opts.quiet ? " data-quiet" : "");
+    return '<section class="hero' + (opts.cls ? " " + opts.cls : "") + '"' + (opts.style ? ' style="' + opts.style + '"' : "") +
+      '><div class="heroStage"' + attrs + ">" +
       '<h1 class="sr-only">' + esc(srTitle) + "</h1>" +
       '<div class="burst" aria-hidden="true"></div>' +
       '<div class="lockup">' +
@@ -638,13 +646,13 @@
       '<div class="part" data-part="word" aria-hidden="true"><div class="word">' + esc(word) + "</div></div>" +
       '<div class="part" data-part="inc" aria-hidden="true"><div class="inc">' + esc(inc) + "</div></div>" +
       "</div>" +
-      '<button class="markHit" type="button" aria-label="' + esc(tapLabel) + '"></button>' +
+      (opts.quiet ? "" : '<button class="markHit" type="button" aria-label="' + esc(tapLabel) + '"></button>') +
       "</div></section>";
   };
-  var missionHTML = function (label, lines) {
+  var missionHTML = function (label, lines, quiet) {
     return '<section class="panel mission"><div class="wrap split">' +
       '<h2 class="label">' + esc(label) + "</h2>" +
-      "<p class=\"mission__head headline\" data-lines='" + esc(JSON.stringify(lines)) + "'>" +
+      "<p class=\"mission__head headline\"" + (quiet ? " data-quiet" : "") + " data-lines='" + esc(JSON.stringify(lines)) + "'>" +
       lines.map(esc).join("<br>") +
       '<span class="flystar" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#g-star"/></svg></span></p>' +
       "</div></section>";
@@ -665,7 +673,7 @@
       '<article class="card brand__visual" style="overflow:hidden">' +
       '<div class="brand__logo" style="background:' + ch.wash + '"><img src="' + ASSETS + "emblems/" + ch.art + '.webp" alt="" width="224" height="224" loading="lazy" decoding="async"></div>' +
       right + "</article>" +
-      '<article class="card info"><h3 class="card__title">' + esc(L(ch.region)) + "</h3>" +
+      '<article class="card info"><h3 class="card__title"><a href="#/aspect/' + ch.art + '">' + esc(L(ch.region)) + "</a></h3>" +
       '<p class="card__desc">' + esc(L(ch.theme)) + "</p>" +
       '<div class="info__links"><span class="tag" style="color:' + ch.hue + '">' + esc(L(ch.label).toUpperCase()) + "</span></div>" +
       "</article></div>";
@@ -726,7 +734,7 @@
       '<a class="pill" href="#/home" aria-disabled="true" data-soon>' + esc(s.hAll) + "</a></div>" +
       '<div class="newslist">' + rows + "</div></div></section>" +
       '<section class="wall" aria-hidden="true"></section>' +
-      careersHTML(s.hCheck, s.hCheckHead, s.hCheckCta, "#/journey") +
+      careersHTML(s.hCheck, s.hCheckHead, s.hCheckCta, "#/review") +
       footerHTML();
   };
 
@@ -966,11 +974,11 @@
     };
     menu.innerHTML = '<div class="menu__cols">' +
       '<div><div class="menu__group"><a class="menu__top" href="#/home">' + esc(s.mHome) + '</a><ul class="menu__sub">' +
-      link("#/home", s.mReview, true) + link("#/home", s.mGoals, true) + link("#/home", s.mCompare, true) + "</ul></div>" +
+      link("#/review", s.mReview) + link("#/goals", s.mGoals) + link("#/home", s.mCompare, true) + "</ul></div>" +
       '<div class="menu__group"><a class="menu__top" href="#/">' + esc(s.mStart) + '</a><ul class="menu__sub">' +
       link("#/journey", s.mJourney) + "</ul></div></div>" +
       '<div><div class="menu__group"><a class="menu__top" href="#/home">' + esc(s.mAspects) + '</a><ul class="menu__sub">' +
-      P.CHAPTERS.map(function (ch) { return link("#/home", L(ch.region).toUpperCase()); }).join("") + "</ul></div></div>" +
+      P.CHAPTERS.map(function (ch) { return link("#/aspect/" + ch.art, L(ch.region).toUpperCase()); }).join("") + "</ul></div></div>" +
       '<div><div class="menu__group"><a class="menu__top" href="#/home" aria-disabled="true" data-soon>' + esc(s.mYou) + '</a><ul class="menu__sub">' +
       link("#/home", s.mProfile, true) + link("#/home", s.mMethod, true) + link("#/home", s.mYear, true) + "</ul></div>" +
       '<div class="menu__group"><a class="menu__top" href="#/home" aria-disabled="true" data-soon>' + esc(s.mPrivacy) + "</a></div></div>" +
@@ -1046,10 +1054,18 @@
 
   /* ============================================================== router */
   var ROUTES = { "": "landing", "journey": "journey", "home": "home" };
-  var routeName = function () {
+  /* screens added by later files (weekly.js): name -> { match, html, mount, title } */
+  var EXTRA = {};
+  var route = function () {
     var h = location.hash.replace(/^#\/?/, "");
-    return Object.prototype.hasOwnProperty.call(ROUTES, h) ? ROUTES[h] : "landing";
+    if (Object.prototype.hasOwnProperty.call(ROUTES, h)) return { name: ROUTES[h], m: null };
+    for (var name in EXTRA) {
+      var m = h.match(EXTRA[name].match);
+      if (m) return { name: name, m: m };
+    }
+    return { name: "landing", m: null };
   };
+  var routeName = function () { return route().name; };
   var mounts = [], heroMount = null;
   var renderChrome = function (name) {
     var s = S();
@@ -1078,12 +1094,14 @@
   };
   var render = function () {
     gen += 1;
-    var name = routeName();
+    var r = route(), name = r.name, extra = EXTRA[name];
     var screen = $("#screen");
     html.classList.remove("seed-on", "seed-done");
     $("#header").removeAttribute("inert");
     renderChrome(name);
-    if (name === "journey") {
+    if (extra) {
+      screen.innerHTML = extra.html(r.m);
+    } else if (name === "journey") {
       screen.innerHTML = journeyHTML();
       if (journey.i >= P.QUESTIONS.length) renderDone(screen); else renderQuestion(screen, true);
     } else {
@@ -1096,7 +1114,12 @@
     });
     heroMount = mountHero(screen);
     mounts = [mountMission(screen), mountProjects(screen), mountBand(screen), mountWall(screen)].filter(Boolean);
-    document.title = { landing: "Life Balance Index", journey: "The Journey · LBI", home: "Home · LBI" }[name];
+    if (extra && extra.mount) {
+      var more = extra.mount(screen, r.m);
+      if (more) mounts.push(more);
+    }
+    document.title = extra ? extra.title(r.m) + " · LBI"
+      : { landing: "Life Balance Index", journey: "The Journey · LBI", home: "Home · LBI" }[name];
     frame();
   };
   var onScroll = function () {
@@ -1132,6 +1155,19 @@
     render();
   });
 
-  render();
-  onScroll();
+  /* The kit later files build their screens from. They register with
+     P.route before the first render, which waits for the whole page. */
+  P.kit = {
+    $: $, $$: $$, esc: esc, S: S, L: L, fmt: fmt, ASSETS: ASSETS, reduced: reduced,
+    gen: function () { return gen; }, loop: loop, springStep: springStep, tween: tween, wait: wait,
+    easeInOut: easeInOut, linear: linear, clamp01: clamp01,
+    buildTyped: buildTyped, typeOut: typeOut, fireBurst: fireBurst, wrapPills: wrapPills,
+    heroHTML: heroHTML, missionHTML: missionHTML, careersHTML: careersHTML, bandHTML: bandHTML,
+    footerHTML: footerHTML, bigStarSvg: bigStarSvg, scoreRadii: scoreRadii, STAR_VALLEY: STAR_VALLEY,
+    motifSvg: motifSvg, stickerSvg: stickerSvg, setBehindInert: setBehindInert, render: render
+  };
+  P.route = function (name, def) { EXTRA[name] = def; };
+  var start = function () { render(); onScroll(); };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
 })();

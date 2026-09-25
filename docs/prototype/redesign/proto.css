@@ -166,7 +166,8 @@ body.menu-open .header__right{opacity:1;pointer-events:auto;
 .split{display:grid;grid-template-columns:calc(var(--col) * var(--px)) 1fr;align-items:start}
 
 /* -------------------------------------------------------------- mission */
-.mission{min-height:calc(1600 * var(--px));padding-top:calc(1075 * var(--px))}
+/* clip sideways: the star caret flies off past a line that ends near the edge */
+.mission{min-height:calc(1600 * var(--px));padding-top:calc(1075 * var(--px));overflow-x:clip}
 .mission .split{--col:771}
 .mission .label{margin-top:calc(-19 * var(--px))}
 .headline{font-family:var(--head);font-weight:700;

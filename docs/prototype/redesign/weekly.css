@@ -1,0 +1,99 @@
+/* docs/prototype/redesign/weekly.css
+   The weekly loop (weekly.js): aspect pages, the Weekly Review and Goals.
+   Same units as proto.css: design px at 2545 (820 on a phone) via --px. */
+
+/* a region's emblem in the hero's place of the star */
+.mark img{width:100%;height:100%;display:block;border-radius:18%;
+  box-shadow:0 calc(14 * var(--px)) calc(40 * var(--px)) rgba(0,0,0,.12)}
+.rhero .word,.ghero .word{font-size:calc(130 * var(--px))}
+.card__title a{color:inherit;text-decoration:none}
+.card__title a:hover{text-decoration:underline;text-underline-offset:.2em}
+.card__title a:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+.statement .quietnote{font-size:max(12px,calc(17 * var(--px)));line-height:1.6;opacity:.7}
+
+/* ------------------------------------------------------- component cards */
+.comp{display:grid;grid-template-columns:1fr calc(760 * var(--px));align-items:center;
+  gap:calc(60 * var(--px));min-height:calc(420 * var(--px));padding:calc(70 * var(--px)) calc(90 * var(--px))}
+.comp__score{display:grid;justify-items:start}
+.comp__score b{font-family:var(--word);font-weight:400;font-size:calc(220 * var(--px));line-height:.9}
+.comp__score small{font-size:max(11px,calc(17 * var(--px)));font-weight:700;letter-spacing:.06em;margin-top:calc(20 * var(--px))}
+
+/* --------------------------------------------------------- weekly review */
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(44 * var(--px)) calc(60 * var(--px));
+  max-width:calc(1400 * var(--px))}
+.field{display:grid;gap:calc(12 * var(--px));align-content:start}
+.field__label{font-size:max(13px,calc(18 * var(--px)));font-weight:700;letter-spacing:.02em;line-height:1.4}
+.field__input{font:inherit;font-family:var(--word);font-size:max(28px,calc(64 * var(--px)));line-height:1.1;
+  width:100%;padding:calc(18 * var(--px)) calc(34 * var(--px));border:0;border-radius:calc(24 * var(--px));
+  background:var(--card);color:var(--ink)}
+.field__input:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.field__input[aria-invalid="true"]{box-shadow:inset 0 0 0 3px #b3261e}
+.field__input:disabled{opacity:.45}
+.field__note{font-size:max(12px,calc(15 * var(--px)));line-height:1.5;opacity:.75}
+.field__err{font-size:max(12px,calc(15 * var(--px)));font-weight:700;color:#b3261e}
+.rv__err{font-weight:700;color:#b3261e;margin:0 0 calc(30 * var(--px));font-size:max(13px,calc(17 * var(--px)))}
+.rv__err:empty{display:none}
+.rv__nav{display:flex;align-items:center;gap:calc(60 * var(--px));margin-top:calc(90 * var(--px))}
+.rv__nav .q__back{margin-top:0}
+.q__text:focus,.rvdone__head:focus,#gMineLabel:focus{outline:none}
+
+/* the divider between regions: the next region's photograph, wiping up */
+.wipe{position:fixed;inset:0;z-index:60;background-size:cover;background-position:center;
+  clip-path:inset(100% 0 0 0);visibility:hidden;pointer-events:none}
+.wipe.on{visibility:visible}
+.wipe b{position:absolute;left:var(--gutter);bottom:calc(120 * var(--px));font-family:var(--word);font-weight:400;
+  color:#fff;font-size:max(44px,calc(150 * var(--px)));line-height:1;text-shadow:0 2px 30px rgba(0,0,0,.35)}
+.wipe b.ink{color:var(--ink);text-shadow:none}
+/* over the dark ending, the header's logo and burger turn white */
+body:has(.ending.on.dark) .burger span{background:#fff}
+body:has(.ending.on.dark) .header__logo{color:#fff}
+.ending__star{display:block;width:calc(220 * var(--px));min-width:120px;aspect-ratio:1}
+.ending__star svg{width:100%;height:100%;display:block;overflow:visible}
+.rvdone__head{font-family:var(--word);font-weight:400;font-size:max(40px,calc(130 * var(--px)));
+  line-height:1;margin:0 0 calc(60 * var(--px))}
+.newsrow__thumb > svg[viewBox="0 0 100 100"]{width:52%;height:52%}
+
+/* ----------------------------------------------------------------- goals */
+.pledges{padding:calc(200 * var(--px)) 0 calc(220 * var(--px))}
+.pledges .split{--col:704}
+.pledgelist{display:grid;gap:calc(40 * var(--px))}
+.pledge{display:grid;grid-template-columns:calc(260 * var(--px)) 1fr;gap:calc(60 * var(--px));align-items:center;
+  background:var(--card);border-radius:var(--card-r);padding:calc(50 * var(--px)) calc(70 * var(--px))}
+.pledge__sticker,.cat__sticker{display:block;width:calc(230 * var(--px));min-width:84px;aspect-ratio:1}
+.pledge__sticker svg,.cat__sticker svg{width:100%;height:100%;display:block;overflow:visible;
+  filter:drop-shadow(0 calc(8 * var(--px)) calc(12 * var(--px)) rgba(0,0,0,.22))}
+.pledge__body{display:grid;gap:calc(16 * var(--px));justify-items:start}
+.pledge__streak{font-size:max(12px,calc(16 * var(--px)));font-weight:700;letter-spacing:.06em;margin:0}
+.pledge__ask{display:flex;flex-wrap:wrap;align-items:center;gap:0 calc(40 * var(--px))}
+.pledge__ask p{flex-basis:100%;margin:0;font-weight:700;font-size:max(13px,calc(18 * var(--px)))}
+.linkbtn{background:none;border:0;padding:12px 0;cursor:pointer;font-size:max(13px,calc(15 * var(--px)));
+  font-weight:700;letter-spacing:.06em;color:var(--ink);text-decoration:underline;text-underline-offset:.3em}
+.linkbtn:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.cat{display:grid;grid-template-columns:calc(260 * var(--px)) 1fr calc(560 * var(--px));gap:calc(60 * var(--px));
+  align-items:center;padding:calc(60 * var(--px)) calc(70 * var(--px))}
+.cat__text{display:grid;gap:calc(16 * var(--px))}
+.cat__form{display:grid;gap:calc(24 * var(--px));justify-items:start}
+.cat .field__input{background:var(--page)}
+.pill[disabled]{opacity:.35;cursor:default}
+
+/* --------------------------------------------------------------- mobile */
+@media (max-width:900px){
+  .rhero .word,.ghero .word{font-size:calc(84 * var(--px))}
+  .statement .quietnote{font-size:calc(24 * var(--px))}
+  .comp{grid-template-columns:1fr;gap:calc(20 * var(--px));padding:calc(50 * var(--px))}
+  .comp__score b{font-size:calc(180 * var(--px))}
+  .comp__score small{font-size:calc(22 * var(--px))}
+  .fields{grid-template-columns:1fr;gap:calc(44 * var(--px))}
+  .field__label{font-size:max(14px,calc(26 * var(--px)))}
+  .field__input{font-size:calc(70 * var(--px))}
+  .field__note,.field__err{font-size:max(12px,calc(22 * var(--px)))}
+  .rv__nav{flex-wrap:wrap;gap:calc(40 * var(--px))}
+  .rvdone__head{font-size:calc(96 * var(--px))}
+  .pledges{padding:calc(120 * var(--px)) 0}
+  /* the sticker's column is never narrower than the sticker (min 84px) */
+  .pledge{grid-template-columns:max(92px,calc(200 * var(--px))) 1fr;gap:calc(34 * var(--px));padding:calc(40 * var(--px))}
+  .pledge__sticker,.cat__sticker{width:max(84px,calc(180 * var(--px)))}
+  .pledge__streak{font-size:calc(22 * var(--px))}
+  .cat{grid-template-columns:max(92px,calc(200 * var(--px))) 1fr;gap:calc(34 * var(--px));padding:calc(40 * var(--px))}
+  .cat__form{grid-column:1 / -1}
+}

@@ -106,6 +106,101 @@
     ]
   };
 
+  var tx = function (en, th) { return { en: en, th: th }; };
+
+  // Invented aspect-page readings, one per chapter (order matches CHAPTERS).
+  // Component names are the app's (aspects.js); the numbers are not anyone's.
+  // pct null = the app does not rank this aspect against a population.
+  var ASPECT_SAMPLE = [
+    { pct: 41, comps: [[tx("Income standing", "สถานะรายได้"), 41], [tx("Financial well-being (CFPB)", "สุขภาวะทางการเงิน (CFPB)"), 62]] },
+    { pct: 64, comps: [[tx("Activity", "การเคลื่อนไหว"), 90], [tx("Body composition", "องค์ประกอบร่างกาย"), 78],
+      [tx("Sleep", "การนอน"), 74], [tx("Nutrition", "โภชนาการ"), 80]] },
+    { pct: 58, comps: [[tx("Well-being (WHO-5)", "สุขภาวะ (WHO-5)"), 72], [tx("Stress resilience (ST-5)", "ความทนทานต่อความเครียด (ST-5)"), 67]] },
+    { pct: null, comps: [[tx("Social network (LSNS-6)", "เครือข่ายสังคม (LSNS-6)"), 60], [tx("Low loneliness (UCLA-3)", "ความเหงาต่ำ (UCLA-3)"), 70],
+      [tx("Romantic satisfaction (RAS)", "ความพึงพอใจในความรัก (RAS)"), 62]] },
+    { pct: 61, comps: [[tx("Self-efficacy (GSE)", "การรับรู้ความสามารถของตนเอง (GSE)"), 79], [tx("Goal progress", "ความคืบหน้าตามเป้าหมาย"), 68],
+      [tx("Active learning", "การเรียนรู้เชิงรุก"), 71]] },
+    { pct: null, comps: [[tx("Giving", "การให้"), 50], [tx("Volunteering", "จิตอาสา"), 38], [tx("Prosocial habits (PTM)", "พฤติกรรมเพื่อสังคม (PTM)"), 75]] },
+    { pct: null, comps: [[tx("Plastic reduction", "การลดพลาสติก"), 40], [tx("Green habits (GEB)", "นิสัยรักษ์โลก (GEB)"), 58]] },
+    { pct: null, comps: [[tx("Future skills", "ทักษะแห่งอนาคต"), 60], [tx("Future orientation (LFIS)", "การมองการณ์ไกล (LFIS)"), 72]] }
+  ];
+
+  // Lumi's per-aspect tip from views/assistant.js, used as the focus line.
+  var FOCUS = [
+    tx("Your finance score has room to grow. A simple monthly budget and a set savings rate are good starting points.",
+      "คะแนนการเงินของคุณยังพัฒนาได้อีก การทำงบรายเดือนง่าย ๆ และตั้งอัตราการออมเป็นจุดเริ่มต้นที่ดี"),
+    tx("Your physical activity could use a lift. A short walk today is an easy way to build momentum.",
+      "กิจกรรมทางกายของคุณน่าจะเพิ่มได้อีก เดินสั้น ๆ วันนี้เป็นวิธีง่าย ๆ ในการสร้างแรงส่ง"),
+    tx("Feeling stretched? Try a slow breathing break — two short inhales through the nose, then one long exhale.",
+      "รู้สึกตึงเครียดไหม? ลองพักหายใจช้า ๆ — สูดเข้าทางจมูกสั้น ๆ สองครั้ง แล้วผ่อนออกยาว ๆ หนึ่งครั้ง"),
+    tx("Connection matters. Consider reaching out to a close friend or relative this week.",
+      "ความสัมพันธ์สำคัญ ลองติดต่อเพื่อนสนิทหรือญาติสักคนในสัปดาห์นี้"),
+    tx("Steady practice moves your goals forward. Even 20 minutes of focused learning today helps.",
+      "การฝึกฝนสม่ำเสมอช่วยให้เป้าหมายก้าวหน้า แค่ตั้งใจเรียนรู้ 20 นาทีวันนี้ก็ช่วยได้"),
+    tx("Small acts of giving add up. A minor kindness or a modest donation strengthens this area.",
+      "การให้เล็ก ๆ น้อย ๆ สะสมได้ น้ำใจเล็กน้อยหรือการบริจาคพอประมาณช่วยเสริมด้านนี้"),
+    tx("Everyday choices shape your footprint. Separating recyclables today is a simple step.",
+      "ทางเลือกในแต่ละวันกำหนดรอยเท้าทางสิ่งแวดล้อมของคุณ การแยกขยะรีไซเคิลวันนี้เป็นก้าวง่าย ๆ"),
+    tx("Long-term security grows from consistent habits — saving and upskilling both anchor your future.",
+      "ความมั่นคงระยะยาวเติบโตจากนิสัยที่สม่ำเสมอ — การออมและการอัปสกิลต่างช่วยยึดอนาคตของคุณ")
+  ];
+
+  // The Weekly Review's fields (views/review.js), grouped one region per
+  // screen. Only these five regions have weekly numbers: The Still Water and
+  // The Commons are re-assessed monthly, and The Lookout reuses learning hours.
+  var MINS_NOTE = tx("Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.",
+    "นับนาทีเฉพาะวันที่ทำจริง ไม่ใช่ค่าเฉลี่ยทั้งสัปดาห์ เช่น ออกกำลัง 30 นาที 3 วัน ให้กรอก 3 วัน และ 30 นาที");
+  var f = function (id, label, value, step, max, note) {
+    return { id: id, label: label, value: value, step: step || 1, max: max, note: note || null };
+  };
+  var REVIEW = [
+    { chapter: 0, fields: [f("monthlySavings", tx("Monthly Savings (THB)", "เงินออมต่อเดือน (บาท)"), 5000, 100, 1000000)] },
+    { chapter: 1, fields: [
+      f("weeklyVigorousDays", tx("Vigorous Exercise (Days/Week)", "ออกกำลังหนัก (วัน/สัปดาห์)"), 1, 1, 7),
+      f("weeklyVigorousMins", tx("Vigorous Minutes on Each of Those Days", "นาทีต่อวัน เฉพาะวันที่ออกกำลังหนัก"), 30, 5, 600, MINS_NOTE),
+      f("weeklyModerateDays", tx("Moderate Exercise (Days/Week)", "ออกกำลังปานกลาง (วัน/สัปดาห์)"), 2, 1, 7),
+      f("weeklyModerateMins", tx("Moderate Minutes on Each of Those Days", "นาทีต่อวัน เฉพาะวันที่ออกกำลังปานกลาง"), 40, 5, 600, MINS_NOTE),
+      f("weeklyWalkingDays", tx("Walking (Days/Week)", "เดิน (วัน/สัปดาห์)"), 5, 1, 7),
+      f("weeklyWalkingMins", tx("Walking Minutes on Each of Those Days", "นาทีต่อวัน เฉพาะวันที่เดิน"), 25, 5, 600, MINS_NOTE),
+      f("sleepHours", tx("Average Nightly Sleep (Hours)", "ชั่วโมงนอนเฉลี่ยต่อคืน"), 7, 0.5, 14),
+      f("waterLiters", tx("Water Intake per Day (Liters)", "น้ำดื่มต่อวัน (ลิตร)"), 1.8, 0.1, 8),
+      f("vegetablePortions", tx("Vegetable Portions per Day", "ผักต่อวัน (ส่วน)"), 3, 1, 20)] },
+    { chapter: 4, fields: [f("weeklyLearningHours", tx("Weekly Learning / Study Hours", "ชั่วโมงเรียนรู้/ศึกษาต่อสัปดาห์"), 3, 0.5, 80)] },
+    { chapter: 5, fields: [
+      f("monthlyDonations", tx("Monthly Donations (THB)", "เงินบริจาคต่อเดือน (บาท)"), 200, 10, 1000000),
+      f("volunteeringHours", tx("Volunteering Hours per Month", "ชั่วโมงจิตอาสาต่อเดือน"), 1, 0.5, 200)] },
+    { chapter: 6, fields: [f("singleUsePlastics", tx("Single-Use Plastic Items per Day", "พลาสติกใช้ครั้งเดียวต่อวัน (ชิ้น)"), 4, 1, 50)] }
+  ];
+
+  // The pledge catalog (goals.js), with the app's titles and descriptions.
+  var p = function (id, chapter, title, desc, def, step, min, max) {
+    return { id: id, chapter: chapter, title: title, desc: desc, def: def, step: step, min: min, max: max };
+  };
+  var PLEDGES = [
+    p("water", 1, tx("Hydration pledge", "คำมั่นดื่มน้ำ"),
+      tx("Average at least {target} L of water per day.", "ดื่มน้ำเฉลี่ยอย่างน้อยวันละ {target} ลิตร"), 2, 0.1, 0.5, 5),
+    p("sleep", 1, tx("Sleep pledge", "คำมั่นการนอน"),
+      tx("Average at least {target} hours of sleep per night.", "นอนเฉลี่ยอย่างน้อยคืนละ {target} ชั่วโมง"), 7, 0.5, 5, 10),
+    p("veg", 1, tx("Vegetables pledge", "คำมั่นกินผัก"),
+      tx("Average at least {target} vegetable portions per day (WHO: 400 g of fruit and vegetables, about 5 portions).",
+        "กินผักเฉลี่ยอย่างน้อยวันละ {target} ส่วน (WHO: ผักและผลไม้ 400 กรัมต่อวัน ราว 5 ส่วน)"), 5, 0.5, 1, 10),
+    p("exercise", 1, tx("Exercise days pledge", "คำมั่นวันออกกำลังกาย"),
+      tx("Exercise (vigorous or moderate) on at least {target} days this week.", "ออกกำลังกาย (หนักหรือปานกลาง) อย่างน้อย {target} วันในสัปดาห์นี้"), 3, 1, 1, 7),
+    p("learning", 4, tx("Learning pledge", "คำมั่นการเรียนรู้"),
+      tx("Spend at least {target} hours on active learning this week.", "ใช้เวลาเรียนรู้อย่างน้อย {target} ชั่วโมงในสัปดาห์นี้"), 3, 0.5, 1, 40),
+    p("plastics", 6, tx("Plastics pledge", "คำมั่นลดพลาสติก"),
+      tx("Keep single-use plastics to at most {target} pieces per day.", "ใช้พลาสติกใช้ครั้งเดียวไม่เกินวันละ {target} ชิ้น"), 2, 1, 0, 10),
+    p("savings", 0, tx("Savings pledge", "คำมั่นการออม"),
+      tx("Keep your savings rate at or above {target}% of income.", "รักษาอัตราการออมไว้อย่างน้อย {target}% ของรายได้"), 10, 1, 1, 80),
+    p("giving", 5, tx("Giving pledge", "คำมั่นการให้"),
+      tx("Donate at least {target} THB this month.", "บริจาคอย่างน้อย {target} บาทในเดือนนี้"), 100, 10, 20, 100000),
+    p("volunteering", 5, tx("Volunteering pledge", "คำมั่นจิตอาสา"),
+      tx("Volunteer at least {target} hours this month.", "เป็นจิตอาสาอย่างน้อย {target} ชั่วโมงในเดือนนี้"), 2, 0.5, 1, 60)
+  ];
+  // Invented starting pledges for the Goals screen.
+  var SAMPLE_PLEDGES = [{ id: "sleep", target: 7, streak: 3 }, { id: "learning", target: 3, streak: 1 }, { id: "plastics", target: 2, streak: 0 }];
+  var PAST_REVIEWS = ["2026.09.21", "2026.09.14", "2026.09.07"];
+
   // UI strings. NEW = prototype copy with no app string yet.
   var STRINGS = {
     en: {
@@ -145,7 +240,44 @@
       hCheck: "(THIS WEEK'S CHECK-IN)",
       hCheckHead: ["A few questions,", "and your star moves."],                        // NEW
       hCheckCta: "START CHECK-IN",
-      flag: "PROTOTYPE · SAMPLE DATA"
+      flag: "PROTOTYPE · SAMPLE DATA",
+      // aspect page
+      aStanding: "(STANDING)",
+      aHead: "{n} out of 100.",                                                      // NEW
+      aAhead: "Ahead of {p}% of people like you.",                                     // NEW
+      aUnranked: "Not ranked — on purpose.",
+      aCovers: "(WHAT IT MEASURES)",                                                   // NEW
+      aParts: "(COMPONENT BREAKDOWN)",
+      aTrend: "(TREND)", aTrendRow: "Score {n}", aTrendSame: "Same as the week before", // NEW
+      aTrendDelta: "{d} on the week before",                                           // NEW
+      aKind: "WEEKLY SNAPSHOT",                                                        // NEW
+      aFocus: "(SUGGESTED FOCUS)",
+      aReviewCta: "START WEEKLY REVIEW", aReassessCta: "START RE-ASSESSMENT",
+      aQuiet: "This region is kept still on purpose.",                                  // NEW
+      aOpen: "Open {region}",                                                          // NEW
+      // weekly review
+      rTitle: "WEEKLY REVIEW",
+      rStep: "WEEKLY REVIEW · {i} / {n}",                                              // NEW
+      rHead: "How was {region} this week?",                                            // NEW
+      rNext: "NEXT", rBack: "BACK", rSubmit: "COMPLETE WEEKLY REVIEW",
+      rFix: "Please fix the highlighted fields before continuing.",
+      rRange: "Between 0 and {max}.",                                                  // NEW
+      rDone: "REVIEWED THIS WEEK.",
+      rChanged: "{n} numbers changed. Your scores update from them.",                  // NEW
+      rChangedOne: "1 number changed. Your scores update from it.",                    // NEW
+      rSteady: "Scores steady.",
+      rSeeHome: "SEE HOME", rPast: "(PAST REVIEWS)",
+      rPastRow: "Five regions reviewed",                                               // NEW
+      // goals
+      gWord: "WEEKLY PLEDGES", gInc: "{n} ACTIVE",                                      // NEW (inc)
+      gMine: "(YOUR PLEDGES)",                                                         // NEW
+      gNone: "No pledges yet — add one from the catalog.",
+      gStreak: "{n}-week streak",
+      gRemove: "REMOVE", gConfirm: "Remove this pledge? Its streak will be lost.",
+      gYes: "REMOVE", gNo: "CANCEL",
+      gAdd: "(ADD A PLEDGE)", gTarget: "Weekly target", gAddCta: "ADD PLEDGE", gAdded: "ADDED", // NEW (ADDED)
+      gGraded: "(GRADED WEEKLY)",                                                      // NEW
+      gGradedHead: ["Graded at your next weekly review."]
     },
     th: {
       menuOpen: "เปิดเมนู", menuClose: "ปิดเมนู", langSwitch: "Switch to English", langCode: "EN",
@@ -184,9 +316,47 @@
       hCheck: "(เช็กอินสัปดาห์นี้)",
       hCheckHead: ["ตอบไม่กี่ข้อ", "แล้วดาวของคุณจะขยับ"],
       hCheckCta: "เริ่มเช็กอิน",
-      flag: "ต้นแบบ · ข้อมูลตัวอย่าง"
+      flag: "ต้นแบบ · ข้อมูลตัวอย่าง",
+      aStanding: "(สถานะ)",
+      aHead: "{n} จาก 100",
+      aAhead: "สูงกว่า {p}% ของคนที่คล้ายคุณ",
+      aUnranked: "ไม่จัดอันดับ — โดยตั้งใจ",
+      aCovers: "(สิ่งที่วัด)",
+      aParts: "(องค์ประกอบย่อย)",
+      aTrend: "(แนวโน้ม)", aTrendRow: "คะแนน {n}", aTrendSame: "เท่ากับสัปดาห์ก่อน",
+      aTrendDelta: "{d} จากสัปดาห์ก่อน",
+      aKind: "ภาพรวมรายสัปดาห์",
+      aFocus: "(จุดที่ควรโฟกัส)",
+      aReviewCta: "เริ่มทบทวนรายสัปดาห์", aReassessCta: "เริ่มประเมินซ้ำ",
+      aQuiet: "พื้นที่นี้ตั้งใจให้นิ่ง",
+      aOpen: "เปิด{region}",
+      rTitle: "ทบทวนรายสัปดาห์",
+      rStep: "ทบทวนรายสัปดาห์ · {i} / {n}",
+      rHead: "สัปดาห์นี้{region}เป็นอย่างไรบ้าง",
+      rNext: "ถัดไป", rBack: "ย้อนกลับ", rSubmit: "ส่งการทบทวนรายสัปดาห์",
+      rFix: "กรุณาแก้ไขช่องที่ไฮไลต์ก่อนดำเนินการต่อ",
+      rRange: "ระหว่าง 0 ถึง {max}",
+      rDone: "ทบทวนสัปดาห์นี้แล้ว",
+      rChanged: "เปลี่ยนตัวเลข {n} ช่อง คะแนนจะอัปเดตตามนี้",
+      rChangedOne: "เปลี่ยนตัวเลข 1 ช่อง คะแนนจะอัปเดตตามนี้",
+      rSteady: "คะแนนคงที่",
+      rSeeHome: "ไปหน้าหลัก", rPast: "(การทบทวนที่ผ่านมา)",
+      rPastRow: "ทบทวนครบห้าพื้นที่",
+      gWord: "คำมั่นรายสัปดาห์", gInc: "{n} รายการ",
+      gMine: "(คำมั่นของคุณ)",
+      gNone: "ยังไม่มีคำมั่น — เพิ่มจากรายการด้านล่าง",
+      gStreak: "ต่อเนื่อง {n} สัปดาห์",
+      gRemove: "ลบ", gConfirm: "ลบคำมั่นนี้หรือไม่? สถิติต่อเนื่องจะหายไป",
+      gYes: "ลบ", gNo: "ยกเลิก",
+      gAdd: "(เพิ่มคำมั่นใหม่)", gTarget: "เป้าหมายรายสัปดาห์", gAddCta: "เพิ่มคำมั่น", gAdded: "เพิ่มแล้ว",
+      gGraded: "(ตรวจทุกสัปดาห์)",
+      gGradedHead: ["จะตรวจในการทบทวนรายสัปดาห์ครั้งถัดไป"]
     }
   };
 
-  window.LBI_PROTO = { CHAPTERS: CHAPTERS, QUESTIONS: QUESTIONS, HOME_SAMPLE: HOME_SAMPLE, STRINGS: STRINGS };
+  window.LBI_PROTO = {
+    CHAPTERS: CHAPTERS, QUESTIONS: QUESTIONS, HOME_SAMPLE: HOME_SAMPLE, STRINGS: STRINGS,
+    ASPECT_SAMPLE: ASPECT_SAMPLE, FOCUS: FOCUS, REVIEW: REVIEW, PLEDGES: PLEDGES,
+    SAMPLE_PLEDGES: SAMPLE_PLEDGES, PAST_REVIEWS: PAST_REVIEWS
+  };
 })();

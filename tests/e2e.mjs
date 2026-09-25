@@ -7,7 +7,8 @@
 // actually depends on still work end-to-end (finding #13e):
 //   0. onboarding a11y     -> the error is announced, Next moves focus, and a
 //                             resumed draft lands on its first blank screen
-//   1. express onboarding  -> dashboard renders with a real baseline + radar average
+//   1. express onboarding  -> Home renders with a real baseline: your star,
+//                             and every aspect's score beside its average
 //   2. weekly review       -> measured quantities land, pledges grade, points pay
 //   3. EN -> TH toggle     -> persists across a full reload
 //   4. share sheet         -> a real 1080x1920 PNG comes out and the controls
@@ -16,8 +17,8 @@
 //                             pixels and storage and never on English strings.
 //   5. phone layout        -> at 375x812: no sideways pan, the menu button
 //                             stays in reach, no field small enough to make iOS zoom, no
-//                             tap target under 44px, no radar label off the
-//                             card, and the radar near the top of the page.
+//                             tap target under 44px, and your star and
+//                             Balance Index on the first screen.
 //   6. connected pre-fill  -> a payload written by a sibling app on this origin
 //                             reaches the review, names its source, lands on the
 //                             per-day unit, and stops the moment it is switched
@@ -241,9 +242,14 @@ try {
   if (!dashboardText || dashboardText.length < 100) {
     problems.push("flow1: dashboard rendered empty");
   }
-  // The population-average overlay: a dashed polygon under the user's own.
-  const avgPolygon = await page.$('#radar-chart-container polygon[stroke-dasharray="5,4"]');
-  if (!avgPolygon) problems.push("flow1: radar is missing the dashed population-average polygon");
+  // Home (redesign R3): the hero is the reader's own star, and every aspect
+  // card carries the population average the old radar drew as a dashed line.
+  const home = await page.evaluate(() => ({
+    star: !!document.querySelector(".home .hero .mark svg polygon"),
+    averages: document.querySelectorAll(".home .score-average").length
+  }));
+  if (!home.star) problems.push("flow1: Home is missing your star");
+  if (home.averages !== 8) problems.push(`flow1: ${home.averages} aspect cards show the average, not 8`);
 } catch (err) {
   problems.push(`flow1 (full onboarding): ${err.message}`);
 }
@@ -313,7 +319,7 @@ try {
   // red that trains people to re-run CI instead of reading it.
   // Wait for a card the dashboard actually renders, then give the prompt its own
   // bounded wait so a genuine absence still fails the flow.
-  await page.waitForSelector(".dash-index", { timeout: 10000 });
+  await page.waitForSelector(".home-you .balance-index", { timeout: 10000 });
   const birthdayArrived = await page
     .waitForSelector("#birthday-prompt-dismiss", { timeout: 5000 })
     .then(() => true, () => false);
@@ -417,7 +423,7 @@ try {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto(BASE, { waitUntil: "networkidle" });
   await goTo("dashboard");
-  await page.waitForSelector("#radar-chart-container svg", { timeout: 10000 });
+  await page.waitForSelector(".home .hero .mark svg", { timeout: 10000 });
 
   // Nothing may force the page to pan sideways.
   const pans = await page.evaluate(() =>
@@ -467,29 +473,20 @@ try {
     problems.push(`flow5: tap targets under 44px: ${smallTargets.slice(0, 5).join(", ")}`);
   }
 
-  // The radar sets svg.style.overflow = "visible", so a label that does not fit
-  // is not clipped by the SVG — it escapes and the screen edge cuts it off.
-  // Three labels shipped that way before v45; assert on the drawn extent, not
-  // the anchor, because the anchor was comfortably inside the whole time.
-  const escaping = await page.evaluate(() => {
-    const svg = document.querySelector("#radar-chart-container svg");
-    const card = svg.closest(".card").getBoundingClientRect();
-    return Array.from(svg.querySelectorAll("text")).map(t => {
-      const r = t.getBoundingClientRect();
-      return { txt: t.textContent, slack: Math.min(r.left - card.left, card.right - r.right) };
-    }).filter(o => o.slack < 0).map(o => `${o.txt} (${Math.round(o.slack)}px)`);
+  // Your own data on the first screen, not behind a wall of prompts (before
+  // v45 the radar started 1800px down). Home's hero is your star with the
+  // Balance Index under it. The one thing allowed above it is the care notice
+  // (this flow's answers cross the screening cutoff), so the hero must follow
+  // the notice, or the header when there is none, directly, and hold the
+  // Balance Index within one screen of its top.
+  const fold = await page.evaluate(() => {
+    const box = (sel) => document.querySelector(sel)?.getBoundingClientRect();
+    const hero = box(".home .hero");
+    const above = box(".home .notice-panel") || box("#site-header");
+    return { gap: hero.top - above.bottom, index: box(".home .hero .inc").bottom - hero.top };
   });
-  if (escaping.length) {
-    problems.push(`flow5: radar labels run outside the card: ${escaping.join(", ")}`);
-  }
-
-  // The redesign's purpose: your own data on the first screen, not behind a
-  // wall of prompts. Before v45 the radar started 1800px down.
-  const radarTop = await page.evaluate(() =>
-    document.querySelector("#radar-chart-container").getBoundingClientRect().top + window.scrollY);
-  if (radarTop > 1000) {
-    problems.push(`flow5: the radar starts ${Math.round(radarTop)}px down; it should be near the top`);
-  }
+  if (fold.gap > 8) problems.push(`flow5: ${Math.round(fold.gap)}px of something sits between the notice or header and your star`);
+  if (fold.index > 812 - 80) problems.push(`flow5: the Balance Index is ${Math.round(fold.index)}px into the hero, past one screen`);
 } catch (err) {
   problems.push(`flow5 (mobile layout): ${err.message}`);
 }

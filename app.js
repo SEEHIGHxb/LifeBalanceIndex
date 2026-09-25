@@ -17,13 +17,12 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=97";
+} from "./ui.js?v=98";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang, graphemes } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
 import { syncReduceMotionAttr } from "./motion.js";
 import { disposeMotion } from "./views/motion-mount.js";
-import { disposeCeremony } from "./views/ceremony.js";
 import { bindMenu, renderMenu, closeMenu, syncMenuRoute } from "./views/menu.js";
 import { readDraft } from "./draft.js";
 
@@ -43,9 +42,6 @@ const TABS = ["dashboard", "review", "quests", "leaderboard"];
 const DEFAULT_TAB = "dashboard";
 
 let lumiTypewriterInterval = null;
-// Set when the journey is finished; the first dashboard after it plays the
-// ring-to-radar ceremony and clears it.
-let ceremonyPending = false;
 let lumiDwellTimeout = null;
 
 // --- ROUTING (hash-based so GitHub Pages and the back button both work) ---
@@ -145,9 +141,9 @@ function initializeApp() {
   renderMenu({ onboarded: state.onboarded });
   maybeOfferRecovery();
 
-  // The first-run screens are full-bleed pages; everything after them sits in
-  // the app's centred column.
-  document.body.classList.toggle("first-run", !state.onboarded);
+  // The first-run screens and Home are full-bleed pages; everything else sits
+  // in the app's centred column until its release redesigns it.
+  document.body.classList.toggle("bleed", !state.onboarded);
   if (!state.onboarded) {
     document.getElementById("navpill").classList.add("d-none");
     document.getElementById("assistant-mount").classList.add("d-none");
@@ -198,10 +194,8 @@ function renderFirstRun() {
     // Fire-and-forget: the grant is silent where supported and absent where
     // it isn't (Safari), so nothing in the UI waits on or reacts to it.
     stateManager.requestPersistentStorage();
-    // The journey is done: the next dashboard unfolds the star into the
-    // radar (views/ceremony.js), once. The hash moves to the dashboard's own
-    // without a hashchange, so the address matches the screen.
-    ceremonyPending = true;
+    // The journey is done: Home is next. The hash moves to the dashboard's
+    // own without a hashchange, so the address matches the screen.
     history.replaceState(null, "", "#/dashboard");
     initializeApp();
   });
@@ -252,12 +246,11 @@ function confirmReset() {
 function renderActiveTab() {
   // Whatever the last view set moving ends here, before the next one draws:
   // its springs, frame loops and window listeners all hang off this mount.
-  // The radar ceremony's on-screen watcher is not on the mount; it ends here too.
   disposeMotion();
-  disposeCeremony();
   const state = stateManager.state;
   const route = routeFromHash();
   const activeTab = route.type === "tab" ? route.tab : null;
+  document.body.classList.toggle("bleed", activeTab === "dashboard");
 
   // Mark the current route in the menu and the quick links (aria-current).
   syncMenuRoute(routePath(route));
@@ -283,8 +276,7 @@ function renderActiveTab() {
     const resetBtn = document.getElementById("btn-reset-data");
     if (resetBtn) resetBtn.addEventListener("click", confirmReset);
   } else if (activeTab === "dashboard") {
-    renderDashboard("main-view", state, downloadBackup, { ceremony: ceremonyPending });
-    ceremonyPending = false;
+    renderDashboard("main-view", state, downloadBackup);
   } else if (activeTab === "review") {
     renderReview("main-view", state, handleReviewComplete);
   } else if (activeTab === "quests") {

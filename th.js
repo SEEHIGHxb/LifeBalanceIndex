@@ -448,13 +448,11 @@ export const TH = {
   "Start Re-assessment": "เริ่มประเมินซ้ำ",
   "This year's points": "คะแนนปีนี้",
   "{xp} points this year": "{xp} คะแนนในปีนี้",
-  "Year just started": "ปีนี้เพิ่งเริ่ม",
   // The visible caption under the points bar, with the level badge just above
   // it: says the two are unrelated clocks — level is age, the bar is this
   // year's points.
   "Your level is your age, not points earned": "เลเวลของคุณคืออายุ ไม่ใช่คะแนนที่สะสมได้",
   "Points: {xp} / {possible}": "คะแนน: {xp} / {possible}",
-  "Progress: {pct}%": "ความคืบหน้า: {pct}%",
 
   // --- Level-year screen (#/year) + the birthday question ---
   "Your year": "ปีของคุณ",
@@ -486,10 +484,7 @@ export const TH = {
     "ยังไม่มีปีที่บันทึกไว้ — ปีแรกของคุณจะปิดในวันเกิดครั้งถัดไป",
   "{xp} / {possible} points": "{xp} / {possible} คะแนน",
   "That date doesn't exist — check the day of the month.": "ไม่มีวันที่นี้จริง — โปรดตรวจสอบวันที่ของเดือน",
-  "Aspect Radar": "เรดาร์รายด้าน",
-  "Recommendations": "คำแนะนำ",
   "Targeting your weakest measured components — tap one to open that aspect.": "เจาะจงองค์ประกอบที่อ่อนที่สุดของคุณ — แตะเพื่อเปิดด้านนั้น",
-  "Aspect Scores": "คะแนนรายด้าน",
   "Open {aspect} details": "เปิดรายละเอียดด้าน{aspect}",
   "vs published norms": "เทียบเกณฑ์ที่ตีพิมพ์",
   "vs a published percentile table": "เทียบตารางเปอร์เซ็นไทล์ที่ตีพิมพ์",
@@ -593,7 +588,6 @@ export const TH = {
   "Weekly review open.": "การทบทวนรายสัปดาห์เปิดแล้ว",
   "Two minutes of rough weekly numbers keep every score measured — no daily logging.": "ตัวเลขคร่าว ๆ รายสัปดาห์เพียงสองนาทีช่วยให้ทุกคะแนนมาจากการวัดจริง — ไม่ต้องบันทึกรายวัน",
   "Start Weekly Review": "เริ่มทบทวนรายสัปดาห์",
-  "Recent Reviews": "การทบทวนล่าสุด",
   "No weekly reviews yet — your first one opens the week after onboarding.": "ยังไม่มีการทบทวนรายสัปดาห์ — ครั้งแรกจะเปิดในสัปดาห์ถัดจากการประเมินเริ่มต้น",
   "This week's review is already recorded — come back next week.": "บันทึกการทบทวนของสัปดาห์นี้ไปแล้ว — กลับมาใหม่สัปดาห์หน้า",
   "Weekly review saved: {met}/{total} pledges met.": "บันทึกการทบทวนรายสัปดาห์แล้ว: ทำได้ {met}/{total} คำมั่น",
@@ -1331,9 +1325,32 @@ export const TH = {
   "Continue the journey": "เดินทางต่อ",
   // The menu before the journey is finished (views/menu.js).
   "Start": "เริ่มต้น",
-  // The final ceremony (views/ceremony.js): the ring unfolds into the radar.
-  "Play": "เล่น",
-  "Skip": "ข้าม",
+  // Home (views/dashboard.js, redesign R3). The prototype's Thai where it had
+  // the line (hWeek, hWeekHead, hAspects, hScoreOf, hRecent, hCheck,
+  // hCheckHead, hCheckCta); the rest is new and awaits the owner's review.
+  "Your star — Balance Index {n}": "ดาวของคุณ — ดัชนีสมดุล {n}",
+  "Play with your star": "เล่นกับดาวของคุณ",
+  "This week": "สัปดาห์นี้",
+  "Strongest in {strong}.": "จุดแข็งที่สุดคือ{strong}",
+  "{weak} is asking for more.": "{weak}ยังรอให้คุณใส่ใจอีกนิด",
+  "Share your star": "แชร์ดาวของคุณ",
+  "To do": "สิ่งที่ต้องทำ",
+  "Your eight aspects": "แปดด้านของคุณ",
+  "out of 100": "จาก 100",
+  "Average {n}": "ค่าเฉลี่ย {n}",
+  "Journey": "การเดินทาง",
+  "All eight regions": "ครบทั้งแปดแห่ง",
+  "Recent": "ล่าสุด",
+  "Where to start": "เริ่มจากตรงนี้",
+  "Your pledges": "คำมั่นของคุณ",
+  "{n} active this week": "ใช้อยู่ {n} คำมั่นในสัปดาห์นี้",
+  "Go deeper": "เจาะลึก",
+  "This week's check-in": "เช็กอินสัปดาห์นี้",
+  "A few questions,": "ตอบไม่กี่ข้อ",
+  "and your star moves.": "แล้วดาวของคุณจะขยับ",
+  "Done for this week.": "สัปดาห์นี้เสร็จแล้ว",
+  "The next one opens {date}.": "ครั้งถัดไปเปิด {date}",
+  "Start check-in": "เริ่มเช็กอิน",
   // The in-app Reduce motion switch (Profile). It can only add reduction.
   "Motion": "การเคลื่อนไหว",
   "Reduce motion": "ลดการเคลื่อนไหว",

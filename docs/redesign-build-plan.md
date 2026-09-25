@@ -1,6 +1,6 @@
 # LBI redesign: building it into the app
 
-Status: **approved by the owner on 2026-09-25**, all four open decisions as recommended (§4). **R1 (the frame) is built, in v96 (2.44.0).**
+Status: **approved by the owner on 2026-09-25**, all four open decisions as recommended (§4). **R1 (the frame) is built, in v96 (2.44.0); R2 (Landing and journey) in v97 (2.45.0); R3 (Home) in v98 (2.46.0).**
 
 The prototype in [`prototype/redesign/`](prototype/redesign/README.md) is approved. It covers every screen on the confirmed map, and the dark pinned star was turned off on 2026-09-25. This plan moves the real app into that design one release at a time.
 
@@ -60,6 +60,15 @@ R1 and R2 each end with a phone check by you before the next one starts. After t
 - **The journey moved to `#/journey`.** Before onboarding, every other route shows the Landing, and the menu offers both.
 - **"Continue the journey" / "เดินทางต่อ" is new copy** that is not in the prototype. It replaces the Landing's call when a draft exists, so a returning reader is not told to start over.
 - **The region photograph is only on the chapter ending.** No text sits on it, so the veil and its contrast table are gone. The secondary ink is held to 4.5:1 on every wash by a test.
+
+**R3 as built (v98, 2.46.0):** Home, with the section-to-content map the owner approved on 2026-09-25 ("Approve map").
+- **The labelled radar card is gone.** The hero star is the radar shape of your scores, and each aspect card shows your score beside the population average. `renderRadarChart` in `chart.js` now has no caller in the app; R5 (Side by Side) decides whether it returns, otherwise R6 removes it.
+- **The long pages share one layer.** The hero, typed headline, sliding cards and photo band moved from `views/landing.js` into `views/stage-page.js` and `css/stage-page.css` (was `css/landing.css`), which Home and the Landing both use. Full-bleed pages are marked with `body.bleed`.
+- **Beside the care notice, Home is still.** No hero motion, no typing, no sliding: the old ceremony's quiet rule, applied to the whole page.
+- **The pledge wall drifts with the scroll, not on a clock.** The prototype's wall ran continuously; moving content that plays by itself for more than five seconds needs a pause control (WCAG 2.2.2), and a scroll-linked drift needs none.
+- **The news list holds reviews, re-assessments and the journey.** Pledges carry no date, so they are on the wall instead of in the list.
+- **`views/moments.js` and `views/ceremony.js` are deleted**, earlier than R5, because nothing imported them any more. The quiet-region rule moved to `views/stage.js`.
+- **New Thai copy** for Home (the lines the prototype did not have) is marked in `th.js` and awaits the owner's review.
 
 ## 3. How the code is organised
 

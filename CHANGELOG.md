@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `97`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `98`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,29 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.46.0] — 2026-09-25 (APP_VERSION 98)
+
+The redesign, third release (R3 of [docs/redesign-build-plan.md](docs/redesign-build-plan.md)):
+Home.
+
+### Changed
+
+- **Home replaces the Overview dashboard.** Top to bottom: the care notice
+  (only past the screening cutoff, and still), your star (the radar shape of
+  your scores) with the Balance Index, the strongest region and the one asking
+  for more, the Balance Index band with your name, level and points, the
+  to-do list (review, re-assessment, backup, birthday), the eight aspect cards
+  with score, average, grade and standing, a photo band, recent reviews and
+  re-assessments, where to start, your pledges as stickers, the in-depth offer
+  and this week's check-in.
+- The Landing and Home share one set of page sections
+  (`views/stage-page.js`, `css/stage-page.css`).
+
+### Removed
+
+- The ring-to-radar ceremony (`views/ceremony.js`) with its Play and Skip
+  buttons, the labelled radar card, and `views/moments.js`.
 
 ## [2.45.0] — 2026-09-25 (APP_VERSION 97)
 

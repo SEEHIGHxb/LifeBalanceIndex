@@ -1,6 +1,5 @@
 // The moments in a real browser, with motion and with reduced motion: the
-// redesign's Landing and journey (R2) and the dashboard's ceremony (Phase 4,
-// retired in R3). Run in CI by .github/workflows/ci.yml, not by `node --test`
+// redesign's Landing and journey (R2) and Home (R3). Run in CI by .github/workflows/ci.yml, not by `node --test`
 // (it needs a live server and a real browser, which is why it is .mjs).
 //
 // Time is driven by hand: an init script installs globalThis.__lbiClock, the
@@ -19,12 +18,12 @@
 //      and all have typed in by the end, the emblem settled.
 //   4. The Still Water's ending: a quiet region, so no wipe and no burst.
 //   5. Reduced motion (the device setting): not one style is written on a
-//      moving piece of the journey, no frame is ever asked for, and the radar
-//      ceremony is neither offered nor played.
-//   6. The final ceremony (Phase 4): for a calm reader the ring unfolds into
-//      the radar by itself, lands exactly on the scores and bursts once; Play
-//      replays it, Skip lands it at once, and it never autoplays twice.
-//      Beside the care notice it is quiet: no autoplay and no burst.
+//      moving piece of the journey or Home, no frame is ever asked for, and
+//      Home's star stays put when tapped.
+//   6. Home: a tap on your star bursts sixteen stars and motifs and it comes
+//      home; the pledge wall drifts with the scroll; the share card assembles
+//      in its preview. Beside the care notice Home is still: nothing typed,
+//      nothing burst, nothing moved.
 //
 // The art set: the ending's emblem loads without a layout shift, and the
 // sprite sheet's star really draws.
@@ -64,7 +63,7 @@ function installManualClock() {
   const watch = () => new MutationObserver(records => {
     for (const r of records) {
       const el = r.target;
-      if (el.closest?.(".q-side, .q-title, .ending-photo, .burst-layer, .chapter-recap, .chapter-fact")) {
+      if (el.closest?.(".q-side, .q-title, .ending-photo, .burst-layer, .chapter-recap, .chapter-fact, .hero, .region-card, .photoband, .wall")) {
         globalThis.__styleWrites.push(`${el.id || el.className?.baseVal || el.className}: ${el.getAttribute("style")}`);
       }
     }
@@ -279,66 +278,41 @@ try {
   problems.push(`endings: ${err.message}`);
 }
 
-// --- 6. the final ceremony: the ring unfolds into the radar ---------------------------
+// --- 6. Home: your star plays, and beside the care notice nothing moves -------------
 const finishJourney = async (page, answers) => {
   await answerAll(page, answers);
   let walked = 0;
   while ((await page.locator(".survey-page:not(.d-none) .btn-onb-next").count()) && walked++ < 60) await next(page);
   await page.click('#onboarding-form button[type="submit"]');
-  await page.waitForSelector("#radar-chart-container svg", { timeout: 10000 });
+  await page.waitForSelector(".home .hero .mark svg", { timeout: 10000 });
 };
-const radarState = (page) => page.evaluate(() => ({
-  points: document.querySelector("#radar-chart-container .radar-shape").getAttribute("points"),
-  ring: !!document.querySelector("#radar-chart-container .radar-ring"),
-  styled: [...document.querySelectorAll("#radar-chart-container .radar-svg [style*='opacity'], #radar-chart-container .radar-svg [style*='transform']")].length,
-  play: !document.getElementById("btn-radar-play").hidden,
-  skip: !document.getElementById("btn-radar-skip").hidden
+const heroState = (page) => page.evaluate(() => ({
+  particles: document.querySelectorAll(".home .hero .spr").length,
+  styled: [...document.querySelectorAll(".home .hero .lockup, .home .hero .part")].map(el => el.style.transform).filter(Boolean),
+  hidden: document.querySelectorAll(".home .mission-head .tc.off").length
 }));
 try {
   const { context, page } = await openJourney(browser);
   await finishJourney(page, { last: ["who5"] });
   if (await page.locator(".care-banner").count()) throw new Error("the calm reader was shown the care notice");
-  // The journey leaves the page scrolled down, so the radar is on screen
-  // straight away and the autoplay starts (waiting for it to come on screen
-  // is covered in tests/ceremony.test.mjs with a fake IntersectionObserver).
-  await page.evaluate(() => document.getElementById("radar-chart-container").scrollIntoView({ block: "center" }));
-  // Polled by hand: the IntersectionObserver answers on a rendering step.
-  let started = false;
-  for (let i = 0; i < 50 && !started; i++) {
-    started = (await radarState(page)).ring;
-    if (!started) await page.waitForTimeout(100);
-  }
-  if (!started) problems.push("ceremony: the radar was on screen and nothing played");
-  await advance(page, 3000);
-  const drawn = (await radarState(page)).points;
-  const end = await radarState(page);
-  if (end.ring || end.styled) problems.push(`ceremony: left behind (ring ${end.ring}, ${end.styled} styled pieces)`);
-  if (!end.play || end.skip) problems.push("ceremony: afterwards Play should be offered and Skip gone");
-  // Play: parks on the ring, unfolds, lands exactly, bursts once.
-  await page.click("#btn-radar-play");
-  const mid = await radarState(page);
-  if (!mid.ring || mid.points === drawn) problems.push("ceremony: Play did not park the shape on the ring");
-  if (!mid.skip || mid.play) problems.push(`ceremony: while it plays, Skip should show and Play hide (skip ${mid.skip}, play ${mid.play})`);
-  await advance(page, 1600);
-  const bursting = await page.evaluate(() => document.querySelectorAll("#radar-burst .ring-particle").length);
-  if (bursting !== 8) problems.push(`ceremony: ${bursting} particles in the final burst, not 8`);
-  await advance(page, 1200);
-  const replayed = await radarState(page);
-  if (replayed.points !== drawn) problems.push("ceremony: the shape did not land exactly on the scores");
-  if (replayed.ring || replayed.styled) problems.push("ceremony: a replay left pieces behind");
-  // Skip, from Play.
-  await page.click("#btn-radar-play");
-  await advance(page, 300);
-  await page.click("#btn-radar-skip");
-  await advance(page, 32);
-  const skipped = await radarState(page);
-  if (skipped.points !== drawn || skipped.ring || skipped.styled) problems.push("ceremony: Skip did not land the radar at once");
-  // Only once: a redrawn dashboard does not play it again by itself.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.click(".home .mark-hit");
+  await advance(page, FRAME_MS * 3);
+  const tapped = await heroState(page);
+  if (tapped.particles !== 16) problems.push(`home: ${tapped.particles} particles burst from your star, not 16`);
+  await advance(page, 2500);
+  const home = await heroState(page);
+  if (home.particles || home.styled.length) problems.push(`home: your star did not come home (${home.particles} particles, ${home.styled.join(" | ")})`);
+  // The pledge wall drifts with the scroll, and only then.
+  await page.evaluate(() => document.querySelector(".home .wall")?.scrollIntoView({ block: "center" }));
+  await page.waitForTimeout(100);
+  const drift = await page.evaluate(() => [...document.querySelectorAll(".home .wall-col")].map(c => c.style.transform));
+  if (!drift.length) problems.push("home: the default pledges drew no wall");
+  else if (!drift.some(Boolean)) problems.push("home: the wall did not move with the scroll");
+  // Leaving Home puts every moving piece back.
   await goTo(page, "quests");
   await goTo(page, "dashboard");
-  await page.evaluate(() => document.getElementById("radar-chart-container").scrollIntoView({ block: "center" }));
-  await advance(page, 400);
-  if ((await radarState(page)).ring) problems.push("ceremony: it autoplayed a second time");
+  if ((await heroState(page)).styled.length) problems.push("home: a redraw kept the hero's old pose");
 
   // The share card assembles as the map, in the preview only, and ends on the
   // finished card: the same pixels a plain redraw gives.
@@ -366,30 +340,27 @@ try {
   if ((await preview()) !== endCard) problems.push("share card: the assembly did not end on the finished card");
   await context.close();
 } catch (err) {
-  problems.push(`ceremony: ${err.message}`);
+  problems.push(`home: ${err.message}`);
 }
 
-// ...and beside the care notice it is quiet (non-negotiable 4): it never plays
-// by itself and never bursts. Play still works for a reader who asks.
+// ...and beside the care notice Home is still: the headline is not parked for
+// typing, and a tap on the star bursts nothing and moves nothing.
 try {
   const { context, page } = await openJourney(browser);
   await finishJourney(page);
   if (!(await page.locator(".care-banner").count())) throw new Error("this reader was meant to see the care notice");
-  await page.evaluate(() => document.getElementById("radar-chart-container").scrollIntoView({ block: "center" }));
-  await advance(page, 600);
-  if ((await radarState(page)).ring) problems.push("quiet ceremony: it played by itself beside the care notice");
-  if (!(await radarState(page)).play) problems.push("quiet ceremony: Play was not offered");
-  await page.click("#btn-radar-play");
-  if (!(await radarState(page)).ring) problems.push("quiet ceremony: Play did nothing");
-  let particles = 0;
-  for (let f = 0; f < 180; f++) {
+  if ((await heroState(page)).hidden) problems.push("quiet home: the headline was parked for typing beside the care notice");
+  await page.click(".home .mark-hit");
+  let moved = 0;
+  for (let f = 0; f < 120; f++) {
     await advance(page, FRAME_MS);
-    particles = Math.max(particles, await page.evaluate(() => document.querySelectorAll("#radar-burst .ring-particle").length));
+    const st = await heroState(page);
+    moved = Math.max(moved, st.particles + st.styled.length);
   }
-  if (particles) problems.push(`quiet ceremony: ${particles} particles burst beside the care notice`);
+  if (moved) problems.push("quiet home: the star moved or burst beside the care notice");
   await context.close();
 } catch (err) {
-  problems.push(`quiet ceremony: ${err.message}`);
+  problems.push(`quiet home: ${err.message}`);
 }
 
 // --- 4. reduced motion ------------------------------------------------------------------
@@ -407,11 +378,11 @@ try {
   await page.waitForSelector('#brand-home[href="#/dashboard"]', { state: "attached", timeout: 10000 });
   await goTo(page, "quests");
   await goTo(page, "dashboard");
-  const radar = await page.evaluate(() => ({
-    play: !document.getElementById("btn-radar-play").hidden,
-    ring: !!document.querySelector(".radar-ring")
-  }));
-  if (radar.play || radar.ring) problems.push("reduced: the ceremony was offered or played");
+  await page.waitForSelector(".home .hero .mark svg", { timeout: 10000 });
+  await page.click(".home .mark-hit");
+  await advance(page, 400);
+  const still = await heroState(page);
+  if (still.particles || still.styled.length || still.hidden) problems.push("reduced: Home moved (a burst, a pose or a parked headline)");
   const writes = await page.evaluate(() => globalThis.__styleWrites);
   if (writes.length) problems.push(`reduced: styles written on moving pieces: ${writes.slice(0, 4).join(" | ")}`);
   const frames = await page.evaluate(() => globalThis.__framesRequested());
@@ -427,4 +398,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, the ring unfolds into the radar (quietly beside the care notice), and reduced motion moves nothing");
+console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star bursts and comes home (and stays still beside the care notice), and reduced motion moves nothing");

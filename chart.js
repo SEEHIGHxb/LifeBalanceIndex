@@ -315,13 +315,13 @@ export function renderRadarChart(containerId, aspects, options = {}) {
   svg.setAttribute("height", height);
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svg.style.overflow = "visible";
-  // The ceremony (views/ceremony.js) reads the plot from here and finds its
-  // pieces by these classes. Nothing about the drawing depends on them.
+  // The plot's centre and radius, and its pieces by class, for anything that
+  // draws over the chart. Nothing about the drawing depends on them.
   svg.setAttribute("class", "radar-svg");
   svg.dataset.cx = String(cx);
   svg.dataset.cy = String(cy);
   svg.dataset.r = String(radius);
-  // The grid and the spokes, in one group so the ceremony can bloom them.
+  // The grid and the spokes, in one group.
   const bloom = document.createElementNS("http://www.w3.org/2000/svg", "g");
   bloom.setAttribute("class", "radar-bloom");
   svg.appendChild(bloom);

@@ -15,7 +15,7 @@
 // nothing changed, so the bandwidth is negligible and the version can never
 // tear. Do NOT "optimise" this back to a plain fetch(req).
 
-const CACHE_NAME = "lifequest-v97";
+const CACHE_NAME = "lifequest-v98";
 
 const APP_SHELL = [
   "./",
@@ -23,7 +23,8 @@ const APP_SHELL = [
   "./privacy.html",
   "./index.css",
   "./css/frame.css",
-  "./css/landing.css",
+  "./css/stage-page.css",
+  "./css/home.css",
   "./css/journey.css",
   "./app.js",
   "./version.js",
@@ -40,14 +41,13 @@ const APP_SHELL = [
   "./views/helpers.js",
   "./views/menu.js",
   "./views/motion-mount.js",
-  "./views/moments.js",
-  "./views/ceremony.js",
   "./views/instrument-forms.js",
   "./views/assistant.js",
   "./views/onboarding.js",
   "./views/journey.js",
   "./views/journey-progress.js",
   "./views/landing.js",
+  "./views/stage-page.js",
   "./views/stage.js",
   "./views/dashboard.js",
   "./views/aspect.js",
@@ -73,7 +73,7 @@ const APP_SHELL = [
   "./i18n.js",
   "./th.js",
   "./manifest.webmanifest",
-  "./assets/lumi.png?v=97",
+  "./assets/lumi.png?v=98",
   // The eight region chapter plates. 0.73 MB for the set, which is why they
   // are band-cropped JPEGs and not the 10.3 MB of source PNGs they came from.
   "./assets/regions/market.jpg",

@@ -170,7 +170,7 @@ function reviewField(field, profile, prefills = {}) {
 }
 
 // Next ISO week starts on the coming Monday.
-function nextReviewDate() {
+export function nextReviewDate() {
   const d = new Date();
   const sinceMonday = (d.getDay() + 6) % 7;
   const next = new Date(d);

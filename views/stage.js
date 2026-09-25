@@ -22,6 +22,12 @@ import { escapeHtml } from "./helpers.js";
 
 export const SPRITES = "./assets/sprites.svg";
 
+// The Still Water and The Commons are quiet regions: nothing bursts or types
+// there (non-negotiable 4, symbols.md S2). Moved here from views/moments.js
+// when that file went with the old ceremony (R3).
+export const QUIET_ASPECTS = Object.freeze(["mental", "relationships"]);
+export const isQuietChapter = (chapter) => QUIET_ASPECTS.includes(chapter?.aspect);
+
 // V5/V6_REVIEW burst, in CSS px at the prototype's 1440px-wide laptop. `reach`
 // scales the radii for a smaller stage.
 const BURST = {

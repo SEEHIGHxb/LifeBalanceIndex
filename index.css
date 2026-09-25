@@ -928,30 +928,6 @@ header {
   background: var(--color-accent-glow);
 }
 
-/* The radar card's header holds Share and, where motion is allowed, Play (or
-   Skip while the ceremony plays: never both). */
-.card-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* The final ceremony (views/ceremony.js). The burst layer starts at the svg's
-   top-left and the scene moves it to the plot's centre by transform. */
-.radar-stage {
-  position: relative;
-}
-.ring-burst.radar-burst {
-  left: 0;
-  top: 0;
-}
-.radar-ring path {
-  fill: none;
-  stroke: #D9B77A;
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-
 /* The sheet is taller than the other popups (preview + two control rows), so
    it scrolls internally rather than pushing its buttons off a short screen. */
 .share-card {
@@ -1711,43 +1687,6 @@ header {
   min-height: 44px; /* touch target stays WCAG-sized even though the text is small */
 }
 
-/* The burst: eight gold particles from the ring's centre when a region ends
- * outside the quiet zones (symbols.md S2). Parked invisible, so one stranded by
- * an interrupted scene cannot show. */
-.ring-burst {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-}
-.ring-particle {
-  position: absolute;
-  left: -7px;
-  top: -7px;
-  width: 14px;
-  height: 14px;
-  opacity: 0;
-}
-.ring-particle-glint svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  fill: #D9B77A;
-  stroke: #A88752;
-  stroke-width: 0.8;
-}
-.ring-particle-dot::before {
-  content: "";
-  position: absolute;
-  left: 5px;
-  top: 5px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #D9B77A;
-}
 .onb-why {
   font-family: var(--font-sans);
   font-size: var(--text-base);
@@ -2664,30 +2603,6 @@ html[data-reduce-motion] .reward-pop { animation: reward-out 0.4s ease-in 1.5s b
 
   .dashboard-grid > div { display: contents; }
 
-  /* Default first, so a card added later without an order class lands at the
-     end of the page rather than jumping to the very top — which is what an
-     unset `order: 0` would otherwise do. (Caught exactly that way: the Recent
-     Reviews card had no class and sorted above the radar.)
-
-     EVERY SELECTOR BELOW IS SCOPED TO .dashboard-grid, and that is not
-     decoration. The fallback was written as `.dashboard-grid .card` (0,2,0)
-     while the six specific rules were bare single classes (0,1,0), so the
-     fallback out-specified all of them: every card resolved to order 90, they
-     all tied, and flex fell back to DOM order. The reordering this block exists
-     to perform has therefore never actually run on a phone since it was
-     written. Measured at 375px: the identity card led the page at y=376 and the
-     radar — "the point of the app" — sat at y=861, below the fold, which is
-     the exact layout the comment above says was being fixed.
-
-     Matching the specificity is the whole fix. Keep them matched. */
-  .dashboard-grid .card { order: 90; }
-
-  .dashboard-grid .dash-radar    { order: 1; }
-  .dashboard-grid .dash-index    { order: 2; }
-  .dashboard-grid .dash-scores   { order: 3; }
-  .dashboard-grid .dash-suggest  { order: 4; }
-  .dashboard-grid .dash-activity { order: 5; }
-  .dashboard-grid .dash-identity { order: 6; }
 
   /* Aspect Scores, collapsed to one statement per aspect.
      ---------------------------------------------------

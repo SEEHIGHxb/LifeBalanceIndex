@@ -1,6 +1,6 @@
-// The moments that remain after the redesign's R2 (views/moments.js: the quiet
-// regions and the ceremony's burst) and the redesign's shared stage pieces
-// (views/stage.js) and progress star (views/journey-progress.js). Time is
+// The redesign's shared stage pieces (views/stage.js: the quiet regions, typed
+// lines, the settle and the burst) and the journey's progress star
+// (views/journey-progress.js). Time is
 // driven by hand through makeClock(), so every pose asserted here is
 // deterministic.
 import test, { beforeEach } from "node:test";
@@ -13,8 +13,7 @@ let tick;
 installDom();
 const { setClock } = await import("../motion.js");
 const { disposeMotion } = await import("../views/motion-mount.js");
-const { isQuietChapter, QUIET_ASPECTS, playBurst } = await import("../views/moments.js");
-const { typedMarkup, typeIn, settleIn, burstSpread, burstPose } = await import("../views/stage.js");
+const { isQuietChapter, QUIET_ASPECTS, typedMarkup, typeIn, settleIn, burstSpread, burstPose } = await import("../views/stage.js");
 const { progressMarkup, paintProgress, regionsComplete } = await import("../views/journey-progress.js");
 const { CHAPTERS } = await import("../views/journey.js");
 
@@ -43,23 +42,6 @@ test("the quiet zones are exactly The Still Water and The Commons", () => {
   assert.deepEqual(quiet, ["mental", "relationships"]);
   assert.deepEqual([...QUIET_ASPECTS], ["mental", "relationships"]);
   assert.equal(isQuietChapter(undefined), false);
-});
-
-// --- the ceremony's burst (views/ceremony.js until R3) ------------------------
-
-test("playBurst: eight particles, flown and removed", async () => {
-  const layer = makeNode("div");
-  const done = playBurst(layer, new AbortController().signal);
-  assert.equal(layer.childNodes.length, 8);
-  await tick.advance(900);
-  assert.equal(await done, true);
-});
-
-test("playBurst: with reduced motion every particle lands unseen at once", async () => {
-  device = true;
-  const layer = makeNode("div");
-  assert.equal(await playBurst(layer, new AbortController().signal), true);
-  assert.ok(layer.childNodes.every(p => Number(last(p, "opacity")) === 0));
 });
 
 // --- typed lines (views/stage.js) --------------------------------------------

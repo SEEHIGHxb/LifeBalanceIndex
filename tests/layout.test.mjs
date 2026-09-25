@@ -1,18 +1,14 @@
 // Layout guards for the phone fold.
 //
-// These pin three facts that were each invisible to every other kind of test:
-// the CSS parsed, the JS ran, the markup was valid, the strings were
-// translated — and the first screen of a wellbeing dashboard still contained no
-// wellbeing data. Measured at 375x812 before v78:
+// These pin facts that were each invisible to every other kind of test: the
+// CSS parsed, the JS ran, the markup was valid, the strings were translated,
+// and the first screen of a wellbeing dashboard still contained no wellbeing
+// data. Measured at 375x812 before v78, the old dashboard put a crisis notice,
+// the in-depth upsell and the reader's name above the first score (y=762, on
+// the fold line) and the first aspect at y=2113.
 //
-//   care banner   y=  87  h=271
-//   deep-banner   y= 376  h=161   <- the "answer 80 more questions" upsell
-//   identity      y= 537  h=186
-//   Balance Index y= 762           <- the first score, ON the fold line
-//   radar         y= 861           <- below it
-//   first aspect  y=2113
-//
-// Two separate causes, fixed separately and guarded separately below.
+// Home (redesign R3, views/dashboard.js) is one column in a fixed order, so
+// the guard is now on the order of the markup itself.
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -28,62 +24,26 @@ const MAIN = "main-view";
 
 beforeEach(() => installDom());
 
-// --- CAUSE 1: the mobile reordering never ran ------------------------------
-//
-// index.css dissolves the two desktop columns on a phone and reorders the
-// cards so the radar leads. It had one fallback rule and six specific ones:
-//
-//   .dashboard-grid .card { order: 90; }   <- specificity (0,2,0)
-//   .dash-radar           { order: 1;  }   <- specificity (0,1,0)
-//
-// The fallback out-specified every one of them, so all six cards resolved to
-// order 90, tied, and flex fell back to DOM order. A stylesheet cannot fail;
-// it just quietly does nothing.
+// --- Home reads your star before your name --------------------------------
 
-test("the dashboard order rules out-specify their own fallback", () => {
-  const css = read("index.css");
-  const fallback = css.match(/(\S[^{}\n]*)\{\s*order:\s*90;\s*\}/);
-  assert.ok(fallback, "index.css must keep a default order for unclassed cards");
-
-  // Count the class selectors on each side. The fallback may never carry more
-  // than the specific rules do, or it silently wins and nothing reorders.
-  const classes = (sel) => (sel.match(/\./g) || []).length;
-  const fallbackWeight = classes(fallback[1]);
-
-  const specific = [...css.matchAll(/(\S[^{}\n]*?)\{\s*order:\s*([1-9]);\s*\}/g)];
-  assert.ok(specific.length >= 6, `expected the six ordered dashboard cards, found ${specific.length}`);
-
-  for (const [, sel, ord] of specific) {
-    assert.ok(
-      classes(sel) >= fallbackWeight,
-      `"${sel.trim()}" (order ${ord}) is less specific than the fallback ` +
-      `"${fallback[1].trim()}", so every card ties at order 90 and the phone ` +
-      `renders in DOM order instead`
-    );
-  }
-});
-
-// NOTE: this test passes against the pre-v78 stylesheet too, because the order
-// integers were always right — the bug was that the fallback out-specified
-// them, which is what the test above catches. Kept as a statement of intent:
-// it is the reason the integers are the values they are.
-test("the radar is ordered ahead of the identity card on a phone", () => {
-  // The intent, stated as an assertion rather than left in a comment: the
-  // reader's scores come before the reader's name.
-  const css = read("index.css");
-  const orderOf = (cls) => {
-    const m = css.match(new RegExp(`\\.${cls}\\s*\\{\\s*order:\\s*(\\d+)`));
-    return m ? Number(m[1]) : null;
+test("Home shows your star and your index before your name", async () => {
+  // The scores are the point of the page. The hero is the radar shape of
+  // them with the Balance Index under it; the name comes after.
+  const { renderDashboard } = await import("../views/dashboard.js");
+  const dom = installDom();
+  renderDashboard(MAIN, STATE, () => {});
+  const html = dom.html[MAIN] || "";
+  const at = (needle) => {
+    const i = html.indexOf(needle);
+    assert.ok(i > -1, `Home no longer renders ${needle}`);
+    return i;
   };
-  const radar = orderOf("dash-radar");
-  const index = orderOf("dash-index");
-  const identity = orderOf("dash-identity");
-  assert.ok(radar !== null && index !== null && identity !== null);
-  assert.ok(radar < identity, "the radar must precede the identity card");
-  assert.ok(index < identity, "the Balance Index must precede the identity card");
+  assert.ok(at('class="hero"') < at("balance-index"), "the hero must lead the page");
+  assert.ok(at("balance-index") < at("home-name"), "the Balance Index must precede the name");
+  assert.ok(at('class="hero"') < at("home-aspects"), "the star must come before the cards");
 });
 
-// --- CAUSE 2: the upsell sat above the scores ------------------------------
+// --- The upsell sits below the scores ---------------------------------------
 
 test("the in-depth offer renders below the scores, not in the top prompt stack", async () => {
   const { renderDashboard } = await import("../views/dashboard.js");
@@ -91,11 +51,11 @@ test("the in-depth offer renders below the scores, not in the top prompt stack",
   renderDashboard(MAIN, STATE, () => {});
   const html = dom.html[MAIN] || "";
 
-  const deep = html.indexOf("deep-banner");
-  const grid = html.indexOf("dashboard-grid");
-  const scores = html.indexOf("dash-scores");
+  const deep = html.indexOf("deep-offer");
+  const scores = html.indexOf("home-aspects");
+  const todo = html.indexOf("home-todo");
   assert.ok(deep > -1, "the in-depth offer should render for a non-verified save");
-  assert.ok(grid > -1 && scores > -1);
+  assert.ok(scores > -1);
   assert.ok(
     deep > scores,
     "the in-depth offer must come AFTER the aspect scores in the document. " +
@@ -103,15 +63,15 @@ test("the in-depth offer renders below the scores, not in the top prompt stack",
     "scores'; above the scores, that is an argument about numbers they have " +
     "not been shown yet."
   );
+  assert.ok(todo === -1 || !html.slice(todo, scores).includes("#/deep"), "the offer must not sit in the to-do list");
 });
 
 test("the offer still disappears once every aspect is deep-verified", async () => {
-  // The move must not turn a conditional card into a permanent one. Rendered,
-  // not grepped: an earlier version of this test asserted that dashboard.js
-  // contained the line that had just been written into it, which would pass
-  // however the function behaved.
+  // Rendered, not grepped: an earlier version of this test asserted that
+  // dashboard.js contained the line that had just been written into it, which
+  // would pass however the function behaved.
   const { renderDashboard } = await import("../views/dashboard.js");
-  const { ASPECT_KEYS } = await import("../aspects.js");
+  const { ASPECT_KEYS, isAspectDeepVerified } = await import("../aspects.js");
   const verified = {
     ...STATE,
     baseline: {
@@ -119,17 +79,16 @@ test("the offer still disappears once every aspect is deep-verified", async () =
       deepDone: Object.fromEntries(ASPECT_KEYS.map(k => [k, true]))
     }
   };
-  const dom = installDom();
-  renderDashboard(MAIN, verified, () => {});
-  const html = dom.html[MAIN] || "";
   // Guard the guard: if this fixture does not actually reach deep-verified,
   // the assertion below would pass for the wrong reason.
-  const { isAspectDeepVerified } = await import("../aspects.js");
   assert.ok(
     ASPECT_KEYS.every(k => isAspectDeepVerified(verified, k)),
     "fixture must be deep-verified on every aspect or this test proves nothing"
   );
-  assert.ok(!html.includes("deep-banner"), "the offer must not render once there is nothing left to deepen");
+  const dom = installDom();
+  renderDashboard(MAIN, verified, () => {});
+  const html = dom.html[MAIN] || "";
+  assert.ok(!html.includes("deep-offer"), "the offer must not render once there is nothing left to deepen");
 });
 
 // --- The floating assistant's fixed bubble ---------------------------------

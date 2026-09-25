@@ -26,8 +26,9 @@ function symbolPath(id) {
 // Raised from "motion.js ≤ 6 KB" to "the motion modules together ≤ 20 KB" for
 // the redesign, approved by the owner on 2026-09-25 (docs/redesign-build-plan.md
 // §4, decision 2): the prototype's motion is far bigger than Phase 4's. Views
-// that animate (views/landing.js) are views and count like any other.
-const MOTION_MODULES = ["motion.js", "views/motion-mount.js", "views/stage.js", "views/moments.js", "views/ceremony.js"];
+// that animate (views/landing.js, views/dashboard.js) are views and count like
+// any other; the stage page's sections (views/stage-page.js) are motion code.
+const MOTION_MODULES = ["motion.js", "views/motion-mount.js", "views/stage.js", "views/stage-page.js"];
 
 test("budget: the motion modules are at most 20 KB gzipped together", () => {
   const size = MOTION_MODULES
@@ -64,12 +65,18 @@ test("sprites: one motif per aspect, identical to the chapter's own", () => {
 
 test("sprites: every <use> in the app points at a symbol that exists", () => {
   const ids = new Set([...SPRITES.matchAll(/<symbol id="([^"]+)"/g)].map(m => m[1]));
-  const sources = ["index.html", "views/moments.js"].map(read).join("\n");
-  const refs = [...sources.matchAll(/sprites\.svg#([\w-]+)/g)].map(m => m[1]);
-  // The footer star and the glint. The four tab icons went with the tab bar
-  // (redesign R1); the floor only proves the regex still matches something.
+  const files = ["index.html", "views/stage.js", "views/landing.js", "views/dashboard.js", "views/onboarding.js"];
+  const sources = files.map(read).join("\n");
+  // Literal ("sprites.svg#star") and through the SPRITES constant
+  // ("${SPRITES}#star"). A reference built from a key ("#motif-${aspect}")
+  // is checked for every aspect below instead.
+  const refs = [...sources.matchAll(/(?:sprites\.svg|\$\{SPRITES\})#([\w-]+)/g)].map(m => m[1])
+    .filter(ref => !ref.endsWith("-"));
+  // The footer star and the Landing's star; the floor only proves the regex
+  // still matches something.
   assert.ok(refs.length >= 2, `only ${refs.length} sprite references found`);
   for (const ref of refs) assert.ok(ids.has(ref), `#${ref} is not in assets/sprites.svg`);
+  for (const chapter of CHAPTERS) assert.ok(ids.has(`motif-${chapter.aspect}`), `#motif-${chapter.aspect} is missing`);
 });
 
 test("offline: the service worker precaches the sprites and every emblem", () => {

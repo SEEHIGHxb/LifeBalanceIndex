@@ -1,6 +1,6 @@
 # LBI redesign: building it into the app
 
-Status: **draft for the owner, 2026-09-25.** No app code changes until this is approved.
+Status: **approved by the owner on 2026-09-25**, all four open decisions as recommended (§4). **R1 (the frame) is built, in v96 (2.44.0).**
 
 The prototype in [`prototype/redesign/`](prototype/redesign/README.md) is approved. It covers every screen on the confirmed map, and the dark pinned star was turned off on 2026-09-25. This plan moves the real app into that design one release at a time.
 
@@ -51,6 +51,11 @@ Each release is one version bump (`version.js`, the `?v=` busters, `sw.js`'s `CA
 
 R1 and R2 each end with a phone check by you before the next one starts. After that, you review each release as it ships.
 
+**R1 as built (v96, 2.44.0):** the header, the menu with the star-letter reveal, the desktop quick links and the footer, with the Anton font bundled.
+- **Lumi's star moves to R5.** It arrives with its panel, because a header star now would duplicate the floating Lumi that R5 retires.
+- **Privacy & Data is a line under YOU, not a heading.** A menu line never wraps (a wrap between letter cells could split a Thai word), and at heading size the Thai name is wider than a column.
+- **The header is sticky on the page colour, not transparent over the content** as in the prototype. The screens inside are still the old ones until R2–R5.
+
 ## 3. How the code is organised
 
 - **Motion:** the prototype's helpers go into the existing `motion.js` / `views/motion-mount.js`:
@@ -65,7 +70,7 @@ R1 and R2 each end with a phone check by you before the next one starts. After t
   - **The motion budget** is "motion JS ≤ 6 KB" today. The prototype's motion is far bigger, so I propose **≤ 20 KB minified for motion code**, measured the same way.
   - **Typography:** the serif stack tests follow whatever replaces Source Serif 4 for headings. Anton has no Thai, so Thai headings fall back to Sarabun, as in the prototype.
 
-## 4. Open decisions for you
+## 4. Decisions (answered 2026-09-25: "accept", "ok we can have more size", "ok", "ok")
 
 1. **What visitors see mid-rollout. My recommendation: ship each release live.** Between R1 and R4, some screens are new and some old inside the new frame, for a few days. The alternative is a hidden preview switch until R4. That keeps the live site all-old, then all-new, but it means running two frames side by side, which costs time and bugs.
 2. **The motion budget: approve 20 KB,** or name another number.

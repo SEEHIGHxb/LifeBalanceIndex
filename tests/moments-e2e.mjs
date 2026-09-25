@@ -66,7 +66,7 @@ function installManualClock() {
   const watch = () => new MutationObserver(records => {
     for (const r of records) {
       const el = r.target;
-      if (el.closest?.(".journey-ring, .region-banner, .chapter-recap, .chapter-fact, .tab-btn")) {
+      if (el.closest?.(".journey-ring, .region-banner, .chapter-recap, .chapter-fact")) {
         globalThis.__styleWrites.push(`${el.id || el.className?.baseVal || el.className}: ${el.getAttribute("style")}`);
       }
     }
@@ -121,6 +121,22 @@ const visible = (page) => page.evaluate(() => {
   const el = document.querySelector(".survey-page:not(.d-none)");
   return { id: el.id, ending: el.classList.contains("survey-page-ending"), chapter: Number(el.dataset.chapter) };
 });
+
+// The burger menu replaced the tab bar (redesign R1): open it and follow a link.
+async function goTo(page, route) {
+  await page.click("#btn-menu");
+  await page.click(`#site-menu a[href="#/${route}"]`);
+  await page.waitForSelector("body:not(.menu-open)", { state: "attached" });
+  // The page slides back into place over 520ms; measuring before it lands
+  // would read the half-moved page as a sideways overflow.
+  // Polled with evaluate: the CSP blocks the string eval waitForFunction uses.
+  for (let i = 0; i < 40; i++) {
+    const still = await page.evaluate(() => getComputedStyle(document.getElementById("page")).transform !== "none");
+    if (!still) return;
+    await page.waitForTimeout(50);
+  }
+  throw new Error("the page never slid back after the menu closed");
+}
 
 async function walkToEnding(page, chapter) {
   for (let i = 0; i < 60; i++) {
@@ -225,7 +241,7 @@ try {
   if (end.emblem && Math.round(end.emblem.w) !== 96) problems.push(`market: the emblem is ${end.emblem.w}px wide, not 96`);
   const shifted = await page.evaluate(() => globalThis.__shift);
   if (shifted > 0) problems.push(`market: the ending shifted the layout (CLS ${shifted.toFixed(4)})`);
-  if (!(await spriteDrawn(page, ".brand-star"))) problems.push("sprites: the header star did not draw");
+  if (!(await spriteDrawn(page, ".brand-star"))) problems.push("sprites: the footer star did not draw");
 
   // The Highlands' first screen: its name is spelled and its line typed.
   await next(page);
@@ -314,8 +330,8 @@ try {
   const skipped = await radarState(page);
   if (skipped.points !== drawn || skipped.ring || skipped.styled) problems.push("ceremony: Skip did not land the radar at once");
   // Only once: a redrawn dashboard does not play it again by itself.
-  await page.click("#tab-quests");
-  await page.click("#tab-dashboard");
+  await goTo(page, "quests");
+  await goTo(page, "dashboard");
   await page.evaluate(() => document.getElementById("radar-chart-container").scrollIntoView({ block: "center" }));
   await advance(page, 400);
   if ((await radarState(page)).ring) problems.push("ceremony: it autoplayed a second time");
@@ -384,12 +400,10 @@ try {
   let walked = 0;
   while ((await page.locator(".survey-page:not(.d-none) .btn-onb-next").count()) && walked++ < 60) await next(page);
   await page.click('#onboarding-form button[type="submit"]');
-  await page.waitForSelector("#tab-dashboard .tab-icon", { timeout: 10000 });
-  for (const tab of ["#tab-dashboard", "#tab-review", "#tab-quests", "#tab-leaderboard"]) {
-    if (!(await spriteDrawn(page, `${tab} .tab-icon`))) problems.push(`sprites: the ${tab} icon did not draw`);
-  }
-  await page.click("#tab-quests");
-  await page.click("#tab-dashboard");
+  // Onboarded: the wordmark becomes a link home only once there is a home.
+  await page.waitForSelector("#brand-home[href]", { state: "attached", timeout: 10000 });
+  await goTo(page, "quests");
+  await goTo(page, "dashboard");
   const radar = await page.evaluate(() => ({
     play: !document.getElementById("btn-radar-play").hidden,
     ring: !!document.querySelector(".radar-ring")

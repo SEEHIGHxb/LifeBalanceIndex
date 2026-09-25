@@ -56,7 +56,15 @@ export const TH = {
   "{view} view": "หน้า {view}",
   // --- App chrome (header, tabs, dialogs) ---
   "Life Balance Index — Personal Wellbeing Assessment": "ดัชนีสมดุลชีวิต — แบบประเมินสุขภาวะส่วนบุคคล",
-  "Personal Wellbeing Assessment": "แบบประเมินสุขภาวะส่วนบุคคล",
+  // Site menu and footer (redesign R1). The Thai follows the approved
+  // prototype's copy (docs/prototype/redesign/content.js).
+  "Main menu": "เมนูหลัก",
+  "Open menu": "เปิดเมนู",
+  "Close menu": "ปิดเมนู",
+  "The journey": "การเดินทาง",
+  "Aspects": "แปดด้าน",
+  "You": "คุณ",
+  "Stored only in this browser": "เก็บไว้ในเบราว์เซอร์นี้เท่านั้น",
   "Export": "ส่งออก",
   "Import": "นำเข้า",
   "Reset Data": "ล้างข้อมูล",

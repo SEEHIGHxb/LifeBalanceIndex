@@ -33,8 +33,12 @@
        vendored under assets/fonts. Self-hosting removes the round-trip to
        Google on every cold load, makes the PWA genuinely offline-capable,
        and means no visitor IP is disclosed to a third party. -->
-  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=95">
-  <link rel="stylesheet" href="./index.css?v=95">
+  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=96">
+  <link rel="stylesheet" href="./index.css?v=96">
+  <!-- The redesign's frame; loaded after index.css so it wins where both
+       style the same element. One sheet per redesign area, each under 800
+       lines (docs/redesign-build-plan.md §3). -->
+  <link rel="stylesheet" href="./css/frame.css?v=96">
 </head>
 <body>
   <!-- Skip link (WCAG 2.4.1). href is #main-view for the semantics and for the
@@ -43,38 +47,33 @@
        router, which resolves anything unknown to the dashboard and would throw
        the user off whatever tab they were on. -->
   <a id="skip-link" class="skip-link" href="#main-view">Skip to main content</a>
-  <div class="app-container">
-    <!-- Main Header -->
-    <header>
-      <!-- symbols.md S3 inline lockup: the Gilt star, then the name. The star
-           sits outside the h1 because app.js rewrites the h1's textContent. -->
-      <div class="brand">
-        <svg class="brand-star" viewBox="0 0 100 100" width="32" height="32" aria-hidden="true" focusable="false"><use href="./assets/sprites.svg#star"/></svg>
-        <div class="brand-text">
-          <h1>Life Balance Index</h1>
-          <p>Personal Wellbeing Assessment</p>
-        </div>
-      </div>
-      <!-- .btn-compact carries what used to be inline styles here. Inline styles win
-           over media queries, so the mobile layer could not have grown these to a
-           44px tap target while they lived on the element. -->
-      <div class="header-actions">
-        <button id="btn-lang" class="btn btn-compact" aria-label="Switch language / เปลี่ยนภาษา">ไทย</button>
-        <button id="btn-profile" class="btn btn-compact">Profile</button>
-      </div>
-    </header>
-
-    <!-- Navigation Tab container -->
-    <div id="nav-container" class="nav-tabs d-none" role="tablist" aria-label="Main navigation">
-      <!-- Icons come from assets/sprites.svg (symbols.md S1 line star, S8 motifs). -->
-      <button class="tab-btn active" id="tab-dashboard" role="tab" aria-selected="true" aria-controls="main-view" tabindex="0"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="./assets/sprites.svg#star-line"/></svg><span class="tab-label">Overview</span></button>
-      <button class="tab-btn" id="tab-review" role="tab" aria-selected="false" aria-controls="main-view" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="./assets/sprites.svg#motif-humanityFuture"/></svg><span class="tab-label">Weekly Review</span></button>
-      <button class="tab-btn" id="tab-quests" role="tab" aria-selected="false" aria-controls="main-view" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="./assets/sprites.svg#motif-personalGoals"/></svg><span class="tab-label">Goals</span></button>
-      <button class="tab-btn" id="tab-leaderboard" role="tab" aria-selected="false" aria-controls="main-view" tabindex="-1"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="./assets/sprites.svg#motif-relationships"/></svg><span class="tab-label">Side by Side</span></button>
+  <!-- The frame (redesign R1, docs/redesign-build-plan.md): a burger menu in
+       place of the bottom tab bar, the Anton wordmark, the language button,
+       and on a wide screen the quick links. The header sits OUTSIDE #page so
+       it stays usable while the menu is open and the page behind it is inert. -->
+  <header id="site-header" class="site-header">
+    <button id="btn-menu" class="burger" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu"><span></span><span></span><span></span></button>
+    <!-- The wordmark is a mark: LIFE BALANCE INDEX in both languages. Its
+         accessible name is the translated app name, which app.js writes. -->
+    <h1 class="wordmark"><a id="brand-home" href="#/dashboard"><span class="wordmark-mark" aria-hidden="true">LIFE BALANCE<small>INDEX</small></span><span class="sr-only" id="brand-name">Life Balance Index</span></a></h1>
+    <nav id="navpill" class="navpill d-none" aria-label="Sections">
+      <a id="navpill-dashboard" href="#/dashboard">Overview</a>
+      <a id="navpill-review" href="#/review">Weekly Review</a>
+      <a id="navpill-quests" href="#/quests">Goals</a>
+      <a id="navpill-leaderboard" href="#/leaderboard">Side by Side</a>
+    </nav>
+    <div class="header-actions">
+      <button id="btn-lang" class="circlebtn" type="button" aria-label="Switch language / เปลี่ยนภาษา">ไทย</button>
     </div>
+  </header>
 
+  <!-- Filled by views/menu.js. Hidden (visibility) while closed, so nothing in
+       it can take focus until the burger opens it. -->
+  <nav id="site-menu" class="site-menu" aria-hidden="true" aria-label="Main menu"></nav>
+
+  <div class="app-container" id="page">
     <!-- Main View Mount -->
-    <main id="main-view" role="tabpanel" tabindex="-1" aria-label="Main content">
+    <main id="main-view" tabindex="-1" aria-label="Main content">
       <!-- Injected views go here -->
     </main>
 
@@ -91,24 +90,29 @@
         Loading your recommendations…
       </div>
       <div id="assistant-sr" class="sr-only" role="status" aria-live="polite"></div>
-      <img class="assistant-avatar" id="assistant-lumi-avatar" src="./assets/lumi.png?v=95" role="button" tabindex="0" aria-label="Guidance assistant" title="Guidance assistant" alt="Guidance assistant" />
+      <img class="assistant-avatar" id="assistant-lumi-avatar" src="./assets/lumi.png?v=96" role="button" tabindex="0" aria-label="Guidance assistant" title="Guidance assistant" alt="Guidance assistant" />
     </div>
 
     <!-- Footer: privacy/source/version must be reachable from the app itself,
          not only from the GitHub repo (review: PDPA statement was invisible
          to users of the live site). -->
-    <footer class="app-footer">
-      <a id="footer-privacy" href="./privacy.html">Privacy &amp; Data</a>
-      <span aria-hidden="true">·</span>
-      <a id="footer-methodology" href="#/methodology">Methodology</a>
-      <span aria-hidden="true">·</span>
-      <a id="footer-source" href="https://github.com/SEEHIGHxb/LifeBalanceIndex" target="_blank" rel="noopener noreferrer">Source code &amp; license</a>
-      <span aria-hidden="true">·</span>
-      <span id="footer-version">Version 22</span>
+    <footer class="app-footer site-footer">
+      <!-- symbols.md S1 Gilt star over the stacked wordmark, as in the
+           prototype's footer. Decorative: the links carry the meaning. -->
+      <div class="footer-mark" aria-hidden="true">
+        <svg class="brand-star" viewBox="0 0 100 100" width="56" height="56" focusable="false"><use href="./assets/sprites.svg#star"/></svg>
+        <span>LIFE BALANCE<br>INDEX</span>
+      </div>
+      <nav class="footer-links" aria-label="Footer">
+        <a id="footer-privacy" href="./privacy.html">Privacy &amp; Data</a>
+        <a id="footer-methodology" href="#/methodology">Methodology</a>
+        <a id="footer-source" href="https://github.com/SEEHIGHxb/LifeBalanceIndex" target="_blank" rel="noopener noreferrer">Source code &amp; license</a>
+      </nav>
+      <p class="footer-meta"><span id="footer-local">Stored only in this browser</span><span id="footer-version">Version 22</span></p>
     </footer>
   </div>
 
   <!-- Core Scripts -->
-  <script type="module" src="./app.js?v=95"></script>
+  <script type="module" src="./app.js?v=96"></script>
 </body>
 </html>

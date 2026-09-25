@@ -58,7 +58,9 @@ test("sprites: every <use> in the app points at a symbol that exists", () => {
   const ids = new Set([...SPRITES.matchAll(/<symbol id="([^"]+)"/g)].map(m => m[1]));
   const sources = ["index.html", "views/moments.js"].map(read).join("\n");
   const refs = [...sources.matchAll(/sprites\.svg#([\w-]+)/g)].map(m => m[1]);
-  assert.ok(refs.length >= 6, `only ${refs.length} sprite references found`);
+  // The footer star and the glint. The four tab icons went with the tab bar
+  // (redesign R1); the floor only proves the regex still matches something.
+  assert.ok(refs.length >= 2, `only ${refs.length} sprite references found`);
   for (const ref of refs) assert.ok(ids.has(ref), `#${ref} is not in assets/sprites.svg`);
 });
 

@@ -15,13 +15,14 @@
 // nothing changed, so the bandwidth is negligible and the version can never
 // tear. Do NOT "optimise" this back to a plain fetch(req).
 
-const CACHE_NAME = "lifequest-v95";
+const CACHE_NAME = "lifequest-v96";
 
 const APP_SHELL = [
   "./",
   "./index.html",
   "./privacy.html",
   "./index.css",
+  "./css/frame.css",
   "./app.js",
   "./version.js",
   "./state.js",
@@ -35,6 +36,7 @@ const APP_SHELL = [
   "./ui.js",
   "./motion.js",
   "./views/helpers.js",
+  "./views/menu.js",
   "./views/motion-mount.js",
   "./views/moments.js",
   "./views/tug.js",
@@ -68,7 +70,7 @@ const APP_SHELL = [
   "./i18n.js",
   "./th.js",
   "./manifest.webmanifest",
-  "./assets/lumi.png?v=95",
+  "./assets/lumi.png?v=96",
   // The eight region chapter plates. 0.73 MB for the set, which is why they
   // are band-cropped JPEGs and not the 10.3 MB of source PNGs they came from.
   "./assets/regions/market.jpg",
@@ -107,7 +109,9 @@ const APP_SHELL = [
   "./assets/fonts/sarabun-thai-700.woff2",
   "./assets/fonts/maitree-thai-400.woff2",
   "./assets/fonts/maitree-thai-600.woff2",
-  "./assets/fonts/maitree-thai-700.woff2"
+  "./assets/fonts/maitree-thai-700.woff2",
+  // The redesign's wordmark face; every screen's header shows it.
+  "./assets/fonts/anton-latin.woff2"
 ];
 
 self.addEventListener("install", (event) => {

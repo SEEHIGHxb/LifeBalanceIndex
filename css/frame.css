@@ -1,0 +1,368 @@
+/* css/frame.css - the redesign's frame (R1, docs/redesign-build-plan.md):
+   the header with the Anton wordmark, the burger menu that replaced the
+   bottom tab bar, the desktop quick links and the footer. Taken from the
+   approved prototype (docs/prototype/redesign/proto.css), in fixed CSS px
+   with clamp() instead of the prototype's 2545px reference scale.
+
+   Loaded by index.html only, after index.css. privacy.html keeps the old
+   header and footer rules in index.css until R6 moves it into the frame. */
+
+:root {
+  --frame-page: #f6f6f6;
+  --frame-card: #ffffff;
+  --frame-dark: #1b1b1b;
+  --frame-ink: #000000;
+  --frame-muted: #595959;      /* 7.0:1 on the white footer card */
+  --frame-word: 'Anton', 'Sarabun', Impact, sans-serif;
+  --frame-dur: 520ms;
+  --frame-ease: cubic-bezier(.65, 0, .35, 1);
+  --frame-gutter: clamp(16px, 5.3vw, 136px);
+  --frame-menu-w: 70.1vw;
+  --frame-header-h: 72px;
+}
+
+body { background-color: var(--frame-page); }
+
+/* ------------------------------------------------------------- header
+   Sticky on the page colour rather than floating over the content as in
+   the prototype: the screens inside are still the old ones (R2-R5 replace
+   them), and their text would run under a transparent header. */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: nowrap;
+  height: var(--frame-header-h);
+  margin: 0;
+  padding: 0 var(--frame-gutter);
+  border: 0;
+  background: var(--frame-page);
+  transition: background-color 160ms linear;
+}
+
+.burger {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  flex: none;
+  /* A real 44x44 target (WCAG 2.5.5) with the 28px bars drawn in its middle;
+     the negative margin keeps the bars, not the box, on the gutter. */
+  width: 44px;
+  height: 44px;
+  margin-left: -8px;
+  display: grid;
+  place-content: center;
+  gap: 5px;
+}
+.burger span {
+  display: block;
+  width: 28px;
+  height: 2px;
+  background: var(--frame-ink);
+  transition: transform var(--frame-dur) var(--frame-ease), opacity 160ms linear, background-color 160ms linear;
+}
+
+.wordmark {
+  margin: 0 0 0 clamp(20px, 5vw, 120px);
+  font-size: inherit;
+  line-height: 1;
+}
+.wordmark a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--frame-word);
+  font-weight: 400;
+  font-size: clamp(18px, 1.3vw, 30px);
+  letter-spacing: 0.01em;
+  color: var(--frame-ink);
+  text-decoration: none;
+  transition: color 160ms linear;
+}
+.wordmark-mark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3em;
+}
+.wordmark small { font-size: 0.62em; }
+
+.navpill {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  height: 44px;
+  padding: 0 26px;
+  background: var(--frame-card);
+  border-radius: 999px;
+  transition: opacity 220ms linear;
+}
+.navpill a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--frame-ink);
+  text-decoration: none;
+}
+.navpill a[aria-current="page"] {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+.site-header .header-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+.circlebtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  padding: 0;
+  background: var(--frame-card);
+  color: var(--frame-ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.burger:focus-visible,
+.wordmark a:focus-visible,
+.navpill a:focus-visible,
+.circlebtn:focus-visible {
+  outline: 2px solid var(--frame-ink);
+  outline-offset: 3px;
+}
+
+/* ----------------------------------------------------------- the menu
+   A dark panel from the left while the page slides aside. `visibility`
+   waits for the slide to finish before hiding, so nothing in the closed
+   menu can take focus. */
+.site-menu {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 250;
+  width: var(--frame-menu-w);
+  overflow: auto;
+  padding: calc(var(--frame-header-h) + 48px) 24px 60px clamp(24px, 5.5vw, 140px);
+  background: var(--frame-dark);
+  color: #ffffff;
+  border-radius: 0 24px 24px 0;
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition: transform var(--frame-dur) var(--frame-ease), visibility 0s linear var(--frame-dur);
+}
+#page {
+  transition: transform var(--frame-dur) var(--frame-ease);
+}
+
+body.menu-open { overflow: hidden; }
+body.menu-open .site-menu {
+  transform: none;
+  visibility: visible;
+  transition-delay: 0s, 0s;
+}
+body.menu-open #page { transform: translateX(var(--frame-menu-w)); }
+/* Over the dark panel the header's marks turn white and its page colour goes.
+   Two classes and an element outrank the journey's veil on the header. */
+body.menu-open > .site-header {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+body.menu-open .burger span { background: #ffffff; }
+body.menu-open .burger span:nth-child(1) { transform: translateY(7px) rotate(30deg); }
+body.menu-open .burger span:nth-child(2) { opacity: 0; }
+body.menu-open .burger span:nth-child(3) { transform: translateY(-7px) rotate(-30deg); }
+body.menu-open .wordmark a { color: #ffffff; }
+body.menu-open .navpill { opacity: 0; pointer-events: none; }
+body.menu-open .burger:focus-visible,
+body.menu-open .wordmark a:focus-visible { outline-color: #ffffff; }
+
+.menu-cols {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 32px;
+  max-width: 1500px;
+}
+.menu-group { margin: 0 0 56px; }
+.menu-top {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 0 14px;
+  font-size: clamp(28px, 2.6vw, 66px);
+  font-weight: 500;
+  line-height: 1.15;
+  color: #ffffff;
+  text-decoration: none;
+}
+.menu-sub { list-style: none; margin: 0; padding: 0; }
+.menu-sub a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffffff;
+  opacity: 0.85;
+  text-decoration: none;
+}
+.menu-sub a:hover,
+.menu-sub a[aria-current="page"] { opacity: 1; }
+/* A border, not text-decoration: an underline does not reach into the
+   inline-block letter cells. */
+.site-menu a[aria-current="page"] .menu-line {
+  padding-bottom: 0.12em;
+  border-bottom: 2px solid currentColor;
+}
+.site-menu a:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
+
+/* Each character starts as a small gilt star (symbols.md S1, the prototype's
+   g-star) and becomes its letter. The star is a data: image, which the CSP's
+   img-src allows, so the reveal adds no request. */
+/* One line each: the cells are inline-blocks, so a wrap could fall between
+   any two of them, splitting a Thai word the browser would never break. */
+.menu-line { white-space: nowrap; }
+.ch {
+  position: relative;
+  display: inline-block;
+  white-space: pre;
+}
+.ch.hid { color: transparent; }
+.ch.hid::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 0.9em;
+  height: 0.9em;
+  min-width: 10px;
+  min-height: 10px;
+  transform: translate(-50%, -50%);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 3 L55.74 36.14 L71.92 28.08 L63.86 44.26 L97 50 L63.86 55.74 L71.92 71.92 L55.74 63.86 L50 97 L44.26 63.86 L28.08 71.92 L36.14 55.74 L3 50 L36.14 44.26 L28.08 28.08 L44.26 36.14Z' fill='%23F0D8A8' stroke='%23A88752' stroke-width='4' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ------------------------------------------------------------- footer */
+.site-footer {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px 48px;
+  margin-top: auto;
+  padding: 36px 40px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--frame-card);
+  color: var(--frame-ink);
+}
+.footer-mark {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+.footer-mark .brand-star { width: 56px; height: 56px; }
+.footer-mark span {
+  font-family: var(--frame-word);
+  font-size: 18px;
+  line-height: 1;
+  text-align: center;
+}
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+/* 24px tall: WCAG 2.2 SC 2.5.8 (Target Size, Minimum), as before the redesign. */
+.site-footer .footer-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--frame-ink);
+  text-decoration: none;
+}
+.site-footer .footer-links a:hover { text-decoration: underline; text-underline-offset: 0.3em; }
+.site-footer .footer-links a:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+.footer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--frame-muted);
+}
+
+/* ------------------------------------------------------------- phones */
+@media (max-width: 900px) {
+  :root {
+    --frame-menu-w: 100vw;
+    --frame-header-h: 60px;
+  }
+  .navpill { display: none; }
+  .wordmark { margin-left: 20px; }
+  .site-menu { border-radius: 0; padding-left: 24px; }
+  .menu-cols { grid-template-columns: minmax(0, 1fr); }
+  .menu-group { margin-bottom: 36px; }
+  .menu-top { font-size: 30px; }
+  .menu-sub a { min-height: 44px; font-size: 15px; }
+  .site-footer {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+    padding: 28px 24px;
+  }
+}
+
+/* ------------------------------------------------------------- Thai
+   Tracking and uppercase are Latin habits (see the Thai block at the top of
+   index.css): reset wherever this sheet sets them. */
+html[lang="th"] .wordmark a,
+html[lang="th"] .navpill a,
+html[lang="th"] .circlebtn,
+html[lang="th"] .menu-sub a,
+html[lang="th"] .site-footer .footer-links a {
+  letter-spacing: normal;
+}
+html[lang="th"] .menu-top { line-height: 1.4; }
+
+/* ------------------------------------------------------ reduced motion
+   The device setting and the in-app switch (motion.js mirrors it onto
+   <html>) both show the end state: the menu and the page arrive at once. */
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .burger span,
+  .wordmark a,
+  .navpill,
+  .site-menu,
+  #page { transition: none; }
+}
+html[data-reduce-motion] .site-header,
+html[data-reduce-motion] .burger span,
+html[data-reduce-motion] .wordmark a,
+html[data-reduce-motion] .navpill,
+html[data-reduce-motion] .site-menu,
+html[data-reduce-motion] #page { transition: none; }

@@ -12,7 +12,7 @@
 //     only on how many items are answered, never on which point was chosen
 //     (non-negotiable 1). Nothing inside an item moves: the ring is the only
 //     thing that settles.
-//   * A tab's icon HOPS once when its tab is chosen.
+//   (The tab icon's hop went with the tab bar in the redesign's first release.)
 //
 // Second release, on a chapter's first screen:
 //   * The REGION TITLE IS SPELLED IN GLINTS: each grapheme appears as a gold
@@ -52,8 +52,6 @@ const CARD_TILT_DEG = -2.5;
 const FLIP_DELAY_MS = 180;
 const FLIP_MS = 620;
 const FLIP_PERSPECTIVE = "perspective(600px)";
-const HOP_MS = 360;
-const HOP_PX = 5;
 
 // symbols.md S2: 8 particles on the star's angles in radar order, half glints
 // and half dots, travelling 70-110 px over 800 ms and fading from half-life.
@@ -281,23 +279,6 @@ export function playEnding({ draw, pieces, quiet }) {
   });
 }
 
-// --- the tab hop ---------------------------------------------------------------------
-
-export function hopTabIcon(icon) {
-  return runScene({
-    render: () => land([icon]),
-    park: (scope) => onAbort(scope, () => land([icon])),
-    play: async (scope) => {
-      const ok = await animate({
-        duration: HOP_MS, signal: scope.signal, reduced: "end",
-        update: (p) => writeMotionStyle(icon, { transform: `translateY(${r2(-HOP_PX * Math.sin(Math.PI * p))}px)` })
-      });
-      if (ok) land([icon]);
-      return ok;
-    },
-    reduced: "end"
-  });
-}
 
 // --- the chapter opening (second release) ---------------------------------------------
 

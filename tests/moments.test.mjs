@@ -11,7 +11,7 @@ installDom();
 const { setClock } = await import("../motion.js");
 const { disposeMotion } = await import("../views/motion-mount.js");
 const {
-  settleRing, playEnding, playOpening, hopTabIcon, isQuietChapter, QUIET_ASPECTS,
+  settleRing, playEnding, playOpening, isQuietChapter, QUIET_ASPECTS,
   glintTitleMarkup, caretLineMarkup, poseTug, releaseTug, tapTug
 } = await import("../views/moments.js");
 const { bindTug, TUG_SNAP_PX } = await import("../views/tug.js");
@@ -291,26 +291,6 @@ test("playOpening: a screen with a title but no line ends after the spelling", a
   const done = playOpening({ draw() {}, pieces: () => p });
   await tick.advance(2000);
   assert.equal(await done, true);
-});
-
-// --- the tab hop -----------------------------------------------------------------
-
-test("hopTabIcon: rises about 5px and lands", async () => {
-  const icon = makeNode("svg");
-  const done = hopTabIcon(icon);
-  await tick.advance(176);
-  const peak = Number(/translateY\(([-\d.]+)px\)/.exec(last(icon, "transform"))[1]);
-  assert.ok(peak < -4 && peak >= -5, `peak ${peak}`);
-  await tick.advance(400);
-  assert.equal(await done, true);
-  assert.equal(last(icon, "transform"), "");
-});
-
-test("hopTabIcon: with the in-app switch on, no hop", async () => {
-  localStorage.setItem("lbi_reduce_motion", "1");
-  const icon = makeNode("svg");
-  assert.equal(await hopTabIcon(icon), true);
-  assert.ok(!moved(icon));
 });
 
 // --- tug-the-ring (third release) ------------------------------------------------

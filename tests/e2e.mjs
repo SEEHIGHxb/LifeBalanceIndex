@@ -14,14 +14,19 @@
 //                             actually change it. Flow 4 runs in Thai, because
 //                             flow 3 leaves the app there, so it asserts on
 //                             pixels and storage and never on English strings.
-//   5. phone layout        -> at 375x812: no sideways pan, the tab bar stays
-//                             put, no field small enough to make iOS zoom, no
+//   5. phone layout        -> at 375x812: no sideways pan, the menu button
+//                             stays in reach, no field small enough to make iOS zoom, no
 //                             tap target under 44px, no radar label off the
 //                             card, and the radar near the top of the page.
 //   6. connected pre-fill  -> a payload written by a sibling app on this origin
 //                             reaches the review, names its source, lands on the
 //                             per-day unit, and stops the moment it is switched
 //                             off
+//   7. site menu           -> the burger opens it over an inert page, its
+//                             letters start as stars and all land, Thai cells
+//                             are whole graphemes, Escape closes it and hands
+//                             focus back, and reduced motion shows the letters
+//                             at once
 //
 // Usage: node tests/e2e.mjs <base-url>
 import { chromium } from "playwright";
@@ -36,6 +41,27 @@ page.on("pageerror", err => problems.push(`uncaught: ${err.message}`));
 page.on("console", msg => {
   if (msg.type() === "error") problems.push(`console.error: ${msg.text()}`);
 });
+
+// The app is navigated through the burger menu (redesign R1, which replaced the
+// tab bar): open it, follow the route's link, and wait for it to close, which
+// it does as the link is followed.
+async function goTo(route) {
+  await page.click("#btn-menu");
+  await page.click(`#site-menu a[href="#/${route}"]`);
+  await page.waitForSelector("body:not(.menu-open)", { state: "attached" });
+  // The page slides back into place over 520ms; measuring before it lands
+  // would read the half-moved page as a sideways overflow.
+  // Polled with evaluate: the CSP blocks the string eval waitForFunction uses.
+  for (let i = 0; i < 40; i++) {
+    const still = await page.evaluate(() => getComputedStyle(document.getElementById("page")).transform !== "none");
+    if (!still) return;
+    await page.waitForTimeout(50);
+  }
+  throw new Error("the page never slid back after the menu closed");
+}
+
+// Onboarded: the wordmark becomes a link home only once there is a home.
+const ONBOARDED = "#brand-home[href]";
 
 const readState = () => page.evaluate(() =>
   JSON.parse(localStorage.getItem("lifequest_state") || "null"));
@@ -145,7 +171,7 @@ try {
   // stopped in the middle of the assessment, and timed out waiting for a submit
   // button still hidden twenty-four screens away. Flows 2 through 6 then failed
   // with it, each reporting its own symptom ("null has no baseline",
-  // "#tab-dashboard never visible"), so one stale number read as six unrelated
+  // "the dashboard never appeared"), so one stale number read as six unrelated
   // breakages. Walking until no Next remains cannot go stale.
   //
   // Each Next re-validates its own screen, so a missed field still fails here
@@ -166,7 +192,7 @@ try {
   await page.waitForSelector('.survey-page:not(.d-none) button[type="submit"]', { timeout: 10000 });
   await page.click('#onboarding-form button[type="submit"]');
 
-  await page.waitForSelector("#tab-dashboard", { timeout: 10000 });
+  await page.waitForSelector(ONBOARDED, { state: "attached", timeout: 10000 });
   const state = await readState();
   if (!state?.onboarded) problems.push("flow1: state not onboarded after completing the assessment");
   if (state?.profile?.name !== "E2E Runner") problems.push("flow1: profile name not saved");
@@ -209,7 +235,7 @@ try {
     localStorage.setItem("lifequest_state", JSON.stringify(s));
   });
   await page.reload({ waitUntil: "networkidle" });
-  await page.click("#tab-review");
+  await goTo("review");
   await page.waitForSelector("#weekly-review-form", { timeout: 10000 });
 
   // The form is prefilled; only touch what changed this week.
@@ -241,9 +267,10 @@ try {
   // The other half of the gate: deferred is not the same as suppressed. With a
   // review on record the prompt has to actually arrive, or the birthday becomes
   // a question the app never asks and the level silently never advances.
-  await page.click("#tab-dashboard");
-  // #tab-dashboard is the tab BUTTON, and it is in the DOM the whole time — so
-  // waiting on it waited for nothing, and the check below raced renderDashboard.
+  await goTo("dashboard");
+  // The menu link is in the DOM the whole time, so waiting on it would wait for
+  // nothing, and the check below would race renderDashboard (the old tab button
+  // did exactly that).
   // This failed roughly one run in three, on this release AND on v77 (measured:
   // 2 of 4 on v77, 1 of 3 on HEAD), which is exactly the kind of intermittent
   // red that trains people to re-run CI instead of reading it.
@@ -269,7 +296,7 @@ try {
   if (!thaiBefore) problems.push("flow3: no Thai text rendered after toggle");
 
   await page.reload({ waitUntil: "networkidle" });
-  await page.waitForSelector("#tab-dashboard", { timeout: 10000 });
+  await page.waitForSelector(ONBOARDED, { state: "attached", timeout: 10000 });
   const thaiAfter = await page.evaluate(() => /[฀-๿]/.test(document.body.innerText));
   if (!thaiAfter) problems.push("flow3: Thai did not survive the reload");
   const persisted = await page.evaluate(() => localStorage.getItem("lifequest_lang"));
@@ -288,7 +315,7 @@ try {
 
   // Earlier flows leave the app on another route, and flow 3's reload preserves
   // the hash — so come back to the dashboard before looking for its controls.
-  await page.click("#tab-dashboard");
+  await goTo("dashboard");
   await page.waitForSelector("#btn-share-radar", { timeout: 10000 });
   await page.click("#btn-share-radar");
   await page.waitForSelector("#share-preview", { timeout: 10000 });
@@ -352,7 +379,7 @@ try {
 try {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto(BASE, { waitUntil: "networkidle" });
-  await page.click("#tab-dashboard");
+  await goTo("dashboard");
   await page.waitForSelector("#radar-chart-container svg", { timeout: 10000 });
 
   // Nothing may force the page to pan sideways.
@@ -360,18 +387,17 @@ try {
     document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
   if (pans) problems.push("flow5: the page scrolls horizontally at 375px");
 
-  // The tab bar is fixed, so it must still be on screen at the very bottom of
-  // a long page — that is the whole point of moving it there.
+  // Navigation must stay in reach on a long page: the header, and the menu
+  // button in it, are sticky, so they are still on screen at the very bottom.
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await page.waitForTimeout(300);
   const nav = await page.evaluate(() => {
-    const el = document.querySelector(".nav-tabs");
-    const r = el.getBoundingClientRect();
-    return { position: getComputedStyle(el).position, top: r.top, bottom: r.bottom,
-      onScreen: r.top < window.innerHeight && r.bottom > 0 };
+    const r = document.getElementById("btn-menu").getBoundingClientRect();
+    return { position: getComputedStyle(document.getElementById("site-header")).position,
+      onScreen: r.top >= 0 && r.bottom <= window.innerHeight };
   });
-  if (nav.position !== "fixed") problems.push(`flow5: nav is ${nav.position}, expected fixed`);
-  if (!nav.onScreen) problems.push("flow5: the tab bar scrolled off screen");
+  if (nav.position !== "sticky") problems.push(`flow5: the header is ${nav.position}, expected sticky`);
+  if (!nav.onScreen) problems.push("flow5: the menu button scrolled off screen");
 
   // 16px is a hard iOS threshold, not a preference: 15.9px still zooms.
   // Radios and checkboxes are exempt — they open no keyboard.
@@ -393,7 +419,7 @@ try {
   // the thing a thumb actually hits, so measure that instead.
   const smallTargets = await page.evaluate(() => {
     const out = [];
-    document.querySelectorAll("button, a.btn, .tab-btn, .radio-option").forEach(el => {
+    document.querySelectorAll("button, a.btn, .radio-option").forEach(el => {
       const r = el.getBoundingClientRect();
       if (!r.width || !r.height) return;
       if (r.height < 44) out.push(`${el.className || el.tagName}:${Math.round(r.height)}px`);
@@ -474,7 +500,7 @@ try {
     localStorage.setItem("lifequest_state", JSON.stringify(s));
   });
   await page.reload({ waitUntil: "networkidle" });
-  await page.click("#tab-review");
+  await goTo("review");
   await page.waitForSelector("#weekly-review-form", { timeout: 10000 });
 
   const days = await page.inputValue("#rev-weeklyVigorousDays");
@@ -525,12 +551,56 @@ try {
     localStorage.setItem("lifequest_state", JSON.stringify(s));
   });
   await page.reload({ waitUntil: "networkidle" });
-  await page.click("#tab-review");
+  await goTo("review");
   await page.waitForSelector("#weekly-review-form", { timeout: 10000 });
   const offChips = await page.$$("#weekly-review-form .prefill-chip");
   if (offChips.length) problems.push(`flow6: ${offChips.length} chip(s) survived switching the connection off`);
 } catch (err) {
   problems.push(`flow6 (connected pre-fill): ${err.message}`);
+}
+
+// --- FLOW 7: the site menu (redesign R1) ---
+// Runs in Thai at 375px, where flows 5 and 6 left the app, so it asserts on
+// state and structure rather than on English strings.
+try {
+  const menuState = () => page.evaluate(() => ({
+    expanded: document.getElementById("btn-menu").getAttribute("aria-expanded"),
+    hidden: document.getElementById("site-menu").getAttribute("aria-hidden"),
+    inert: document.getElementById("page").hasAttribute("inert"),
+    stars: document.querySelectorAll("#site-menu .ch.hid").length,
+    inMenu: !!document.activeElement?.closest("#site-menu"),
+    focus: document.activeElement?.id || ""
+  }));
+  await page.click("#btn-menu");
+  const opened = await menuState();
+  if (opened.expanded !== "true" || opened.hidden !== "false") {
+    problems.push(`flow7: the menu did not open (aria-expanded ${opened.expanded}, aria-hidden ${opened.hidden})`);
+  }
+  if (!opened.inert) problems.push("flow7: the page behind the open menu is not inert");
+  if (!opened.inMenu) problems.push("flow7: focus did not move into the open menu");
+  if (!opened.stars) problems.push("flow7: the menu's letters did not start as stars");
+  // Every line lands by 1040ms.
+  await page.waitForTimeout(1300);
+  const landed = await menuState();
+  if (landed.stars) problems.push(`flow7: ${landed.stars} letters were still stars after the reveal`);
+  // A Thai vowel or tone mark alone in a cell means the text was split by code
+  // unit, not by grapheme.
+  const orphans = await page.evaluate(() => [...document.querySelectorAll("#site-menu .ch")]
+    .filter(c => /^[\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]/.test(c.textContent)).length);
+  if (orphans) problems.push(`flow7: ${orphans} menu cells start with a Thai mark`);
+  await page.keyboard.press("Escape");
+  const closed = await menuState();
+  if (closed.expanded !== "false" || closed.inert) problems.push("flow7: Escape did not close the menu");
+  if (closed.focus !== "btn-menu") problems.push(`flow7: after Escape focus is on #${closed.focus}, not the menu button`);
+  // Reduced motion: the letters are simply there.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.click("#btn-menu");
+  const reduced = await menuState();
+  if (reduced.stars) problems.push(`flow7: with reduced motion ${reduced.stars} letters started as stars`);
+  await page.keyboard.press("Escape");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+} catch (err) {
+  problems.push(`flow7 (site menu): ${err.message}`);
 }
 
 await browser.close();
@@ -539,4 +609,4 @@ if (problems.length) {
   console.error("E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("e2e passed: onboarding, the weekly review, TH persistence, the share card, the phone layout, and the connected pre-fill all work");
+console.log("e2e passed: onboarding, the weekly review, TH persistence, the share card, the phone layout, the connected pre-fill, and the site menu all work");

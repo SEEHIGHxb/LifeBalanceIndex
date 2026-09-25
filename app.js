@@ -16,14 +16,14 @@ import {
   getLumiTip,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=95";
+} from "./ui.js?v=96";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang, graphemes } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
 import { syncReduceMotionAttr } from "./motion.js";
 import { disposeMotion } from "./views/motion-mount.js";
 import { disposeCeremony } from "./views/ceremony.js";
-import { hopTabIcon } from "./views/moments.js";
+import { bindMenu, renderMenu, closeMenu, syncMenuRoute } from "./views/menu.js";
 
 const TOAST_DURATION_MS = 1600;
 const REWARD_DURATION_MS = 1900;
@@ -80,41 +80,26 @@ function routeFromHash() {
   return { type: "tab", tab: TABS.includes(path) ? path : DEFAULT_TAB };
 }
 
-function navigateTo(tab) {
-  const target = `#/${tab}`;
-  if (window.location.hash === target) {
-    renderActiveTab(); // same-tab click: just refresh
-  } else {
-    window.location.hash = target; // hashchange listener renders
-  }
-}
-
 // Translate the static header/nav chrome that lives in index.html.
 function applyChromeTranslations() {
   document.documentElement.lang = getLang();
   document.title = t("Life Balance Index — Personal Wellbeing Assessment");
-  const brandTitle = document.querySelector("header .brand h1");
-  if (brandTitle) brandTitle.textContent = t("Life Balance Index");
-  const brandSub = document.querySelector("header .brand p");
-  if (brandSub) brandSub.textContent = t("Personal Wellbeing Assessment");
   const setText = (id, text) => {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
   };
+  // The wordmark reads LIFE BALANCE INDEX in both languages; its accessible
+  // name is the translated app name.
+  setText("brand-name", t("Life Balance Index"));
   setText("skip-link", t("Skip to main content"));
-  setText("btn-profile", t("Profile"));
-  // The label span only: the button also holds its icon.
-  const setTabLabel = (tab, text) => {
-    const el = document.querySelector(`#tab-${tab} .tab-label`);
-    if (el) el.textContent = text;
-  };
-  setTabLabel("dashboard", t("Overview"));
-  setTabLabel("review", t("Weekly Review"));
-  setTabLabel("quests", t("Goals"));
-  setTabLabel("leaderboard", t("Side by Side"));
+  setText("navpill-dashboard", t("Overview"));
+  setText("navpill-review", t("Weekly Review"));
+  setText("navpill-quests", t("Goals"));
+  setText("navpill-leaderboard", t("Side by Side"));
   setText("footer-privacy", t("Privacy & Data"));
   setText("footer-methodology", t("Methodology"));
   setText("footer-source", t("Source code & license"));
+  setText("footer-local", t("Stored only in this browser"));
   setText("footer-version", tp("Version {v}", { v: APP_VERSION }));
   // The toggle shows the language you would switch TO.
   setText("btn-lang", getLang() === "th" ? "EN" : "ไทย");
@@ -154,21 +139,22 @@ function initializeApp() {
   applyChromeTranslations();
   setupSkipLink();
   setupLanguageToggle();
+  bindMenu();
+  renderMenu({ onboarded: state.onboarded });
   maybeOfferRecovery();
 
   if (!state.onboarded) {
     // Show Onboarding Survey
-    document.getElementById("nav-container").classList.add("d-none");
+    document.getElementById("navpill").classList.add("d-none");
     document.getElementById("main-view").innerHTML = `<div id="onboarding-mount"></div>`;
     document.getElementById("assistant-mount").classList.add("d-none");
-    // The header Profile button is dead during first run: setupNavigation()
-    // binds its only listener, and that runs solely in the onboarded branch
-    // below. Even wired up it would go nowhere — the #/profile route resolves
-    // through initializeApp, which re-renders onboarding while !onboarded. So
-    // it was a control that could be pressed and never responded. The language
-    // toggle beside it stays: it is bound unconditionally, and a Thai reader
-    // needs it on the very first screen.
-    document.getElementById("btn-profile").classList.add("d-none");
+    // Every in-app route resolves through initializeApp, which re-renders
+    // onboarding while !onboarded, so a link to one would be pressed and never
+    // respond. The menu offers only the journey and the static Privacy page
+    // until then (views/menu.js), and the wordmark stops being a link: an <a>
+    // with no href is not focusable and is not announced as one. The language
+    // toggle stays: a Thai reader needs it on the very first screen.
+    document.getElementById("brand-home").removeAttribute("href");
     // Same defect, same reason, one floor down: the footer's Methodology link
     // points at #/methodology, which resolves through initializeApp and so
     // re-renders onboarding while !onboarded. Clicking it changed the hash and
@@ -193,36 +179,12 @@ function initializeApp() {
       initializeApp();
     });
   } else {
-    document.getElementById("nav-container").classList.remove("d-none");
+    document.getElementById("navpill").classList.remove("d-none");
     document.getElementById("assistant-mount").classList.remove("d-none");
-    document.getElementById("btn-profile").classList.remove("d-none");
+    document.getElementById("brand-home").setAttribute("href", "#/dashboard");
     document.getElementById("footer-methodology").classList.remove("d-none");
-    setupNavigation();
     setupAssistant();
     renderActiveTab();
-  }
-}
-
-function setupNavigation() {
-  TABS.forEach((tab, index) => {
-    const btn = document.getElementById(`tab-${tab}`);
-    if (btn) {
-      // Remove old listeners by cloning node (clean re-binding)
-      const newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-      newBtn.addEventListener("click", () => navigateTo(tab));
-      // Roving-tabindex arrow-key navigation (WCAG tablist pattern, finding #12)
-      newBtn.addEventListener("keydown", (e) => handleTabKeydown(e, index));
-    }
-  });
-
-  // Bind the header Profile button. Reset/Export/Import moved onto the Profile
-  // & Data page and are bound there when that view renders.
-  const profileBtn = document.getElementById("btn-profile");
-  if (profileBtn) {
-    const newProfileBtn = profileBtn.cloneNode(true);
-    profileBtn.parentNode.replaceChild(newProfileBtn, profileBtn);
-    newProfileBtn.addEventListener("click", () => navigateTo("profile"));
   }
 }
 
@@ -263,23 +225,6 @@ function confirmReset() {
   overlay.querySelector(".btn-reset-cancel").addEventListener("click", close);
 }
 
-// Roving-tabindex arrow-key handler for the tablist (finding #12): Left/Right
-// wrap around, Home/End jump to the ends, and moving focus also activates.
-function handleTabKeydown(e, index) {
-  const delta = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-  let target = null;
-  if (delta) target = (index + delta + TABS.length) % TABS.length;
-  else if (e.key === "Home") target = 0;
-  else if (e.key === "End") target = TABS.length - 1;
-  else return;
-  e.preventDefault();
-  const btn = document.getElementById(`tab-${TABS[target]}`);
-  if (btn) {
-    btn.focus();
-    navigateTo(TABS[target]);
-  }
-}
-
 function renderActiveTab() {
   // Whatever the last view set moving ends here, before the next one draws:
   // its springs, frame loops and window listeners all hang off this mount.
@@ -290,18 +235,8 @@ function renderActiveTab() {
   const route = routeFromHash();
   const activeTab = route.type === "tab" ? route.tab : null;
 
-  // Reflect route in tab buttons (none active on aspect pages)
-  TABS.forEach(tab => {
-    const btn = document.getElementById(`tab-${tab}`);
-    if (btn) {
-      const isActive = tab === activeTab;
-      btn.classList.toggle("active", isActive);
-      btn.setAttribute("aria-selected", isActive ? "true" : "false");
-      // Roving tabindex: the selected tab (or the first tab on non-tab routes)
-      // is the single tab stop (finding #12).
-      btn.tabIndex = tab === (activeTab || TABS[0]) ? 0 : -1;
-    }
-  });
+  // Mark the current route in the menu and the quick links (aria-current).
+  syncMenuRoute(routePath(route));
 
   if (route.type === "aspect") {
     renderAspectPage("main-view", state, route.key);
@@ -336,19 +271,13 @@ function renderActiveTab() {
 
   announceRoute(route);
   updateAssistantBubble();
-  hopChosenTab(activeTab);
 }
 
-// The chosen tab's icon hops once, and only when the tab actually changed:
-// not on first paint, not on a re-render of the same tab. Last, after the
-// view has rendered, so the view's own mount cannot cut it short.
-let lastHoppedTab = null;
-function hopChosenTab(activeTab) {
-  const previous = lastHoppedTab;
-  lastHoppedTab = activeTab;
-  if (!activeTab || !previous || previous === activeTab) return;
-  const icon = document.querySelector(`#tab-${activeTab} .tab-icon`);
-  if (icon) hopTabIcon(icon).catch(err => console.error("Tab hop failed:", err));
+// The hash path a route lives at, without "#/": what the menu's links point to.
+function routePath(route) {
+  if (route.type === "tab") return route.tab;
+  if (route.type === "aspect") return `aspect/${route.key}`;
+  return route.type;
 }
 
 // Announce the current view to screen readers on navigation (finding #12).
@@ -782,8 +711,14 @@ window.addEventListener("lifequest_storage_error", () => {
   setTimeout(() => { storageErrorToastShown = false; }, 8000);
 });
 
-// Re-render when the route changes (back/forward buttons, tab clicks)
+// Re-render when the route changes (back/forward buttons, menu links). A route
+// change with the menu still open (the back button) closes it and puts focus
+// on the new view, where a followed link would have put it.
 window.addEventListener("hashchange", () => {
+  if (document.body.classList.contains("menu-open")) {
+    closeMenu({ restoreFocus: false });
+    document.getElementById("main-view")?.focus({ preventScroll: true });
+  }
   if (stateManager.state.onboarded) {
     renderActiveTab();
   }

@@ -341,56 +341,8 @@ header {
   margin-top: 4px;
 }
 
-/* Navigation Tabs */
-.nav-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid var(--color-card-border);
-}
-
-.tab-btn {
-  font-family: var(--font-sans);
-  font-size: var(--text-md);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: color var(--transition-speed) ease, border-color var(--transition-speed) ease;
-  position: relative;
-  margin-bottom: -1px;
-}
-
-.tab-btn:hover {
-  color: var(--color-navy);
-}
-
-.tab-btn.active {
-  color: var(--color-navy);
-  border-bottom-color: var(--color-accent);
-  font-weight: 600;
-}
-
-/* Tab icons: the one-line motifs (symbols.md S8 keeps line art below 64 px).
- * Overview is the Lumi Star; the others borrow the region nearest in meaning. */
-.tab-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.tab-icon {
-  width: 18px;
-  height: 18px;
-  flex: none;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
+/* The tab bar that stood here was replaced by the burger menu in the
+   redesign's first release (css/frame.css, views/menu.js). */
 
 /* Cards / panels */
 .card {
@@ -426,28 +378,6 @@ header {
 @media (max-width: 768px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
-  }
-  .nav-tabs {
-    flex-wrap: wrap;
-    gap: 2px;
-  }
-  .tab-btn {
-    flex: 1 1 auto;
-    justify-content: center;
-    text-align: center;
-    padding: 8px 10px;
-  }
-}
-
-/* On phones the four tabs cannot share one row; a balanced 2x2 grid beats
-   flex-wrap's stretched orphan row (three tabs up top, one full-width below). */
-@media (max-width: 540px) {
-  .nav-tabs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-  .tab-btn {
-    padding: 8px 6px;
   }
 }
 
@@ -509,8 +439,7 @@ header {
    1px over 0ms is feedback, not decoration, and provokes no vestibular
    response. Suppressing it would withdraw the tap confirmation from exactly
    the readers most likely to need confirming. */
-.btn:active,
-.tab-btn:active {
+.btn:active {
   transform: translateY(1px);
 }
 
@@ -647,19 +576,7 @@ header {
   }
 }
 
-/* Header action buttons. These values are exactly what used to sit in inline
-   `style` attributes on #btn-lang / #btn-profile; they moved here only so the
-   mobile layer can override them, which inline styles would have prevented. */
-.header-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.btn-compact {
-  font-size: var(--text-sm);
-  padding: 4px 10px;
-}
+/* The header's own controls are styled in css/frame.css. */
 
 /* The Remove control on each pledge row. Its font-size and padding lived in a
    style="" attribute on the button (views/quests.js:36) — the same trap
@@ -2885,7 +2802,7 @@ body.journey-lit .app-footer {
    scrollIntoView takes its behaviour from the options object rather than from
    scroll-behavior here. Those four sites now ask prefersReducedMotion() in
    views/helpers.js — change one side and check the other.
-   .btn:active / .tab-btn:active are excluded on purpose; see the note on that
+   .btn:active is excluded on purpose; see the note on that
    rule for why 1px of press feedback should survive the preference. */
 @media (prefers-reduced-motion: reduce) {
   .reward-pop { animation: reward-out 0.4s ease-in 1.5s both; }
@@ -2975,10 +2892,9 @@ html[data-reduce-motion] .survey-page[data-instrument] fieldset.survey-question 
      Container and card padding each charged 24px a side, so 26% of a 375px
      screen was padding and the content column came to 277px. Halving both
      buys back 32px without disturbing the desktop rhythm.
-     The bottom padding clears the fixed tab bar AND the floating assistant
-     that now sits above it; see the assistant rule below. */
+     The bottom padding clears the floating assistant; see its rule below. */
   .app-container {
-    padding: 14px 16px calc(176px + env(safe-area-inset-bottom));
+    padding: 14px 16px calc(120px + env(safe-area-inset-bottom));
   }
 
   .card {
@@ -3006,75 +2922,14 @@ html[data-reduce-motion] .survey-page[data-instrument] fieldset.survey-question 
   .brand h1 { font-size: var(--text-xl); }
   .brand p { display: none; }
 
-  .header-actions { gap: 6px; flex-shrink: 0; }
-
-  /* Overriding what were inline styles until this release. */
-  .btn-compact {
-    font-size: var(--text-base);
-    padding: 10px 12px;
-    min-height: 44px;
-  }
-
-  /* --- Bottom tab bar ----------------------------------------------------
-     The tabs were position: static, so on a five-screen page the only way to
-     change section was to scroll back to the top. Fixed to the bottom they
-     are always within thumb reach, and the top of the screen is freed.
-     .d-none carries !important, so onboarding still hides this correctly. */
-  .nav-tabs {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 200;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    margin: 0;
-    background: var(--color-card-bg);
-    border-top: 1px solid var(--color-card-border);
-    border-bottom: none;
-    /* env() resolves only because index.html sets viewport-fit=cover. */
-    padding-bottom: env(safe-area-inset-bottom);
-    box-shadow: 0 -2px 10px rgba(31, 39, 51, 0.06);
-  }
-
-  .tab-btn {
-    display: flex;
-    /* Icon above label: the bar is a thumb target, the icon is its landmark. */
-    flex-direction: column;
-    gap: 2px;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    /* Four labels share 375px and none fits on one line at a readable size, so
-       they wrap. `overflow-wrap: anywhere` is what makes Thai work: "ทบทวนราย-
-       สัปดาห์" (Weekly Review) is a single 92px token with no spaces to break
-       on, which overflowed a 94px column at 375px and an 80px one at 320px.
-       Thai breaks legitimately at any character, so allowing it costs nothing
-       and keeps the label at the 12px floor instead of shrinking to fit.
-       Verified clipping-free in EN and TH at both 375px and 320px. */
-    font-size: var(--text-xs);
-    overflow-wrap: anywhere;
-    line-height: 1.15;
-    padding: 6px 2px;
-    min-height: 58px;
-    margin-bottom: 0;
-    border-bottom: none;
-  }
-
-  /* A bottom border would sit on the screen edge where it cannot be seen. */
-  .tab-btn.active {
-    border-bottom-color: transparent;
-    box-shadow: inset 0 2px 0 var(--color-accent);
-  }
-
   /* --- Floating assistant ------------------------------------------------
-     It was fixed at bottom:24px right:24px and 348px wide, which is exactly
-     where the tab bar now lives. Lift it clear and let it span the width. */
+     348px wide at bottom:24px right:24px does not fit a phone: span the
+     width instead. The bottom tab bar it used to clear is gone (redesign R1);
+     env() resolves only because index.html sets viewport-fit=cover. */
   .assistant-wrapper {
     left: 12px;
     right: 12px;
-    bottom: calc(68px + env(safe-area-inset-bottom));
+    bottom: calc(12px + env(safe-area-inset-bottom));
   }
 
   .speech-bubble { max-width: none; font-size: var(--text-base); }

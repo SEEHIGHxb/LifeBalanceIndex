@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `95`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `96`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,44 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.44.0] — 2026-09-25 (APP_VERSION 96)
+
+The redesign, first release (R1 of [docs/redesign-build-plan.md](docs/redesign-build-plan.md)):
+the frame of the approved prototype around the screens the app has today.
+
+### Changed
+
+- **A burger menu replaces the bottom tab bar.** It opens a dark panel from
+  the left while the page slides aside, and every line starts as small gilt
+  stars that turn into letters, all finishing together. It reaches Overview,
+  the Weekly Review, Goals, Side by Side, the eight regions' aspect pages,
+  Profile, Your year, Methodology and Privacy & Data. While it is open the page
+  behind is inert; Escape closes it and hands focus back to the button.
+  Reduced motion (the device setting or the in-app switch) shows the letters
+  and the menu at once. Before onboarding it offers only the journey and
+  Privacy, since every other route would re-render the journey.
+- **The header** is the Anton wordmark (LIFE BALANCE INDEX in both languages,
+  with the translated name for screen readers), the language button, and on a
+  wide screen the quick links to the four main screens. Profile moved from the
+  header into the menu. The header stays at the top while the page scrolls.
+- **The footer** is a white card with the star over the stacked wordmark, the
+  Privacy, Methodology and Source links, and "Stored only in this browser".
+- **The Anton font is bundled** (18.6 KB, Latin only, SIL Open Font License,
+  `assets/fonts/OFL-Anton.txt`) and precached, so nothing loads off-origin.
+- The frame's styles live in their own sheet, `css/frame.css`.
+
+### Removed
+
+- The tab bar, its icons and the icons' hop (`hopTabIcon`): the first of the
+  Phase 3-4 moments retired screen by screen, as the plan decided.
+
+### Tests
+
+- The browser flows navigate through the menu. A new e2e flow checks the
+  menu: inert page, stars that all land, whole Thai graphemes, Escape and
+  focus, and the reduced-motion path. The phone check now asserts that the
+  menu button stays in reach on a long page, where it asserted the tab bar did.
 
 ## [2.43.0] — 2026-09-24 (APP_VERSION 95)
 

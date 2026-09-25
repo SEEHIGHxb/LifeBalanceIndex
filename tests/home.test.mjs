@@ -44,15 +44,28 @@ const render = (state) => {
 
 // --- your star ------------------------------------------------------------------
 
-test("your star has a tip per aspect, each as long as its score", () => {
-  const svg = yourStarSvg([100, 50, 80, 30, 60, 70, 40, 90]);
-  const points = svg.match(/points="([^"]+)"/)[1].split(" ").map(Number);
-  // 8 tips and 8 valleys, x and y each.
-  assert.equal(points.length, 32);
-  const tip = (i) => Math.hypot(points[i * 4] - 50, points[i * 4 + 1] - 50);
-  assert.ok(Math.abs(tip(0) - 47) < 0.01, "a full score reaches the edge");
-  assert.ok(Math.abs(tip(1) - 23.5) < 0.01, "half a score reaches half way");
-  assert.ok(tip(3) > 47 * (13 / 46), "a low score keeps a tip beyond the valleys");
+const polygons = (svg) => [...svg.matchAll(/<polygon points="([^"]+)"/g)].map(m => m[1].split(" ").map(Number));
+const radius = (pts, k) => Math.hypot(pts[k * 2] - 50, pts[k * 2 + 1] - 50);
+
+test("your star's outline is the same symmetric star whatever the scores", () => {
+  const lopsided = polygons(yourStarSvg([100, 5, 80, 30, 60, 70, 40, 90]))[0];
+  const even = polygons(yourStarSvg([50, 50, 50, 50, 50, 50, 50, 50]))[0];
+  assert.deepEqual(lopsided, even, "the outline must not follow the scores");
+  // 8 tips at the rim, 8 valleys at S1's depth.
+  for (let i = 0; i < 8; i++) {
+    assert.ok(Math.abs(radius(lopsided, i * 2) - 47) < 0.01, `tip ${i} is off the rim`);
+    assert.ok(Math.abs(radius(lopsided, i * 2 + 1) - 47 * 13 / 46) < 0.01, `valley ${i} is off S1's depth`);
+  }
+});
+
+test("each ray fills from the centre to its score", () => {
+  const [, ...rays] = polygons(yourStarSvg([100, 50, 80, 30, 60, 70, 40, 0]));
+  assert.equal(rays.length, 9, "the ground, eight rays, then the outline on top");
+  // A ray is centre, valley, tip, valley: its tip is the fill level.
+  const level = (i) => radius(rays[i], 2) / 47;
+  assert.ok(Math.abs(level(0) - 1) < 0.001, "a full score fills the ray");
+  assert.ok(Math.abs(level(1) - 0.5) < 0.001, "half a score fills half the ray");
+  assert.ok(level(7) < 0.001, "a zero leaves the ray empty");
 });
 
 test("your star never breaks on a missing or junk score", () => {
@@ -61,21 +74,39 @@ test("your star never breaks on a missing or junk score", () => {
 
 // --- the page -------------------------------------------------------------------
 
-test("the hero names the Balance Index for readers, and the headline names real regions", () => {
+test("the top names the Balance Index for readers, and the headline names real regions", () => {
   const html = render(STATE);
   assert.match(html, /<h2 class="sr-only">Your star — Balance Index \d+<\/h2>/);
-  const head = html.match(/class="sr-only">(Strongest in [^<]+)</);
-  assert.ok(head, "the typed headline lost its reader copy");
+  const head = html.match(/class="home-headline">(Strongest in [^<]+)</);
+  assert.ok(head, "the headline is missing");
   assert.ok(CHAPTERS.some(c => head[1].includes(c.region)), `no region named in "${head[1]}"`);
-  assert.match(html, /is asking for more\./);
+  assert.match(head[1], /is asking for more\./);
+  assert.match(html, /class="star-hit" type="button" aria-label="Play with your star"/);
 });
 
-test("every aspect card links to its aspect and shows its average", () => {
+test("every aspect is one row that links to its aspect and shows its average", () => {
   const html = render(STATE);
+  assert.equal((html.match(/class="aspect-row"/g) || []).length, 8);
   for (const chapter of CHAPTERS) {
-    assert.match(html, new RegExp(`href="#/aspect/${chapter.aspect}"`));
+    assert.match(html, new RegExp(`class="aspect-row" href="#/aspect/${chapter.aspect}"`));
   }
   assert.equal((html.match(/class="score-average"/g) || []).length, 8);
+});
+
+test("Home is compact: no full-screen hero, photo band or repeated panels", () => {
+  const html = render(STATE);
+  for (const gone of ['class="hero"', 'class="panel mission"', "photoband", "home-you", "panel careers", "region-card"]) {
+    assert.ok(!html.includes(gone), `Home still renders ${gone}`);
+  }
+  // Where to start comes before Recent.
+  assert.ok(html.indexOf("(Where to start)") < html.indexOf("(Recent)"));
+});
+
+test("the to-do list says when the next review opens once this week's is done", () => {
+  const html = render({ ...STATE, reviews: [{ date: new Date().toISOString(), goals: [], xp: 0, shifts: {} }] });
+  assert.match(html, /class="todo todo-done"/);
+  assert.match(html, /Done for this week\./);
+  assert.doesNotMatch(html, /Weekly review open\./);
 });
 
 test("a hostile name, pledge id and review shift are escaped or dropped", () => {
@@ -116,5 +147,5 @@ test("the care notice leads the page, before your star", () => {
   const html = render({ ...STATE, baseline: { ...STATE.baseline, who5: 0, st5: 20 } });
   const notice = html.indexOf("care-banner");
   assert.ok(notice > -1, "the fixture must cross the cutoff or this test proves nothing");
-  assert.ok(notice < html.indexOf('class="hero"'), "the notice must come before the hero");
+  assert.ok(notice < html.indexOf("home-top"), "the notice must come before your star");
 });

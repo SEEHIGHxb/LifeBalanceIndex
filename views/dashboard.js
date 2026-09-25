@@ -1,25 +1,26 @@
-// views/dashboard.js - Home (redesign R3; docs/prototype/redesign/proto.js
-// homeHTML, with the section-to-content map the owner approved on 2026-09-25).
+// views/dashboard.js - Home. First built as the redesign's full-screen stage
+// (R3, 2026-09-25); made compact on 2026-09-26 with the map the owner approved
+// then, because a page you open every week should read at a glance.
 //
 // Top to bottom:
 //   notice      the duty-of-care notice, only past the screening cutoff; still
-//   hero        your star (the radar shape of your scores) and the Balance Index
-//   headline    your strongest region and the one asking for more
-//   you         the Balance Index band and standing, name, level and points
-//   to do       the prompts you can act on, most urgent first
-//   aspects     one card per region: score, average, grade and standing
-//   band        three regions' photographs
+//   top         your star beside the Balance Index, its band and standing,
+//               your strongest region and the one asking for more, then your
+//               name, level and points
+//   to do       everything to act on, most urgent first, the in-depth offer
+//               while it is unfinished, and when the next review opens
+//   aspects     one row per region: score against the average, standing,
+//               grade; each opens its aspect page
+//   start       the recommendations
 //   recent      reviews, re-assessments and the journey, newest first
-//   start       the recommendations (Lumi's panel takes them over in R5)
 //   pledges     your active pledges as stickers
-//   deeper      the in-depth offer, below the scores, while it is unfinished
-//   check-in    the call to this week's review
 //
-// Beside the care notice the whole page is still: no hero, no typing, no
-// sliding cards (the old ceremony's quiet rule, kept).
+// Beside the care notice the whole page is still: the star does not burst
+// and the wall does not drift (the old ceremony's quiet rule, kept).
 
 import { stateManager } from "../state.js";
 import { AVERAGE_ASPECT_SCORES } from "../averages.js";
+import { starOutline, starRay } from "../chart.js";
 import { getAllBenchmarks, collectSources } from "../benchmarks.js";
 import { getAspectConfidence, ASPECT_KEYS, isAspectDeepVerified } from "../aspects.js";
 import { getTopSuggestions, getMentalHealthNotice } from "../suggestions.js";
@@ -31,11 +32,11 @@ import { goalTemplate } from "../goals.js";
 import { seasonPace } from "../season.js";
 import { openShareSheet } from "./share.js";
 import { CHAPTERS } from "./journey.js";
-import { SPRITES, onAbort } from "./stage.js";
+import { SPRITES, onAbort, burst } from "./stage.js";
 import {
   chapterOf, aspectName, dotDate, shiftSummary, motifIcon, motifThumb, starThumb, newsRow
 } from "./news.js";
-import { heroMarkup, missionMarkup, bandMarkup, label, renderStagePage } from "./stage-page.js";
+import { EVERY_MOTIF, label, renderStagePage } from "./stage-page.js";
 import { writeMotionStyle } from "./motion-mount.js";
 import { nextReviewDate } from "./review.js";
 import { t, tp } from "../i18n.js";
@@ -44,7 +45,6 @@ import {
   mentalHealthNotice, gradeBadge, balanceIndexBlock, CHECKIN_ASPECTS
 } from "./helpers.js";
 
-const BAND_REGIONS = [1, 0, 7];
 const RECENT_ROWS = 5;
 const WALL_COLUMNS = 6;
 const WALL_ROWS = 8;
@@ -56,28 +56,32 @@ const WALL_DRIFT = 420;
 const DESKTOP_REF = 2545;
 
 // --- your star ------------------------------------------------------------
-// The radar shape of the eight scores, drawn in the gilt star's inks: a tip
-// per aspect in CHAPTERS order (the radar's order), valleys between them. A
-// score near zero still keeps a small tip, so the shape never collapses.
-const STAR_VALLEY = 13 / 46; // story-card.js's valley
-const ANG = (i) => -Math.PI / 2 + i * Math.PI / 4;
-const pt = (r, a) => `${(50 + r * Math.cos(a)).toFixed(2)} ${(50 + r * Math.sin(a)).toFixed(2)}`;
+// The symmetric star (chart.js starOutline/starRay) in a 100x100 box: the
+// outline in the gilt star's line, each ray filled in gold to its score over
+// a pale ground. Rays follow CHAPTERS order, which is RADAR_KEYS order.
+const STAR_R = 47;
+export const STAR_INK = { ground: "#FBF3E2", fill: "#E2B866", line: "#A88752" };
+const attr = (pts) => pts.map(p => `${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(" ");
 
-const starTips = (scores) => scores.map(s => 47 * Math.max(STAR_VALLEY * 1.35, (Number(s) || 0) / 100));
+export const starOutlineAttr = () => attr(starOutline(50, 50, STAR_R));
+export const starRayAttr = (i, score, half = "both") => attr(starRay(i, score, 50, 50, STAR_R, half));
 
-// The star's outline in a 100x100 box, for a <polygon>: Side by Side lays two
-// of them over each other.
-export function starPointsAttr(scores) {
-  return starTips(scores).flatMap((r, i) => [pt(r, ANG(i)), pt(47 * STAR_VALLEY, ANG(i) + Math.PI / 8)]).join(" ");
+// Each ray's fill level as an open chevron (valley, tip, valley): Side by
+// Side dashes the population average this way.
+export function starLevelPath(scores) {
+  return scores.map((s, i) => {
+    const [, a, tip, b] = starRay(i, s, 50, 50, STAR_R);
+    return `M${a.x.toFixed(2)} ${a.y.toFixed(2)}L${tip.x.toFixed(2)} ${tip.y.toFixed(2)}L${b.x.toFixed(2)} ${b.y.toFixed(2)}`;
+  }).join("");
 }
 
 export function yourStarSvg(scores) {
-  const tips = starTips(scores);
-  const points = starPointsAttr(scores);
-  const spokes = tips.map((r, i) => `M50 50L${pt(r, ANG(i))}`).join("");
+  const outline = starOutlineAttr();
+  const rays = scores.map((s, i) => `<polygon points="${starRayAttr(i, s)}"/>`).join("");
   return `<svg viewBox="0 0 100 100" aria-hidden="true">` +
-    `<polygon points="${points}" fill="#F0D8A8" stroke="#A88752" stroke-width="3.2" stroke-linejoin="round"/>` +
-    `<path d="${spokes}" stroke="#A88752" stroke-width="1.6" stroke-opacity=".5" stroke-linecap="round"/>` +
+    `<polygon points="${outline}" fill="${STAR_INK.ground}"/>` +
+    `<g class="star-rays" fill="${STAR_INK.fill}">${rays}</g>` +
+    `<polygon points="${outline}" fill="none" stroke="${STAR_INK.line}" stroke-width="2.8" stroke-linejoin="round"/>` +
     `<circle cx="50" cy="50" r="6" fill="#FBF8F1" stroke="#6F7D64" stroke-width="2.4"/></svg>`;
 }
 
@@ -134,27 +138,39 @@ function noticeSection(h) {
   return `<section class="panel notice-panel"><div class="wrap">${mentalHealthNotice(h.careNotice)}</div></section>`;
 }
 
-function youSection(h) {
+// Your star beside what it adds up to: the Balance Index and its band, where
+// you are strongest and what asks for more, then who you are this year. The
+// star is a button: a tap bursts it (beside the care notice it stays still).
+function topSection(h) {
   const p = h.profile;
+  const strong = chapterOf(h.strongest)?.region || "";
+  const weak = chapterOf(h.weakest?.aspect)?.region || "";
   const points = h.pace.ratio === null
     ? tp("{xp} points this year", { xp: escapeHtml(h.pace.earned) })
     : tp("Points: {xp} / {possible}", { xp: escapeHtml(h.pace.earned), possible: h.pace.possible });
   return `
-    <section class="panel statement home-you"><div class="wrap split">
-      ${label(t("You"))}
-      <div>
-        ${balanceIndexBlock(h.index, h.band, h.weakest, h.standing)}
-        <div class="home-identity">
-          <p class="home-name">${escapeHtml(p.name)}</p>
-          <p class="home-facts">${escapeHtml(t(p.employment))} (${escapeHtml(t(p.region))}) · ${t("Lv.")}${escapeHtml(p.level)} · ${points}</p>
-          <p class="level-note">${t("Your level is your age, not points earned")}</p>
-          <p class="home-links">
-            <a class="pill" href="#/year">${escapeHtml(t("Your year"))}</a>
-            <button type="button" id="btn-share-radar" class="pill pill-light">${escapeHtml(t("Share your star"))}</button>
-          </p>
+    <section class="panel home-top">
+      <div class="burst-layer" aria-hidden="true"></div>
+      <div class="wrap home-top-grid">
+        <h2 class="sr-only">${escapeHtml(tp("Your star — Balance Index {n}", { n: h.index }))}</h2>
+        <div class="home-star">
+          <div class="home-star-mark">${yourStarSvg(h.scores)}</div>
+          <button class="star-hit" type="button" aria-label="${escapeHtml(t("Play with your star"))}"></button>
+        </div>
+        <div class="home-reading">
+          ${balanceIndexBlock(h.index, h.band, h.weakest, h.standing)}
+          <p class="home-headline">${escapeHtml(tp("Strongest in {strong}.", { strong }))} ${escapeHtml(tp("{weak} is asking for more.", { weak }))}</p>
+          <div class="home-identity">
+            <p class="home-facts"><strong class="home-name">${escapeHtml(p.name)}</strong> · ${escapeHtml(t(p.employment))} (${escapeHtml(t(p.region))}) · ${t("Lv.")}${escapeHtml(p.level)} · ${points}</p>
+            <p class="level-note">${t("Your level is your age, not points earned")}</p>
+            <p class="home-links">
+              <a class="pill" href="#/year">${escapeHtml(t("Your year"))}</a>
+              <button type="button" id="btn-share-radar" class="pill pill-light">${escapeHtml(t("Share your star"))}</button>
+            </p>
+          </div>
         </div>
       </div>
-    </div></section>`;
+    </section>`;
 }
 
 // One thing to do: a headline, why, and the controls that do it.
@@ -166,9 +182,12 @@ function todoRow({ title, body, actions, cls = "" }) {
     </li>`;
 }
 
-// The prompts a user can act on, most urgent first: the weekly review is the
-// app's loop, a due re-assessment is stale scores, and an un-backed-up browser
-// is the only one that can lose data.
+// Everything to act on, most urgent first: the weekly review is the app's
+// loop, a due re-assessment is stale scores, and an un-backed-up browser is
+// the only one that can lose data. Once the week's review is done the list
+// ends by saying when the next one opens, so it is never empty. The in-depth
+// offer is not here: it argues for more accurate scores, so it sits under
+// them (tests/layout.test.mjs).
 function todoSection(h) {
   const rows = [];
   if (h.reviewDue) {
@@ -210,7 +229,14 @@ function todoSection(h) {
       actions: ""
     }));
   }
-  if (!rows.length) return "";
+  if (!h.reviewDue) {
+    rows.push(todoRow({
+      cls: "todo-done",
+      title: t("Done for this week."),
+      body: escapeHtml(tp("The next one opens {date}.", { date: nextReviewDate() })),
+      actions: ""
+    }));
+  }
   return `
     <section class="panel statement home-todo"><div class="wrap split">
       ${label(t("To do"))}
@@ -218,30 +244,43 @@ function todoSection(h) {
     </div></section>`;
 }
 
-function aspectCard(h, chapter, i) {
+// One aspect as a row: its emblem, region and aspect, the score on a bar with
+// the population average ticked, the standing, and the grade. The row opens
+// the aspect page, which keeps the full card.
+function aspectRow(h, chapter, i) {
   const key = chapter.aspect;
   const score = h.scores[i];
+  const avg = AVERAGE_ASPECT_SCORES[key];
   const b = h.benchmarks[key];
   return `
-    <a class="region-card home-card" href="#/aspect/${key}" aria-label="${escapeHtml(tp("Open {aspect} details", { aspect: aspectName(key) }))}">
-      <div class="lcard brand-visual">
-        <div class="brand-logo" style="background: ${chapter.wash};"><img src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async"></div>
-        <div class="brand-score">
-          <p class="score-figure"><b>${escapeHtml(score)}</b><small>${escapeHtml(t("out of 100"))}</small></p>
-          <span class="meter" aria-hidden="true"><i style="width: ${Number(score) || 0}%; background: ${chapter.hue};"></i></span>
-          <p class="score-average">${escapeHtml(tp("Average {n}", { n: AVERAGE_ASPECT_SCORES[key] }))}</p>
-        </div>
-      </div>
-      <div class="lcard info">
-        <h3 class="card-title">${escapeHtml(chapter.region)}</h3>
-        <div class="card-desc">${b ? benchmarkStanding(b, { compact: true }) : ""}</div>
-        <p class="info-links">
-          <span class="tag" style="border-color: ${chapter.hue};">${escapeHtml(aspectName(key))}</span>
-          ${gradeBadge(h.grades[key], b && !h.grades[key] ? b.unranked : null)}
-          ${confidenceBadge(getAspectConfidence(h.state, key))}
-        </p>
-      </div>
-    </a>`;
+    <li><a class="aspect-row" href="#/aspect/${key}" aria-label="${escapeHtml(tp("Open {aspect} details", { aspect: aspectName(key) }))}" style="--hue: ${chapter.hue}; --wash: ${chapter.wash};">
+      <span class="ar-emblem"><img src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async"></span>
+      <span class="ar-name"><b>${escapeHtml(chapter.region)}</b><small>${escapeHtml(aspectName(key))}</small></span>
+      <span class="ar-score">${escapeHtml(score)}</span>
+      <span class="ar-meter">
+        <span class="meter" aria-hidden="true"><i style="width: ${Number(score) || 0}%;"></i><em style="left: ${Number(avg) || 0}%;"></em></span>
+        <small class="score-average">${escapeHtml(tp("Average {n}", { n: avg }))}</small>
+      </span>
+      <span class="ar-standing">${b ? benchmarkStanding(b, { compact: true }) : ""}</span>
+      <span class="ar-badges">
+        ${gradeBadge(h.grades[key], b && !h.grades[key] ? b.unranked : null)}
+        ${confidenceBadge(getAspectConfidence(h.state, key))}
+      </span>
+    </a></li>`;
+}
+
+// The in-depth offer, one row under the scores while it is unfinished.
+function deepOffer(h) {
+  const total = ASPECT_KEYS.length;
+  if (h.deepDone >= total) return "";
+  const progress = h.deepDone > 0
+    ? ` <span class="deep-progress">${tp("In-depth sections completed: {done}/{total}", { done: h.deepDone, total })}</span>`
+    : "";
+  return `
+    <div class="todo deep-offer">
+      <p class="todo-text"><strong class="todo-title">${t("Go deeper for more accurate scores.")}</strong> <span class="todo-body">${t("An optional in-depth assessment uses the full-length validated questionnaires to sharpen your estimates and tighten each percentile band.")}${progress}</span></p>
+      <span class="todo-actions"><a href="#/deep" class="pill pill-light">${h.deepDone > 0 ? t("Continue in-depth") : t("Start in-depth assessment")}</a></span>
+    </div>`;
 }
 
 function aspectsSection(h) {
@@ -250,22 +289,21 @@ function aspectsSection(h) {
   const estimateNote = estimated.length === 0 ? "" : `
     <p class="home-note completeness-note"><strong>${t("Some scores are estimates.")}</strong> ${tp("These are scored from default answers: {aspects}. Re-run your assessment or submit a Weekly Review to confirm them.", { aspects: estimated.map(aspectLabel).join(", ") })}${canDeepen ? ` <a href="#/checkin">${t("Deepen my survey scores")}</a>` : ""}</p>`;
   return `
-    <section class="projects home-aspects">
-      <div class="inner">
-        ${label(t("Your eight aspects"))}
-        <div class="cardblock">
-          ${CHAPTERS.map((c, i) => aspectCard(h, c, i)).join("")}
-          ${estimateNote}
-          <details class="home-sources">
-            <summary>${t("Benchmark sources & methodology")}</summary>
-            <p>${t('Percentiles compare your baseline answers with published population statistics — they are honest approximations, not exact ranks. "Estimate" marks curves calibrated to a published anchor point.')}</p>
-            <ul>
-              ${h.sources.map(src => `<li><a href="${escapeHtml(src.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(src.label)}</a></li>`).join("")}
-            </ul>
-          </details>
-        </div>
+    <section class="panel home-aspects"><div class="wrap split">
+      ${label(t("Your eight aspects"))}
+      <div>
+        <ul class="aspect-rows">${CHAPTERS.map((c, i) => aspectRow(h, c, i)).join("")}</ul>
+        ${estimateNote}
+        ${deepOffer(h)}
+        <details class="home-sources">
+          <summary>${t("Benchmark sources & methodology")}</summary>
+          <p>${t('Percentiles compare your baseline answers with published population statistics — they are honest approximations, not exact ranks. "Estimate" marks curves calibrated to a published anchor point.')}</p>
+          <ul>
+            ${h.sources.map(src => `<li><a href="${escapeHtml(src.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(src.label)}</a></li>`).join("")}
+          </ul>
+        </details>
       </div>
-    </section>`;
+    </div></section>`;
 }
 
 // A record's thumbnail: the region it moved most, or your star.
@@ -296,6 +334,7 @@ function recentRecords(h) {
     .slice(0, RECENT_ROWS);
 }
 
+// Where to start, then what happened recently: two compact lists.
 function newsSection(h) {
   const recent = recentRecords(h);
   const recentList = recent.length
@@ -310,12 +349,12 @@ function newsSection(h) {
       })).join("")}</ul>
     </div>` : "";
   return `
-    <section class="panel news">
+    <section class="panel news home-news">
+      ${start}
       <div class="wrap split news-block">
         <div class="news-side">${label(t("Recent"))}</div>
         <ul class="newslist">${recentList}</ul>
       </div>
-      ${start}
     </section>`;
 }
 
@@ -341,57 +380,26 @@ function wallSection(h) {
     <section class="wall" aria-hidden="true">${cols}</section>`;
 }
 
-function deeperSection(h) {
-  const total = ASPECT_KEYS.length;
-  if (h.deepDone >= total) return "";
-  return `
-    <section class="panel statement deep-offer"><div class="wrap split">
-      ${label(t("Go deeper"))}
-      <div>
-        <p><strong>${t("Go deeper for more accurate scores.")}</strong> ${t("An optional in-depth assessment uses the full-length validated questionnaires to sharpen your estimates and tighten each percentile band.")}</p>
-        ${h.deepDone > 0 ? `<p class="deep-progress">${tp("In-depth sections completed: {done}/{total}", { done: h.deepDone, total })}</p>` : ""}
-        <p><a href="#/deep" class="pill">${h.deepDone > 0 ? t("Continue in-depth") : t("Start in-depth assessment")}</a></p>
-      </div>
-    </div></section>`;
-}
-
-function checkinSection(h) {
-  const head = h.reviewDue
-    ? [t("A few questions,"), t("and your star moves.")]
-    : [t("Done for this week."), tp("The next one opens {date}.", { date: nextReviewDate() })];
-  return `
-    <section class="panel careers"><div class="wrap split">
-      ${label(t("This week's check-in"))}
-      <div class="careers-row">
-        <p class="careers-head">${escapeHtml(head[0])}<br>${escapeHtml(head[1])}</p>
-        <a class="pill" href="#/review">${escapeHtml(h.reviewDue ? t("Start check-in") : t("Weekly Review"))}</a>
-      </div>
-    </div></section>`;
-}
-
 export function homeMarkup(h) {
-  const strong = chapterOf(h.strongest)?.region || "";
-  const weak = chapterOf(h.weakest?.aspect)?.region || "";
   return `
     <div class="stage-page home">
       ${noticeSection(h)}
-      ${heroMarkup({
-        mark: yourStarSvg(h.scores),
-        word: "YOUR STAR",
-        inc: String(h.index),
-        srTitle: tp("Your star — Balance Index {n}", { n: h.index }),
-        tapLabel: t("Play with your star")
-      })}
-      ${missionMarkup(t("This week"), [tp("Strongest in {strong}.", { strong }), tp("{weak} is asking for more.", { weak })])}
-      ${youSection(h)}
+      ${topSection(h)}
       ${todoSection(h)}
       ${aspectsSection(h)}
-      ${bandMarkup(BAND_REGIONS)}
       ${newsSection(h)}
       ${wallSection(h)}
-      ${deeperSection(h)}
-      ${checkinSection(h)}
     </div>`;
+}
+
+// A tap on your star bursts the eight regions' motifs out of it.
+function mountStar(root, scope) {
+  const hit = root.querySelector(".home-top .star-hit");
+  if (!hit) return;
+  const layer = root.querySelector(".home-top .burst-layer");
+  const mark = root.querySelector(".home-top .home-star-mark");
+  scope.listen(hit, "click", () => burst(layer, mark, { motifs: EVERY_MOTIF, signal: scope.signal })
+    .catch(err => console.error("Home star burst failed:", err)));
 }
 
 // The wall's columns drift with the scroll, alternate ones up and down. Tied
@@ -425,9 +433,10 @@ export function renderDashboard(containerId, state, onExportBackup) {
   const scope = renderStagePage(container, () => homeMarkup(h), { still: !!h.careNotice });
   if (scope) {
     try {
+      mountStar(container, scope);
       mountWall(container, scope);
     } catch (err) {
-      console.error("Home wall motion failed:", err);
+      console.error("Home motion failed:", err);
     }
   }
 

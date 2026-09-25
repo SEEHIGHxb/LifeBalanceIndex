@@ -38,9 +38,9 @@ test("Home shows your star and your index before your name", async () => {
     assert.ok(i > -1, `Home no longer renders ${needle}`);
     return i;
   };
-  assert.ok(at('class="hero"') < at("balance-index"), "the hero must lead the page");
+  assert.ok(at("home-star") < at("balance-index"), "your star must lead the page");
   assert.ok(at("balance-index") < at("home-name"), "the Balance Index must precede the name");
-  assert.ok(at('class="hero"') < at("home-aspects"), "the star must come before the cards");
+  assert.ok(at("home-star") < at("home-aspects"), "the star must come before the aspects");
 });
 
 // --- The upsell sits below the scores ---------------------------------------

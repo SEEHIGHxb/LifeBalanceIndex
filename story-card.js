@@ -18,11 +18,13 @@
 // websites cannot use it. This module produces the image; views/share.js hands
 // it to navigator.share() so the user picks Instagram themselves.
 //
-// The geometry comes from chart.js radarPoints() so the card and the on-screen
-// chart cannot disagree about where a score sits.
+// The star's geometry comes from chart.js (starOutline, starRay), the same as
+// Home's, so the card and the page cannot disagree about where a score sits.
 
 import { t, tp, dateLocale } from "./i18n.js";
-import { radarPoints, RADAR_KEYS, ASPECT_LABELS } from "./chart.js";
+import { radarPoints, starOutline, starRay, RADAR_KEYS, ASPECT_LABELS } from "./chart.js";
+
+export { STAR_VALLEY } from "./chart.js";
 
 export const STORY_W = 1080;
 export const STORY_H = 1920;
@@ -57,7 +59,8 @@ export const THEMES = {
     accent: "#6d2e3f",
     cut: "#ffffff",
     lift: "rgba(0, 0, 0, 0.25)",
-    star: "#f0d8a8",
+    starGround: "#fbf3e2",
+    star: "#e2b866",
     starLine: "#a88752",
     core: "#fbf8f1",
     coreLine: "#6f7d64"
@@ -69,7 +72,8 @@ export const THEMES = {
     accent: "#e6b8c4",
     cut: "#ffffff",
     lift: "rgba(0, 0, 0, 0.45)",
-    star: "#f0d8a8",
+    starGround: "#fbf3e2",
+    star: "#e2b866",
     starLine: "#a88752",
     core: "#fbf8f1",
     coreLine: "#6f7d64"
@@ -138,36 +142,14 @@ const SIDE_MARGIN = 80;
 
 const font = (weight, size, family) => `${weight} ${size}px ${family}`;
 
-// THE CARD AS THE MAP (plan §3-§5, Phase 4). The reader's shape is drawn as the
-// Lumi Star, score-stretched (symbols.md S1): each point reaches exactly where
-// the chart puts that score, so the grid still reads true and the card cannot
-// disagree with the dashboard, while the valleys between the points sit on one
-// shared base. The mark is the result.
-//
-// S1's valley is 13 against a longest point of 46. A valley may never reach
-// past the points on either side of it, or a low score would fold the star
-// inside out, so it is also held under 0.8 of the shorter neighbour.
-export const STAR_VALLEY = 13 / 46;
-const VALLEY_UNDER_TIP = 0.8;
+// THE CARD AS THE MAP. The reader's star is the same symmetric Lumi Star as
+// Home's (symbols.md S1; chart.js): the outline never changes, and each ray
+// fills from the centre to its score, so the card cannot disagree with the
+// page.
 
 // The names arrive once the sticker has mostly settled (stickerPose below).
 const LABELS_FROM = 0.7;
 const clamp01 = (n) => Math.max(0, Math.min(1, n));
-
-// The star's outline: tip, valley, tip, valley... clockwise from the top.
-// `vertices` are radarPoints() for the reader's scores.
-export function starPoints(vertices, cx, cy, r) {
-  const n = vertices.length;
-  const tips = vertices.map(pt => ({ x: pt.x, y: pt.y, len: Math.hypot(pt.x - cx, pt.y - cy), angle: pt.angle }));
-  const out = [];
-  tips.forEach((tip, i) => {
-    const nextTip = tips[(i + 1) % n];
-    const v = Math.min(STAR_VALLEY * r, VALLEY_UNDER_TIP * Math.min(tip.len, nextTip.len));
-    const a = tip.angle + Math.PI / n;
-    out.push({ x: tip.x, y: tip.y, tip: true }, { x: cx + Math.cos(a) * v, y: cy + Math.sin(a) * v, tip: false });
-  });
-  return out;
-}
 
 // Shorten until the string PLUS its ellipsis fits. Always marks the cut, so
 // this is only for text that is genuinely being truncated.
@@ -254,12 +236,13 @@ function tracePath(ctx, pts) {
 }
 
 // Your star as a die-cut sticker: the white cut edge on its shadow, then the
-// star, its spokes and its core, all turned to the sticker's pose.
+// star's ground, each ray filled to its score, the outline and the core, all
+// turned to the sticker's pose.
 function drawSticker(ctx, theme, data, grow) {
   const { starCx: cx, starCy: cy, starR: r } = LAYOUT;
   const pose = stickerPose(grow);
-  const vertices = radarPoints(data.aspects, RADAR_KEYS, cx, cy, r);
-  const star = starPoints(vertices, cx, cy, r).map(pt => place(pt, pose));
+  const star = starOutline(cx, cy, r).map(pt => place(pt, pose));
+  const rays = RADAR_KEYS.map((key, i) => starRay(i, (data.aspects || {})[key], cx, cy, r).map(pt => place(pt, pose)));
   const centre = place({ x: cx, y: cy }, pose);
 
   ctx.lineJoin = "round";
@@ -280,21 +263,17 @@ function drawSticker(ctx, theme, data, grow) {
   ctx.shadowOffsetY = 0;
 
   tracePath(ctx, star);
-  ctx.fillStyle = theme.star;
+  ctx.fillStyle = theme.starGround;
   ctx.fill();
+  ctx.fillStyle = theme.star;
+  rays.forEach(ray => {
+    tracePath(ctx, ray);
+    ctx.fill();
+  });
+  tracePath(ctx, star);
   ctx.strokeStyle = theme.starLine;
   ctx.lineWidth = 12 * pose.scale;
   ctx.stroke();
-
-  ctx.globalAlpha = 0.5;
-  ctx.lineWidth = 5 * pose.scale;
-  star.filter(pt => pt.tip).forEach(tip => {
-    ctx.beginPath();
-    ctx.moveTo(centre.x, centre.y);
-    ctx.lineTo(tip.x, tip.y);
-    ctx.stroke();
-  });
-  ctx.globalAlpha = 1;
 
   ctx.beginPath();
   ctx.arc(centre.x, centre.y, CORE_R * pose.scale, 0, Math.PI * 2);

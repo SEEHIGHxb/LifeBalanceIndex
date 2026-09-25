@@ -1,70 +1,146 @@
-/* css/home.css - Home (redesign R3, views/dashboard.js). The page is a stage
-   page (css/stage-page.css holds the hero, the headline, the cards, the band
-   and the check-in); this sheet adds what only Home has, ported from the
-   approved prototype (docs/prototype/redesign/proto.css, more.css). --px is
-   the stage page's prototype pixel. */
+/* css/home.css - Home (views/dashboard.js). First the redesign's full-screen
+   stage (R3); compact since 2026-09-26, with the map the owner approved then:
+   the page is opened every week, so it reads at a glance. It is still a stage
+   page (css/stage-page.css holds the panels, labels and the news list); --px
+   is the stage page's prototype pixel. */
 
-/* The reader's star in the hero is drawn, not a sprite. */
-.home .hero .mark svg { overflow: visible; }
+/* Tighter panels than the stage's statements. */
+.home .statement,
+.home .home-aspects { padding: calc(100 * var(--px)) 0 calc(90 * var(--px)); }
+.home .home-aspects .split { --col: 704; }
 
-/* ---------------------------------------------------------------- you */
-.home-you .balance-index {
-  display: flex;
-  gap: calc(60 * var(--px));
-  align-items: flex-start;
-  margin: 0 0 calc(80 * var(--px));
+/* ------------------------------------------------------------ the top */
+.home-top {
+  overflow: hidden;
+  padding: calc(110 * var(--px)) 0 calc(100 * var(--px));
 }
-.home-you .balance-index-value {
+.home-top-grid {
+  display: grid;
+  grid-template-columns: calc(560 * var(--px)) minmax(0, 1fr);
+  gap: calc(144 * var(--px));
+  align-items: center;
+}
+.home-star { position: relative; aspect-ratio: 1; }
+.home-star-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.star-hit {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+.star-hit:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 6px; }
+.home-top .balance-index { display: flex; gap: calc(60 * var(--px)); align-items: flex-start; margin: 0 0 calc(30 * var(--px)); }
+.home-top .balance-index-value {
   font-family: var(--frame-word);
   font-size: max(56px, calc(200 * var(--px)));
   color: var(--frame-ink);
   line-height: 0.9;
 }
-.home-you .balance-index-max { font-size: max(14px, calc(24 * var(--px))); font-weight: 700; }
-.home-you .balance-index-body p { margin: 0 0 calc(24 * var(--px)); line-height: 1.8; }
-.home-you .balance-index-title { font-weight: 700; }
-.home-you .balance-index-caption { font-size: max(13px, calc(19 * var(--px))); color: #444444; }
-.home-identity p { margin: 0 0 calc(16 * var(--px)); }
-.home-name { font-weight: 700; font-size: max(18px, calc(40 * var(--px))); }
+.home-top .balance-index-max { font-size: max(14px, calc(24 * var(--px))); font-weight: 700; }
+.home-top .balance-index-body p { margin: 0 0 calc(10 * var(--px)); line-height: 1.6; }
+.home-top .balance-index-title { font-weight: 700; }
+.home-top .balance-index-caption { font-size: max(13px, calc(18 * var(--px))); color: #444444; }
+.home-headline { margin: 0 0 calc(30 * var(--px)); font-weight: 700; font-size: max(16px, calc(30 * var(--px))); line-height: 1.5; }
+.home-identity { padding-top: calc(30 * var(--px)); border-top: 1px dashed rgba(0, 0, 0, 0.25); }
+.home-identity p { margin: 0 0 calc(8 * var(--px)); }
 .home-facts { font-weight: 500; }
-.home-identity .level-note { font-size: max(13px, calc(19 * var(--px))); color: #444444; }
-.home-identity .home-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: calc(40 * var(--px)); }
+.home-name { font-weight: 700; }
+.home-identity .level-note { font-size: max(13px, calc(18 * var(--px))); color: #444444; }
+.home-identity .home-links { display: flex; flex-wrap: wrap; gap: 12px; margin: calc(24 * var(--px)) 0 0; }
 
 /* -------------------------------------------------------------- to do */
-.todo-list { display: grid; gap: calc(50 * var(--px)); margin: 0; padding: 0; list-style: none; }
+.todo-list { display: grid; gap: calc(30 * var(--px)); margin: 0; padding: 0; list-style: none; }
 .todo {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px calc(60 * var(--px));
-  padding-bottom: calc(50 * var(--px));
+  gap: 12px calc(60 * var(--px));
+  padding-bottom: calc(30 * var(--px));
   border-bottom: 1px dashed rgba(0, 0, 0, 0.25);
 }
 .todo:last-child { border-bottom: 0; padding-bottom: 0; }
 /* The quick-start row keeps index.css's hook class but not its boxed look. */
-.home .todo.quickstart-note { margin: 0; padding: 0 0 calc(50 * var(--px)); border: 0; border-radius: 0; background: none; font-size: inherit; }
+.home .todo.quickstart-note { margin: 0; padding: 0 0 calc(30 * var(--px)); border: 0; border-radius: 0; background: none; font-size: inherit; }
 .home .todo.quickstart-note:not(:last-child) { border-bottom: 1px dashed rgba(0, 0, 0, 0.25); }
 .home .quickstart-note strong,
 .home .completeness-note strong { color: inherit; }
 .home .home-note.completeness-note { padding: 0; border: 0; background: none; }
-.home .todo-text { flex: 1 1 calc(900 * var(--px)); margin: 0; font-size: max(15px, calc(26 * var(--px))); line-height: 1.8; }
+.home .todo-text { flex: 1 1 calc(900 * var(--px)); margin: 0; font-size: max(15px, calc(22 * var(--px))); line-height: 1.7; }
+.home .todo-done .todo-text { color: #444444; }
+.home .deep-progress { display: block; font-weight: 700; }
+.home .todo.deep-offer { margin-top: calc(40 * var(--px)); padding: calc(30 * var(--px)) 0 0; border-top: 1px dashed rgba(0, 0, 0, 0.25); border-bottom: 0; }
 .todo-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
-/* ------------------------------------------------ the eight aspect cards */
-.home-card { display: block; color: inherit; text-decoration: none; }
-.home-card + .home-card { margin-top: calc(40 * var(--px)); }
-.home-card:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 6px; border-radius: var(--card-r); }
-.home-card .card-desc p { margin: 0; }
-.home-card .benchmark-detail { font-weight: 500; color: #444444; }
-.home-card .info-links { flex-wrap: wrap; gap: 8px; }
+/* ------------------------------------------------ the eight aspect rows */
+.aspect-rows { margin: 0; padding: 0; list-style: none; }
+.aspect-row {
+  display: grid;
+  grid-template-columns: calc(110 * var(--px)) minmax(0, 1.1fr) calc(130 * var(--px)) minmax(0, 1fr) minmax(0, 1.5fr) calc(270 * var(--px));
+  gap: calc(40 * var(--px));
+  align-items: center;
+  padding: calc(22 * var(--px)) 0;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.25);
+  color: inherit;
+  text-decoration: none;
+}
+.aspect-rows > li:first-child .aspect-row { padding-top: 0; }
+.aspect-row:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 4px; }
+.aspect-row:hover .ar-name b { text-decoration: underline; text-underline-offset: 0.15em; }
+.ar-emblem {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: calc(18 * var(--px));
+  background: var(--wash);
+}
+.ar-emblem img { width: 78%; height: auto; }
+.ar-name { display: grid; gap: 2px; min-width: 0; }
+.ar-name b { font-size: max(14px, calc(22 * var(--px))); letter-spacing: 0.04em; text-transform: uppercase; }
+.ar-name small { font-size: max(12px, calc(17 * var(--px))); font-weight: 500; color: #444444; }
+.ar-score { font-family: var(--frame-word); font-size: max(34px, calc(84 * var(--px))); line-height: 1; text-align: right; }
+.ar-meter { display: grid; gap: 6px; }
+.ar-meter .meter { position: relative; width: 100%; max-width: none; margin: 0; overflow: visible; }
+.ar-meter .meter i { background: var(--hue); }
+/* The population average, ticked across the bar. */
+.ar-meter .meter em {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--frame-ink);
+}
+.ar-meter .score-average { margin: 0; font-size: max(11px, calc(15 * var(--px))); }
+.ar-standing { min-width: 0; font-size: max(13px, calc(18 * var(--px))); line-height: 1.5; }
+.ar-standing p { margin: 0; }
+.ar-standing .benchmark-detail { display: none; }
+.ar-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 .home-note,
-.home-sources { margin: calc(60 * var(--px)) 0 0; font-size: max(14px, calc(22 * var(--px))); line-height: 1.8; }
+.home-sources { margin: calc(40 * var(--px)) 0 0; font-size: max(14px, calc(20 * var(--px))); line-height: 1.7; }
 .home-sources summary { cursor: pointer; font-weight: 700; }
 .home-sources ul { padding-left: 1.2em; }
 
+/* ------------------------------------------- where to start, and recent */
+.home-news { padding: calc(100 * var(--px)) 0 calc(90 * var(--px)); }
+.home-news .news-block + .news-block { margin-top: calc(90 * var(--px)); }
+.home-news .newsrow,
+.home-news .newslist > li:first-child > .newsrow,
+.home-news .newslist > .newsrow:first-child {
+  grid-template-columns: calc(333 * var(--px)) calc(170 * var(--px)) minmax(0, 1fr);
+  align-items: center;
+  min-height: 0;
+  padding: calc(22 * var(--px)) 0;
+}
+.home-news .newslist > li:first-child > .newsrow,
+.home-news .newslist > .newsrow:first-child { padding-top: 0; }
+.home-news .newsrow-thumb { width: calc(120 * var(--px)); border-radius: calc(14 * var(--px)); }
+
 /* ------------------------------------------------------- the pledge wall */
-.home-pledges { padding: calc(170 * var(--px)) 0 calc(120 * var(--px)); }
+.home-pledges { padding: calc(100 * var(--px)) 0 calc(90 * var(--px)); }
 .home-pledges .split { --col: 704; }
 .pledge-count {
   display: flex;
@@ -90,14 +166,48 @@
 .sticker:nth-child(3n + 1) { justify-items: start; padding-left: 14%; }
 .sticker:nth-child(3n + 2) { justify-items: end; padding-right: 10%; }
 
-/* ------------------------------------------------------ the deeper offer */
-.deep-offer .deep-progress { font-weight: 700; }
-
 /* ------------------------------------------------------------- phones */
 @container (max-width: 900px) {
-  .home-you .balance-index { flex-direction: column; gap: calc(30 * var(--px)); }
+  .home .statement,
+  .home .home-aspects,
+  .home-news,
+  .home-pledges { padding: calc(90 * var(--px)) 0 calc(80 * var(--px)); }
+  .home-top { padding: calc(80 * var(--px)) 0; }
+  /* The star beside the index; the rest runs the full width under them. */
+  .home-top-grid { grid-template-columns: calc(230 * var(--px)) minmax(0, 1fr); gap: calc(30 * var(--px)) calc(40 * var(--px)); align-items: center; }
+  .home-reading { display: contents; }
+  .home-top .balance-index { flex-direction: column; gap: calc(10 * var(--px)); margin: 0; }
+  .home-top .balance-index-caption { display: none; }
+  .home-headline { grid-column: 1 / -1; margin: 0; font-size: max(15px, calc(30 * var(--px))); }
+  .home-identity { grid-column: 1 / -1; }
+  .home .todo-text { font-size: max(15px, calc(28 * var(--px))); }
+  .aspect-row {
+    grid-template-columns: calc(96 * var(--px)) minmax(0, 1fr) calc(150 * var(--px));
+    grid-template-areas:
+      "emblem name score"
+      "emblem meter score"
+      "standing standing badges";
+    gap: calc(10 * var(--px)) calc(24 * var(--px));
+    padding: calc(28 * var(--px)) 0;
+  }
+  .ar-emblem { grid-area: emblem; align-self: start; border-radius: calc(16 * var(--px)); }
+  .ar-name { grid-area: name; }
+  .ar-score { grid-area: score; font-size: max(34px, calc(88 * var(--px))); }
+  .ar-meter { grid-area: meter; }
+  .ar-standing { grid-area: standing; font-size: 13px; }
+  .ar-badges { grid-area: badges; align-self: center; }
+  .home-news .newsrow,
+  .home-news .newslist > li:first-child > .newsrow,
+  .home-news .newslist > .newsrow:first-child {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: calc(24 * var(--px));
+    padding: calc(24 * var(--px)) 0;
+  }
+  .home-news .newsrow-thumb { width: calc(110 * var(--px)); }
   .wall { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .wall-col:nth-child(n + 4) { display: none; }
-  .home .todo-text { font-size: max(15px, calc(30 * var(--px))); }
 }
 
+/* ------------------------------------------------------------- Thai
+   No tracking and no uppercase for Thai (the Thai block in index.css). */
+html[lang="th"] .ar-name b { letter-spacing: 0; text-transform: none; }

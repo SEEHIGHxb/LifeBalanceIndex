@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `102`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `103`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,43 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.50.0] — 2026-09-26 (APP_VERSION 103)
+
+Your star is symmetric, and Home is compact. Both with the owner's approval
+on 2026-09-26 (star option A, and the section map below).
+
+### Changed
+- **Your star keeps one shape.** It was the radar of your scores, so its
+  outline went lopsided whenever the scores were uneven. It is now always the
+  same symmetric eight-point star (tips on the rim, valleys at S1's depth),
+  and each ray fills in gold from the centre to its score, like a gauge. The
+  geometry lives in `chart.js` (`starOutline`, `starRay`), and Home, Side by
+  Side and the share card all draw from it.
+- **Side by Side shares one star.** Two symmetric outlines laid over each
+  other would be identical, so each ray is split down its middle: your side
+  in gold, theirs in ink, with the population average dashed across every
+  ray. Picking someone else slides their side of each ray to its new level.
+  The note under it says so (new copy, with Thai).
+- **Home is compact** (laptop 10,470px → 2,480px; phone 9,920px → 3,830px):
+  - *Top*: your star beside the Balance Index, its band and standing, your
+    strongest region and the one asking for more, then your name, level and
+    points. It replaces the full-screen hero, the "This week" headline and the
+    "You" panel, which said the index three times. A tap on the star still
+    bursts the eight regions' motifs (not beside the care notice).
+  - *To do*: every action in one list; once the week's review is done it ends
+    with when the next opens, replacing the separate check-in panel.
+  - *Your eight aspects*: one row each (emblem, region, score, a bar with the
+    population average ticked, standing, grade) instead of eight tall cards;
+    a row opens the aspect page, which keeps the full card. The in-depth offer
+    is one row under them: it argues for more accurate scores, so it still
+    comes after the scores (tests/layout.test.mjs).
+  - *Where to start*, then *Recent*, in tighter rows.
+  - The photo band is gone from Home; the region art stays on each aspect page.
+
+### Removed
+- Orphaned strings: "This week", "Go deeper", "This week's check-in",
+  "A few questions,", "and your star moves.", "Start check-in".
 
 ## [2.49.1] — 2026-09-26 (APP_VERSION 102)
 

@@ -12,10 +12,10 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 import {
-  drawStoryCard, storyCardData, fitText, wrapText, starPoints, stickerPose, STAR_VALLEY,
+  drawStoryCard, storyCardData, fitText, wrapText, stickerPose, STAR_VALLEY,
   THEMES, DETAIL_LEVELS, STORY_W, STORY_H, SAFE_TOP, SAFE_LOW
 } from "../story-card.js";
-import { radarPoints, RADAR_KEYS } from "../chart.js";
+import { radarPoints, starOutline, starRay, RADAR_KEYS } from "../chart.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -252,36 +252,37 @@ test("storyCardData formats the date and survives missing fields", () => {
   assert.match(dated.dateText, /2026/);
 });
 
-// --- the card as the map (Phase 4): the Lumi Star, score-stretched ------------
+// --- the card as the map (Phase 4): the symmetric Lumi Star -------------------
 
 const CX = 540;
 const CY = 880;
 const R = 260;
 const dist = (pt) => Math.hypot(pt.x - CX, pt.y - CY);
 
-test("the star's points sit exactly where the chart puts each score", () => {
-  const vertices = radarPoints(ASPECTS, RADAR_KEYS, CX, CY, R);
-  const tips = starPoints(vertices, CX, CY, R).filter(pt => pt.tip);
-  assert.equal(tips.length, 8);
-  tips.forEach((tip, i) => {
-    assert.ok(Math.abs(tip.x - vertices[i].x) < 1e-9 && Math.abs(tip.y - vertices[i].y) < 1e-9,
-      `${RADAR_KEYS[i]}: the star and the chart disagree about its score`);
+test("the star's outline is symmetric: every tip on the rim, every valley at S1's depth", () => {
+  const pts = starOutline(CX, CY, R);
+  assert.equal(pts.length, 16);
+  pts.forEach((pt, i) => {
+    const want = pt.tip ? R : STAR_VALLEY * R;
+    assert.ok(Math.abs(dist(pt) - want) < 1e-9, `point ${i} is off the symmetric star`);
+    assert.equal(pt.tip, i % 2 === 0);
   });
 });
 
-test("the valleys share one base and never fold the star inside out", () => {
-  const lows = { ...ASPECTS, personalGoals: 0, socialContribution: 4 };
-  const pts = starPoints(radarPoints(lows, RADAR_KEYS, CX, CY, R), CX, CY, R);
-  for (let i = 1; i < pts.length; i += 2) {
-    const v = dist(pts[i]);
-    assert.ok(v <= STAR_VALLEY * R + 1e-9, "a valley is never deeper than S1's base");
-    assert.ok(v <= dist(pts[i - 1]) + 1e-9 && v <= dist(pts[(i + 1) % pts.length]) + 1e-9,
-      `valley ${(i - 1) / 2} reaches past a point beside it`);
+test("a ray fills to its score and never leaves the outline", () => {
+  for (const score of [0, 12, 50, 100, 140, -3, "junk"]) {
+    const [centre, before, tip, after] = starRay(3, score, CX, CY, R);
+    const f = Math.max(0, Math.min(100, Number(score) || 0)) / 100;
+    assert.deepEqual(centre, { x: CX, y: CY });
+    assert.ok(Math.abs(dist(tip) - R * f) < 1e-9, `score ${score}: the tip is not at its level`);
+    for (const v of [before, after]) assert.ok(dist(v) <= STAR_VALLEY * R + 1e-9, "a valley escapes the outline");
   }
-  // With no low scores (all at least 40), every valley is the same shared base.
-  const high = Object.fromEntries(RADAR_KEYS.map((k, i) => [k, 40 + i * 7]));
-  const even = starPoints(radarPoints(high, RADAR_KEYS, CX, CY, R), CX, CY, R).filter(pt => !pt.tip);
-  for (const v of even) assert.ok(Math.abs(dist(v) - STAR_VALLEY * R) < 1e-9);
+  // The halves share the tip: one reading on each side of the ray.
+  const start = starRay(0, 60, CX, CY, R, "start");
+  const end = starRay(0, 60, CX, CY, R, "end");
+  assert.equal(start.length, 3);
+  assert.deepEqual(start[2], end[1]);
+  assert.ok(start[1].x < CX && end[2].x > CX, "the top ray's start side is its left");
 });
 
 test("the sticker drops in large and turned, and is exactly at rest at the end", () => {

@@ -288,19 +288,19 @@ const finishJourney = async (page, answers) => {
   let walked = 0;
   while ((await page.locator(".survey-page:not(.d-none) .btn-onb-next").count()) && walked++ < 60) await next(page);
   await page.click('#onboarding-form button[type="submit"]');
-  await page.waitForSelector(".home .hero .mark svg", { timeout: 10000 });
+  await page.waitForSelector(".home .home-star svg", { timeout: 10000 });
 };
 const heroState = (page) => page.evaluate(() => ({
-  particles: document.querySelectorAll(".home .hero .spr").length,
-  styled: [...document.querySelectorAll(".home .hero .lockup, .home .hero .part")].map(el => el.style.transform).filter(Boolean),
-  hidden: document.querySelectorAll(".home .mission-head .tc.off").length
+  particles: document.querySelectorAll(".home .home-top .spr").length,
+  styled: [...document.querySelectorAll(".home .home-star, .home .home-star-mark")].map(el => el.style.transform).filter(Boolean),
+  hidden: document.querySelectorAll(".home .tc.off").length
 }));
 try {
   const { context, page } = await openJourney(browser);
   await finishJourney(page, { last: ["who5"] });
   if (await page.locator(".care-banner").count()) throw new Error("the calm reader was shown the care notice");
   await page.evaluate(() => window.scrollTo(0, 0));
-  await page.click(".home .mark-hit");
+  await page.click(".home .star-hit");
   await advance(page, FRAME_MS * 3);
   const tapped = await heroState(page);
   if (tapped.particles !== 16) problems.push(`home: ${tapped.particles} particles burst from your star, not 16`);
@@ -316,7 +316,7 @@ try {
   // Leaving Home puts every moving piece back.
   await goTo(page, "quests");
   await goTo(page, "dashboard");
-  if ((await heroState(page)).styled.length) problems.push("home: a redraw kept the hero's old pose");
+  if ((await heroState(page)).styled.length) problems.push("home: a redraw kept your star's old pose");
 
   // The share card assembles as the map, in the preview only, and ends on the
   // finished card: the same pixels a plain redraw gives.
@@ -353,8 +353,8 @@ try {
   const { context, page } = await openJourney(browser);
   await finishJourney(page);
   if (!(await page.locator(".care-banner").count())) throw new Error("this reader was meant to see the care notice");
-  if ((await heroState(page)).hidden) problems.push("quiet home: the headline was parked for typing beside the care notice");
-  await page.click(".home .mark-hit");
+  if ((await heroState(page)).hidden) problems.push("quiet home: text was parked for typing beside the care notice");
+  await page.click(".home .star-hit");
   let moved = 0;
   for (let f = 0; f < 120; f++) {
     await advance(page, FRAME_MS);
@@ -482,7 +482,7 @@ try {
   });
   await page.reload({ waitUntil: "networkidle" });
   await openHash(page, "#/leaderboard", ".compare .duo-them");
-  const shape = () => page.evaluate(() => document.querySelector(".duo-them").getAttribute("points"));
+  const shape = () => page.evaluate(() => [...document.querySelectorAll(".duo-them polygon")].map(p => p.getAttribute("points")).join(" | "));
   const from = await shape();
   await page.click('.people [data-pick="1"]');
   await advance(page, 200);
@@ -529,8 +529,8 @@ try {
   await page.waitForSelector('#brand-home[href="#/dashboard"]', { state: "attached", timeout: 10000 });
   await goTo(page, "quests");
   await goTo(page, "dashboard");
-  await page.waitForSelector(".home .hero .mark svg", { timeout: 10000 });
-  await page.click(".home .mark-hit");
+  await page.waitForSelector(".home .home-star svg", { timeout: 10000 });
+  await page.click(".home .star-hit");
   await advance(page, 400);
   const still = await heroState(page);
   if (still.particles || still.styled.length || still.hidden) problems.push("reduced: Home moved (a burst, a pose or a parked headline)");

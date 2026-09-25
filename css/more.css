@@ -89,8 +89,8 @@
 .people-rm .linkbtn,
 .duo-row dt { min-width: 0; overflow-wrap: anywhere; }
 .duo-legend i { display: inline-block; width: 22px; height: 12px; margin-right: 8px; border-radius: 3px; vertical-align: -1px; }
-.lg-you { background: #f0d8a8; border: 1.5px solid #a88752; }
-.lg-them { background: rgba(27, 27, 27, 0.14); border: 1.5px solid var(--frame-dark); }
+.lg-you { background: #e2b866; border: 1.5px solid #a88752; }
+.lg-them { background: rgba(27, 27, 27, 0.6); border: 1.5px solid var(--frame-dark); }
 .lg-avg { border: 1.5px dashed var(--frame-ink); }
 .people { display: flex; flex-wrap: wrap; gap: 10px; }
 .stage-page .people .pill { white-space: normal; text-transform: none; letter-spacing: normal; }
@@ -100,9 +100,11 @@
 .stage-page .people-ask p { flex-basis: 100%; max-width: none; margin: 0; font-weight: 700; font-size: 15px; line-height: 1.6; }
 .duo-fig { width: min(100%, calc(1000 * var(--px))); aspect-ratio: 1; }
 .duo-fig svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.duo-you { fill: #f0d8a8; stroke: #a88752; stroke-width: 0.9; stroke-linejoin: round; }
-.duo-avg { fill: none; stroke: var(--frame-ink); stroke-width: 0.5; stroke-dasharray: 1.6 1.2; opacity: 0.6; }
-.duo-them { fill: rgba(27, 27, 27, 0.14); stroke: var(--frame-dark); stroke-width: 0.9; stroke-linejoin: round; }
+.duo-ground { fill: #fbf3e2; }
+.duo-you { fill: #e2b866; }
+.duo-them { fill: rgba(27, 27, 27, 0.6); }
+.duo-avg { fill: none; stroke: var(--frame-ink); stroke-width: 0.5; stroke-dasharray: 1.6 1.2; stroke-linejoin: round; opacity: 0.7; }
+.duo-edge { fill: none; stroke: #a88752; stroke-width: 0.9; stroke-linejoin: round; }
 
 .duocard {
   display: grid;

@@ -30,11 +30,11 @@ import { t, tp } from "../i18n.js";
 import { escapeHtml, aspectLabel } from "./helpers.js";
 import { CHAPTERS } from "./journey.js";
 import { heroMarkup, missionMarkup, label, renderStagePage } from "./stage-page.js";
-import { yourStarSvg, starPointsAttr, openShareFor } from "./dashboard.js";
+import { yourStarSvg, starOutlineAttr, starRayAttr, starLevelPath, openShareFor } from "./dashboard.js";
 import { aspectName } from "./news.js";
 import { animate, easeStar } from "../motion.js";
 
-// The other star slides from its old shape to the new one in this long,
+// The other person's side of each ray slides to its new level in this long,
 // whoever is picked.
 const MORPH_MS = 480;
 const COPIED_MS = 1500;
@@ -80,8 +80,12 @@ function codesSection(myCode) {
     </div></section>`;
 }
 
-// The overlay: the population average dashed, your star, and the picked
-// person's star over both.
+// One star shared by two: each ray is split down its middle, your side filled
+// in gold to your score and theirs in ink to theirs, with the population
+// average dashed across every ray. The outline is the same symmetric star as
+// Home's, so only the fills differ.
+const raySides = (scores, half) => scores.map((s, i) => `<polygon points="${starRayAttr(i, s, half)}"/>`).join("");
+
 function duoFigure(state, them) {
   const dots = CHAPTERS.map((c, i) => {
     const a = -Math.PI / 2 + i * Math.PI / 4;
@@ -89,9 +93,11 @@ function duoFigure(state, them) {
   }).join("");
   return `
     <div class="duo-fig"><svg viewBox="0 0 100 100" aria-hidden="true">
-      <polygon class="duo-you" points="${starPointsAttr(scoresOf(state.aspects))}"/>
-      <polygon class="duo-avg" points="${starPointsAttr(AVERAGES)}"/>
-      <polygon class="duo-them" points="${starPointsAttr(scoresOf(them.aspects))}"/>
+      <polygon class="duo-ground" points="${starOutlineAttr()}"/>
+      <g class="duo-you">${raySides(scoresOf(state.aspects), "start")}</g>
+      <g class="duo-them">${raySides(scoresOf(them.aspects), "end")}</g>
+      <path class="duo-avg" d="${starLevelPath(AVERAGES)}"/>
+      <polygon class="duo-edge" points="${starOutlineAttr()}"/>
       ${dots}
     </svg></div>`;
 }
@@ -138,7 +144,7 @@ function duoSection(state, friends, pick, confirm) {
     <section class="panel statement duo"><div class="wrap split">
       <div>
         ${label(t("Over each other"))}
-        <p class="duo-note">${them ? t("Pick whose star lies over yours. The dashed line is the population average.") : t("Not a ranking. Each column is one person's eight aspects, marked against the population average — so you can see where you differ, not who is ahead.")}</p>
+        <p class="duo-note">${them ? t("Pick whose star shares yours: in each ray your side is gold and theirs is dark. The dashed line is the population average.") : t("Not a ranking. Each column is one person's eight aspects, marked against the population average — so you can see where you differ, not who is ahead.")}</p>
         <p class="duo-share"><button type="button" id="btn-share-radar" class="pill pill-light">${escapeHtml(t("Share your star"))}</button></p>
       </div>
       <div>${body}</div>
@@ -211,11 +217,12 @@ export function compareMarkup(state, { pick = 0, confirm = null } = {}) {
 
 // --- the view -----------------------------------------------------------------
 
-// Slides the picked star from one shape to the next. Without motion it is
-// simply redrawn in the new shape.
-function morphTo(poly, from, to, scope) {
-  if (!poly) return;
-  const draw = (p) => poly.setAttribute("points", starPointsAttr(from.map((v, i) => v + (to[i] - v) * p)));
+// Slides the picked person's side of every ray to its new level. Without
+// motion it is simply redrawn at the new levels.
+function morphTo(group, from, to, scope) {
+  const sides = group ? [...group.querySelectorAll("polygon")] : [];
+  if (!sides.length) return;
+  const draw = (p) => sides.forEach((side, i) => side.setAttribute("points", starRayAttr(i, from[i] + (to[i] - from[i]) * p, "end")));
   if (!scope) {
     draw(1);
     return;

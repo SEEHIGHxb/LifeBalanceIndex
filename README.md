@@ -83,8 +83,9 @@ set in Sarabun.
   stale and never used
 - **Backup**: one-click JSON export / import, on the Profile & Data page
 - **Hash routing** (`#/dashboard`, `#/review`, `#/aspect/<key>`, `#/checkin`, ...) — browser back/forward work
-- **Your star**: Home's hero star, whose eight points are your eight aspects,
-  drawn in dependency-free SVG; Side by Side lays two stars over each other
+- **Your star**: a symmetric eight-point star, one ray per aspect, each ray
+  filled from the centre to its score; drawn in dependency-free SVG. Side by
+  Side splits every ray between you and the person you picked
 - **Shareable story card**: exports your star as a 1080×1920 PNG for Instagram
   Stories and the like, drawn on a canvas (an SVG rasterised through an `<img>`
   loses both the CSS custom properties and the self-hosted fonts). You choose

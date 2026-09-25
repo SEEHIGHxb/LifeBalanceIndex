@@ -274,14 +274,14 @@ try {
   if (!dashboardText || dashboardText.length < 100) {
     problems.push("flow1: dashboard rendered empty");
   }
-  // Home (redesign R3): the hero is the reader's own star, and every aspect
-  // card carries the population average the old radar drew as a dashed line.
+  // Home: the top is the reader's own star, and every aspect
+  // row carries the population average the old radar drew as a dashed line.
   const home = await page.evaluate(() => ({
-    star: !!document.querySelector(".home .hero .mark svg polygon"),
+    star: !!document.querySelector(".home .home-star svg polygon"),
     averages: document.querySelectorAll(".home .score-average").length
   }));
   if (!home.star) problems.push("flow1: Home is missing your star");
-  if (home.averages !== 8) problems.push(`flow1: ${home.averages} aspect cards show the average, not 8`);
+  if (home.averages !== 8) problems.push(`flow1: ${home.averages} aspect rows show the average, not 8`);
 } catch (err) {
   problems.push(`flow1 (full onboarding): ${err.message}`);
 }
@@ -346,7 +346,7 @@ try {
   // red that trains people to re-run CI instead of reading it.
   // Wait for a card the dashboard actually renders, then give the prompt its own
   // bounded wait so a genuine absence still fails the flow.
-  await page.waitForSelector(".home-you .balance-index", { timeout: 10000 });
+  await page.waitForSelector(".home-top .balance-index", { timeout: 10000 });
   const birthdayArrived = await page
     .waitForSelector("#birthday-prompt-dismiss", { timeout: 5000 })
     .then(() => true, () => false);
@@ -450,7 +450,7 @@ try {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto(BASE, { waitUntil: "networkidle" });
   await goTo("dashboard");
-  await page.waitForSelector(".home .hero .mark svg", { timeout: 10000 });
+  await page.waitForSelector(".home .home-star svg", { timeout: 10000 });
 
   // Nothing may force the page to pan sideways.
   const pans = await page.evaluate(() =>
@@ -508,9 +508,9 @@ try {
   // Balance Index within one screen of its top.
   const fold = await page.evaluate(() => {
     const box = (sel) => document.querySelector(sel)?.getBoundingClientRect();
-    const hero = box(".home .hero");
+    const hero = box(".home .home-top");
     const above = box(".home .notice-panel") || box("#site-header");
-    return { gap: hero.top - above.bottom, index: box(".home .hero .inc").bottom - hero.top };
+    return { gap: hero.top - above.bottom, index: box(".home .balance-index-value").bottom - hero.top };
   });
   if (fold.gap > 8) problems.push(`flow5: ${Math.round(fold.gap)}px of something sits between the notice or header and your star`);
   if (fold.index > 812 - 80) problems.push(`flow5: the Balance Index is ${Math.round(fold.index)}px into the hero, past one screen`);

@@ -63,9 +63,17 @@ const STAR_VALLEY = 13 / 46; // story-card.js's valley
 const ANG = (i) => -Math.PI / 2 + i * Math.PI / 4;
 const pt = (r, a) => `${(50 + r * Math.cos(a)).toFixed(2)} ${(50 + r * Math.sin(a)).toFixed(2)}`;
 
+const starTips = (scores) => scores.map(s => 47 * Math.max(STAR_VALLEY * 1.35, (Number(s) || 0) / 100));
+
+// The star's outline in a 100x100 box, for a <polygon>: Side by Side lays two
+// of them over each other.
+export function starPointsAttr(scores) {
+  return starTips(scores).flatMap((r, i) => [pt(r, ANG(i)), pt(47 * STAR_VALLEY, ANG(i) + Math.PI / 8)]).join(" ");
+}
+
 export function yourStarSvg(scores) {
-  const tips = scores.map(s => 47 * Math.max(STAR_VALLEY * 1.35, (Number(s) || 0) / 100));
-  const points = tips.flatMap((r, i) => [pt(r, ANG(i)), pt(47 * STAR_VALLEY, ANG(i) + Math.PI / 8)]).join(" ");
+  const tips = starTips(scores);
+  const points = starPointsAttr(scores);
   const spokes = tips.map((r, i) => `M50 50L${pt(r, ANG(i))}`).join("");
   return `<svg viewBox="0 0 100 100" aria-hidden="true">` +
     `<polygon points="${points}" fill="#F0D8A8" stroke="#A88752" stroke-width="3.2" stroke-linejoin="round"/>` +
@@ -438,19 +446,24 @@ export function renderDashboard(containerId, state, onExportBackup) {
     document.getElementById("backup-nudge-export")?.addEventListener("click", onExportBackup);
   }
 
-  // The share card is handed the readings this render already computed, so it
-  // cannot disagree with the page behind it. A bottom-decile mental grade adds
-  // one informational line to the sheet; it never blocks the share.
-  document.getElementById("btn-share-radar")?.addEventListener("click", () => {
-    openShareSheet({
-      name: h.profile.name,
-      date: new Date(),
-      aspects: state.aspects,
-      average: AVERAGE_ASPECT_SCORES,
-      index: h.index,
-      bandLabel: h.band.label,
-      standing: h.standing,
-      grades: h.grades
-    }, { showMentalNote: isBottomGrade(h.grades.mental) });
-  });
+  document.getElementById("btn-share-radar")?.addEventListener("click", () => shareStar(h));
 }
+
+// The share card is handed the readings this render already computed, so it
+// cannot disagree with the page behind it. A bottom-decile mental grade adds
+// one informational line to the sheet; it never blocks the share.
+function shareStar(h) {
+  openShareSheet({
+    name: h.profile.name,
+    date: new Date(),
+    aspects: h.state.aspects,
+    average: AVERAGE_ASPECT_SCORES,
+    index: h.index,
+    bandLabel: h.band.label,
+    standing: h.standing,
+    grades: h.grades
+  }, { showMentalNote: isBottomGrade(h.grades.mental) });
+}
+
+// The same card from another page (Side by Side), read the way Home reads it.
+export const openShareFor = (state) => shareStar(readHome(state));

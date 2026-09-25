@@ -86,6 +86,26 @@ export function missionMarkup(labelText, lines) {
     </div></section>`;
 }
 
+// The text pages (Profile, Methodology; R5) have no motion. Their head is the
+// page's name in the wordmark face, then what the page is for; `paras` are
+// markup the caller has escaped.
+export function pageHead(word, paras) {
+  return `
+    <section class="panel pagehead"><div class="wrap">
+      <h2 class="pagehead-word">${escapeHtml(word)}</h2>
+      ${paras.map(p => `<p>${p}</p>`).join("")}
+    </div></section>`;
+}
+
+// One labelled section of a text page. `inner` is markup the caller built.
+export function textSection(labelText, inner, cls = "") {
+  return `
+    <section class="panel statement textsec${cls ? ` ${cls}` : ""}"><div class="wrap split">
+      ${label(labelText)}
+      <div>${inner}</div>
+    </div></section>`;
+}
+
 // Three regions' photographs, by chapter index; decoration, so hidden.
 export function bandMarkup(indices) {
   return `

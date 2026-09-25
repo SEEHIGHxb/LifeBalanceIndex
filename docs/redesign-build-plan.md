@@ -1,6 +1,6 @@
 # LBI redesign: building it into the app
 
-Status: **approved by the owner on 2026-09-25**, all four open decisions as recommended (§4). **R1 (the frame) is built, in v96 (2.44.0); R2 (Landing and journey) in v97 (2.45.0); R3 (Home) in v98 (2.46.0); R4 (the weekly loop) in v99 (2.47.0).**
+Status: **approved by the owner on 2026-09-25**, all four open decisions as recommended (§4). **R1 (the frame) is built, in v96 (2.44.0); R2 (Landing and journey) in v97 (2.45.0); R3 (Home) in v98 (2.46.0); R4 (the weekly loop) in v99 (2.47.0); R5 (the rest of the map) in v100 (2.48.0).**
 
 The prototype in [`prototype/redesign/`](prototype/redesign/README.md) is approved. It covers every screen on the confirmed map, and the dark pinned star was turned off on 2026-09-25. This plan moves the real app into that design one release at a time.
 
@@ -76,6 +76,13 @@ R1 and R2 each end with a phone check by you before the next one starts. After t
 - **The trend is a dated list.** `renderTrendChart` is gone from `chart.js`.
 - **Removing a pledge asks on the page.** The page redraws itself after a change and puts focus back on the pledge or the list.
 - **New Thai copy** for the three screens is marked in `th.js` and awaits the owner's review.
+
+**R5 as built (v100, 2.48.0):** Side by Side, the share poster, Your year, Profile, Methodology and Lumi's panel, with the map the owner approved on 2026-09-25 ("Approve map").
+- **Side by Side replaces the radar chart.** Two stars over each other, the average dashed behind; `renderRadarChart` is deleted. The page gained what the prototype lacked: removing someone, which asks on the page first, and the share button.
+- **The share card stays a dialog**, opened from Home and Side by Side, not a `#/share` route. The canvas draws the prototype's poster.
+- **Your year keeps the birthday form**; Profile keeps every real field and control; Methodology keeps its full text (the prototype showed first sentences).
+- **Lumi speaks only when asked.** The floating bubble and its per-screen tip are gone; the header's star opens the tip for the lowest aspect.
+- **New Thai copy** for R5 is marked in `th.js` and awaits the owner's review.
 
 ## 3. How the code is organised
 

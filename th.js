@@ -34,14 +34,9 @@ export const TH = {
   // Age is collected but no benchmark norm uses it yet, so the label no
   // longer implies it does (review LOW finding).
   "Age": "อายุ",
-  // --- Chart accessible names (review finding: SVGs were silent to AT) ---
-  "Radar chart of the eight aspect scores: {summary}": "แผนภูมิเรดาร์คะแนนทั้งแปดด้าน: {summary}",
-  "Radar chart of the eight aspect scores: {summary}. Dashed outline shows the population average: {avgSummary}": "แผนภูมิเรดาร์คะแนนทั้งแปดด้าน: {summary} เส้นประแสดงค่าเฉลี่ยของประชากร: {avgSummary}",
-  // --- Radar legend (population-average overlay) ---
-  "Your scores": "คะแนนของคุณ",
+  // --- The population average (Side by Side's dashed star) ---
   "Population average": "ค่าเฉลี่ยของประชากร",
-  "Average estimated from cited population statistics — see Methodology.": "ค่าเฉลี่ยประมาณจากสถิติประชากรที่มีการอ้างอิง — ดูหน้าระเบียบวิธี",
-  "The dashed outline on the dashboard radar is a derived population average: a reference person assembled from the same cited statistics (median income, typical activity levels, published questionnaire means) is scored through the exact formulas that score you.": "เส้นประบนแผนภูมิเรดาร์หน้าภาพรวมคือค่าเฉลี่ยของประชากรที่ประมาณขึ้น: บุคคลอ้างอิงที่ประกอบขึ้นจากสถิติที่มีการอ้างอิงชุดเดียวกัน (รายได้มัธยฐาน ระดับกิจกรรมทางกายทั่วไป ค่าเฉลี่ยของแบบสอบถามที่ตีพิมพ์) จะถูกคำนวณผ่านสูตรเดียวกับที่ใช้คำนวณคะแนนของคุณ",
+  "The dashed star on Side by Side is a derived population average: a reference person assembled from the same cited statistics (median income, typical activity levels, published questionnaire means) is scored through the exact formulas that score you.": "ดาวเส้นประในหน้าเทียบเคียงกันคือค่าเฉลี่ยของประชากรที่ประมาณขึ้น: บุคคลอ้างอิงที่ประกอบขึ้นจากสถิติที่มีการอ้างอิงชุดเดียวกัน (รายได้มัธยฐาน ระดับกิจกรรมทางกายทั่วไป ค่าเฉลี่ยของแบบสอบถามที่ตีพิมพ์) จะถูกคำนวณผ่านสูตรเดียวกับที่ใช้คำนวณคะแนนของคุณ",
   "Behavior-driven aspects are re-measured by the weekly review: the quantities you report replace last week's values inside the same formulas, so a score moves exactly as much as the measured change implies — never by flat per-log bonuses.": "ด้านที่ขับเคลื่อนด้วยพฤติกรรมจะถูกวัดใหม่ผ่านการทบทวนรายสัปดาห์: ปริมาณที่คุณรายงานจะแทนที่ค่าของสัปดาห์ก่อนในสูตรเดียวกัน คะแนนจึงขยับเท่าที่การเปลี่ยนแปลงที่วัดได้บ่งชี้เท่านั้น — ไม่ใช่โบนัสคงที่ต่อการบันทึก",
   // --- Footer (privacy/source/version reachable from the app) ---
   "Privacy & Data": "ความเป็นส่วนตัวและข้อมูล",
@@ -550,7 +545,6 @@ export const TH = {
     "{name} ทำได้ถึงค่าเฉลี่ยของประชากรในด้าน{aspects} ซึ่งคุณยังไปไม่ถึง",
   "{name} (You)": "{name} (คุณ)",
   "Remove {name}": "ลบ {name}",
-  "Remove participant": "ลบผู้เข้าร่วม",
   "Participant list is full (max {max}).": "รายชื่อผู้เข้าร่วมเต็มแล้ว (สูงสุด {max} คน)",
   // --- Weekly pledges (state.js) ---
   "Pledge list is full (max {max}).": "รายการคำมั่นเต็มแล้ว (สูงสุด {max} รายการ)",
@@ -588,7 +582,6 @@ export const TH = {
   "Start Weekly Review": "เริ่มทบทวนรายสัปดาห์",
   "No weekly reviews yet — your first one opens the week after onboarding.": "ยังไม่มีการทบทวนรายสัปดาห์ — ครั้งแรกจะเปิดในสัปดาห์ถัดจากการประเมินเริ่มต้น",
   "This week's review is already recorded — come back next week.": "บันทึกการทบทวนของสัปดาห์นี้ไปแล้ว — กลับมาใหม่สัปดาห์หน้า",
-  "Here to help. One short weekly review keeps your scores honest — about two minutes, once a week.": "พร้อมช่วยเสมอ การทบทวนรายสัปดาห์สั้น ๆ ช่วยให้คะแนนของคุณตรงกับความจริง — ราวสองนาที สัปดาห์ละครั้ง",
   "Complete your weekly review to keep your assessment current and track your progress.": "ทำการทบทวนรายสัปดาห์เพื่อให้การประเมินเป็นปัจจุบันและติดตามความคืบหน้าของคุณ",
   // --- Goals tab (weekly pledges) ---
   "Weekly Pledges": "คำมั่นรายสัปดาห์",
@@ -1052,8 +1045,8 @@ export const TH = {
     "เกรด (A-F) มาจากเปอร์เซ็นไทล์เทียบประชากรของแต่ละด้าน มากกว่าจะมาจากคะแนน 0-100 โดยตรง: A คือ 10% แรก, B คือ 30% แรก, C คือช่วงกลางทั่วไป (30-69), D คือต่ำกว่าทั่วไป และ F คือ 10% ท้าย เปอร์เซ็นไทล์คือส่วนที่เทียบคุณกับข้อมูลที่มีการเผยแพร่ จึงเป็นส่วนที่ควรให้เกรดตามปกติ ด้านการเงินเป็นข้อยกเว้นเดียว เพราะเปอร์เซ็นไทล์ของด้านนี้คือระดับรายได้ของคุณเพียงอย่างเดียว การให้เกรดจากมันจึงเท่ากับให้เกรดจากรายได้ล้วน ๆ คนที่มีรายได้น้อยแต่ไม่มีหนี้และไม่มีความกังวลเรื่องเงินเคยได้รับเกรด F ด้านการเงินจึงให้เกรดจากคะแนนรวมทั้งหมด ซึ่งให้น้ำหนักกับคำถามความอยู่ดีมีสุขทางการเงินมากกว่ารายได้มาก เปอร์เซ็นไทล์รายได้ของคุณยังคงแสดงอยู่บนการ์ด ส่วนด้านที่คุณยังไม่ได้ทำแบบสอบถามจะแสดงว่า “ยังไม่ให้เกรด” ไม่ใช่ F เพราะการไม่มีข้อมูลไม่ใช่ผลลัพธ์ที่ล้มเหลว",
   "The Balance Index is this app's own summary figure, not a published or validated measure — unlike the eight aspect scores and their percentiles, no research proposes it and nothing outside this app uses it. Before they are combined, each aspect is rescaled against its population average so that being typical scores 50, whether that aspect's average sits at 32 or 70 — the same population comparison the grades use. That way an aspect the whole population scores low on (like social contribution) no longer anchors your balance down for being merely average. The index is then the harmonic mean of those eight relative standings, so your weakest one pulls it down hardest: eight standings of 50 give an index of 50, while seven near 57 with one collapsed give a far lower number, even though both average 50. That is deliberate — a single number that rewarded a high average would reward neglecting an aspect entirely, and this app is about balance.":
     "ดัชนีสมดุลเป็นตัวเลขสรุปที่แอปนี้สร้างขึ้นเอง ไม่ใช่มาตรวัดที่มีการเผยแพร่หรือผ่านการตรวจสอบความตรง ต่างจากคะแนนทั้งแปดด้านและเปอร์เซ็นไทล์ของมัน ไม่มีงานวิจัยใดเสนอค่านี้ และไม่มีที่ใดนอกแอปนี้ใช้มัน ก่อนนำมารวมกัน แต่ละด้านจะถูกปรับมาตราส่วนเทียบกับค่าเฉลี่ยประชากรของด้านนั้น เพื่อให้การอยู่ในระดับทั่วไปได้ 50 คะแนน ไม่ว่าค่าเฉลี่ยของด้านนั้นจะอยู่ที่ 32 หรือ 70 — เป็นการเทียบกับประชากรแบบเดียวกับที่เกรดใช้ ด้วยวิธีนี้ ด้านที่ประชากรทั้งหมดได้คะแนนต่ำ (เช่น การมีส่วนร่วมต่อสังคม) จะไม่ดึงสมดุลของคุณลงเพียงเพราะคุณอยู่ในระดับทั่วไป จากนั้นดัชนีคือค่าเฉลี่ยฮาร์มอนิกของทั้งแปดสถานะเชิงเปรียบเทียบนี้ ด้านที่อ่อนที่สุดจึงดึงค่านี้ลงแรงที่สุด: แปดสถานะที่ 50 ได้ดัชนี 50 ขณะที่เจ็ดด้านราว 57 กับอีกหนึ่งด้านที่พังลงได้ตัวเลขที่ต่ำกว่ามาก ทั้งที่ค่าเฉลี่ยเท่ากับ 50 เหมือนกัน นี่เป็นความตั้งใจ เพราะตัวเลขเดียวที่ให้รางวัลกับค่าเฉลี่ยสูง ย่อมให้รางวัลกับการละเลยบางด้านไปเลย และแอปนี้ว่าด้วยเรื่องสมดุล",
-  "Because the index is dominated by your weakest aspect, raising a below-average score moves it far more than raising an already-strong one. The dashed population-average line on your dashboard radar is the 50 mark: sit on it on every aspect and your index is 50. Treat it as a prompt about where attention is missing, not as a verdict on your life.":
-    "เพราะดัชนีนี้ถูกกำหนดโดยด้านที่อ่อนที่สุดของคุณเป็นหลัก การยกคะแนนที่ต่ำกว่าค่าเฉลี่ยจึงทำให้ดัชนีขยับมากกว่าการยกคะแนนที่แข็งแรงอยู่แล้วมาก เส้นประค่าเฉลี่ยประชากรบนแผนภูมิเรดาร์หน้าแดชบอร์ดของคุณคือเส้น 50: หากคุณอยู่บนเส้นนั้นทุกด้าน ดัชนีของคุณจะเท่ากับ 50 ให้มองว่านี่เป็นสัญญาณว่าคุณกำลังละเลยด้านไหน ไม่ใช่คำตัดสินชีวิตของคุณ",
+  "Because the index is dominated by your weakest aspect, raising a below-average score moves it far more than raising an already-strong one. The dashed population-average star on Side by Side is the 50 mark: sit on it on every aspect and your index is 50. Treat it as a prompt about where attention is missing, not as a verdict on your life.":
+    "เพราะดัชนีนี้ถูกกำหนดโดยด้านที่อ่อนที่สุดของคุณเป็นหลัก การยกคะแนนที่ต่ำกว่าค่าเฉลี่ยจึงทำให้ดัชนีขยับมากกว่าการยกคะแนนที่แข็งแรงอยู่แล้วมาก ดาวเส้นประค่าเฉลี่ยประชากรในหน้าเทียบเคียงกันคือเส้น 50: หากคุณอยู่บนเส้นนั้นทุกด้าน ดัชนีของคุณจะเท่ากับ 50 ให้มองว่านี่เป็นสัญญาณว่าคุณกำลังละเลยด้านไหน ไม่ใช่คำตัดสินชีวิตของคุณ",
   "Grades also steer suggestions: when you add a weekly pledge, the ones tied to your lowest-graded aspects are listed first, so the easiest win to act on is already at the top.":
     "เกรดยังชี้นำคำแนะนำด้วย: เมื่อคุณเพิ่มคำมั่นรายสัปดาห์ คำมั่นที่ผูกกับด้านที่คุณได้เกรดต่ำที่สุดจะแสดงก่อน เพื่อให้เป้าหมายที่ลงมือทำได้ง่ายที่สุดอยู่บนสุดแล้ว",
 
@@ -1366,6 +1359,27 @@ export const TH = {
   "Added": "เพิ่มแล้ว",
   "Removed": "ลบแล้ว",
   "Graded weekly": "ตรวจทุกสัปดาห์",
+  // The rest of the map (views/leaderboard.js, yearreview.js, methodology.js,
+  // lumi.js; redesign R5). The prototype's Thai where it had the line
+  // (content-more.js cInc, cHead, cOver, cOverP, cPick, cAspects, cLearn,
+  // cRemoved, cAdded, cUpdated, yWord, yTurn, xNot, lumi); the rest is new and
+  // awaits the owner's review.
+  "You + {n}": "คุณ + {n}",
+  "Not a ranking.": "ไม่ใช่การจัดอันดับ",
+  "Where you differ, not who is ahead.": "ดูว่าต่างกันตรงไหน ไม่ใช่ใครนำใคร",
+  "Over each other": "ซ้อนกัน",
+  "Pick whose star lies over yours. The dashed line is the population average.": "เลือกว่าจะวางดาวของใครซ้อนบนดาวของคุณ เส้นประคือค่าเฉลี่ยของประชากร",
+  "Whose star to lay over yours": "ดาวของใครที่จะวางซ้อนบนดาวของคุณ",
+  "Eight aspects, side by side": "แปดด้าน เทียบเคียงกัน",
+  "What they have cleared": "ด้านที่เขาทำได้ถึงแล้ว",
+  "{name} added.": "เพิ่ม {name} แล้ว",
+  "{name} updated.": "อัปเดต {name} แล้ว",
+  "{name} removed.": "ลบ {name} แล้ว",
+  "Remove {name}? You can paste their code again any time.": "ลบ {name} ออกไหม วางรหัสของเขาอีกครั้งได้ทุกเมื่อ",
+  "Year": "ปีอายุ",
+  "The day your year turns": "วันที่ปีของคุณเปลี่ยน",
+  "What it does not measure": "สิ่งที่แอปไม่ได้วัด",
+  "Lumi's tip": "เคล็ดลับจากลูมิ",
   // The in-app Reduce motion switch (Profile). It can only add reduction.
   "Motion": "การเคลื่อนไหว",
   "Reduce motion": "ลดการเคลื่อนไหว",
@@ -1473,9 +1487,9 @@ export const TH = {
     "กรณีที่กลุ่มเทียบเป็นชาวต่างชาติแต่ช่วงอายุตรงกัน — กลุ่มตัวอย่าง WHO-5 ชาวเยอรมัน และเกณฑ์การรับรู้ความสามารถของตนเองจาก 25 ประเทศ — จะแสดงอันดับพร้อมระบุกลุ่มตัวอย่างกำกับไว้ ทั้งในหน้าด้านนั้นและที่นี่ ให้อ่านผลเหล่านั้นเป็นเพียงตัวชี้บอกคร่าว ๆ ไม่ใช่สถานะของคุณเมื่อเทียบกับผู้ใหญ่ชาวไทย",
 
   // --- Share sheet (the Instagram-story card) ---
-  // The card itself reuses "Balance Index", "Your scores", "Population
-  // average" and the at-or-above sentence already defined above, so only the
-  // sheet's own controls need new entries here.
+  // The card itself reuses "Balance Index" and the at-or-above sentence
+  // already defined above, so only the sheet's own controls need new entries
+  // here.
   "Share": "แชร์",
   "Share your radar": "แชร์เรดาร์ของคุณ",
   "Preview of your shareable card": "ตัวอย่างการ์ดที่จะแชร์",

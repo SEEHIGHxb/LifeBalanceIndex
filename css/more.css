@@ -1,0 +1,366 @@
+/* css/more.css - the rest of the map (redesign R5): Side by Side
+   (views/leaderboard.js), the share poster (views/share.js), Your year
+   (views/yearreview.js), the text pages Profile and Methodology, and Lumi's
+   panel (views/lumi.js). Ported from the approved prototype
+   (docs/prototype/redesign/more.css). --px is the stage page's prototype
+   pixel (css/stage-page.css). */
+
+/* A text button: underlined, never a pill. */
+.linkbtn {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--frame-ink);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+.linkbtn:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+.stage-page .pill-light { background: var(--frame-card); color: var(--frame-ink); }
+
+/* Fields on a stage page: the journey's boxes. */
+.stage-page .form-group { margin: 0 0 20px; }
+.stage-page .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--frame-ink);
+}
+.stage-page .form-control {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1.5px solid rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  background: var(--frame-card);
+  color: var(--frame-ink);
+  font-size: 16px;
+}
+.stage-page .form-control:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
+.stage-page .form-control[aria-invalid="true"] { border-color: #8a1c1c; }
+.stage-page .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; }
+.stage-page .field-error,
+.code-error,
+.year-error,
+.profile-error { margin: 8px 0 0; color: #8a1c1c; font-weight: 600; font-size: 15px; }
+.stage-page .field-note { color: #444444; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin: calc(50 * var(--px)) 0 0; }
+
+/* ========================================================== side by side */
+
+.code-field { max-width: calc(1300 * var(--px)); margin-top: calc(60 * var(--px)); }
+.code-field label { display: block; margin-bottom: 10px; font-weight: 700; font-size: 15px; }
+.code-row { display: flex; gap: 12px; align-items: center; }
+.stage-page .code-input { flex: 1; min-width: 0; font-family: ui-monospace, Consolas, monospace; font-size: 14px; }
+
+.duo { padding: calc(170 * var(--px)) 0 calc(200 * var(--px)); }
+.duo .split { --col: 704; }
+.stage-page .duo .duo-note {
+  max-width: calc(560 * var(--px));
+  margin: calc(24 * var(--px)) calc(40 * var(--px)) 0 0;
+  font-size: max(13px, calc(18 * var(--px)));
+  line-height: 1.7;
+}
+.stage-page .duo .duo-share { margin: calc(40 * var(--px)) 0 0; }
+.stage-page .duo .duo-none {
+  max-width: calc(1200 * var(--px));
+  margin: 0;
+  font-weight: 600;
+  font-size: max(15px, calc(26 * var(--px)));
+  line-height: 1.8;
+}
+.duo-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px calc(50 * var(--px));
+  margin: 0 0 calc(40 * var(--px));
+  padding: 0;
+  list-style: none;
+  font-weight: 700;
+  font-size: max(13px, calc(16 * var(--px)));
+}
+/* A pasted name can be one long unbroken handle: it wraps instead of pushing
+   the page wide. */
+.duo-legend li,
+.people-rm .linkbtn,
+.duo-row dt { min-width: 0; overflow-wrap: anywhere; }
+.duo-legend i { display: inline-block; width: 22px; height: 12px; margin-right: 8px; border-radius: 3px; vertical-align: -1px; }
+.lg-you { background: #f0d8a8; border: 1.5px solid #a88752; }
+.lg-them { background: rgba(27, 27, 27, 0.14); border: 1.5px solid var(--frame-dark); }
+.lg-avg { border: 1.5px dashed var(--frame-ink); }
+.people { display: flex; flex-wrap: wrap; gap: 10px; }
+.stage-page .people .pill { white-space: normal; text-transform: none; letter-spacing: normal; }
+.stage-page .people .pill[aria-checked="true"] { background: var(--frame-dark); color: #ffffff; }
+.people-rm { display: flex; flex-wrap: wrap; gap: 0 calc(40 * var(--px)); margin: 8px 0 calc(40 * var(--px)); }
+.people-ask { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; flex-basis: 100%; margin: 8px 0; }
+.stage-page .people-ask p { flex-basis: 100%; max-width: none; margin: 0; font-weight: 700; font-size: 15px; line-height: 1.6; }
+.duo-fig { width: min(100%, calc(1000 * var(--px))); aspect-ratio: 1; }
+.duo-fig svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.duo-you { fill: #f0d8a8; stroke: #a88752; stroke-width: 0.9; stroke-linejoin: round; }
+.duo-avg { fill: none; stroke: var(--frame-ink); stroke-width: 0.5; stroke-dasharray: 1.6 1.2; opacity: 0.6; }
+.duo-them { fill: rgba(27, 27, 27, 0.14); stroke: var(--frame-dark); stroke-width: 0.9; stroke-linejoin: round; }
+
+.duocard {
+  display: grid;
+  grid-template-columns: calc(700 * var(--px)) minmax(0, 1fr);
+  gap: calc(60 * var(--px));
+  align-items: start;
+  padding: calc(60 * var(--px)) calc(80 * var(--px));
+}
+.duo-card + .duo-card { margin-top: calc(40 * var(--px)); }
+.duocard-head { display: grid; gap: calc(24 * var(--px)); justify-items: start; }
+.duocard-head .brand-logo {
+  position: static;
+  display: grid;
+  place-items: center;
+  width: calc(220 * var(--px));
+  height: calc(220 * var(--px));
+  border-radius: calc(28 * var(--px));
+}
+.duocard-head .brand-logo img { width: 70%; height: auto; }
+.duocard .card-title a { color: inherit; text-decoration: none; }
+.duocard .card-title a:hover { text-decoration: underline; text-underline-offset: 0.15em; }
+.duocard .card-title a:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+.duo-rows { display: grid; margin: 0; }
+.duo-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 20px;
+  padding: calc(14 * var(--px)) 0;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.2);
+}
+.duo-row dt { font-weight: 600; font-size: max(14px, calc(19 * var(--px))); }
+.duo-row dd { display: flex; align-items: baseline; gap: calc(14 * var(--px)); margin: 0; }
+.duo-row b { font-family: var(--frame-word); font-weight: 400; font-size: max(24px, calc(56 * var(--px))); line-height: 1; }
+.duo-row-avg { opacity: 0.62; }
+.duo-row.is-you dt { font-weight: 800; }
+.sbs-mark { width: 1.2em; font-size: max(12px, calc(18 * var(--px))); text-align: center; }
+
+/* ============================================================ share poster
+   The sheet the share button opens (openDialog): the choices beside the
+   poster on a laptop, under it on a phone. */
+.share-sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 32px;
+  align-items: start;
+  width: min(920px, calc(100vw - 32px));
+  max-height: 92vh;
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: 32px;
+  border-radius: 28px;
+  background: var(--frame-page);
+  color: var(--frame-ink);
+  font-family: var(--font-sans);
+}
+.share-side { display: grid; gap: 24px; justify-items: start; order: -1; }
+.share-title {
+  margin: 0;
+  font-family: var(--frame-word);
+  font-weight: 400;
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+.share-option { display: grid; gap: 10px; }
+.share-option-label { font-size: 14px; font-weight: 700; letter-spacing: 0.03em; }
+.share-set { display: flex; flex-wrap: wrap; gap: 8px; }
+.share-sheet .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--frame-dark);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.share-sheet .pill-light { background: var(--frame-card); color: var(--frame-ink); }
+.share-sheet .share-toggle[aria-pressed="true"] { background: var(--frame-dark); color: #ffffff; }
+.share-sheet .pill:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+.share-note,
+.share-care { margin: 0; font-size: 14px; line-height: 1.7; }
+.share-care { padding-left: 14px; border-left: 3px solid var(--frame-ink); font-weight: 600; }
+.share-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.share-stage { display: grid; justify-items: center; }
+/* The canvas carries a 1080x1920 backing store; these bounds only scale how
+   it is shown. */
+.share-preview {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 72vh;
+  max-height: 72dvh;
+  border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+}
+
+/* ============================================================== your year */
+
+.stage-page .year-points .ypoints {
+  margin: 0 0 calc(40 * var(--px));
+  font-family: var(--frame-word);
+  font-weight: 400;
+  font-size: max(22px, calc(56 * var(--px)));
+  line-height: 1;
+  letter-spacing: normal;
+}
+.ypoints b { font-weight: 400; font-size: max(64px, calc(220 * var(--px))); }
+.ymeter { width: 100%; max-width: calc(1300 * var(--px)); margin: 0 0 calc(80 * var(--px)); }
+.ymeter i,
+.year-filed .meter i { background: #a88752; }
+.newsrow-delta { font-family: var(--frame-word); font-size: max(28px, calc(64 * var(--px))); line-height: 1; }
+.newsrow-title .meter { width: calc(600 * var(--px)); margin-top: calc(20 * var(--px)); }
+.year-form { max-width: calc(1200 * var(--px)); margin-top: calc(40 * var(--px)); }
+.stage-page .year-form .year-form-head { margin: 0 0 16px; font-weight: 700; font-size: 16px; }
+
+/* ============================================================= text pages
+   Profile and Methodology: no motion, a head and labelled sections. */
+.textpage { padding-bottom: calc(80 * var(--px)); }
+.pagehead { padding: calc(330 * var(--px)) 0 calc(170 * var(--px)); }
+.pagehead-word {
+  margin: 0 0 calc(80 * var(--px));
+  font-family: var(--frame-word);
+  font-weight: 400;
+  font-size: max(44px, calc(170 * var(--px)));
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+.pagehead p {
+  max-width: calc(1500 * var(--px));
+  margin: 0 0 calc(40 * var(--px));
+  font-weight: 500;
+  font-size: max(16px, calc(32 * var(--px)));
+  line-height: 1.9;
+}
+/* A text page's labels are sentences, so they wrap within their column. */
+.textpage .label { white-space: normal; padding-right: calc(60 * var(--px)); }
+.textpage .statement p,
+.textpage .statement li {
+  max-width: calc(1400 * var(--px));
+  margin: 0 0 calc(30 * var(--px));
+  font-weight: 500;
+  font-size: max(15px, calc(22 * var(--px)));
+  line-height: 1.8;
+  letter-spacing: normal;
+}
+.textpage .profile-note { color: #444444; }
+.creed .aspect-blurb.methodology-nongoal {
+  font-weight: 700;
+  font-size: max(18px, calc(40 * var(--px)));
+  line-height: 1.75;
+}
+.stage-page .pill-danger { background: #8a1c1c; color: #ffffff; }
+.textpage .conn-row {
+  margin: 0;
+  padding: calc(40 * var(--px)) 0;
+  border: 0;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.25);
+  border-radius: 0;
+}
+.textpage .conn-name { font-family: var(--font-sans); font-size: 18px; }
+.textpage .conn-role,
+.textpage .conn-fills { font-size: 14px; color: #444444; }
+.textpage .conn-status,
+.textpage .conn-fills { margin: 8px 0 0; }
+.textpage .component-row { padding: calc(44 * var(--px)) 0; border-bottom: 1px dashed rgba(0, 0, 0, 0.25); }
+.textpage .component-row:first-child { padding-top: 0; }
+.textpage .component-head { font-weight: 700; font-size: max(16px, calc(28 * var(--px))); }
+.textpage .component-detail { margin-top: 12px; font-size: max(15px, calc(21 * var(--px))); line-height: 1.8; }
+.textpage .provenance-scroll { margin: calc(40 * var(--px)) 0; }
+.textpage .provenance-table { font-size: 14px; }
+
+/* ================================================================== lumi */
+
+.lumi-btn svg { width: 26px; height: 26px; }
+.lumi {
+  position: fixed;
+  top: calc(var(--frame-header-h) - 4px);
+  right: var(--frame-gutter);
+  z-index: 320;
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  width: min(calc(100vw - 32px), 420px);
+  padding: 20px;
+  border-radius: 24px;
+  background: var(--frame-card);
+  color: var(--frame-ink);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+  transform-origin: 100% 0;
+}
+.lumi[hidden] { display: none; }
+.lumi:focus { outline: none; }
+.lumi:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+.lumi-img { display: block; width: 100%; height: auto; border-radius: 18%; }
+.lumi-label { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
+.lumi-tip { min-height: 3.4em; margin: 8px 0 14px; font-weight: 600; font-size: 16px; line-height: 1.7; }
+.lumi-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; }
+.lumi .pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: var(--frame-dark);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.lumi .pill:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+
+/* ================================================================ phones */
+@container (max-width: 900px) {
+  .stage-page .grid-2 { grid-template-columns: minmax(0, 1fr); }
+  .code-row { flex-wrap: wrap; }
+  .stage-page .code-input { flex-basis: 100%; }
+  .duo { padding: calc(120 * var(--px)) 0; }
+  .stage-page .duo .duo-note { max-width: none; margin-right: 0; font-size: max(14px, calc(26 * var(--px))); }
+  .duocard { grid-template-columns: minmax(0, 1fr); gap: calc(24 * var(--px)); padding: calc(50 * var(--px)); }
+  .duo-row dt { font-size: max(14px, calc(28 * var(--px))); }
+  .duo-row b { font-size: calc(64 * var(--px)); }
+  .ypoints b { font-size: calc(180 * var(--px)); }
+  .newsrow-delta { font-size: calc(40 * var(--px)); }
+  .newsrow-title .meter { width: 100%; }
+  .pagehead { padding-top: calc(250 * var(--px)); }
+  .pagehead-word { font-size: calc(96 * var(--px)); }
+  .pagehead p { font-size: max(16px, calc(34 * var(--px))); }
+  .textpage .statement p,
+  .textpage .statement li { font-size: max(15px, calc(28 * var(--px))); }
+  .creed .aspect-blurb.methodology-nongoal { font-size: max(18px, calc(40 * var(--px))); }
+  .textpage .component-detail { font-size: max(15px, calc(28 * var(--px))); }
+}
+@media (max-width: 720px) {
+  .share-sheet { grid-template-columns: minmax(0, 1fr); padding: 20px; gap: 20px; }
+  .share-side { order: 0; }
+  .share-preview { max-height: 56vh; max-height: 56dvh; }
+}
+
+/* ================================================================= Thai
+   No tracking for Thai, and the wordmark face has no Thai, so those headings
+   fall back to Sarabun at a heavier weight. */
+html[lang="th"] .share-sheet .pill,
+html[lang="th"] .share-option-label,
+html[lang="th"] .lumi .pill,
+html[lang="th"] .lumi-label { letter-spacing: normal; }
+html[lang="th"] .share-title,
+html[lang="th"] .pagehead-word,
+html[lang="th"] .ypoints,
+html[lang="th"] .duo-row b { font-weight: 700; }

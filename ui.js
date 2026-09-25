@@ -15,5 +15,5 @@ export { renderYearReview } from "./views/yearreview.js";
 export { renderQuests } from "./views/quests.js";
 export { renderLeaderboard } from "./views/leaderboard.js";
 export { renderProfile } from "./views/profile.js";
-export { getLumiTip } from "./views/assistant.js";
+export { getLumiTip } from "./views/lumi.js";
 export { openDialog, prefersReducedMotion } from "./views/helpers.js";

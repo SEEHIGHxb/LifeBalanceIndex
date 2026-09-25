@@ -36,6 +36,7 @@ import {
 import { isoWeekKey } from "../season.js";
 import { t, tp, dateLocale } from "../i18n.js";
 import { deviceReducesMotion, isReduced, setReduceMotionPref } from "../motion.js";
+import { textSection, pageHead } from "./stage-page.js";
 
 const AGE_MIN = 15;
 const AGE_MAX = 100;
@@ -153,15 +154,12 @@ function motionCard() {
   const note = device
     ? t("Your device already asks for less motion, so it stays reduced everywhere in this app.")
     : t("Keeps animations to quick fades and finished states. It can only reduce motion; your device's own setting always applies.");
-  return `
-      <div class="card">
-        <h3 class="card-header">${t("Motion")}</h3>
+  return textSection(t("Motion"), `
         <label class="conn-switch">
           <input type="checkbox" id="pf-reduce-motion"${isReduced() ? " checked" : ""}${device ? " disabled" : ""} aria-describedby="pf-reduce-motion-note">
           <span>${t("Reduce motion")}</span>
         </label>
-        <p class="profile-note" id="pf-reduce-motion-note">${note}</p>
-      </div>`;
+        <p class="profile-note" id="pf-reduce-motion-note">${note}</p>`);
 }
 
 export function renderProfile(containerId, state, onSaved) {
@@ -199,12 +197,10 @@ export function renderProfile(containerId, state, onSaved) {
     { value: "Coupled", label: t("In a Relationship / Married") }
   ];
   container.innerHTML = `
-    <div class="profile-view">
-      <div class="card">
-        <h2 class="card-header">${t("Your Profile")}</h2>
-        <p class="onb-why">${t("Update the slower-moving facts about you. Day-to-day quantities like sleep, water, and activity live in the Weekly Review.")}</p>
+    <div class="stage-page textpage profile-view">
+      ${pageHead(t("Your Profile"), [t("Update the slower-moving facts about you. Day-to-day quantities like sleep, water, and activity live in the Weekly Review.")])}
 
-        <h3 class="instrument-title">${t("Identity")}</h3>
+      ${textSection(t("Identity"), `
         ${textField("pf-name", t("Name"), p.name, 'maxlength="40"')}
         <div class="grid-2">
           ${numberField("pf-age", t("Age"), p.age, `min="${AGE_MIN}" max="${AGE_MAX}"`)}
@@ -218,16 +214,16 @@ export function renderProfile(containerId, state, onSaved) {
              within twelve months, so the reassurance was spent before it was
              offered. What remains is the part that earns its space — why the
              field exists at all. -->
-        <p class="profile-note">${t("Optional — month and day only, so the app knows when your year turns.")}</p>
+        <p class="profile-note">${t("Optional — month and day only, so the app knows when your year turns.")}</p>`)}
 
-        <h3 class="instrument-title">${t("Life Context")}</h3>
+      ${textSection(t("Life Context"), `
         ${selectField("pf-region", t("Primary Region (Cost of Living Mapping)"), regionOpts, p.region)}
         ${selectField("pf-employment", t("Employment Status"), employmentOpts, p.employment)}
         ${selectField("pf-relationship", t("Relationship Status"), relationshipOpts, p.relationshipStatus)}
         <p class="profile-note">${t("Change this and your recommendations update now; your relationship score refines at your next monthly check-in.")}</p>
-        <p class="profile-note">${t("Gender and employment guide your benchmarks and recommendations — they don't change your scores.")}</p>
+        <p class="profile-note">${t("Gender and employment guide your benchmarks and recommendations — they don't change your scores.")}</p>`)}
 
-        <h3 class="instrument-title">${t("Finance & Body")}</h3>
+      ${textSection(t("Finance & Body"), `
         ${numberField("pf-income", t("Monthly Individual Income (Net THB)"), p.income, 'min="0"')}
         <div class="grid-2">
           ${numberField("pf-height", t("Height (cm)"), p.height, 'min="100" max="250"')}
@@ -251,30 +247,24 @@ export function renderProfile(containerId, state, onSaved) {
           note: t("Asked separately since v78. If you set up this profile earlier, this money was part of the box above — take it out of that figure before you enter it here, or it will be counted twice. Leave this blank or enter 0 if you send nothing.")
         })}
         <p class="profile-note">${t("These three give your runway on the Finance page. They change nothing about your score — no published distribution says what a given number of months is worth, so the app reports the figure rather than ranking it. Money you send to your family is also shown on your Social Contribution page, where it is giving rather than a bill.")}</p>
+        <p id="profile-error" class="profile-error d-none" role="alert"></p>
+        <p class="actions"><button type="button" id="pf-save" class="pill">${t("Save changes")}</button></p>`)}
 
-        <p id="profile-error" class="d-none" style="color: var(--color-crimson); margin-top: 12px; font-weight: 600;"></p>
-        <button type="button" id="pf-save" class="btn btn-primary" style="margin-top: 8px;">${t("Save changes")}</button>
-      </div>
-
-      <div class="card">
-        <h3 class="card-header">${t("Connected apps")}</h3>
-        <p class="onb-why">${t("If you use these apps on this device, they can hand their numbers to your Weekly Review so you type less. Everything stays in this browser — nothing is uploaded, and no account is involved.")}</p>
+      ${textSection(t("Connected apps"), `
+        <p class="profile-note">${t("If you use these apps on this device, they can hand their numbers to your Weekly Review so you type less. Everything stays in this browser — nothing is uploaded, and no account is involved.")}</p>
         ${CONNECTION_SOURCES.map(s => connectionRow(s, meta[s], prefs[s], reads[s])).join("")}
-        <p class="profile-note">${t("Each app has its own sharing switch too. Turning one on here only means this app may read what that app chose to share.")}</p>
-      </div>
+        <p class="profile-note">${t("Each app has its own sharing switch too. Turning one on here only means this app may read what that app chose to share.")}</p>`)}
 
       ${motionCard()}
 
-      <div class="card">
-        <h3 class="card-header">${t("Data & Backup")}</h3>
-        <p class="onb-why">${t("Your data lives only in this browser. Export a backup regularly — clearing site data erases it.")}</p>
-        <div class="profile-data-actions">
-          <button id="btn-export-data" class="btn">${t("Export")}</button>
-          <button id="btn-import-data" class="btn">${t("Import")}</button>
-          <button id="btn-reset-data" class="btn btn-danger">${t("Reset Data")}</button>
+      ${textSection(t("Data & Backup"), `
+        <p class="profile-note">${t("Your data lives only in this browser. Export a backup regularly — clearing site data erases it.")}</p>
+        <p class="actions profile-data-actions">
+          <button type="button" id="btn-export-data" class="pill">${t("Export")}</button>
+          <button type="button" id="btn-import-data" class="pill">${t("Import")}</button>
+          <button type="button" id="btn-reset-data" class="pill pill-danger">${t("Reset Data")}</button>
           <input type="file" id="import-file-input" accept="application/json,.json" class="d-none">
-        </div>
-      </div>
+        </p>`)}
     </div>
   `;
 

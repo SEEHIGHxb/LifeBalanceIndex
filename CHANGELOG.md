@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `99`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `100`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,47 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.48.0] — 2026-09-25 (APP_VERSION 100)
+
+The redesign, fifth release (R5 of [docs/redesign-build-plan.md](docs/redesign-build-plan.md)):
+the rest of the map, with the section-to-content map the owner approved on
+2026-09-25 ("Approve map").
+
+### Changed
+
+- **Side by Side** is a long page: your star, the comparison codes, then your
+  star and one other person's laid over each other with the population
+  average dashed behind. Picking someone slides their star into the new shape
+  in the same time whoever is picked. One card per aspect lists the average,
+  you, then everyone in the order they were added, each marked against the
+  average; never sorted, no totals. Removing someone asks on the page first.
+  A share button opens the same card as Home's.
+- **The share card** is the prototype's poster: LIFE BALANCE / INDEX, your
+  star as a die-cut sticker that drops in and springs flat as the sheet
+  opens, and the names in two columns of four. Still drawn by the canvas, so
+  Share and Save give the same image; the same three detail levels.
+- **Your year**: YEAR and your level, when the year closes and the weeks
+  left, this year's points, what moved and the years filed as dated lists, and
+  the day your year turns at the end.
+- **Profile** and **Methodology** are text pages with no motion. Profile keeps
+  every field, the connected apps, the reduce-motion switch and backup,
+  restore and erase. Methodology keeps its full text; two lines that pointed
+  at the retired Home radar now point at Side by Side's dashed star.
+- **Lumi** speaks from the header's star: a small panel with the tip for your
+  lowest aspect and a link to it. It settles in and the tip types itself (a
+  quiet region's tip arrives whole); Escape, a press outside, the menu or a
+  new route closes it.
+- New sheet: `css/more.css`. New module: `views/lumi.js`.
+
+### Removed
+
+- The floating Lumi bubble, its avatar, its per-route typewriter and its
+  phone fold-away (`views/assistant.js`, the code in `app.js`, the CSS in
+  `index.css`) and the page padding that cleared it.
+- `renderRadarChart` from `chart.js`: nothing drew the on-screen radar any
+  more. `chart.js` keeps the labels, the axis order and `radarPoints`.
+- The old share sheet's CSS in `index.css`.
 
 ## [2.47.0] — 2026-09-25 (APP_VERSION 99)
 

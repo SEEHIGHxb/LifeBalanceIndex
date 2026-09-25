@@ -33,16 +33,17 @@
        vendored under assets/fonts. Self-hosting removes the round-trip to
        Google on every cold load, makes the PWA genuinely offline-capable,
        and means no visitor IP is disclosed to a third party. -->
-  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=99">
-  <link rel="stylesheet" href="./index.css?v=99">
+  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=100">
+  <link rel="stylesheet" href="./index.css?v=100">
   <!-- The redesign's frame; loaded after index.css so it wins where both
        style the same element. One sheet per redesign area, each under 800
        lines (docs/redesign-build-plan.md §3). -->
-  <link rel="stylesheet" href="./css/frame.css?v=99">
-  <link rel="stylesheet" href="./css/stage-page.css?v=99">
-  <link rel="stylesheet" href="./css/home.css?v=99">
-  <link rel="stylesheet" href="./css/journey.css?v=99">
-  <link rel="stylesheet" href="./css/weekly.css?v=99">
+  <link rel="stylesheet" href="./css/frame.css?v=100">
+  <link rel="stylesheet" href="./css/stage-page.css?v=100">
+  <link rel="stylesheet" href="./css/home.css?v=100">
+  <link rel="stylesheet" href="./css/journey.css?v=100">
+  <link rel="stylesheet" href="./css/weekly.css?v=100">
+  <link rel="stylesheet" href="./css/more.css?v=100">
 </head>
 <body>
   <!-- Skip link (WCAG 2.4.1). href is #main-view for the semantics and for the
@@ -70,9 +71,16 @@
          the journey's own live status line says the same thing in words. -->
     <div id="journey-progress" class="navpill journey-progress d-none" aria-hidden="true"></div>
     <div class="header-actions">
+      <!-- Lumi's star (views/lumi.js): opens the tip panel below. Shown once
+           the journey is done, since before that there is nothing to say. -->
+      <button id="btn-lumi" class="circlebtn lumi-btn d-none" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="lumi-panel" aria-label="Lumi's tip"></button>
       <button id="btn-lang" class="circlebtn" type="button" aria-label="Switch language / เปลี่ยนภาษา">ไทย</button>
     </div>
   </header>
+
+  <!-- Lumi's tip (views/lumi.js), outside #page like the header, so it stays
+       usable whatever the page behind it is doing. Filled when opened. -->
+  <aside id="lumi-panel" class="lumi" role="dialog" aria-labelledby="lumi-title" tabindex="-1" hidden></aside>
 
   <!-- Filled by views/menu.js. Hidden (visibility) while closed, so nothing in
        it can take focus until the burger opens it. -->
@@ -87,18 +95,6 @@
     <!-- Visually-hidden live region: announces the current view to screen
          readers on navigation (finding #12). -->
     <div id="route-announcer" class="sr-only" role="status" aria-live="polite"></div>
-
-    <!-- Floating guidance assistant. The visible bubble is NOT a live region:
-         the typewriter effect would stream partial sentences to screen readers
-         on every navigation (review finding). Announcements go through the
-         hidden #assistant-sr region instead, and only on explicit activation. -->
-    <div id="assistant-mount" class="assistant-wrapper d-none">
-      <div class="speech-bubble" id="assistant-speech-bubble">
-        Loading your recommendations…
-      </div>
-      <div id="assistant-sr" class="sr-only" role="status" aria-live="polite"></div>
-      <img class="assistant-avatar" id="assistant-lumi-avatar" src="./assets/lumi.png?v=99" role="button" tabindex="0" aria-label="Guidance assistant" title="Guidance assistant" alt="Guidance assistant" />
-    </div>
 
     <!-- Footer: privacy/source/version must be reachable from the app itself,
          not only from the GitHub repo (review: PDPA statement was invisible
@@ -120,6 +116,6 @@
   </div>
 
   <!-- Core Scripts -->
-  <script type="module" src="./app.js?v=99"></script>
+  <script type="module" src="./app.js?v=100"></script>
 </body>
 </html>

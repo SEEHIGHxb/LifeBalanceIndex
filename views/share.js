@@ -92,41 +92,45 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
   const labels = DETAIL_LABELS();
 
   const toggle = (group, value, label, active) =>
-    `<button type="button" class="share-toggle" data-group="${group}" data-value="${value}" aria-pressed="${active}">${label}</button>`;
+    `<button type="button" class="pill pill-light share-toggle" data-group="${group}" data-value="${value}" aria-pressed="${active}">${label}</button>`;
 
+  // The poster sheet (R5; docs/prototype/redesign/social.js shareHTML): the
+  // choices beside, the poster itself on the right. On a phone the poster
+  // comes first and the choices follow it.
   const { overlay, close } = openDialog({
     label: t("Share your radar"),
     html: `
-    <div class="popup-card share-card">
-      <h2 class="popup-title">${t("Share your radar")}</h2>
-      <canvas id="share-preview" class="share-preview" width="${STORY_W}" height="${STORY_H}"
-        role="img" aria-label="${t("Preview of your shareable card")}"></canvas>
-
-      <div class="share-options">
-        <div class="share-option-row" role="group" aria-label="${t("Card style")}">
-          <span class="share-option-label">${t("Card style")}</span>
-          <span class="share-toggle-set">
+    <div class="share-sheet">
+      <div class="share-stage">
+        <canvas id="share-preview" class="share-preview" width="${STORY_W}" height="${STORY_H}"
+          role="img" aria-label="${t("Preview of your shareable card")}"></canvas>
+      </div>
+      <div class="share-side">
+        <h2 class="share-title">${t("Share your radar")}</h2>
+        <div class="share-option" role="group" aria-labelledby="share-style-label">
+          <span class="share-option-label" id="share-style-label">${t("Card style")}</span>
+          <span class="share-set">
             ${toggle("theme", "paper", t("Light"), prefs.theme === "paper")}
             ${toggle("theme", "navy", t("Dark"), prefs.theme === "navy")}
           </span>
         </div>
-        <div class="share-option-row" role="group" aria-label="${t("What to show")}">
-          <span class="share-option-label">${t("What to show")}</span>
-          <span class="share-toggle-set">
+        <div class="share-option" role="group" aria-labelledby="share-show-label">
+          <span class="share-option-label" id="share-show-label">${t("What to show")}</span>
+          <span class="share-set">
             ${DETAIL_LEVELS.map(level =>
               toggle("detail", level, labels[level], prefs.detail === level)).join("")}
           </span>
         </div>
-      </div>
 
-      ${showMentalNote ? `<p class="share-care">${t("This card shows your mental wellbeing alongside the other seven aspects. Choosing “Shape only” keeps the numbers off it.")}</p>` : ""}
+        ${showMentalNote ? `<p class="share-care">${t("This card shows your mental wellbeing alongside the other seven aspects. Choosing “Shape only” keeps the numbers off it.")}</p>` : ""}
 
-      <p class="share-note">${t("Instagram cannot accept a post directly from a website. Pick Instagram in the share sheet, or save the image and post it from the app.")}</p>
+        <p class="share-note">${t("Instagram cannot accept a post directly from a website. Pick Instagram in the share sheet, or save the image and post it from the app.")}</p>
 
-      <div class="share-actions">
-        ${shareable ? `<button type="button" class="btn btn-primary" id="share-send">${t("Share")}</button>` : ""}
-        <button type="button" class="btn" id="share-save">${t("Save image")}</button>
-        <button type="button" class="btn" id="share-close">${t("Close")}</button>
+        <div class="share-actions">
+          ${shareable ? `<button type="button" class="pill" id="share-send">${t("Share")}</button>` : ""}
+          <button type="button" class="pill" id="share-save">${t("Save image")}</button>
+          <button type="button" class="pill pill-light" id="share-close">${t("Close")}</button>
+        </div>
       </div>
     </div>`
   });
@@ -141,9 +145,9 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
   // the user gesture, and awaiting canvas.toBlob() inside the handler breaks
   // that chain - the sheet then simply never opens, with no error. Keeping a
   // ready blob means the handler can call share() straight away.
-  // The preview ASSEMBLES the map once as the sheet opens (plan §5): the star's
-  // points grow out in radar order, then the names and scores arrive. Only the
-  // preview moves. The exported image is drawn whole, on its own canvas, and a
+  // The preview ASSEMBLES the poster once as the sheet opens (plan §5): the
+  // sticker drops in large and turned and springs flat, then the names arrive
+  // (story-card.js stickerPose). Only the preview moves. The exported image is drawn whole, on its own canvas, and a
   // toggle pressed mid-way stops the assembly and shows the finished card.
   let assembly = null;
   const stopAssembly = () => { assembly?.abort(); assembly = null; };

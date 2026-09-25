@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 import {
-  drawStoryCard, storyCardData, fitText, wrapText, starPoints, assembleAt, STAR_VALLEY,
+  drawStoryCard, storyCardData, fitText, wrapText, starPoints, stickerPose, STAR_VALLEY,
   THEMES, DETAIL_LEVELS, STORY_W, STORY_H, SAFE_TOP, SAFE_LOW
 } from "../story-card.js";
 import { radarPoints, RADAR_KEYS } from "../chart.js";
@@ -284,14 +284,12 @@ test("the valleys share one base and never fold the star inside out", () => {
   for (const v of even) assert.ok(Math.abs(dist(v) - STAR_VALLEY * R) < 1e-9);
 });
 
-test("the map assembles in radar order and is whole at the end", () => {
-  assert.equal(assembleAt(0, 0, 8), 0);
-  assert.equal(assembleAt(1, 7, 8), 1);
-  const mid = RADAR_KEYS.map((_, i) => assembleAt(0.3, i, 8));
-  for (let i = 1; i < mid.length; i++) assert.ok(mid[i] <= mid[i - 1], "an earlier point is never behind a later one");
-  assert.ok(mid[0] > 0.5 && mid.at(-1) === 0, `mid-way: ${mid.map(m => m.toFixed(2)).join(" ")}`);
-  const start = starPoints(radarPoints(ASPECTS, RADAR_KEYS, CX, CY, R), CX, CY, R, 0);
-  for (const pt of start) assert.ok(dist(pt) < 1e-9, "at the start the star is a point");
+test("the sticker drops in large and turned, and is exactly at rest at the end", () => {
+  const start = stickerPose(0);
+  assert.ok(start.scale > 1.3 && start.turn < -30, `the drop starts at ${JSON.stringify(start)}`);
+  assert.deepEqual(stickerPose(1), { scale: 1, turn: -4 }, "at rest it sits at its tilt");
+  const late = stickerPose(0.9);
+  assert.ok(Math.abs(late.scale - 1) < 0.02 && Math.abs(late.turn + 4) < 1, "it has all but settled by the end");
 });
 
 test("the card is drawn whole unless asked for a stage of the assembly", () => {

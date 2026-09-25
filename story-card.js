@@ -1,4 +1,4 @@
-// story-card.js - the 1080x1920 shareable card of the aspect radar.
+// story-card.js - the 1080x1920 shareable card: your star as a poster.
 //
 // WHY THIS IS A CANVAS AND NOT A SCREENSHOT OF THE EXISTING RADAR:
 // chart.js paints SVG whose colors are CSS custom properties (the --color-*
@@ -43,37 +43,51 @@ export const SAFE_LOW = STORY_H - SAFE_BOTTOM;
 //   full   labels, letter grades and 0-100 scores, matching the dashboard
 export const DETAIL_LEVELS = ["shape", "names", "full"];
 
-// Both palettes are the app's own tokens from index.css, written out as
-// literals. The one value with no direct counterpart is the navy theme's
-// accent: #6d2e3f is near-black against a #24344d ground, so it is lifted to a
-// tint of the same hue rather than swapped for an unrelated color.
+// THE POSTER (redesign R5; docs/prototype/redesign/social.js posterSvg). The
+// card is the prototype's 9:16 poster: LIFE BALANCE / INDEX in the wordmark
+// face, your star as a die-cut sticker (a white cut edge, lifted on a soft
+// shadow, turned a few degrees), and under it the names in two columns of
+// four. Light is the page's paper; Dark is the menu's navy. Every color is a
+// literal: the sticker's are the gilt star's (symbols.md S1).
 export const THEMES = {
   paper: {
-    bg: "#f7f5f0",
-    ink: "#1f2733",
-    muted: "#5c6672",
-    grid: "rgba(32, 50, 76, 0.14)",
-    rim: "rgba(36, 52, 77, 0.30)",
-    average: "rgba(32, 50, 76, 0.55)",
+    bg: "#f4efe4",
+    ink: "#1b1b1b",
+    muted: "#4a4a4a",
     accent: "#6d2e3f",
-    dotRing: "#ffffff",
-    // The Lumi Star in Sage & Gilt (symbols.md S1): gold-light fill, gold-line
-    // outline (3.17:1 on this ground; graphics need 3:1).
-    star: "rgba(240, 216, 168, 0.62)",
-    starLine: "#a88752"
+    cut: "#ffffff",
+    lift: "rgba(0, 0, 0, 0.25)",
+    star: "#f0d8a8",
+    starLine: "#a88752",
+    core: "#fbf8f1",
+    coreLine: "#6f7d64"
   },
   navy: {
-    bg: "#24344d",
-    ink: "#f7f5f0",
-    muted: "#b9c2ce",
-    grid: "rgba(247, 245, 240, 0.16)",
-    rim: "rgba(247, 245, 240, 0.34)",
-    average: "rgba(247, 245, 240, 0.60)",
-    accent: "#c9909f",
-    dotRing: "#24344d",
-    star: "rgba(240, 216, 168, 0.30)",
-    starLine: "#d9b77a"
+    bg: "#16213e",
+    ink: "#ffffff",
+    muted: "#c9ccd6",
+    accent: "#e6b8c4",
+    cut: "#ffffff",
+    lift: "rgba(0, 0, 0, 0.45)",
+    star: "#f0d8a8",
+    starLine: "#a88752",
+    core: "#fbf8f1",
+    coreLine: "#6f7d64"
   }
+};
+
+// Each region's hue (views/journey.js CHAPTERS), for the legend's dots. A
+// literal copy for the same reason as the themes; tests/rest-of-map.test.mjs
+// holds the two together.
+export const REGION_HUES = {
+  finance: "#d9a441",
+  physical: "#3fa796",
+  mental: "#5b8dd9",
+  relationships: "#d9738f",
+  personalGoals: "#e08a3c",
+  socialContribution: "#8d6fd1",
+  environment: "#2e9e5b",
+  humanityFuture: "#5a63b8"
 };
 
 // Font stacks carry Sarabun in second place so Thai falls through to it
@@ -86,37 +100,41 @@ export const THEMES = {
 // else sees. tests/typography.test.mjs pins the two together.
 const SERIF = "'Source Serif 4', 'Maitree', Georgia, serif";
 const SANS = "'Inter', 'Sarabun', system-ui, sans-serif";
+// The wordmark face (css/frame.css --frame-word). It has no Thai, so a Thai
+// line in it falls through to Sarabun, as it does on the page.
+const WORD = "'Anton', 'Sarabun', Impact, sans-serif";
 
 // Baselines, all inside the safe band. Kept constant across detail levels so
-// the composition cannot drift into the chrome when labels are switched off.
+// the composition cannot drift into the chrome when the names are switched
+// off.
 const LAYOUT = {
-  name: 320,
-  date: 372,
-  radarCx: STORY_W / 2,
-  radarCy: 880,
-  // The radius is set by the LABELS, not the polygon. Two constraints bind, and
-  // they pull opposite ways: the widest label is "Social Contribution  D" on
-  // the 225° diagonal, but the tightest FIT is "Environment  C" on the 180°
-  // axis, because a horizontal axis reaches the full ring while a diagonal only
-  // reaches 0.707 of it. Measured against the real font, ring 300 at 25px
-  // leaves 26px of clearance on that worst case; ring 312 at 27px left exactly
-  // zero and shipped an ellipsis. Widen the radar and the labels clip.
-  radarR: 260,
-  labelRing: 300,
-  legend: 1300,
-  indexLabel: 1372,
-  indexValue: 1452,
-  band: 1502,
-  standing: 1552,
-  standingLine: 38,
-  wordmark: 1630,
-  url: 1662
+  wordmark: 372,
+  wordmarkSub: 448,
+  url: 492,
+  name: 566,
+  date: 612,
+  starCx: STORY_W / 2,
+  starCy: 905,
+  starR: 280,
+  // The legend: two columns of four under the sticker.
+  legendTop: 1216,
+  legendStep: 60,
+  legendX: [70, 560],
+  legendW: 450,
+  indexLabel: 1470,
+  indexValue: 1550,
+  band: 1594,
+  standing: 1630,
+  standingLine: 28
 };
 
-const GRID_LEVELS = [20, 40, 60, 80, 100];
+// The sticker's cut edge and lift, and how it sits: turned a little, as if
+// stuck on by hand.
+const CUT = 18;
+const LIFT = { blur: 28, dy: 14 };
+const TILT_DEG = -4;
+const CORE_R = 30;
 const SIDE_MARGIN = 80;
-// Axis labels may sit closer to the edge than body text, but never touch it.
-const LABEL_MARGIN = 30;
 
 const font = (weight, size, family) => `${weight} ${size}px ${family}`;
 
@@ -132,29 +150,15 @@ const font = (weight, size, family) => `${weight} ${size}px ${family}`;
 export const STAR_VALLEY = 13 / 46;
 const VALLEY_UNDER_TIP = 0.8;
 
-// The share sheet's preview ASSEMBLES the map: the points grow out in radar
-// order, then the names and scores arrive. `grow` runs 0..1; each point takes
-// the first ASSEMBLE_POINT of it, staggered evenly across the rest.
-const ASSEMBLE_POINT = 0.6;
+// The names arrive once the sticker has mostly settled (stickerPose below).
 const LABELS_FROM = 0.7;
 const clamp01 = (n) => Math.max(0, Math.min(1, n));
-const easeOut = (p) => 1 - (1 - p) ** 3;
-
-// How far point i of n has grown when the whole card is at `grow`.
-export function assembleAt(grow, i, n) {
-  if (grow >= 1) return 1;
-  const stagger = n > 1 ? (1 - ASSEMBLE_POINT) / (n - 1) : 0;
-  return easeOut(clamp01((grow - i * stagger) / ASSEMBLE_POINT));
-}
 
 // The star's outline: tip, valley, tip, valley... clockwise from the top.
 // `vertices` are radarPoints() for the reader's scores.
-export function starPoints(vertices, cx, cy, r, grow = 1) {
+export function starPoints(vertices, cx, cy, r) {
   const n = vertices.length;
-  const tips = vertices.map((pt, i) => {
-    const k = assembleAt(grow, i, n);
-    return { x: cx + (pt.x - cx) * k, y: cy + (pt.y - cy) * k, len: Math.hypot(pt.x - cx, pt.y - cy) * k, angle: pt.angle };
-  });
+  const tips = vertices.map(pt => ({ x: pt.x, y: pt.y, len: Math.hypot(pt.x - cx, pt.y - cy), angle: pt.angle }));
   const out = [];
   tips.forEach((tip, i) => {
     const nextTip = tips[(i + 1) % n];
@@ -164,14 +168,6 @@ export function starPoints(vertices, cx, cy, r, grow = 1) {
   });
   return out;
 }
-
-// Every axis at the same value - the rim, and each grid ring. Built through
-// radarPoints so the rings share the chart's angles too.
-const ringAt = (level, cx, cy, r) =>
-  radarPoints(
-    Object.fromEntries(RADAR_KEYS.map(k => [k, level])),
-    RADAR_KEYS, cx, cy, r
-  );
 
 // Shorten until the string PLUS its ellipsis fits. Always marks the cut, so
 // this is only for text that is genuinely being truncated.
@@ -231,166 +227,135 @@ export function wrapText(ctx, text, maxWidth, maxLines = 2) {
   return kept;
 }
 
-function drawRadar(ctx, theme, data, detail, grow = 1) {
-  const { radarCx: cx, radarCy: cy, radarR: r, labelRing } = LAYOUT;
+// The share sheet's preview ASSEMBLES the poster (plan §5): the sticker drops
+// in large and turned and springs flat to its tilt, then the names arrive.
+// `grow` runs 0..1; this is the sticker's pose at it, a damped settle that is
+// exactly at rest at 1.
+const DROP = { scale: 0.35, turn: -30, decay: 5, swing: 8 };
+export function stickerPose(grow) {
+  if (grow >= 1) return { scale: 1, turn: TILT_DEG };
+  const left = Math.exp(-DROP.decay * grow) * Math.cos(DROP.swing * grow);
+  return { scale: 1 + DROP.scale * left, turn: TILT_DEG + DROP.turn * left };
+}
 
-  // Grid rings, outermost dashed to read as the 100 rim.
-  GRID_LEVELS.forEach(level => {
-    const pts = ringAt(level, cx, cy, r);
-    ctx.beginPath();
-    pts.forEach((pt, i) => (i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y)));
-    ctx.closePath();
-    ctx.strokeStyle = level === 100 ? theme.rim : theme.grid;
-    ctx.lineWidth = level === 100 ? 3 : 2;
-    ctx.setLineDash(level === 100 ? [8, 6] : []);
-    ctx.stroke();
-  });
-  ctx.setLineDash([]);
+// A point turned and scaled about the sticker's centre.
+function place(pt, pose) {
+  const { starCx: cx, starCy: cy } = LAYOUT;
+  const a = (pose.turn * Math.PI) / 180;
+  const dx = (pt.x - cx) * pose.scale;
+  const dy = (pt.y - cy) * pose.scale;
+  return { ...pt, x: cx + dx * Math.cos(a) - dy * Math.sin(a), y: cy + dx * Math.sin(a) + dy * Math.cos(a) };
+}
 
-  // Axis spokes.
-  const rim = ringAt(100, cx, cy, r);
-  ctx.strokeStyle = theme.grid;
-  ctx.lineWidth = 2;
-  rim.forEach(pt => {
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(pt.x, pt.y);
-    ctx.stroke();
-  });
-
-  // The population average, dashed and unfilled, drawn first so the user's own
-  // polygon layers on top of it - same stacking as the on-screen chart.
-  if (data.average) {
-    const avg = radarPoints(data.average, RADAR_KEYS, cx, cy, r);
-    ctx.beginPath();
-    avg.forEach((pt, i) => (i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y)));
-    ctx.closePath();
-    ctx.strokeStyle = theme.average;
-    ctx.lineWidth = 4;
-    ctx.setLineDash([14, 10]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-
-  // The reader's shape, as the Lumi Star.
-  const vertices = radarPoints(data.aspects, RADAR_KEYS, cx, cy, r);
-  const star = starPoints(vertices, cx, cy, r, grow);
+function tracePath(ctx, pts) {
   ctx.beginPath();
-  star.forEach((pt, i) => (i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y)));
+  pts.forEach((pt, i) => (i === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y)));
   ctx.closePath();
+}
+
+// Your star as a die-cut sticker: the white cut edge on its shadow, then the
+// star, its spokes and its core, all turned to the sticker's pose.
+function drawSticker(ctx, theme, data, grow) {
+  const { starCx: cx, starCy: cy, starR: r } = LAYOUT;
+  const pose = stickerPose(grow);
+  const vertices = radarPoints(data.aspects, RADAR_KEYS, cx, cy, r);
+  const star = starPoints(vertices, cx, cy, r).map(pt => place(pt, pose));
+  const centre = place({ x: cx, y: cy }, pose);
+
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  // The cut edge: the same outline stroked wide in white, lifted on a shadow
+  // that is switched off again before anything else is drawn.
+  tracePath(ctx, star);
+  ctx.shadowColor = theme.lift;
+  ctx.shadowBlur = LIFT.blur;
+  ctx.shadowOffsetY = LIFT.dy;
+  ctx.strokeStyle = theme.cut;
+  ctx.lineWidth = CUT * 2 * pose.scale;
+  ctx.stroke();
+  ctx.fillStyle = theme.cut;
+  ctx.fill();
+  ctx.shadowColor = "rgba(0, 0, 0, 0)";
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+
+  tracePath(ctx, star);
   ctx.fillStyle = theme.star;
   ctx.fill();
   ctx.strokeStyle = theme.starLine;
-  ctx.lineWidth = 5;
-  ctx.lineJoin = "round";
+  ctx.lineWidth = 12 * pose.scale;
   ctx.stroke();
 
-  // A dot on each point's tip, where its score sits.
-  star.filter(pt => pt.tip).forEach(pt => {
+  ctx.globalAlpha = 0.5;
+  ctx.lineWidth = 5 * pose.scale;
+  star.filter(pt => pt.tip).forEach(tip => {
     ctx.beginPath();
-    ctx.arc(pt.x, pt.y, 10, 0, Math.PI * 2);
-    ctx.fillStyle = theme.accent;
-    ctx.fill();
-    ctx.strokeStyle = theme.dotRing;
-    ctx.lineWidth = 3;
+    ctx.moveTo(centre.x, centre.y);
+    ctx.lineTo(tip.x, tip.y);
     ctx.stroke();
-  });
-
-  if (detail === "shape") return;
-  // While the map assembles, the names and scores arrive last.
-  ctx.globalAlpha = clamp01((grow - LABELS_FROM) / (1 - LABELS_FROM));
-
-  // Axis labels, and in `full` the grade letter beside the name. An aspect
-  // with no grade (relationships is unranked by design) simply shows no
-  // letter - inventing a placeholder would imply a grade exists.
-  ctx.textBaseline = "middle";
-  ctx.font = font(600, 25, SANS);
-  ctx.fillStyle = theme.ink;
-  rim.forEach((pt, i) => {
-    const key = RADAR_KEYS[i];
-    const grade = detail === "full" ? (data.grades || {})[key] : null;
-    const label = t(ASPECT_LABELS[key]) + (grade?.grade ? `  ${grade.grade}` : "");
-    const lx = cx + Math.cos(pt.angle) * labelRing;
-    const ly = cy + Math.sin(pt.angle) * labelRing;
-    const align = Math.cos(pt.angle) > 0.1 ? "left"
-      : Math.cos(pt.angle) < -0.1 ? "right" : "center";
-    ctx.textAlign = align;
-    // Clamp to the room actually available on this side. The geometry above is
-    // tuned for the longest English label, but a translation or a longer aspect
-    // name must not be able to run off the edge — so the width is measured
-    // rather than assumed.
-    const room = align === "left" ? STORY_W - LABEL_MARGIN - lx
-      : align === "right" ? lx - LABEL_MARGIN
-        : Math.min(lx, STORY_W - lx) * 2;
-    ctx.fillText(fitText(ctx, label, room), lx, ly);
-  });
-
-  if (detail !== "full") { ctx.globalAlpha = 1; return; }
-
-  // The 0-100 score, nudged outward along its own axis so it clears the dot.
-  ctx.font = font(700, 26, SANS);
-  ctx.fillStyle = theme.accent;
-  ctx.textAlign = "center";
-  vertices.forEach(pt => {
-    ctx.fillText(
-      String(pt.value),
-      pt.x + Math.cos(pt.angle) * 26,
-      pt.y + Math.sin(pt.angle) * 26
-    );
   });
   ctx.globalAlpha = 1;
+
+  ctx.beginPath();
+  ctx.arc(centre.x, centre.y, CORE_R * pose.scale, 0, Math.PI * 2);
+  ctx.fillStyle = theme.core;
+  ctx.fill();
+  ctx.strokeStyle = theme.coreLine;
+  ctx.lineWidth = 12 * pose.scale;
+  ctx.stroke();
+  ctx.lineCap = "butt";
 }
 
-function drawLegend(ctx, theme, y) {
-  const you = t("Your scores");
-  const avg = t("Population average");
-  const swatch = 46;
-  const gap = 14;
-  const between = 44;
-
-  ctx.font = font(400, 28, SANS);
+// The names under the sticker, two columns of four in radar order, each with
+// its region's dot. In `full` the grade letter follows the name and the score
+// sits at the column's end. An aspect with no grade (relationships is
+// unranked by design) simply shows no letter - inventing a placeholder would
+// imply a grade exists.
+function drawNames(ctx, theme, data, detail, grow) {
+  if (detail === "shape") return;
+  const full = detail === "full";
+  const { legendTop, legendStep, legendX, legendW } = LAYOUT;
+  // While the poster assembles, the names arrive last.
+  ctx.globalAlpha = clamp01((grow - LABELS_FROM) / (1 - LABELS_FROM));
   ctx.textBaseline = "middle";
-  ctx.textAlign = "left";
-
-  const total = swatch + gap + ctx.measureText(you).width + between
-    + swatch + gap + ctx.measureText(avg).width;
-  let x = (STORY_W - total) / 2;
-
-  const rule = (dashed) => {
+  RADAR_KEYS.forEach((key, i) => {
+    const x = legendX[i < 4 ? 0 : 1];
+    const y = legendTop + (i % 4) * legendStep;
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + swatch, y);
-    ctx.strokeStyle = dashed ? theme.average : theme.starLine;
-    ctx.lineWidth = dashed ? 4 : 6;
-    ctx.setLineDash(dashed ? [10, 7] : []);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    x += swatch + gap;
-  };
+    ctx.arc(x + 12, y, 12, 0, Math.PI * 2);
+    ctx.fillStyle = REGION_HUES[key];
+    ctx.fill();
 
-  rule(false);
-  ctx.fillStyle = theme.muted;
-  ctx.fillText(you, x, y);
-  x += ctx.measureText(you).width + between;
-
-  rule(true);
-  ctx.fillStyle = theme.muted;
-  ctx.fillText(avg, x, y);
+    const score = radarPoints(data.aspects, [key], 0, 0, 1)[0].value;
+    const grade = full ? (data.grades || {})[key] : null;
+    const name = t(ASPECT_LABELS[key]) + (grade?.grade ? `  ${grade.grade}` : "");
+    ctx.textAlign = "left";
+    ctx.font = font(600, 26, SANS);
+    ctx.fillStyle = theme.ink;
+    const room = legendW - 40 - (full ? 80 : 0);
+    ctx.fillText(fitText(ctx, name, room), x + 40, y);
+    if (!full) return;
+    ctx.textAlign = "right";
+    ctx.font = font(400, 40, WORD);
+    ctx.fillText(String(score), x + legendW, y);
+  });
+  ctx.globalAlpha = 1;
 }
 
 // Draw the whole card onto any 2D context. Pure in the sense that matters: it
 // reads nothing but its arguments and touches no storage, so a recording stub
 // context can be handed in from a test with no canvas anywhere.
-// opts.grow (0..1, default 1) is how far the map has assembled; the exported
-// image is always drawn at 1.
+// opts.grow (0..1, default 1) is how far the poster has assembled; the
+// exported image is always drawn at 1.
 export function drawStoryCard(ctx, data, opts = {}) {
   const grow = Number.isFinite(opts.grow) ? clamp01(opts.grow) : 1;
   const theme = THEMES[opts.theme] || THEMES.paper;
   const detail = DETAIL_LEVELS.includes(opts.detail) ? opts.detail : "shape";
   const maxWidth = STORY_W - SIDE_MARGIN * 2;
+  const mid = STORY_W / 2;
 
   // The share sheet draws every frame, and the exported card, on one context.
-  // State one draw sets (the star's round joins, the labels' fade) must not
+  // State one draw sets (the sticker's round joins, the names' fade) must not
   // carry into the next, so each draw starts from the canvas defaults.
   ctx.globalAlpha = 1;
   ctx.lineJoin = "miter";
@@ -398,63 +363,60 @@ export function drawStoryCard(ctx, data, opts = {}) {
   ctx.fillStyle = theme.bg;
   ctx.fillRect(0, 0, STORY_W, STORY_H);
 
+  // The wordmark and the address are the product's own name, so they are not
+  // routed through t() - translating them would be translating a brand.
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = theme.ink;
+  ctx.font = font(400, 112, WORD);
+  ctx.fillText("LIFE BALANCE", mid, LAYOUT.wordmark);
+  ctx.font = font(400, 68, WORD);
+  ctx.fillText("INDEX", mid, LAYOUT.wordmarkSub);
+  ctx.font = font(400, 24, SANS);
+  ctx.fillStyle = theme.muted;
+  ctx.fillText("lbi.plainpoint.net", mid, LAYOUT.url);
 
   if (data.name) {
-    ctx.font = font(700, 60, SERIF);
+    ctx.font = font(700, 48, SERIF);
     ctx.fillStyle = theme.ink;
-    ctx.fillText(fitText(ctx, data.name, maxWidth), STORY_W / 2, LAYOUT.name);
+    ctx.fillText(fitText(ctx, data.name, maxWidth), mid, LAYOUT.name);
   }
-
   if (data.dateText) {
-    ctx.font = font(400, 34, SANS);
+    ctx.font = font(400, 28, SANS);
     ctx.fillStyle = theme.muted;
-    ctx.fillText(fitText(ctx, data.dateText, maxWidth), STORY_W / 2, LAYOUT.date);
+    ctx.fillText(fitText(ctx, data.dateText, maxWidth), mid, LAYOUT.date);
   }
 
-  drawRadar(ctx, theme, data, detail, grow);
-
-  drawLegend(ctx, theme, LAYOUT.legend);
+  drawSticker(ctx, theme, data, grow);
+  drawNames(ctx, theme, data, detail, grow);
 
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
-
-  ctx.font = font(600, 26, SANS);
+  ctx.font = font(700, 24, SANS);
   ctx.fillStyle = theme.muted;
-  ctx.fillText(t("Balance Index").toUpperCase(), STORY_W / 2, LAYOUT.indexLabel);
+  ctx.fillText(t("Balance Index").toUpperCase(), mid, LAYOUT.indexLabel);
 
-  ctx.font = font(700, 84, SERIF);
+  ctx.font = font(400, 72, WORD);
   ctx.fillStyle = theme.ink;
-  ctx.fillText(String(data.index ?? ""), STORY_W / 2, LAYOUT.indexValue);
+  ctx.fillText(String(data.index ?? ""), mid, LAYOUT.indexValue);
 
   if (data.bandLabel) {
-    ctx.font = font(600, 36, SERIF);
+    ctx.font = font(600, 30, SERIF);
     ctx.fillStyle = theme.accent;
-    ctx.fillText(fitText(ctx, t(data.bandLabel), maxWidth), STORY_W / 2, LAYOUT.band);
+    ctx.fillText(fitText(ctx, t(data.bandLabel), maxWidth), mid, LAYOUT.band);
   }
 
   if (data.standing) {
-    ctx.font = font(400, 30, SANS);
+    ctx.font = font(400, 22, SANS);
     ctx.fillStyle = theme.muted;
     const sentence = tp(
       "You are at or above the population average in {count} of {total} aspects.",
       { count: data.standing.count, total: data.standing.total }
     );
     wrapText(ctx, sentence, maxWidth, 2).forEach((line, i) => {
-      ctx.fillText(line, STORY_W / 2, LAYOUT.standing + i * LAYOUT.standingLine);
+      ctx.fillText(line, mid, LAYOUT.standing + i * LAYOUT.standingLine);
     });
   }
-
-  // Wordmark and URL are the product's own name and address, so they are not
-  // routed through t() - translating them would be translating a brand.
-  ctx.font = font(500, 26, SANS);
-  ctx.fillStyle = theme.ink;
-  ctx.fillText("Life Balance Index", STORY_W / 2, LAYOUT.wordmark);
-
-  ctx.font = font(400, 22, SANS);
-  ctx.fillStyle = theme.muted;
-  ctx.fillText("lbi.plainpoint.net", STORY_W / 2, LAYOUT.url);
 }
 
 // Everything the card needs, assembled from state the dashboard already has.

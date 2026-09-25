@@ -8,6 +8,7 @@
 
 import { t, tp } from "../i18n.js";
 import { escapeHtml } from "./helpers.js";
+import { label, pageHead, textSection } from "./stage-page.js";
 
 // Instrument provenance. `cite` labels are canonical English citations.
 const CITES = {
@@ -171,17 +172,18 @@ export function renderMethodology(containerId, state) {
   const stability = scoreStability(state);
 
   container.innerHTML = `
-    <a href="#/dashboard" class="aspect-back">&larr; ${t("Overview")}</a>
+    <div class="stage-page textpage methodology">
+    ${pageHead(t("How scores are measured"), [
+      t("Each aspect score (0-100) combines published, validated questionnaires with facts you report about your life. This page shows every instrument, how it is scored, how the parts are weighted, and the known limitations — so no number is a black box."),
+      t("This is a self-reflection tool, not a medical or psychological diagnosis. If a score worries you, treat it as a prompt to talk to a professional, not as a verdict.")
+    ])}
 
-    <div class="card">
-      <h2 class="aspect-title">${t("How scores are measured")}</h2>
-      <p class="aspect-blurb">${t("Each aspect score (0-100) combines published, validated questionnaires with facts you report about your life. This page shows every instrument, how it is scored, how the parts are weighted, and the known limitations — so no number is a black box.")}</p>
-      <p class="aspect-blurb">${t("This is a self-reflection tool, not a medical or psychological diagnosis. If a score worries you, treat it as a prompt to talk to a professional, not as a verdict.")}</p>
-      <p class="aspect-blurb methodology-nongoal">${t("One thing this app does not measure: your worth as a person. Every number here is built from behavior you reported and circumstances you were handed — what you earn, how you slept, who is near you, how much time you have — and all of those move. Read a low score as a description of a situation, never as a judgment on the person living in it.")}</p>
-    </div>
+    ${textSection(t("What it does not measure"), `
+      <p class="aspect-blurb methodology-nongoal">${t("One thing this app does not measure: your worth as a person. Every number here is built from behavior you reported and circumstances you were handed — what you earn, how you slept, who is near you, how much time you have — and all of those move. Read a low score as a description of a situation, never as a judgment on the person living in it.")}</p>`, "creed")}
 
-    <div class="card">
-      <h4 class="card-header">${t("The eight aspects")}</h4>
+    <section class="panel statement textsec"><div class="wrap split">
+      ${label(t("The eight aspects"))}
+      <div>
       ${aspectSection(
         t("Finance"),
         t("15% income standing + 85% CFPB Financial Well-Being score (official age-banded table). Those two weights are the whole score. Income standing is a magnitude, not a rank: the published average wage (15,972 THB/mo) scores 50 and the Revenue Department's top tax band (333,333 THB/mo) scores full marks, on a log scale so each doubling of income is worth the same. It is deliberately NOT the income percentile shown on the Finance card — a percentile has to flatten out at the top, because almost everyone really is below a top earner, which used to make every income above about 70,000 score identically. Savings is entered as an amount in baht and converted to a rate for you, and is shown on the Finance page without being scored: until v76 it added up to 10 points on top, which double-counted the CFPB question about having money left over at the end of the month and used a 20% target that came from a budgeting book rather than any published research."),
@@ -230,10 +232,12 @@ export function renderMethodology(containerId, state) {
         t("Five equal parts because there is no published evidence for ranking them — an honest uniform prior. This aspect is measured but NOT ranked against a population, because no Thai norm for purpose, legacy or generativity is published. It used to be ranked on whether you hold a retirement product, which ranked your income rather than your contribution: a farmer who had taught three children a trade could not reach a pension-holder's band no matter what they answered. Holding retirement investments is still shown here, and now counts only in Finance. The maintaining question was added in v65: psychology describes contributing to the future as creating, maintaining and offering, and until then this aspect asked only about the first and the third — so work that sustains rather than originates scored nowhere at all. If you answered before v65, your reading stays on the earlier five-question scale and is labelled with it, because restating an old answer against a question you were never asked would be a guess rather than a measurement."),
         ["cfc"]
       )}
-    </div>
+      </div>
+    </div></section>
 
-    <div class="card">
-      <h4 class="card-header">${t("Who you are actually compared with")}</h4>
+    <section class="panel statement textsec"><div class="wrap split">
+      ${label(t("Who you are actually compared with"))}
+      <div>
       <p class="aspect-blurb">${t("A percentile is a claim about where you sit among a group of people — so the group matters as much as the number. A literature search in July 2026 found no representative Thai general-adult norm published for any of the questionnaires here. Every reference sample is therefore either foreign or non-representative, and this table says which is which instead of leaving you to assume the comparison is with Thai people your age.")}</p>
       <div class="provenance-scroll">
         <table class="provenance-table">
@@ -252,10 +256,12 @@ export function renderMethodology(containerId, state) {
       <p class="aspect-blurb">${t("It does now carry one real population reference. A national survey in England asks the same three loneliness questions on the same three-point scale and publishes the combined 3-9 score in three bands — 58% of adults score 3 or 4, 33% score 5 to 7, and 9% score 8 or 9, out of 160,755 people of every adult age. Your score is shown against those bands. It stops there deliberately: three bands are two dividing lines, and turning two lines into a percentile would mean guessing where inside a band you sit. That guess is the thing this aspect refuses to make.")}</p>
       <p class="aspect-blurb">${t("That survey is also the clearest evidence that withholding the rank is right rather than merely cautious. It reports the loneliest band by age: 12% of 16-24s score 8 or 9, falling to 5% of 65-74s before ticking back up to 7% at 75 and over. Younger adults are the lonelier group across almost the whole range. So a norm built on 57-to-85-year-olds is not just the wrong sample for a working-age user — it leans the wrong way, and ranking against it would quietly flatter you.")}</p>
       <p class="aspect-blurb">${t("Where a comparison is foreign but the age range fits — the German WHO-5 sample, the 25-country self-efficacy norms — the rank is shown and the sample is named next to it, on the aspect page as well as here. Read those as indicative rather than as your standing among Thai adults.")}</p>
-    </div>
+      </div>
+    </div></section>
 
-    <div class="card">
-      <h4 class="card-header">${t("Guideline checks, and why they are separate")}</h4>
+    <section class="panel statement textsec"><div class="wrap split">
+      ${label(t("Guideline checks, and why they are separate"))}
+      <div>
       <p class="aspect-blurb">${t("Because no representative Thai norm exists for these questionnaires, some aspects also carry a second kind of comparison that needs no sample at all: a published guideline. A norm describes what people do; a guideline states what a body needs. That difference is why a WHO recommendation can be applied to a Thai user without the cross-country problems above — and why these checks are readable side by side in a way eight percentiles against six different populations never were.")}</p>
       <p class="aspect-blurb">${t("They are kept strictly separate from your scores. A guideline check never changes an aspect score, a letter grade, or the Balance Index. A grade is a rank; a guideline check is a yes or no against a published recommendation, and mixing the two would make a grade mean different things on different aspects.")}</p>
       <div class="provenance-scroll">
@@ -275,35 +281,43 @@ export function renderMethodology(containerId, state) {
       <p class="aspect-blurb">${t("Two things deliberately have no guideline check. Drinking water: the often-quoted 2 litres a day comes from EFSA's adequate intake, which counts total water including the moisture in food, while this app asks only what you drink — so citing it here would compare two different quantities. The 2 litre pledge is a useful convention, not a guideline. Sitting time: WHO says only to limit it, without naming a number, so there is nothing to pass or fail.")}</p>
       <p class="aspect-blurb">${t("Finance, social contribution, environment and humanity's future have no guideline checks either, for a simpler reason: no institution publishes a per-person threshold for them. What counts as enough income or enough giving depends on where you live and what things cost, so those aspects stay compared with Thai figures rather than a global rule.")}</p>
       <p class="aspect-blurb">${t("One limitation worth naming: the fruit-and-vegetable guideline covers both, while the weekly review asks only about vegetables. The check is therefore stricter than WHO intends — if you also eat fruit, you are closer to the guideline than it shows.")}</p>
-    </div>
+      </div>
+    </div></section>
 
-    <div class="card">
-      <h4 class="card-header">${t("Confidence, benchmarks, and answer quality")}</h4>
+    <section class="panel statement textsec"><div class="wrap split">
+      ${label(t("Confidence, benchmarks, and answer quality"))}
+      <div>
       <p class="aspect-blurb">${t("Every score carries a confidence tier: High (you answered everything), Partial, Estimated (defaults stood in), or Verified (you completed the full-length in-depth instruments).")}</p>
       <p class="aspect-blurb">${t("Society percentiles are honest approximations against cited published statistics — each benchmark names its method and sources, and the band around it is an indicative range, not a statistical confidence interval.")}</p>
       <p class="aspect-blurb">${t("Mental well-being is ranked differently from the rest, and better. Its study publishes a full percentile table broken down by age band, so your standing is looked up in that table directly rather than estimated from an average and a spread — and it is read from the row for people your own age, because the same well-being score is common at 70 and uncommon at 30. Nothing is interpolated: every score this app can produce is a printed row. The sample is still German, and being compared with Germans your age is more precise but no more relevant to life in Thailand — that limitation has not gone away.")}</p>
       <p class="aspect-blurb">${t("Social contribution has no published distribution to sit on, because its source publishes participation rates (“67% of Thais donated money”) rather than a curve. Its percentile is therefore built in two stages: the published rate fixes which band you are in, and your own answers position you inside that band and can never move you out of it. Environment and humanity's future used to be described here too. Neither is ranked any more — their sources publish a single average and nothing at all respectively, and one number cannot say what share of people you are ahead of, so those two aspects show their measurements and withhold the rank.")}</p>
-      <p class="aspect-blurb">${t("The dashed outline on the dashboard radar is a derived population average: a reference person assembled from the same cited statistics (median income, typical activity levels, published questionnaire means) is scored through the exact formulas that score you.")}</p>
+      <p class="aspect-blurb">${t("The dashed star on Side by Side is a derived population average: a reference person assembled from the same cited statistics (median income, typical activity levels, published questionnaire means) is scored through the exact formulas that score you.")}</p>
       <p class="aspect-blurb">${t("Behavior-driven aspects are re-measured by the weekly review: the quantities you report replace last week's values inside the same formulas, so a score moves exactly as much as the measured change implies — never by flat per-log bonuses.")}</p>
       <p class="aspect-blurb">${t("Answer quality is checked: a questionnaire answered with the same option on every row (despite reverse-worded questions) is not counted as a confirmed measurement until re-answered.")}</p>
-    </div>
+      </div>
+    </div></section>
 
-    <div class="card">
-      <h4 class="card-header">${t("Grades and the Balance Index")}</h4>
+    <section class="panel statement textsec"><div class="wrap split">
+      ${label(t("Grades and the Balance Index"))}
+      <div>
       <p class="aspect-blurb">${t("No score in this app reaches 100 — not an aspect, not the Balance Index. The arithmetic is allowed to, and then the displayed figure stops at 99. That is a stance rather than a rounding rule: a perfect score would read as “nothing left to do” on an instrument whose whole purpose is to point at the next step.")}</p>
       <p class="aspect-blurb">${t("A letter grade (A-F) comes from an aspect's population percentile rather than its 0-100 score: A is the top 10%, B the top 30%, C the typical middle (30th-69th), D below typical, and F the bottom 10%. The percentile is the part of an aspect that compares you with published data, so it is normally the only part worth grading. Finance is the one exception: its percentile is your income standing and nothing else, so grading on it would grade your income alone — a person on a small income with no debt and no money worry was being shown an F. Finance is therefore graded on its whole score, which weights the financial well-being questions far more heavily than income. Your income percentile is still shown on the card. An aspect whose questionnaires you have not answered is shown as “not graded” — never as an F, because missing data is not a failing result.")}</p>
       <p class="aspect-blurb">${t("The Balance Index is this app's own summary figure, not a published or validated measure — unlike the eight aspect scores and their percentiles, no research proposes it and nothing outside this app uses it. Before they are combined, each aspect is rescaled against its population average so that being typical scores 50, whether that aspect's average sits at 32 or 70 — the same population comparison the grades use. That way an aspect the whole population scores low on (like social contribution) no longer anchors your balance down for being merely average. The index is then the harmonic mean of those eight relative standings, so your weakest one pulls it down hardest: eight standings of 50 give an index of 50, while seven near 57 with one collapsed give a far lower number, even though both average 50. That is deliberate — a single number that rewarded a high average would reward neglecting an aspect entirely, and this app is about balance.")}</p>
-      <p class="aspect-blurb">${t("Because the index is dominated by your weakest aspect, raising a below-average score moves it far more than raising an already-strong one. The dashed population-average line on your dashboard radar is the 50 mark: sit on it on every aspect and your index is 50. Treat it as a prompt about where attention is missing, not as a verdict on your life.")}</p>
+      <p class="aspect-blurb">${t("Because the index is dominated by your weakest aspect, raising a below-average score moves it far more than raising an already-strong one. The dashed population-average star on Side by Side is the 50 mark: sit on it on every aspect and your index is 50. Treat it as a prompt about where attention is missing, not as a verdict on your life.")}</p>
       <p class="aspect-blurb">${t("Grades also steer suggestions: when you add a weekly pledge, the ones tied to your lowest-graded aspects are listed first, so the easiest win to act on is already at the top.")}</p>
-    </div>
+      </div>
+    </div></section>
 
-    <div class="card">
-      <h4 class="card-header">${t("Measurement stability")}</h4>
+    <section class="panel statement textsec"><div class="wrap split">
+      ${label(t("Measurement stability"))}
+      <div>
       <p class="aspect-blurb">${
         stability
           ? tp("Across your {count} re-assessment(s), survey-based scores shifted by an average of {avg} points (each shift is capped at ±15). Smaller average shifts mean the measurement is stable for you.", { count: stability.count, avg: stability.avg })
           : t("Complete a monthly re-assessment to start tracking how stable your scores are over time.")
       }</p>
+      </div>
+    </div></section>
     </div>
   `;
 }

@@ -232,10 +232,10 @@ test("a quick-start save is told its baseline is partial", async () => {
   assert.ok(html.includes("quickstart-note"), "an express save got no partial-baseline note");
 });
 
-// --- views/assistant.js --------------------------------------------------
+// --- views/lumi.js ------------------------------------------------------
 
 test("the assistant tip names the weakest aspect, not the first one", async () => {
-  const { getLumiTip } = await import("../views/assistant.js");
+  const { getLumiTip } = await import("../views/lumi.js");
   // socialContribution is lowest here but appears sixth, so a naive "first key"
   // implementation passes on a sorted fixture and fails on this one.
   const tip = getLumiTip({ ...STATE.aspects, socialContribution: 12 });
@@ -243,7 +243,7 @@ test("the assistant tip names the weakest aspect, not the first one", async () =
 });
 
 test("the assistant falls back rather than rendering an empty tip", async () => {
-  const { getLumiTip } = await import("../views/assistant.js");
+  const { getLumiTip } = await import("../views/lumi.js");
   const tip = getLumiTip({ notAnAspect: 5 });
   assert.ok(tip.length > 0, "an unknown aspect produced an empty tip");
 });

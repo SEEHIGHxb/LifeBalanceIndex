@@ -67,7 +67,7 @@ function installManualClock() {
   const watch = () => new MutationObserver(records => {
     for (const r of records) {
       const el = r.target;
-      if (el.closest?.(".q-side, .q-title, .ending-photo, .burst-layer, .chapter-recap, .chapter-fact, .hero, .region-card, .photoband, .wall, .pledge-list, .rv-wipe, .rv-ending")) {
+      if (el.closest?.(".q-side, .q-title, .ending-photo, .burst-layer, .chapter-recap, .chapter-fact, .hero, .region-card, .photoband, .wall, .pledge-list, .rv-wipe, .rv-ending, .lumi")) {
         globalThis.__styleWrites.push(`${el.id || el.className?.baseVal || el.className}: ${el.getAttribute("style")}`);
       }
     }
@@ -460,6 +460,60 @@ try {
   problems.push(`weekly loop: ${err.message}`);
 }
 
+// --- 8. the rest of the map ---------------------------------------------------------------
+const lumiState = (page) => page.evaluate(() => {
+  const panel = document.getElementById("lumi-panel");
+  return {
+    open: !panel.hidden,
+    styled: panel.getAttribute("style") || "",
+    hidden: panel.querySelectorAll(".lumi-tip .tc.off").length
+  };
+});
+try {
+  const { context, page } = await openJourney(browser);
+  await finishJourney(page, { last: ["who5"] });
+
+  // Side by Side: the picked person's star slides into the new shape.
+  await page.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem("lifequest_state"));
+    const at = (v) => Object.fromEntries(Object.keys(s.aspects).map(k => [k, v]));
+    s.friends = [{ id: "f1", name: "Nok", aspects: at(20) }, { id: "f2", name: "Ton", aspects: at(90) }, { id: "f3", name: "Mai", aspects: at(50) }];
+    localStorage.setItem("lifequest_state", JSON.stringify(s));
+  });
+  await page.reload({ waitUntil: "networkidle" });
+  await openHash(page, "#/leaderboard", ".compare .duo-them");
+  const shape = () => page.evaluate(() => document.querySelector(".duo-them").getAttribute("points"));
+  const from = await shape();
+  await page.click('.people [data-pick="1"]');
+  await advance(page, 200);
+  const mid = await shape();
+  await advance(page, 1000);
+  const to = await shape();
+  await advance(page, 500);
+  if (mid === from || mid === to) problems.push("side by side: the picked star did not slide between shapes");
+  if (to === from || (await shape()) !== to) problems.push("side by side: the picked star did not settle on its new shape");
+
+  // Removing someone before the picked person keeps that person picked.
+  await page.click('[data-friend-id="f1"]');
+  await page.click('[data-confirm-remove="f1"]');
+  const picked = await page.evaluate(() => document.querySelector('.people [aria-checked="true"]')?.textContent);
+  if (picked !== "Ton") problems.push(`side by side: removing Nok moved the pick to ${picked}`);
+
+  // Lumi: the panel settles in and the tip types itself, then both rest.
+  await page.click("#btn-lumi");
+  await advance(page, FRAME_MS * 3);
+  const arriving = await lumiState(page);
+  if (!arriving.open || !arriving.styled || !arriving.hidden) problems.push(`lumi: the panel did not settle in and type (${JSON.stringify(arriving)})`);
+  await advance(page, 6000);
+  const rested = await lumiState(page);
+  if (rested.styled || rested.hidden) problems.push(`lumi: the panel was left mid-motion (${JSON.stringify(rested)})`);
+  await page.keyboard.press("Escape");
+  if ((await lumiState(page)).open) problems.push("lumi: Escape did not close the panel");
+  await context.close();
+} catch (err) {
+  problems.push(`rest of the map: ${err.message}`);
+}
+
 // --- 4. reduced motion ------------------------------------------------------------------
 try {
   const { context, page } = await openJourney(browser, { reduced: true });
@@ -489,6 +543,11 @@ try {
     wipe: !!document.querySelector(".rv-wipe.on")
   }));
   if (hop.step !== "1" || hop.wipe) problems.push(`reduced: the review wiped or did not move on (screen ${hop.step})`);
+  // Lumi's panel is simply there, the tip whole.
+  await page.click("#btn-lumi");
+  const lumi = await lumiState(page);
+  if (!lumi.open || lumi.styled || lumi.hidden) problems.push(`reduced: Lumi's panel moved or typed (${JSON.stringify(lumi)})`);
+  await page.keyboard.press("Escape");
   const writes = await page.evaluate(() => globalThis.__styleWrites);
   if (writes.length) problems.push(`reduced: styles written on moving pieces: ${writes.slice(0, 4).join(" | ")}`);
   const frames = await page.evaluate(() => globalThis.__framesRequested());
@@ -504,4 +563,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star bursts and comes home (and stays still beside the care notice), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, and reduced motion moves nothing");
+console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star bursts and comes home (and stays still beside the care notice), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi's panel settles and types, and reduced motion moves nothing");

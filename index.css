@@ -148,8 +148,7 @@ html[lang="th"] h1,
 html[lang="th"] h2,
 html[lang="th"] h3,
 html[lang="th"] h4,
-html[lang="th"] .card-header,
-html[lang="th"] .brand h1 {
+html[lang="th"] .card-header {
   letter-spacing: normal;
   line-height: 1.6;
 }
@@ -159,15 +158,11 @@ html[lang="th"] .brand h1 {
    holding two words gains nothing from more leading and would only get taller. */
 html[lang="th"] .care-banner-text,
 html[lang="th"] .onb-why,
-html[lang="th"] .prompt-text p,
-html[lang="th"] .deep-banner p,
-html[lang="th"] .suggestion-text,
 html[lang="th"] .gauge-note,
 html[lang="th"] .gauge-summary,
 html[lang="th"] .field-note,
 html[lang="th"] .profile-note,
 html[lang="th"] .onb-note,
-html[lang="th"] .benchmark-disclaimer,
 html[lang="th"] .grade-explainer p,
 html[lang="th"] .balance-index-caption {
   line-height: 1.75;
@@ -181,10 +176,8 @@ html[lang="th"] .balance-index-caption {
    named, because listing only the second is exactly the kind of miss this
    enumeration invites — it left the trust chip tracked to a Latin eye. */
 html[lang="th"] .confidence-badge,
-html[lang="th"] .holo-badge,
 html[lang="th"] .criterion-chip,
 html[lang="th"] .prefill-chip,
-html[lang="th"] .onb-optional,
 html[lang="th"] .component-confidence,
 html[lang="th"] .percentile-band,
 html[lang="th"] .grade-badge,
@@ -195,7 +188,6 @@ html[lang="th"] .aspect-grade-band,
 html[lang="th"] .balance-band {
   letter-spacing: normal;
 }
-
 
 /* Reserve the scrollbar's column whether or not a scrollbar is present.
    Without this the centered .app-container shifts sideways by the scrollbar
@@ -225,25 +217,16 @@ html {
   background: #b9b2a3;
 }
 
-/* Layout Utilities */
-/* 1240px, not a round 1200: the deep assessment renders its questions in plain
-   .deep-section cards with no max-width of their own, so they stretch to this
-   container's content box — 1240 minus the 2x24px padding = 1192px. The widest
-   .radio-group in DEEP_INSTRUMENTS is cfc12 at 1100px, and 1100 + 84px of card
-   and fieldset chrome = 1184, which 1192 covers with 8px to spare.
-   The shell is sized by the widest thing that has to fit inside it. That thing
-   is .deep-section, NOT .onboarding-container — that container is capped at
-   981px for its own reasons and is never the constraint here. */
+/* The frame: every screen is full-bleed since redesign R6. #main-view is the
+   container the stage pages measure --px against (css/stage-page.css). */
 .app-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 24px 24px 48px;
   position: relative;
 }
+#main-view { container-type: inline-size; }
 
 header {
   border-bottom: 1px solid var(--color-card-border);
@@ -254,17 +237,6 @@ header {
   align-items: flex-end;
   gap: 16px;
   flex-wrap: wrap;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
 }
 
 /* symbols.md S1: 32 px is the smallest size that keeps the engraved lines and
@@ -319,23 +291,6 @@ header {
   color: var(--color-navy);
 }
 
-.brand h1 {
-  font-family: var(--font-serif);
-  font-size: var(--text-3xl);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--color-navy);
-  line-height: 1.1;
-}
-
-.brand p {
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  font-weight: 400;
-  color: var(--color-text-secondary);
-  margin-top: 4px;
-}
-
 /* The tab bar that stood here was replaced by the burger menu in the
    redesign's first release (css/frame.css, views/menu.js). */
 
@@ -361,19 +316,6 @@ header {
   justify-content: space-between;
   align-items: center;
   color: var(--color-navy);
-}
-
-/* Grid Layouts */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 18px;
-}
-
-@media (max-width: 768px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Buttons */
@@ -439,32 +381,6 @@ header {
 }
 
 /* Onboarding & Forms */
-
-/* 981px is measured, not chosen: it is the widest .radio-group the INSTRUMENTS
-   set produces (897px — who5's five labels, in English) plus the 84px of card
-   and fieldset padding between this container's border box and the group's
-   content box. At the previous 660px the group had 576px, so every scale above
-   cfpb10 wrapped its options onto a second line.
-   This container governs onboarding and the check-in, and those two screens
-   only ever render INSTRUMENTS — so who5, not the wider DEEP_INSTRUMENTS
-   scales, sets the number. The deep assessment renders its questions in plain
-   .deep-section cards, which stretch to the shell instead; see .app-container.
-   Sizing this one for the deep worst case (1184px) is what left a 400px empty
-   gutter beside every option row on onboarding.
-   Measured across all 151 items in both languages; Thai's worst is who5 at
-   753, so English sets the requirement on both screens.
-   who5 fits with zero pixels to spare: 981 leaves the group exactly its 897.
-   That is deliberate — any slack here is dead space on every other row — but
-   it means lengthening a who5 label, or changing the body font, wraps it.
-   Re-measure if either changes.
-   Below roughly a 1080px viewport the shell can no longer supply 981 and who5
-   wraps again — that is a limit of the layout, not a regression.
-   The legend rule below caps the question text so it does not inherit this
-   width as its line length. */
-.onboarding-container {
-  max-width: 981px;
-  margin: 24px auto;
-}
 
 .form-group {
   margin-bottom: 16px;
@@ -620,18 +536,6 @@ header {
   accent-color: var(--color-navy);
 }
 
-/* Level / progress */
-.level-badge {
-  font-family: var(--font-sans);
-  background: var(--color-navy);
-  color: #ffffff;
-  padding: 3px 10px;
-  border-radius: var(--radius);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  border: 1px solid var(--color-navy);
-}
-
 /* Says, in plain sight, that the badge above is an age and the bar beside it is
    this year's points — two unrelated clocks. This was a title attribute until it
    was pointed out that a title is a hover affordance and the app is used mostly
@@ -643,161 +547,6 @@ header {
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
   margin-top: 4px;
-}
-
-/* The "Your year ›" link under the level note.
-   Was four declarations inline on the anchor in views/dashboard.js, which is
-   how it ended up at 64x19 — a --text-xs line box, under the 24px WCAG 2.2
-   SC 2.5.8 floor, and invisible to any sweep of the stylesheet because the
-   sizing did not live here.
-
-   inline-flex, not inline-block: an inline-block honours min-height but still
-   aligns on the text baseline, which would leave the extra height hanging below
-   the glyphs instead of splitting evenly around them. The 6px top margin the
-   inline style carried is kept, so spacing under .level-note is unchanged. */
-.card-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  margin-top: 6px;
-  font-size: var(--text-xs);
-  font-weight: 600;
-}
-
-.xp-bar-container {
-  width: 100%;
-  height: 8px;
-  background: var(--color-track);
-  border-radius: 4px;
-  margin-top: 8px;
-  overflow: hidden;
-  border: 1px solid var(--color-card-border);
-}
-
-.xp-bar-fill {
-  height: 100%;
-  background: var(--color-navy);
-  width: 0%;
-  transition: width 0.6s ease;
-}
-
-/* Recent-activity log panel */
-.terminal {
-  background: #f4f2ec;
-  color: var(--color-text-primary);
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
-  padding: 14px 16px;
-  border-radius: var(--radius);
-  max-height: 250px;
-  overflow-y: auto;
-  border: 1px solid var(--color-card-border);
-}
-
-.terminal-line {
-  margin-bottom: 8px;
-  line-height: 1.45;
-  border-left: 2px solid var(--color-card-border);
-  padding-left: 10px;
-  color: var(--color-text-secondary);
-}
-
-.terminal-accent {
-  color: var(--color-text-primary);
-  font-weight: 600;
-}
-
-.terminal-gold {
-  color: var(--color-accent);
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-}
-
-/* Small tag pills (mission type, tier) */
-.holo-badge {
-  font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  background: #f2efe8;
-  color: var(--color-navy);
-  border: 1px solid var(--color-card-border);
-  padding: 2px 8px;
-  border-radius: 3px;
-}
-
-/* Score marker on the profile card */
-.seal {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: var(--color-navy);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-serif);
-  font-weight: 700;
-  font-size: var(--text-lg);
-  border: 1px solid var(--color-navy);
-}
-
-/* Routine action cards */
-.action-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 12px;
-}
-
-.action-card {
-  position: relative;
-  border: 1px solid var(--color-card-border);
-  padding: 14px;
-  border-radius: var(--radius);
-  background: #ffffff;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color var(--transition-speed) ease, background var(--transition-speed) ease;
-}
-
-.action-remove {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 20px;
-  height: 20px;
-  border: none;
-  border-radius: 50%;
-  background: #f2e6e6;
-  color: var(--color-crimson);
-  font-size: var(--text-2xs);
-  cursor: pointer;
-  line-height: 1;
-}
-
-.action-remove:hover {
-  background: var(--color-crimson);
-  color: #fff;
-}
-
-.action-card:hover {
-  background: #faf9f6;
-  border-color: #cfc9bd;
-}
-
-.action-title {
-  font-family: var(--font-serif);
-  font-weight: 600;
-  font-size: var(--text-md);
-  margin-bottom: 6px;
-  color: var(--color-navy);
-}
-
-.action-impacts {
-  font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  color: var(--color-accent);
-  font-weight: 600;
 }
 
 /* Popups & dialogs */
@@ -833,62 +582,6 @@ header {
   font-weight: 700;
   margin-bottom: 10px;
   color: var(--color-navy);
-}
-
-/* Dashboard aspect rows (links to aspect pages) */
-.aspect-row {
-  display: block;
-  color: inherit;
-  text-decoration: none;
-  border-radius: var(--radius);
-  padding: 6px 8px;
-  margin: -2px -8px;
-  transition: background var(--transition-speed) ease;
-}
-
-.aspect-row:hover {
-  background: #faf9f6;
-}
-
-.aspect-row-arrow {
-  color: var(--color-text-secondary);
-  font-weight: 600;
-}
-
-/* Aspect detail pages */
-.aspect-back {
-  /* 21.08px tall before this — the line-height of a 15px sans line, 2.9px short
-     of the 24px floor in WCAG 2.2 SC 2.5.8 (Target Size Minimum, AA). It is the
-     back link on four routes (#/aspect/*, #/methodology, #/deep, #/checkin) and
-     failed identically at 375px and 1440px in both languages, so this is not a
-     phone-only fix. Width was never the problem: 77px in English, 62px in Thai.
-
-     inline-flex rather than inline-block: inline-block honours min-height but
-     still sits on the text baseline, so the added 3px would hang below the
-     glyphs. Centring splits it evenly and the arrow stays optically aligned
-     with the label. Not padding, because there is no wrapping to preserve here
-     — this link is one short phrase that never breaks. 24px (AA) not 44px
-     (2.5.5, AAA): the extra 23px would be pure dead space above a heading. */
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  margin-bottom: 14px;
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
-  font-weight: 500;
-  color: var(--color-navy);
-  text-decoration: none;
-}
-
-.aspect-back:hover {
-  text-decoration: underline;
-}
-
-.aspect-header-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
 }
 
 .aspect-title {
@@ -1052,14 +745,6 @@ header {
   margin-top: 3px;
 }
 
-/* Benchmark percentiles (dashboard) */
-.benchmark-line {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  margin-top: 4px;
-}
-
 .benchmark-method {
   opacity: 0.8;
   font-style: italic;
@@ -1076,12 +761,6 @@ header {
   cursor: pointer;
   color: var(--color-navy);
   font-weight: 600;
-}
-
-.benchmark-disclaimer {
-  margin: 8px 0;
-  color: var(--color-text-secondary);
-  line-height: 1.45;
 }
 
 .benchmark-sources ul {
@@ -1206,81 +885,6 @@ header {
   }
 }
 
-/* Suggestions (dashboard + aspect pages) */
-.suggestion-link {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-}
-
-.suggestion-item {
-  border-left: 3px solid var(--color-slate);
-  background: #faf9f6;
-  border-radius: 0 var(--radius) var(--radius) 0;
-  padding: 10px 14px;
-  margin-bottom: 10px;
-  transition: background var(--transition-speed) ease;
-}
-
-.suggestion-link:hover .suggestion-item {
-  background: #f2efe8;
-}
-
-.suggestion-title {
-  font-weight: 600;
-  font-size: var(--text-md);
-  color: var(--color-navy);
-}
-
-.suggestion-text {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  margin-top: 2px;
-  line-height: 1.45;
-}
-
-.suggestion-meta {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--color-accent);
-  margin-top: 4px;
-}
-
-/* Monthly re-assessment banner */
-.checkin-banner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 14px;
-  border: 1px solid var(--color-card-border);
-  border-left: 3px solid var(--color-accent);
-  background: #faf9f6;
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 18px;
-}
-
-.checkin-banner p {
-  font-size: var(--text-base);
-  color: var(--color-text-primary);
-  line-height: 1.45;
-}
-
-/* Normalised prompt parts. These replace what used to be ad-hoc inline styles
-   on each banner's text and action elements; the rendered desktop result is
-   the same. The mobile layer relies on these hooks to demote every prompt
-   after the first one to a compact row. */
-.prompt-text {
-  min-width: 0;
-}
-
-.prompt-actions {
-  display: flex;
-  gap: 8px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
 /* Duty-of-care mental-health support banner (finding #4) */
 .care-banner {
   border: 1px solid #cdd9e4;
@@ -1327,81 +931,7 @@ header {
 }
 .care-resource-tel:hover { text-decoration: underline; }
 
-/* Weekly commitment */
-.commit-head {
-  display: flex;
-  justify-content: space-between;
-  font-size: var(--text-base);
-  font-weight: 500;
-}
-
-.commit-note {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  margin-top: 6px;
-  line-height: 1.45;
-}
-
-/* --- Side by Side: an aspect matrix, deliberately not a scoreboard ---
-   No rank badges, no gold/silver first-and-second styling, no tier chips —
-   those all existed to express an ORDER, and the screen no longer has one.
-   The only emphasis left is on the population-average column and the mark
-   telling you whether a cell clears it, because that is the app's yardstick. */
-.sbs-intro {
-  font-size: var(--text-base);
-  color: var(--color-text-secondary);
-  margin-bottom: 14px;
-  line-height: 1.45;
-}
-.sbs-empty {
-  font-size: var(--text-base);
-  color: var(--color-text-secondary);
-  padding: 18px;
-  text-align: center;
-  border: 1px dashed var(--color-card-border);
-  border-radius: 4px;
-}
-.sbs-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: var(--text-base);
-}
-.sbs-table th,
-.sbs-table td {
-  padding: 9px 10px;
-  border-bottom: 1px solid var(--color-card-border);
-  white-space: nowrap;
-}
-.sbs-table thead th {
-  font-family: var(--font-serif);
-  font-size: var(--text-md);
-  font-weight: 700;
-  color: var(--color-navy);
-  vertical-align: bottom;
-}
-/* The population column is the reference every other column is read against,
-   so it is set apart typographically rather than by rank-style decoration. */
-.sbs-avg-head,
-.sbs-avg {
-  color: var(--color-text-secondary);
-  background: var(--bg-primary);
-}
-.sbs-you { color: var(--color-accent); }
-.sbs-aspect { font-weight: 500; }
-.sbs-cell { text-align: center; font-family: var(--font-mono); }
-.sbs-score { font-weight: 600; }
 .sbs-mark { margin-left: 5px; font-size: var(--text-2xs); }
-.sbs-above { color: var(--color-accent); }
-.sbs-below { color: var(--color-text-secondary); }
-.sbs-notes {
-  margin-top: 14px;
-  padding-left: 18px;
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  line-height: 1.5;
-}
-.sbs-notes li { margin-bottom: 4px; }
 
 .friend-remove {
   background: none;
@@ -1420,9 +950,7 @@ header {
 
 /* Helper text colors */
 .text-gold { color: var(--color-accent); }
-.text-purple { color: var(--color-navy); }
-.text-green { color: var(--color-success); }
-.text-crimson { color: var(--color-crimson); }
+
 /* Keyboard focus ring.
  *
  * :focus-visible, not :focus — a mouse click should not leave a ring, but Tab
@@ -1624,20 +1152,7 @@ header {
 .conn-banner p:last-child {
   margin-bottom: 0;
 }
-.onb-optional {
-  display: inline-block;
-  font-family: var(--font-sans);
-  font-size: var(--text-2xs);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--color-success);
-  background: rgba(63, 125, 90, 0.1);
-  border: 1px solid rgba(63, 125, 90, 0.3);
-  border-radius: 999px;
-  padding: 1px 8px;
-  vertical-align: middle;
-  margin-left: 6px;
-}
+
 .onb-nav {
   display: flex;
   justify-content: space-between;
@@ -1649,15 +1164,6 @@ header {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-.btn-onb-express {
-  background: none;
-  border: 1px solid var(--color-navy);
-  color: var(--color-navy);
-  font-weight: 600;
-}
-.btn-onb-express:hover {
-  background: var(--color-slate-glow);
 }
 
 /* --- Dashboard: quick-start (express baseline) note --- */
@@ -1723,7 +1229,6 @@ header {
 }
 
 /* --- Friendlier percentile presentation --- */
-.benchmark-plain,
 .benchmark-plain-lead {
   font-weight: 600;
   color: var(--color-navy);
@@ -1899,33 +1404,6 @@ header {
   color: var(--color-accent);
 }
 
-/* Keeps the grade chip and the raw score on one baseline in a dashboard row. */
-.aspect-row-figures {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-/* The "/100" after the raw aspect score.
- *
- * This exists because the row used to render the score as "20%" directly
- * beside a grade chip reading "B" — two numbers from two unrelated scales,
- * same size, same weight, 8px apart. The letter comes from the percentile
- * (Environment: 86th, hence B); the number is the raw 0-100 component score.
- * A reader scanning left to right got a B and then a 20, and nothing on the
- * row said which one was the verdict.
- *
- * The "%" was the active lie: a raw score out of 100 is not a percentage of
- * anything, and "%" is exactly the suffix the neighbouring percentile would
- * carry. Spelling the denominator out kills the ambiguity in three glyphs.
- * Dimmed and lighter so "/100" reads as a unit on the number rather than as a
- * second figure competing with it. */
-.aspect-row-score-max {
-  font-weight: 400;
-  opacity: 0.65;
-}
-
 .grade-explainer p {
   font-size: var(--text-base);
   color: var(--color-text-primary);
@@ -2032,27 +1510,9 @@ header {
 }
 
 /* --- Deep (in-depth) assessment --- */
-.deep-banner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 14px;
-  border: 1px solid var(--color-card-border);
-  border-left: 3px solid var(--color-navy);
-  background: #faf9f6;
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 18px;
-}
-.deep-banner p { font-size: var(--text-base); color: var(--color-text-primary); line-height: 1.45; }
+
 .deep-progress { font-size: var(--text-sm); color: var(--color-text-secondary); margin-top: 4px; }
-.deep-section-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: space-between;
-}
-.deep-section-done { border-left: 3px solid var(--color-navy); }
+
 .deep-done-note {
   font-size: var(--text-sm);
   color: var(--color-navy);
@@ -2067,53 +1527,7 @@ header {
   margin: -6px 0 12px;
 }
 
-/* --- Wide tables scroll inside their card instead of panning the page --- */
-.table-scroll {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
 /* --- Radar chart + legend (you vs population average) --- */
-/* Column layout: the SVG on top, the legend in a centered row below it.
-   (A plain flex row squeezed the legend into a side column next to the chart.) */
-#radar-chart-container {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.radar-legend {
-  margin-top: 0.75rem;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem 1.25rem;
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-}
-.radar-legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-.radar-legend-swatch {
-  display: inline-block;
-  width: 22px;
-  height: 0;
-  border-top: 2px solid var(--color-slate);
-}
-.radar-legend-swatch--average {
-  border-top: 2px dashed rgba(32, 50, 76, 0.55);
-}
-.radar-legend-caption {
-  flex-basis: 100%;
-  margin: 0.1rem 0 0;
-  font-size: var(--text-xs);
-  text-align: center;
-  color: var(--color-text-secondary);
-}
 
 /* ==========================================================================
    MOBILE LAYER — phones (max-width: 640px)
@@ -2133,16 +1547,6 @@ header {
      - text down to 9.6px
    ========================================================================== */
 @media (max-width: 640px) {
-
-  /* --- Density -----------------------------------------------------------
-     Container and card padding each charged 24px a side, so 26% of a 375px
-     screen was padding and the content column came to 277px. Halving both
-     buys back 32px without disturbing the desktop rhythm.
-     The bottom padding clears the home indicator (env() resolves because
-     index.html sets viewport-fit=cover). */
-  .app-container {
-    padding: 14px 16px calc(24px + env(safe-area-inset-bottom));
-  }
 
   .card {
     padding: 16px;
@@ -2166,8 +1570,8 @@ header {
     gap: 10px;
   }
 
-  .brand h1 { font-size: var(--text-xl); }
-  .brand p { display: none; }
+  
+  
 
   /* --- Forms -------------------------------------------------------------
      THE iOS ZOOM FIX. Safari zooms the viewport whenever a focused field is
@@ -2230,22 +1634,16 @@ header {
      Nothing below 12px on a phone. These are the classes that measured
      9.6-11.5px; the mobile e2e flow guards against new ones appearing. */
   .percentile-band,
-  .balance-band,
-  .grade-badge,
-  .radar-legend-caption,
-  .benchmark-detail,
-  .benchmark-disclaimer,
-  .suggestion-meta,
-  .deep-progress,
-  .level-badge,
-  .radar-legend-item,
-  .radar-legend,
-  .balance-index-caption,
-  .balance-index-weakest,
-  .component-detail,
-  .criterion-chip,
-  .gauge-note,
-  .percentile-definition {
+.balance-band,
+.grade-badge,
+.benchmark-detail,
+.deep-progress,
+.balance-index-caption,
+.balance-index-weakest,
+.component-detail,
+.criterion-chip,
+.gauge-note,
+.percentile-definition {
     font-size: var(--text-sm);
   }
 
@@ -2272,107 +1670,27 @@ header {
      Second: only the FIRST prompt is the next step. The rest demote to a
      compact title-and-action row. Done in CSS rather than JS so that rotating
      the phone cannot leave a stale layout behind. */
-  .checkin-banner,
-  .deep-banner {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
-  }
+  
 
-  .checkin-banner .btn,
-  .deep-banner .btn {
-    width: 100%;
-    text-align: center;
-  }
+  
 
-  .prompt-stack .prompt:not(:first-child) {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 8px 12px;
-  }
+  
 
-  .prompt-stack .prompt:not(:first-child) .prompt-body {
-    display: none;
-  }
+  
 
-  .prompt-stack .prompt:not(:first-child) .prompt-title {
-    font-size: var(--text-base);
-  }
+  
 
-  .prompt-stack .prompt:not(:first-child) .btn {
-    width: auto;
-    flex-shrink: 0;
-    font-size: var(--text-sm);
-    padding: 10px 12px;
-    min-height: 44px;
-  }
+  
 
-  .prompt-stack .prompt:not(:first-child) .prompt-actions {
-    flex-shrink: 0;
-  }
+  
 
-  /* --- Dashboard order ---------------------------------------------------
-     The radar is the point of the app and it started 1800px down, behind the
-     identity card and the prompts. display:contents dissolves the two desktop
-     columns so every card becomes an orderable sibling; the order values are
-     inert on desktop, where the grid still has exactly two children. */
-  .dashboard-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
+  
 
-  .dashboard-grid > div { display: contents; }
+  
 
+  
 
-  /* Aspect Scores, collapsed to one statement per aspect.
-     ---------------------------------------------------
-     Measured at 375px before this rule: every ranked row was 132.7px, of which
-     head (name + grade + score) was 23.2 and the bar 5. The remaining 83 was
-     .benchmark-plain-lead at 42.9 and .benchmark-detail at 39.7 — two
-     paragraphs, each wrapping to TWO lines in the card's ~311px of content
-     width. Eight aspects made a 1174px card: the list alone ran longer than one
-     and a half phone screens, and nothing below it was reachable without a
-     deliberate scroll.
+  
 
-     Two problems, one cause. The obvious one is length. The subtler one is
-     raggedness: row height is a function of where each label happens to wrap,
-     so English ran 133/133/133/70 (Relationships is unranked, so it has no
-     .benchmark-detail at all) and Thai ran 93/113/133 — a list of identical
-     things rendered at four different heights, which reads as disorder rather
-     than as a scale.
-
-     Hiding the prose fixes both, because what remains is fixed-height: a chip
-     of two words, or the one-line unranked sentence. Rows land within a pixel
-     of each other in either language, so the eye can compare them.
-
-     What is NOT lost: the grade badge and the score both stay on the head line,
-     and the chip states the standing. The exact percentile, the typical range,
-     and the method tag move to the aspect page one tap away — the only place
-     they appear together with the definition that makes a percentile mean
-     anything. Showing a bare "68th percentile" here with its range hidden
-     beside it would be the worse option, not the safer one.
-
-     Scoped to .aspect-row so the aspect page's own standing block — same
-     classes, rendered by the non-compact branch of benchmarkStanding — keeps
-     every line. */
-  .aspect-row .benchmark-phrase,
-  .aspect-row .benchmark-detail {
-    display: none;
-  }
-
-  /* With the phrase gone the chip is the paragraph's first child, so its 6px
-     word-gap would render as a stray indent, and the 4px that used to separate
-     it from the detail line would now hang off the bottom of the row. */
-  .aspect-row .benchmark-plain-lead {
-    margin-bottom: 0;
-  }
-
-  .aspect-row .benchmark-plain-lead .percentile-band {
-    margin-left: 0;
-  }
+  
 }

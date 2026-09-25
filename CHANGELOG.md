@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `100`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `101`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,39 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.49.0] — 2026-09-25 (APP_VERSION 101)
+
+The redesign, sixth and last release (R6 of [docs/redesign-build-plan.md](docs/redesign-build-plan.md)):
+the screens the prototype never drew, with the section-to-content map the
+owner approved on 2026-09-25 ("Approve map").
+
+### Changed
+
+- **The Re-assessment** is a text page's head, then the journey's mission
+  panels: one per aspect it re-scores (the Still Water, the Commons, the
+  Workshop), the region and its emblem on the left and the questionnaires on
+  the right, in the region's wash. One page and one Complete pill, as before.
+- **The in-depth assessment** is the same head, then one panel per aspect,
+  each with its own Save pill and, once done, an In-depth mark beside the
+  region. The runway figures stay under Finance as their own form.
+- Neither page moves: every panel is quiet, so the answer pills do not rise.
+  The forms, ids, drafts, validation and handlers are unchanged. The
+  submit-error line is the journey's sticky message.
+- **Privacy** (`privacy.html`) is a text page in the frame: the wordmark, the
+  labelled sections and the footer, still with no script at all. Every
+  sentence of the statement is kept.
+- **Every screen is full-bleed.** The old centred column and the `bleed`
+  switch in `app.js` are gone.
+
+### Removed
+
+- About 680 lines of `index.css` that no screen used any more: the old back
+  link, the onboarding card, the radar legend, the Side by Side table, the
+  old dashboard grid, banners, suggestions and action cards. A screenshot of
+  every redesigned page, phone and laptop, English and Thai, is pixel-identical
+  before and after.
+- The retired Thai strings "MONTHLY RE-ASSESSMENT" and "IN-DEPTH ASSESSMENT".
 
 ## [2.48.0] — 2026-09-25 (APP_VERSION 100)
 

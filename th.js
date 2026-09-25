@@ -512,7 +512,6 @@ export const TH = {
     "คะแนนนี้มาจากคำตอบเริ่มต้น ตอบคำถามด้าน{aspect}หรือส่งการทบทวนรายสัปดาห์เพื่อยืนยัน",
 
   // --- Monthly re-sync page ---
-  "MONTHLY RE-ASSESSMENT": "การประเมินซ้ำประจำเดือน",
   "Short instruments only • recalibrates Mental, Relationships & Personal Goals": "แบบประเมินชุดสั้น • ปรับเทียบด้านจิตใจ ความสัมพันธ์ และเป้าหมายส่วนตัว",
   "Answer for the recent weeks, not how you felt at onboarding. Scores shift by at most ±15 points per re-assessment, and consistent weekly reviews since the last one add a small bonus. Reward: +40 points.":
     "ตอบตามช่วงสัปดาห์ที่ผ่านมา ไม่ใช่ความรู้สึกตอนเริ่มต้น คะแนนขยับได้ไม่เกิน ±15 คะแนนต่อการประเมินซ้ำ และการทบทวนรายสัปดาห์อย่างสม่ำเสมอตั้งแต่ครั้งก่อนจะได้โบนัสเล็กน้อย รางวัล: +40 คะแนน",
@@ -987,7 +986,6 @@ export const TH = {
   "In-depth sections completed: {done}/{total}": "ทำแบบประเมินเชิงลึกแล้ว: {done}/{total} หมวด",
   "Continue in-depth": "ทำเชิงลึกต่อ",
   "Start in-depth assessment": "เริ่มแบบประเมินเชิงลึก",
-  "IN-DEPTH ASSESSMENT": "แบบประเมินเชิงลึก",
   "Optional • full-length validated questionnaires • one section at a time":
     "ไม่บังคับ • แบบสอบถามฉบับเต็มที่ผ่านการตรวจสอบ • ทำทีละหมวด",
   "These longer questionnaires make each aspect's estimate more reliable and tighten its percentile band. Save each section on its own — completed sections are kept as you go. Reward: +60 points per section.":

@@ -1,5 +1,7 @@
 # Redesign prototype (disposable)
 
+> **Historical.** The redesign is built into the app (R1 to R6, v96 to v101; see [`../../redesign-build-plan.md`](../../redesign-build-plan.md)). This folder is kept as the record of what was approved. Where it and the app differ, the app is right.
+
 Status: **third batch built: every screen on the confirmed map is now in the prototype.** The owner confirmed the map for the rest of the app on 2026-09-25 ("just proceed") and passed the first two batches the same day ("prototype look nice. We can proceed.").
 
 This is LBI's content inside the approved humanmade-style recreation (`hm-recreation-v7`). The recreation is the frame: its layout, navigation, pacing and motion stay. LBI supplies everything that fills it. The owner confirmed the section-to-content map on 2026-09-24, including two decisions:

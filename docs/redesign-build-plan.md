@@ -1,6 +1,6 @@
 # LBI redesign: building it into the app
 
-Status: **approved by the owner on 2026-09-25**, all four open decisions as recommended (§4). **R1 (the frame) is built, in v96 (2.44.0); R2 (Landing and journey) in v97 (2.45.0); R3 (Home) in v98 (2.46.0); R4 (the weekly loop) in v99 (2.47.0); R5 (the rest of the map) in v100 (2.48.0).**
+Status: **approved by the owner on 2026-09-25**, all four open decisions as recommended (§4). **R1 (the frame) is built, in v96 (2.44.0); R2 (Landing and journey) in v97 (2.45.0); R3 (Home) in v98 (2.46.0); R4 (the weekly loop) in v99 (2.47.0); R5 (the rest of the map) in v100 (2.48.0); R6 (the screens with no prototype) in v101 (2.49.0). The redesign is complete.**
 
 The prototype in [`prototype/redesign/`](prototype/redesign/README.md) is approved. It covers every screen on the confirmed map, and the dark pinned star was turned off on 2026-09-25. This plan moves the real app into that design one release at a time.
 
@@ -84,6 +84,12 @@ R1 and R2 each end with a phone check by you before the next one starts. After t
 - **Lumi speaks only when asked.** The floating bubble and its per-screen tip are gone; the header's star opens the tip for the lowest aspect.
 - **New Thai copy** for R5 is marked in `th.js` and awaits the owner's review.
 
+**R6 as built (v101, 2.49.0):** the Re-assessment, the in-depth assessment and Privacy, with the map the owner approved on 2026-09-25 ("Approve map").
+- **Both assessments are one scrolling page of mission panels**, one per aspect, not a stepper: the drafts, ids and validation stay exactly as they were. Nothing on them moves.
+- **Privacy keeps no script.** It links the frame's sheets and uses the text page's markup directly.
+- **`index.css` is the shared basics, 1,696 lines.** The rules no screen used were removed (checked by a pixel comparison of every redesigned page); what is left still styles the instruments, the forms and the aspect pages' shared pieces. Moving those into the area sheets is ordinary maintenance, not part of the redesign.
+- **The prototype folder is historical** (its README says so); the app is now the reference.
+
 ## 3. How the code is organised
 
 - **Motion:** the prototype's helpers go into the existing `motion.js` / `views/motion-mount.js`:
@@ -91,7 +97,7 @@ R1 and R2 each end with a phone check by you before the next one starts. After t
   - the burst, the sticker spring and the wipe are new
 
   Everything still goes through the mount's AbortController, so leaving a screen stops its motion.
-- **Styles:** the new design gets its own sheets per area (`css/frame.css`, `css/journey.css` and so on), each under 800 lines. `index.css` (3,318 lines now) shrinks release by release until R6 removes it or reduces it to the shared basics.
+- **Styles:** the new design gets its own sheets per area (`css/frame.css`, `css/journey.css` and so on), each under 800 lines. `index.css` (3,318 lines at the start) shrank release by release; after R6 it holds the shared basics (1,696 lines).
 - **Views** keep returning the final HTML string. Motion only animates toward it, as the plan has always required.
 - **Guards to update, deliberately and each with a reason in the test:**
   - **Guard 2** ("modules that render items do not import motion") becomes: the question may type in, and the answer pills may rise, but pressing an answer moves every option the same way.

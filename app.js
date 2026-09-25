@@ -16,7 +16,7 @@ import {
   renderMethodology,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=100";
+} from "./ui.js?v=101";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -131,9 +131,6 @@ function initializeApp() {
   setLumiAvailable(state.onboarded);
   maybeOfferRecovery();
 
-  // The first-run screens and Home are full-bleed pages; everything else sits
-  // in the app's centred column until its release redesigns it.
-  document.body.classList.toggle("bleed", !state.onboarded);
   if (!state.onboarded) {
     document.getElementById("navpill").classList.add("d-none");
     // Before the journey is finished the only screens are the Landing and the
@@ -237,11 +234,6 @@ function renderActiveTab() {
   const state = stateManager.state;
   const route = routeFromHash();
   const activeTab = route.type === "tab" ? route.tab : null;
-  // The redesigned screens are full-bleed; the Re-assessment and the in-depth
-  // assessments still sit in the old frame until R6
-  // (docs/redesign-build-plan.md).
-  document.body.classList.toggle("bleed", !["checkin", "deep"].includes(route.type));
-
   // Mark the current route in the menu and the quick links (aria-current).
   syncMenuRoute(routePath(route));
 

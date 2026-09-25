@@ -8,13 +8,6 @@
    container units against #main-view, so it is the same width the script's
    pointer maths uses (no scrollbar difference). */
 
-/* The stage pages and the journey are full-bleed (body.bleed, app.js). */
-body.bleed .app-container {
-  max-width: none;
-  padding: 0;
-}
-body.bleed #main-view { container-type: inline-size; }
-
 .stage-page {
   --px: calc(100cqw / 2545);
   --panel-r: calc(40 * var(--px));

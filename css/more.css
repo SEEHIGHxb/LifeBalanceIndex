@@ -327,8 +327,52 @@
 .lumi .pill:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
 
 /* ================================================================ phones */
+/* ====================================================== the assessments
+   The Re-assessment and the in-depth assessment (redesign R6): a text page's
+   head, then the journey's mission panels stacked, one per aspect, each in
+   its region's wash. Nothing moves; the panels are data-quiet. */
+.assess-journey {
+  display: grid;
+  gap: 12px;
+  padding: 0 0 calc(80 * var(--px));
+  background: none;
+}
+.assess-journey .survey-page { min-height: 0; }
+.assess-journey .instrument-block {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.18);
+}
+.assess-journey .instrument-title {
+  margin: 0 0 16px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--frame-ink);
+}
+.assess-journey .carry-note,
+.assess-journey .onb-note,
+.assess-journey .deep-done-note { color: #444444; font-size: 15px; line-height: 1.55; }
+.assess-journey .deep-done-note { font-weight: 600; }
+.assess-journey .assess-runway { margin-top: 48px; }
+.assess-done {
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--frame-dark);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.assess-submit { margin-top: 40px; }
+.assess-journey .onb-resume { width: auto; margin: 0; }
+.assess-journey .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
 @container (max-width: 900px) {
   .stage-page .grid-2 { grid-template-columns: minmax(0, 1fr); }
+  .q-side .assess-done { grid-area: theme; justify-self: start; margin-top: 8px; }
   .code-row { flex-wrap: wrap; }
   .stage-page .code-input { flex-basis: 100%; }
   .duo { padding: calc(120 * var(--px)) 0; }
@@ -359,8 +403,14 @@
 html[lang="th"] .share-sheet .pill,
 html[lang="th"] .share-option-label,
 html[lang="th"] .lumi .pill,
-html[lang="th"] .lumi-label { letter-spacing: normal; }
+html[lang="th"] .lumi-label,
+html[lang="th"] .assess-done { letter-spacing: normal; }
 html[lang="th"] .share-title,
 html[lang="th"] .pagehead-word,
 html[lang="th"] .ypoints,
 html[lang="th"] .duo-row b { font-weight: 700; }
+
+/* ============================================================= Privacy
+   privacy.html: the text page with no scripts, so no menu and no language
+   button; the wordmark and the pill lead back to the app. */
+.privacy-page .pagehead .privacy-updated { font-size: 15px; color: #444444; }

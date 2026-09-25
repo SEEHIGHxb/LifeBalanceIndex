@@ -100,7 +100,7 @@ function buildScreens() {
 // The region's emblem. Decorative (alt=""): the region's name is beside it.
 // Sized so nothing shifts when it loads, and lazy because every screen but one
 // is hidden.
-function emblemImg(chapter, cls) {
+export function emblemImg(chapter, cls) {
   return `<img class="${cls}" src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async">`;
 }
 

@@ -1,6 +1,8 @@
 // views/assessments.js - the monthly mini re-assessment (#/checkin) and the
 // optional in-depth assessment (#/deep). Moved verbatim from the old
-// monolithic ui.js; behavior unchanged.
+// monolithic ui.js; behavior unchanged. Redesign R6 gave both pages a text
+// page's head and the journey's mission panels; the forms, ids, drafts and
+// validation are as they were, and neither page moves.
 
 import { stateManager } from "../state.js";
 import { DEEP_SECTIONS, deepSectionInstruments, deepAskIndices } from "../surveys.js";
@@ -11,8 +13,31 @@ import {
   deepInstrumentBlock, collectDeepInstrument,
   numberField, validateScope
 } from "./instrument-forms.js";
-import { scrollIntoViewGently } from "./helpers.js";
+import { escapeHtml, scrollIntoViewGently } from "./helpers.js";
 import { applyDraft, saveDraft, clearDraft } from "../draft.js";
+import { pageHead } from "./stage-page.js";
+import { emblemImg } from "./onboarding.js";
+import { chapterOf, aspectName } from "./news.js";
+
+// One aspect's questionnaires in the journey's mission panel: the region and
+// its emblem on the left, the questions on the right, in the region's wash.
+// data-quiet keeps the answer pills from rising as they do in the journey.
+// `inner` and `sideExtra` are markup the caller built.
+function assessPanel(aspect, inner, { id = "", sideExtra = "" } = {}) {
+  const chapter = chapterOf(aspect);
+  return `
+    <section class="survey-page assess-panel" data-quiet${id ? ` id="${id}"` : ""}
+      style="--chapter-hue: ${chapter.hue}; --chapter-wash: ${chapter.wash};">
+      <div class="q-split">
+        <div class="q-side">
+          <p class="label">(${escapeHtml(chapter.region)})</p>
+          ${emblemImg(chapter, "q-emblem")}
+          ${sideExtra}
+        </div>
+        <div class="q-main">${inner}</div>
+      </div>
+    </section>`;
+}
 
 // 2c. RENDER THE MONTHLY MINI RE-ASSESSMENT (#/checkin)
 export function renderCheckin(containerId, state, onComplete) {
@@ -20,31 +45,37 @@ export function renderCheckin(containerId, state, onComplete) {
   if (!container) return;
 
   const isCoupled = state.profile.relationshipStatus !== "Single";
+  // The seven instruments, grouped by the aspect each one re-scores.
+  const groups = [
+    ["mental", ["who5", "st5"]],
+    ["relationships", isCoupled ? ["ucla", "ras"] : ["ucla"]],
+    ["personalGoals", ["gse", "citacc", "citlearn"]]
+  ];
+
+  // The one submit closes the last panel rather than sitting on the frame.
+  const submit = `
+    <div class="assess-submit">
+      <button type="submit" class="pill">${t("Complete Re-assessment")}</button>
+    </div>`;
 
   container.innerHTML = `
-    <a href="#/dashboard" class="aspect-back">&larr; ${t("Overview")}</a>
-    <div class="onboarding-container card">
-      <div class="brand" style="text-align: center; margin-bottom: 25px;">
-        <h1>${t("MONTHLY RE-ASSESSMENT")}</h1>
-        <p>${t("Short instruments only • recalibrates Mental, Relationships & Personal Goals")}</p>
+    <div class="stage-page textpage assess checkin-view">
+      ${pageHead(t("Re-assessment"), [
+        escapeHtml(t("Short instruments only • recalibrates Mental, Relationships & Personal Goals")),
+        escapeHtml(t("Answer for the recent weeks, not how you felt at onboarding. Scores shift by at most ±15 points per re-assessment, and consistent weekly reviews since the last one add a small bonus. Reward: +40 points."))
+      ])}
+      <div class="journey assess-journey">
+        <div id="checkin-resume" class="onb-resume d-none">
+          <span>${t("Picked up where you left off. Your answers were saved on this device.")}</span>
+        </div>
+        <form id="checkin-form">
+          ${groups.map(([aspect, keys], i) => assessPanel(aspect, `
+            <h3 class="q-title">${escapeHtml(aspectName(aspect))}</h3>
+            ${keys.map(k => instrumentBlock(k)).join("")}
+            ${i === groups.length - 1 ? submit : ""}`)).join("")}
+        </form>
+        <p id="checkin-error" class="onboarding-error d-none" role="alert"></p>
       </div>
-      <p style="font-size: var(--text-base); color: var(--color-text-secondary); margin-bottom: 20px;">
-        ${t("Answer for the recent weeks, not how you felt at onboarding. Scores shift by at most ±15 points per re-assessment, and consistent weekly reviews since the last one add a small bonus. Reward: +40 points.")}
-      </p>
-      <div id="checkin-resume" class="onb-resume d-none">
-        <span>${t("Picked up where you left off. Your answers were saved on this device.")}</span>
-      </div>
-      <form id="checkin-form">
-        ${instrumentBlock("who5")}
-        ${instrumentBlock("st5")}
-        ${instrumentBlock("ucla")}
-        ${isCoupled ? instrumentBlock("ras") : ""}
-        ${instrumentBlock("gse")}
-        ${instrumentBlock("citacc")}
-        ${instrumentBlock("citlearn")}
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 15px;">${t("Complete Re-assessment")}</button>
-      </form>
-      <p id="checkin-error" class="d-none" style="color: var(--color-crimson); margin-top: 12px; font-weight: 600;"></p>
     </div>
   `;
 
@@ -135,7 +166,7 @@ export function renderDeepAssessment(containerId, state, onComplete, onRunwaySav
   };
 
   const runwayBlock = () => `
-    <h4 class="instrument-title" style="margin-top: 22px;">${t("Runway — optional, and never scored")}</h4>
+    <h4 class="instrument-title assess-runway">${t("Runway — optional, and never scored")}</h4>
     <p class="onb-note">${t("Both optional. Together they give your runway: how long you could cover the unskippable if income stopped. Reported on your Finance page, not scored.")}</p>
     <form id="deep-runway-form">
       <div class="grid-2">
@@ -154,45 +185,40 @@ export function renderDeepAssessment(containerId, state, onComplete, onRunwaySav
         placeholder: t("e.g. 5,000 — leave blank if none"),
         note: t("Counted in your runway with the box above, and shown on your Social Contribution page as giving. It is never subtracted from a score.")
       })}
-      <button type="submit" class="btn btn-secondary" style="width: 100%; margin-top: 12px;">${t("Save these figures")}</button>
+      <div class="assess-submit">
+        <button type="submit" class="pill pill-light">${t("Save these figures")}</button>
+      </div>
     </form>`;
 
   const sectionCard = (section) => {
     const done = isAspectDeepVerified(state, section.aspect);
     const keys = deepSectionInstruments(section, isCoupled);
-    return `
-      <div class="card deep-section ${done ? "deep-section-done" : ""}" id="deep-section-${section.aspect}">
-        <div class="deep-section-head">
-          <h3 class="card-header">${t(section.title)}</h3>
-          ${done ? `<span class="confidence-badge confidence-verified">${t("In-depth")}</span>` : ""}
+    const doneMark = done ? `<p class="assess-done">${t("In-depth")}</p>` : "";
+    return assessPanel(section.aspect, `
+      <h3 class="q-title">${t(section.title)}</h3>
+      <p class="onb-why">${t(section.blurb)}</p>
+      ${done ? `<p class="deep-done-note">${t("Completed — this aspect's score is verified. You can redo it to update.")}</p>` : ""}
+      <form class="deep-form" data-aspect="${section.aspect}" data-keys="${keys.join(",")}">
+        ${keys.map(k => deepInstrumentBlock(k, deepAskIndices(k, state.baseline))).join("")}
+        <div class="assess-submit">
+          <button type="submit" class="pill">${done ? t("Update this section") : t("Save this section")}</button>
         </div>
-        <p class="onb-why">${t(section.blurb)}</p>
-        ${done ? `<p class="deep-done-note">${t("Completed — this aspect's score is verified. You can redo it to update.")}</p>` : ""}
-        <form class="deep-form" data-aspect="${section.aspect}" data-keys="${keys.join(",")}">
-          ${keys.map(k => deepInstrumentBlock(k, deepAskIndices(k, state.baseline))).join("")}
-          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 12px;">${done ? t("Update this section") : t("Save this section")}</button>
-        </form>
-        ${section.aspect === "finance" ? runwayBlock() : ""}
-      </div>`;
+      </form>
+      ${section.aspect === "finance" ? runwayBlock() : ""}`,
+    { id: `deep-section-${section.aspect}`, sideExtra: doneMark });
   };
 
   container.innerHTML = `
-    <a href="#/dashboard" class="aspect-back">&larr; ${t("Overview")}</a>
-    <!-- Plain .card, not .onboarding-container: that class is capped at 981px
-         for the INSTRUMENTS scales, but the .deep-section cards below stretch
-         to the full 1192px shell for cfc12. Keeping the cap here would leave
-         this intro card visibly narrower than every card under it. -->
-    <div class="card" style="margin-bottom: 16px;">
-      <div class="brand" style="text-align: center; margin-bottom: 18px;">
-        <h1>${t("IN-DEPTH ASSESSMENT")}</h1>
-        <p>${t("Optional • full-length validated questionnaires • one section at a time")}</p>
+    <div class="stage-page textpage assess deep-view">
+      ${pageHead(t("In-depth assessment"), [
+        escapeHtml(t("Optional • full-length validated questionnaires • one section at a time")),
+        escapeHtml(t("These longer questionnaires make each aspect's estimate more reliable and tighten its percentile band. Save each section on its own — completed sections are kept as you go. Reward: +60 points per section."))
+      ])}
+      <div class="journey assess-journey">
+        ${DEEP_SECTIONS.map(sectionCard).join("")}
+        <p id="deep-error" class="onboarding-error d-none" role="alert"></p>
       </div>
-      <p style="font-size: var(--text-base); color: var(--color-text-secondary);">
-        ${t("These longer questionnaires make each aspect's estimate more reliable and tighten its percentile band. Save each section on its own — completed sections are kept as you go. Reward: +60 points per section.")}
-      </p>
     </div>
-    ${DEEP_SECTIONS.map(sectionCard).join("")}
-    <p id="deep-error" class="d-none" style="color: var(--color-crimson); font-weight: 600;"></p>
   `;
 
   // The runway form saves through the SAME mutator the Profile page uses -- so

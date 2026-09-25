@@ -150,8 +150,12 @@
     }
     return '<svg class="' + (cls || "") + '" viewBox="0 0 100 100" aria-hidden="true">' + out + "</svg>";
   };
-  /* the huge pinned shape behind the cards (v7's heart layer) */
+  /* the huge pinned shape behind the cards (v7's heart layer). Off for now:
+     the owner found it distracting (2026-09-25). The empty sticky layer keeps
+     the layout as it was; set STAR_ON back to true to restore it. */
+  var STAR_ON = false;
   var bigStarSvg = function (radii, valley) {
+    if (!STAR_ON) return "";
     return '<svg class="projects__star" viewBox="0 0 2545 2800" overflow="visible">' +
       '<polygon points="' + starPoints(radii, 1272, 1500, valley) + '"/></svg>';
   };

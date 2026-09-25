@@ -628,7 +628,7 @@
     return '<footer class="footer"><div class="wrap footer__row">' +
       '<div class="footer__mark"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#g-star"/></svg><span>LIFE BALANCE<br>INDEX</span></div>' +
       '<nav aria-label="Footer"><a href="#/home">' + esc(s.navHome) + '</a><a href="#/journey">' + esc(s.navJourney) + "</a>" +
-      '<a href="#/" aria-disabled="true" data-soon>' + esc(s.footMethod) + '</a><a href="#/" aria-disabled="true" data-soon>' + esc(s.footPrivacy) + "</a></nav>" +
+      '<a href="#/method">' + esc(s.footMethod) + '</a><a href="#/" aria-disabled="true" data-soon>' + esc(s.footPrivacy) + "</a></nav>" +
       '<div class="footer__meta"><span>' + esc(s.footLocal) + "</span><span>© Life Balance Index</span></div>" +
       "</div></footer>";
   };
@@ -703,6 +703,20 @@
       footerHTML();
   };
 
+  /* The duty-of-care notice, at the top of Home. It never moves: no typing,
+     no spring, no burst, under any motion setting. */
+  var noticeHTML = function () {
+    var s = S(), N = P.NOTICE;
+    if (!N) return "";
+    return '<section class="notice" aria-labelledby="noticeTitle"><div class="wrap">' +
+      '<h2 class="notice__title" id="noticeTitle">' + esc(L(N.title)) + "</h2>" +
+      '<p class="notice__body">' + esc(L(N.body)) + "</p>" +
+      '<ul class="notice__lines">' + N.lines.map(function (l) {
+        return '<li><a href="tel:' + l.tel.replace(/\D/g, "") + '">' + esc(l.tel) + "</a><span>" + esc(L(l.label)) + "</span></li>";
+      }).join("") + "</ul>" +
+      '<p class="notice__proto">' + esc(s.noticeProto) + "</p></div></section>";
+  };
+
   var homeHTML = function () {
     var s = S(), H = P.HOME_SAMPLE;
     var strong = L(P.CHAPTERS[H.strongest].region), weak = L(P.CHAPTERS[H.lowest].region);
@@ -716,7 +730,8 @@
         '<span class="newsrow__cat">' + esc(s.kind[f.kind]) + "</span></span>" + thumb +
         '<span class="newsrow__title">' + esc(L(f.title)) + "<small>" + esc(sub) + "</small></span></div>";
     }).join("");
-    return '<div class="seedtrack"><div class="seedpin" aria-hidden="true"><p class="seed headline"></p></div>' +
+    return noticeHTML() +
+      '<div class="seedtrack"><div class="seedpin" aria-hidden="true"><p class="seed headline"></p></div>' +
       heroHTML(radarStarSvg(H.scores), s.hWord, fmt(s.hInc, { n: H.index }), s.hWord + " — " + fmt(s.hIndexSr, { n: H.index }), s.heroTap) +
       missionHTML(s.hWeek, head) + "</div>" +
       '<section class="projects" id="aspects"><div class="projects__stick" aria-hidden="true">' +
@@ -974,13 +989,13 @@
     };
     menu.innerHTML = '<div class="menu__cols">' +
       '<div><div class="menu__group"><a class="menu__top" href="#/home">' + esc(s.mHome) + '</a><ul class="menu__sub">' +
-      link("#/review", s.mReview) + link("#/goals", s.mGoals) + link("#/home", s.mCompare, true) + "</ul></div>" +
+      link("#/review", s.mReview) + link("#/goals", s.mGoals) + link("#/compare", s.mCompare) + "</ul></div>" +
       '<div class="menu__group"><a class="menu__top" href="#/">' + esc(s.mStart) + '</a><ul class="menu__sub">' +
       link("#/journey", s.mJourney) + "</ul></div></div>" +
       '<div><div class="menu__group"><a class="menu__top" href="#/home">' + esc(s.mAspects) + '</a><ul class="menu__sub">' +
       P.CHAPTERS.map(function (ch) { return link("#/aspect/" + ch.art, L(ch.region).toUpperCase()); }).join("") + "</ul></div></div>" +
-      '<div><div class="menu__group"><a class="menu__top" href="#/home" aria-disabled="true" data-soon>' + esc(s.mYou) + '</a><ul class="menu__sub">' +
-      link("#/home", s.mProfile, true) + link("#/home", s.mMethod, true) + link("#/home", s.mYear, true) + "</ul></div>" +
+      '<div><div class="menu__group"><a class="menu__top" href="#/profile">' + esc(s.mYou) + '</a><ul class="menu__sub">' +
+      link("#/profile", s.mProfile) + link("#/year", s.mYear) + link("#/share", s.mShare) + link("#/method", s.mMethod) + "</ul></div>" +
       '<div class="menu__group"><a class="menu__top" href="#/home" aria-disabled="true" data-soon>' + esc(s.mPrivacy) + "</a></div></div>" +
       "</div>";
     menuLines = $$(".menu__top, .menu__sub a", menu);
@@ -1164,6 +1179,7 @@
     buildTyped: buildTyped, typeOut: typeOut, fireBurst: fireBurst, wrapPills: wrapPills,
     heroHTML: heroHTML, missionHTML: missionHTML, careersHTML: careersHTML, bandHTML: bandHTML,
     footerHTML: footerHTML, bigStarSvg: bigStarSvg, scoreRadii: scoreRadii, STAR_VALLEY: STAR_VALLEY,
+    starPoints: starPoints, radarStarSvg: radarStarSvg, graphemes: graphemes,
     motifSvg: motifSvg, stickerSvg: stickerSvg, setBehindInert: setBehindInert, render: render
   };
   P.route = function (name, def) { EXTRA[name] = def; };

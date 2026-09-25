@@ -33,7 +33,8 @@ try {
     watch(page, label);
     await page.goto(base);
     await page.evaluate(l => localStorage.setItem("lbi_proto_lang", l), lang);
-    for (const route of ["", "home", "journey", "aspect/market", "aspect/still-water", "review", "goals"]) {
+    for (const route of ["", "home", "journey", "aspect/market", "aspect/still-water", "review", "goals",
+      "compare", "share", "year", "profile", "method"]) {
       await page.goto(`${base}#/${route}`);
       await page.reload();
       await page.waitForTimeout(600);
@@ -183,6 +184,105 @@ try {
     await ctx.close();
   }
 
+  // The third batch on a laptop: the notice, Side by Side, the share card, Lumi.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    const page = await ctx.newPage();
+    watch(page, "third");
+    await page.goto(`${base}#/home`);
+    await page.waitForTimeout(400);
+    const notice = await page.evaluate(() => ({
+      first: document.querySelector("#screen > *").classList.contains("notice"),
+      tels: [...document.querySelectorAll(".notice a[href^='tel:']")].map(a => a.getAttribute("href"))
+    }));
+    check("Home opens with the notice and its three hotlines",
+      notice.first && notice.tels.join() === "tel:1323,tel:021136789,tel:1669", JSON.stringify(notice));
+
+    await page.goto(`${base}#/compare`);
+    await page.waitForTimeout(400);
+    await page.fill("#friendCode", "not a code");
+    await page.click("#addCode .pill");
+    const bad = await page.evaluate(() => ({
+      msg: document.getElementById("codeErr").textContent,
+      invalid: document.getElementById("friendCode").getAttribute("aria-invalid"), focused: document.activeElement.id
+    }));
+    check("compare: a bad code is explained and focused", bad.msg.startsWith("Comparison codes start with") &&
+      bad.invalid === "true" && bad.focused === "friendCode", JSON.stringify(bad));
+    // a real v2 code, built the way the app builds one, with a 20-character
+    // unbroken name (the longest a code carries)
+    const LONG = "ThisIsMyHandle2026xy";
+    const code = "LQ1-" + Buffer.from(JSON.stringify({ v: 2, n: LONG, a: [50, 50, 50, 50, 50, 50, 50, 50] }))
+      .toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    await page.fill("#friendCode", code);
+    await page.click("#addCode .pill");
+    await page.waitForTimeout(300);
+    const added = await page.evaluate(() => ({
+      people: [...document.querySelectorAll(".people .pill")].map(b => b.textContent + ":" + b.getAttribute("aria-checked")),
+      focused: document.activeElement.textContent,
+      rows: [...document.querySelectorAll(".duocard")[0].querySelectorAll("dt")].map(d => d.textContent)
+    }));
+    check("compare: a pasted code adds a person, picked and focused",
+      added.people.join() === `Nok:false,Ton:false,${LONG}:true` && added.focused === LONG, JSON.stringify(added));
+    check("compare: rows stay in added order, never by score",
+      added.rows.join() === `Population average,Ploy (You),Nok,Ton,${LONG}`, added.rows.join());
+    await page.locator('.people__rm [data-rm]').last().click();
+    await page.waitForTimeout(300);
+    const left = await page.evaluate(() => document.querySelectorAll(".people .pill").length);
+    check("compare: removing takes the person off", left === 2, `${left}`);
+
+    await page.goto(`${base}#/share`);
+    await page.waitForTimeout(300);
+    const before = await page.evaluate(() => document.querySelectorAll(".poster text").length);
+    await page.click('[data-group="detail"][data-value="full"]');
+    const after = await page.evaluate(() => ({
+      texts: document.querySelectorAll(".poster text").length,
+      pressed: document.querySelector('[data-group="detail"][data-value="full"]').getAttribute("aria-pressed"),
+      sticker: document.querySelector(".poster__sticker").style.transform
+    }));
+    check("share: Everything adds names and scores, and shows the finished card",
+      after.texts > before && after.pressed === "true" && after.sticker === "rotate(-4deg)", `${before} -> ${JSON.stringify(after)}`);
+
+    await page.click("#lumiBtn");
+    await page.waitForTimeout(300);
+    const typing = await page.evaluate(() => ({
+      open: document.getElementById("lumiBtn").getAttribute("aria-expanded"),
+      hidden: document.querySelectorAll(".lumi__typed .off").length
+    }));
+    await page.waitForTimeout(4000);
+    const typed = await page.evaluate(() => document.querySelectorAll(".lumi__typed .off").length);
+    check("Lumi: the tip types itself in", typing.open === "true" && typing.hidden > 0 && typed === 0,
+      `${JSON.stringify(typing)} then ${typed} hidden`);
+    await page.keyboard.press("Escape");
+    const closed = await page.evaluate(() => ({ hidden: document.getElementById("lumi").hidden, focused: document.activeElement.id }));
+    check("Lumi: Escape closes it and returns focus", closed.hidden && closed.focused === "lumiBtn", JSON.stringify(closed));
+    await ctx.close();
+  }
+
+  // A long pasted name on a phone wraps rather than pushing the page wide.
+  {
+    const ctx = await browser.newContext({ viewport: phone, isMobile: true, hasTouch: true });
+    const page = await ctx.newPage();
+    watch(page, "long name");
+    await page.goto(`${base}#/compare`);
+    await page.waitForTimeout(400);
+    const code = "LQ1-" + Buffer.from(JSON.stringify({ v: 2, n: "ThisIsMyHandle2026xy", a: [9, 9, 9, 9, 9, 9, 9, 9] }))
+      .toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    await page.fill("#friendCode", code);
+    await page.click("#addCode .pill");
+    await page.waitForTimeout(300);
+    const over = await page.evaluate(async () => {
+      let worst = 0;
+      for (let y = 0; y < document.documentElement.scrollHeight; y += innerHeight) {
+        scrollTo(0, y);
+        await new Promise(r => setTimeout(r, 120));
+        worst = Math.max(worst, document.documentElement.scrollWidth - innerWidth);
+      }
+      return worst;
+    });
+    check("phone #/compare: a 20-character pasted name adds no sideways scroll", over <= 0, `${over}px`);
+    await ctx.close();
+  }
+
   // Reduced motion: everything is already where it ends.
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
@@ -216,6 +316,16 @@ try {
     const jumped = await page.evaluate(() => document.querySelector(".q__stem").textContent);
     check("reduced: review fields are shown at once and the next region has no wipe",
       faded === 0 && /2 \/ 5/.test(jumped), `${faded} faded, ${jumped}`);
+    await page.goto(`${base}#/share`);
+    await page.waitForTimeout(150);
+    await page.click("#lumiBtn");
+    await page.waitForTimeout(50);
+    const still = await page.evaluate(() => ({
+      sticker: document.querySelector(".poster__sticker").style.transform,
+      hidden: document.querySelectorAll(".lumi__typed .off").length
+    }));
+    check("reduced: the share card and Lumi's tip are simply there",
+      still.sticker === "rotate(-4deg)" && still.hidden === 0, JSON.stringify(still));
     await ctx.close();
   }
 } finally {

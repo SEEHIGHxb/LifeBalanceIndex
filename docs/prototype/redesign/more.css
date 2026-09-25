@@ -1,0 +1,161 @@
+/* docs/prototype/redesign/more.css
+   The third batch (social.js, you.js): the notice on Home, Side by Side, the
+   share card, Your year, Profile, Methodology and Lumi's tip.
+   Same units as proto.css: design px at 2545 (820 on a phone) via --px. */
+
+/* ----------------------------------------- the notice, at the top of Home */
+.notice{background:var(--card);border-radius:var(--panel-r);position:relative;z-index:1;
+  padding:calc(250 * var(--px)) 0 calc(130 * var(--px));margin-bottom:calc(-2 * var(--px))}
+.notice__title{font-family:var(--head);font-weight:700;font-size:max(20px,calc(46 * var(--px)));line-height:1.45;
+  margin:0 0 calc(30 * var(--px));max-width:calc(1500 * var(--px))}
+.notice__body{font-size:max(15px,calc(24 * var(--px)));line-height:1.8;margin:0 0 calc(56 * var(--px));
+  max-width:calc(1500 * var(--px))}
+.notice__lines{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:calc(34 * var(--px)) calc(90 * var(--px))}
+.notice__lines li{display:grid;gap:6px}
+.notice__lines a{font-family:var(--word);font-size:max(34px,calc(84 * var(--px)));line-height:1.05;
+  color:var(--ink);text-decoration:none}
+.notice__lines a:hover{text-decoration:underline;text-underline-offset:.12em}
+.notice__lines a:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+.notice__lines span{font-size:max(13px,calc(17 * var(--px)));font-weight:600}
+.notice__proto{margin:calc(56 * var(--px)) 0 0;font-size:max(12px,calc(15 * var(--px)));opacity:.7}
+
+/* ---------------------------------------------------- shared text blocks */
+.pagehead{padding:calc(330 * var(--px)) 0 calc(170 * var(--px))}
+.pagehead__word{font-family:var(--word);font-weight:400;font-size:max(44px,calc(170 * var(--px)));line-height:1.05;
+  margin:0 0 calc(80 * var(--px))}
+.pagehead p{font-family:var(--head);font-weight:500;font-size:calc(32 * var(--px));line-height:2.05;letter-spacing:.02em;
+  margin:0 0 calc(40 * var(--px));max-width:calc(1500 * var(--px))}
+.statement.textsec{min-height:0}
+.statement .factnote{font-size:max(13px,calc(20 * var(--px)));line-height:1.8;margin:calc(40 * var(--px)) 0 0}
+.factlist{margin:0;display:grid;max-width:calc(1400 * var(--px))}
+.fact{display:grid;grid-template-columns:calc(560 * var(--px)) 1fr;gap:calc(40 * var(--px));align-items:baseline;
+  padding:calc(34 * var(--px)) 0;border-bottom:1px dashed var(--rule)}
+.fact:first-child{padding-top:0}
+.fact dt{font-size:max(12px,calc(17 * var(--px)));font-weight:700;letter-spacing:.03em}
+.fact dd{margin:0;font-family:var(--head);font-weight:600;font-size:max(15px,calc(28 * var(--px)))}
+.actions{display:flex;flex-wrap:wrap;gap:calc(24 * var(--px));margin-top:calc(50 * var(--px))}
+.pill[aria-disabled="true"]{opacity:.35;cursor:default}
+.news__note{font-size:max(12px,calc(16 * var(--px)));line-height:1.7;margin:calc(24 * var(--px)) 0 0;
+  max-width:calc(560 * var(--px))}
+.newsrow__delta{font-family:var(--word);font-size:max(28px,calc(64 * var(--px)));line-height:1}
+.newsrow__title .meter{margin-top:calc(20 * var(--px));width:calc(600 * var(--px))}
+
+/* --------------------------------------------------------- side by side */
+.codes .field{margin-top:calc(60 * var(--px));max-width:calc(1300 * var(--px))}
+.coderow{display:flex;gap:calc(24 * var(--px));align-items:center}
+.field__input.code{flex:1;min-width:0;font-family:ui-monospace,Consolas,monospace;font-size:max(13px,calc(22 * var(--px)))}
+.codes .field__err:empty{display:none}
+.duo{padding:calc(170 * var(--px)) 0 calc(200 * var(--px))}
+.duo .split{--col:704}
+.duo__p{font-size:max(13px,calc(18 * var(--px)));line-height:1.7;margin:calc(24 * var(--px)) 0 0;max-width:calc(560 * var(--px))}
+.duo__none{font-family:var(--head);font-weight:600;font-size:max(15px,calc(26 * var(--px)));line-height:1.8;margin:0;
+  max-width:calc(1200 * var(--px))}
+.people__rm{display:flex;flex-wrap:wrap;gap:0 calc(40 * var(--px));margin:calc(10 * var(--px)) 0 calc(40 * var(--px))}
+.duo__fig{width:min(100%,calc(1000 * var(--px)));aspect-ratio:1}
+.duo__fig svg{width:100%;height:100%;display:block;overflow:visible}
+.duo__you{fill:var(--gilt);stroke:var(--gilt-line);stroke-width:.9;stroke-linejoin:round}
+.duo__avg{fill:none;stroke:var(--ink);stroke-width:.5;stroke-dasharray:1.6 1.2;opacity:.6}
+.duo__them{fill:rgba(27,27,27,.14);stroke:var(--dark);stroke-width:.9;stroke-linejoin:round}
+.legend{display:flex;flex-wrap:wrap;gap:calc(20 * var(--px)) calc(50 * var(--px));list-style:none;padding:0;
+  margin:calc(40 * var(--px)) 0 0;font-weight:700;font-size:max(12px,calc(16 * var(--px)))}
+.legend i{display:inline-block;width:22px;height:12px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+.lg-you{background:var(--gilt);border:1.5px solid var(--gilt-line)}
+.lg-them{background:rgba(27,27,27,.14);border:1.5px solid var(--dark)}
+.lg-avg{border:1.5px dashed var(--ink)}
+.duocard{display:grid;grid-template-columns:calc(700 * var(--px)) 1fr;gap:calc(60 * var(--px));align-items:start;
+  padding:calc(60 * var(--px)) calc(80 * var(--px))}
+.duocard__rows{margin:0;display:grid}
+.duocard__row{display:flex;justify-content:space-between;align-items:baseline;gap:20px;
+  padding:calc(14 * var(--px)) 0;border-bottom:1px dashed rgba(0,0,0,.2)}
+/* a pasted name can be one long unbroken handle; it wraps instead of pushing the page wide */
+.duocard__row dt{font-weight:600;font-size:max(13px,calc(19 * var(--px)));min-width:0;overflow-wrap:anywhere}
+.legend li,.people__rm .linkbtn{min-width:0;overflow-wrap:anywhere}
+.duocard__row dd{margin:0;display:flex;align-items:baseline;gap:calc(14 * var(--px))}
+.duocard__row b{font-family:var(--word);font-weight:400;font-size:max(24px,calc(56 * var(--px)));line-height:1}
+.duocard__row--avg{opacity:.62}
+.duocard__row.is-you dt{font-weight:800}
+.sbs{font-size:max(12px,calc(18 * var(--px)));width:1.2em;text-align:center}
+
+/* ----------------------------------------------------------- share card */
+.sharepage{padding:calc(300 * var(--px)) 0 calc(200 * var(--px))}
+.sharepage .split{--col:900}
+.share__side{display:grid;gap:calc(56 * var(--px));justify-items:start;padding-right:calc(80 * var(--px))}
+.share__opt{display:grid;gap:calc(18 * var(--px))}
+.share__optlabel{font-weight:700;font-size:max(12px,calc(17 * var(--px)));letter-spacing:.03em}
+.share__set .pill[aria-pressed="true"]{background:var(--dark);color:#fff}
+.share__note{font-size:max(13px,calc(18 * var(--px)));line-height:1.7;margin:0;max-width:calc(700 * var(--px))}
+.share__actions{display:flex;flex-wrap:wrap;gap:calc(24 * var(--px))}
+.share__stage{display:grid;justify-items:center}
+.poster{width:min(100%,calc(760 * var(--px)));aspect-ratio:9 / 16;border-radius:calc(30 * var(--px));overflow:hidden;
+  box-shadow:0 calc(30 * var(--px)) calc(80 * var(--px)) rgba(0,0,0,.18)}
+.poster svg{width:100%;height:100%;display:block}
+
+/* ------------------------------------------------------------ your year */
+.statement .ypoints{font-family:var(--word);font-weight:400;font-size:max(22px,calc(56 * var(--px)));line-height:1;
+  margin:0 0 calc(40 * var(--px))}
+.ypoints b{font-weight:400;font-size:max(64px,calc(220 * var(--px)))}
+.ymeter{width:100%;max-width:calc(1300 * var(--px));margin:0 0 calc(80 * var(--px))}
+.ymeter i{background:var(--gilt-line)}
+
+/* ---------------------------------------------------------- methodology */
+.creed{padding:calc(200 * var(--px)) 0}
+.creed .split{--col:704}
+.creed__p{font-family:var(--head);font-weight:700;font-size:max(20px,calc(46 * var(--px)));line-height:1.75;margin:0;
+  max-width:calc(1400 * var(--px))}
+.mlist{padding:calc(170 * var(--px)) 0 calc(150 * var(--px))}
+.mlist .split{--col:704}
+.mrow{display:grid;gap:calc(18 * var(--px));padding:calc(44 * var(--px)) 0;border-bottom:1px dashed var(--rule)}
+.mrow:first-child{padding-top:0}
+.mrow .card__title{display:flex;flex-wrap:wrap;align-items:center;gap:calc(24 * var(--px))}
+.mrow p{margin:0;font-size:max(14px,calc(21 * var(--px)));line-height:1.8;max-width:calc(1300 * var(--px))}
+.mrow__meta{font-weight:600}
+.mrow.is-unranked .mrow__meta b{text-decoration:underline dashed;text-underline-offset:.3em}
+
+/* ----------------------------------------------------------------- lumi */
+.lumi{position:fixed;top:max(64px,calc(170 * var(--px)));right:var(--gutter);z-index:85;
+  width:min(calc(100vw - 32px),max(340px,calc(860 * var(--px))));
+  background:var(--card);border-radius:var(--card-r);box-shadow:0 20px 60px rgba(0,0,0,.22);
+  padding:max(18px,calc(40 * var(--px)));display:grid;grid-template-columns:max(64px,calc(150 * var(--px))) 1fr;
+  gap:max(14px,calc(30 * var(--px)));align-items:start;transform-origin:100% 0}
+.lumi[hidden]{display:none}
+.lumi:focus{outline:none}
+.lumi:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.lumi__img{width:100%;height:auto;border-radius:18%;display:block}
+.lumi__tip{font-family:var(--head);font-weight:600;font-size:max(15px,calc(24 * var(--px)));line-height:1.7;
+  margin:max(8px,calc(14 * var(--px))) 0 max(14px,calc(30 * var(--px)));min-height:3.4em}
+.lumi__tip .off{display:none}
+.lumi__tip .caret{width:.9em}
+.lumi__row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px}
+.lumi .pill{white-space:normal;text-align:left;height:auto;min-height:48px;padding-block:10px}
+
+/* --------------------------------------------------------------- mobile */
+@media (max-width:900px){
+  .notice{padding:calc(200 * var(--px)) 0 calc(90 * var(--px))}
+  .pagehead{padding-top:calc(250 * var(--px))}
+  .pagehead__word{font-size:calc(96 * var(--px))}
+  .pagehead p{font-size:calc(34 * var(--px))}
+  .statement .factnote{font-size:calc(28 * var(--px))}
+  .fact{grid-template-columns:1fr;gap:6px}
+  .fact dt{font-size:calc(24 * var(--px))}
+  .fact dd{font-size:calc(34 * var(--px))}
+  .coderow{flex-wrap:wrap}
+  .field__input.code{flex-basis:100%;font-size:calc(26 * var(--px))}
+  .duo{padding:calc(120 * var(--px)) 0}
+  .duo__p,.news__note{font-size:calc(26 * var(--px));max-width:none}
+  .duo__none{font-size:calc(32 * var(--px))}
+  .legend{font-size:calc(24 * var(--px))}
+  .duocard{grid-template-columns:1fr;gap:calc(24 * var(--px));padding:calc(50 * var(--px))}
+  .duocard__row dt{font-size:calc(28 * var(--px))}
+  .duocard__row b{font-size:calc(64 * var(--px))}
+  .sharepage{padding-top:calc(230 * var(--px))}
+  .share__side{padding-right:0}
+  .share__optlabel,.share__note{font-size:calc(26 * var(--px))}
+  .poster{width:100%}
+  .ypoints b{font-size:calc(180 * var(--px))}
+  .creed{padding:calc(120 * var(--px)) 0}
+  .creed__p{font-size:calc(40 * var(--px))}
+  .mlist{padding:calc(120 * var(--px)) 0}
+  .mrow p{font-size:calc(28 * var(--px))}
+  .newsrow__delta{font-size:calc(40 * var(--px))}
+  .newsrow__title .meter{width:100%}
+}

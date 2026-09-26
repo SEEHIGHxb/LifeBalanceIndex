@@ -16,13 +16,14 @@ import {
   renderMethodology,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=113";
+} from "./ui.js?v=114";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
 import { syncReduceMotionAttr } from "./motion.js";
 import { disposeMotion } from "./views/motion-mount.js";
 import { bindMenu, renderMenu, closeMenu, syncMenuRoute } from "./views/menu.js";
+import { bindMagnet } from "./views/magnet.js";
 import { withCarriedScreen } from "./views/lang-carry.js";
 import { readDraft, clearDraft } from "./draft.js";
 import { bindLumi, closeLumi, setLumiAvailable } from "./views/lumi.js";
@@ -138,6 +139,8 @@ function initializeApp() {
   setupSkipLink();
   setupLanguageToggle();
   bindMenu();
+  // The pills lean toward the pointer on every page (views/magnet.js).
+  bindMagnet(document.getElementById("page"));
   renderMenu({ onboarded: state.onboarded });
   // Lumi speaks from the header's star once there are scores to speak about.
   bindLumi(() => stateManager.state);

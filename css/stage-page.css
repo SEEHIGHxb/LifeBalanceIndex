@@ -336,6 +336,19 @@
   font-size: max(14px, calc(24 * var(--px)));
 }
 .stage-page .pill:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 4px; }
+/* The label's wrapper, added on the first hover so it can lag inside the
+   leaning pill (views/magnet.js); it lays out exactly as the bare label did. */
+.pill__in { display: inline-flex; align-items: center; justify-content: center; gap: inherit; }
+/* Once wrapped, the dot travels with the label, as in the prototype. */
+.stage-page .pill:has(> .pill__in)::after { content: none; }
+.stage-page .pill__in::after {
+  content: "";
+  flex: none;
+  width: max(6px, calc(10 * var(--px)));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: currentColor;
+}
 /* The hero sits on the light page, where the card-coloured large pill all but
    vanishes: the hero's call to begin keeps the large size in the dark pill. */
 .stage-page .hero-cta .pill-xl { background: var(--frame-dark); color: #ffffff; }

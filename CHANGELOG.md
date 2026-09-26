@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `113`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `114`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.54.0] — 2026-09-26 (APP_VERSION 114)
+
+### Added
+- **The pills lean toward the pointer, as on humanmade.co.jp** (the owner's
+  call). On a laptop, a pill under the pointer slides and tilts toward it and
+  grows a little, its label and dot lagging a step behind; it springs home when
+  the pointer leaves. This is the prototype's magnetic pills, with its tuning
+  unchanged (`views/magnet.js`, bound once on `#page`).
+  - It never runs on touch or under reduced motion, and never on a choice: the
+    journey's answers and Side by Side's picker (the still selector) and
+    disabled pills stay put.
+  - The label is wrapped in `.pill__in` on the first hover, so the markup a view
+    renders is unchanged and the pill keeps its exact size.
 
 ## [2.53.0] — 2026-09-26 (APP_VERSION 113)
 

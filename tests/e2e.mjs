@@ -239,6 +239,17 @@ try {
     weight.dispatchEvent(new Event("input", { bubbles: true }));
   });
 
+  // The form is novalidate, so the app alone holds age to 15-100: an age of
+  // 150 must stop the first Next with a message, not be saved as 100.
+  await page.fill("#onb-age", "150");
+  await page.locator(".survey-page:not(.d-none) .btn-onb-next").first().click();
+  const ageStopped = await page.evaluate(() => ({
+    error: !document.getElementById("onb-age-err").classList.contains("d-none"),
+    stayed: !document.getElementById("onb-age").closest(".survey-page").classList.contains("d-none")
+  }));
+  if (!ageStopped.error || !ageStopped.stayed) problems.push(`flow1: an age of 150 was not stopped at Next (${JSON.stringify(ageStopped)})`);
+  await page.fill("#onb-age", "15");
+
   // Walk every screen to the last one, then submit.
   //
   // THE SCREEN COUNT IS DELIBERATELY NOT WRITTEN DOWN HERE. This loop used to

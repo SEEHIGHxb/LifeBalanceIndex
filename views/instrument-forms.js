@@ -248,6 +248,23 @@ export function validateScope(scopeEl) {
     fail(inp);
   }
 
+  // 4. A number box with no FIELD_CONSTRAINTS key (the journey's age) is held
+  //    to its own min/max. The forms are novalidate, so without this nothing
+  //    would: age 150 was saved as 100 without a word.
+  scopeEl.querySelectorAll('input[type="number"]:not([data-field])').forEach(inp => {
+    if (isConditionallyHidden(inp) || String(inp.value).trim() === "") return;
+    const num = Number(inp.value);
+    const min = inp.min === "" ? -Infinity : Number(inp.min);
+    const max = inp.max === "" ? Infinity : Number(inp.max);
+    if (Number.isFinite(num) && num >= min && num <= max) return;
+    const message = Number.isFinite(num)
+      ? tp("Enter a value between {min} and {max}.", { min: inp.min, max: inp.max })
+      : tp("Enter a number.", {});
+    setError(inp.parentElement.querySelector(".field-error"), message, inp);
+    inp.classList.add("input-invalid");
+    fail(inp);
+  });
+
   return firstInvalid;
 }
 

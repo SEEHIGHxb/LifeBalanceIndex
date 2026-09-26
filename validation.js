@@ -32,18 +32,23 @@ export const FIELD_CONSTRAINTS = {
   committedOutflow: { min: 0, max: 10000000 },
   familySupport: { min: 0, max: 10000000 },
   digitalLiteracy: { min: 0, max: 100 },
-  weeklyLearningHours: { min: 0, max: 168 },
+  // From here down the ranges are the ones the forms print beside each box.
+  // They used to be looser here than on the page (sleep 24 against the page's
+  // 16, height 80 against 100); the owner chose the page's, 2026-09-26, so the
+  // hint and the check can no longer disagree. sanitize.js keeps its wider
+  // bounds on purpose: it cleans stored and imported data, it does not ask.
+  weeklyLearningHours: { min: 0, max: 80 },
   weeklyVigorousDays: { min: 0, max: 7 },
-  weeklyVigorousMins: { min: 0, max: 1440 },
+  weeklyVigorousMins: { min: 0, max: 600 },
   weeklyModerateDays: { min: 0, max: 7 },
-  weeklyModerateMins: { min: 0, max: 1440 },
+  weeklyModerateMins: { min: 0, max: 600 },
   weeklyWalkingDays: { min: 0, max: 7 },
-  weeklyWalkingMins: { min: 0, max: 1440 },
-  weight: { min: 20, max: 400 },
-  height: { min: 80, max: 250 },
-  sleepHours: { min: 0, max: 24 },
-  vegetablePortions: { min: 0, max: 50 },
-  waterLiters: { min: 0, max: 15 },
+  weeklyWalkingMins: { min: 0, max: 600 },
+  weight: { min: 25, max: 300 },
+  height: { min: 100, max: 250 },
+  sleepHours: { min: 0, max: 16 },
+  vegetablePortions: { min: 0, max: 15 },
+  waterLiters: { min: 0, max: 10 },
   singleUsePlastics: { min: 0, max: 100 },
   monthlyDonations: { min: 0, max: 10000000 },
   volunteeringHours: { min: 0, max: 168 }
@@ -65,11 +70,20 @@ function isBlank(value) {
 
 // Validate the raw onboarding payload. Returns { ok, errors } where errors maps
 // a field name to a user-facing (translated) message. Never throws.
-export function validateProfile(raw = {}) {
+//
+// `required` names fields that may NOT be blank. The Weekly Review passes its
+// own: every one of its boxes is a measurement, and a blank one used to be
+// saved as 0 (Number("") is 0), so clearing the sleep box recorded no sleep.
+// A browser also hands over "" for letters typed into a number box, so this
+// catches those too.
+export function validateProfile(raw = {}, { required = [] } = {}) {
   const errors = {};
   for (const [field, { min, max }] of Object.entries(FIELD_CONSTRAINTS)) {
     const value = raw[field];
-    if (isBlank(value)) continue; // untouched optional field -> default later
+    if (isBlank(value)) {
+      if (required.includes(field)) errors[field] = tp("Enter a number.", {});
+      continue; // untouched optional field -> default later
+    }
     const num = Number(value);
     if (!Number.isFinite(num)) {
       errors[field] = tp("Enter a number.", {});

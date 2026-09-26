@@ -42,10 +42,17 @@ function fromBase64Url(b64url) {
   return new TextDecoder().decode(bytes);
 }
 
+// The name cut to NAME_MAX_LENGTH characters, counted as the reader counts
+// them. String#slice counts UTF-16 units, so an emoji straddling the 20th cut
+// in half and left a broken glyph at the end of the name.
+function clipName(name) {
+  return Array.from(name).slice(0, NAME_MAX_LENGTH).join("");
+}
+
 export function encodeComparisonCode(state) {
   const payload = {
     v: 2,
-    n: String(state.profile.name || "Guest").trim().slice(0, NAME_MAX_LENGTH) || "Guest",
+    n: clipName(String(state.profile.name || "Guest").trim()) || "Guest",
     a: ASPECT_ORDER.map(key => Math.round(Math.max(0, Math.min(100, (state.aspects || {})[key] || 0))))
   };
   return CODE_PREFIX + toBase64Url(JSON.stringify(payload));
@@ -68,7 +75,7 @@ export function decodeComparisonCode(code) {
   if (!payload || (payload.v !== 1 && payload.v !== 2)) {
     throw new Error(t("Unsupported comparison code version."));
   }
-  const name = typeof payload.n === "string" ? payload.n.trim().slice(0, NAME_MAX_LENGTH) : "";
+  const name = typeof payload.n === "string" ? clipName(payload.n.trim()) : "";
   const aspects = payload.a;
   if (!name) throw new Error(t("Comparison code is missing a name."));
   if (!Array.isArray(aspects) || aspects.length !== ASPECT_COUNT

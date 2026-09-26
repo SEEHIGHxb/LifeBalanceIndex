@@ -210,6 +210,15 @@ test("submitWeeklyReview writes measured quantities into the profile and marks t
   assert.equal(record.week, m.state.reviews[0].week);
 });
 
+test("a blank box in the review is not recorded as zero", () => {
+  const m = onboardedManager();
+  m.state.baseline.date = daysAgo(8);
+  const sleepBefore = m.state.profile.sleepHours;
+  const record = m.submitWeeklyReview({ sleepHours: "", waterLiters: "  ", vegetablePortions: 4 });
+  assert.equal(m.state.profile.sleepHours, sleepBefore, "Number(\"\") is 0; a cleared box must not mean no sleep");
+  assert.deepEqual(record.inputs, { vegetablePortions: 4 });
+});
+
 test("submitWeeklyReview range-clamps absurd inputs and drops non-numeric ones", () => {
   const m = onboardedManager();
   m.state.baseline.date = daysAgo(8);

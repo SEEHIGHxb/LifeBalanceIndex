@@ -309,6 +309,18 @@ try {
   if (!ageStopped.error || !ageStopped.stayed) problems.push(`flow1: an age of 150 was not stopped at Next (${JSON.stringify(ageStopped)})`);
   await page.fill("#onb-age", "15");
 
+  // Enter in a box presses this screen's Next. The browser's own Enter
+  // submitted the whole form, which jumped ahead to the first blank screen.
+  await page.press("#onb-age", "Enter");
+  const afterEnter = await page.evaluate(() => ({
+    step: document.getElementById("onboarding-form").dataset.step,
+    error: document.getElementById("onboarding-error")?.classList.contains("d-none") === false
+  }));
+  if (afterEnter.step !== "1" || afterEnter.error) problems.push(`flow1: Enter in the age box did not act as Next (${JSON.stringify(afterEnter)})`);
+  // The screen is saved with the draft, so a reload would come back here.
+  const draftStep = await page.evaluate(() => JSON.parse(localStorage.getItem("lifequest_draft_onboarding") || "{}").step);
+  if (draftStep !== 1) problems.push(`flow1: moving to screen 1 saved the draft at step ${draftStep}`);
+
   // Walk every screen to the last one, then submit.
   //
   // THE SCREEN COUNT IS DELIBERATELY NOT WRITTEN DOWN HERE. This loop used to
@@ -404,6 +416,40 @@ try {
   }));
   if (kept.step !== "rv-step-1") problems.push(`flow2: a language switch moved the review from rv-step-1 to ${kept.step}`);
   if (kept.days !== "5") problems.push(`flow2: a language switch dropped a typed review answer (5 -> ${kept.days})`);
+
+  // A cleared box is refused, not saved as 0.
+  await page.fill("#rev-weeklyVigorousMins", "");
+  await page.click(".rv-step:not(.d-none) .rv-next");
+  const blank = await page.evaluate(() => ({
+    step: document.querySelector(".rv-step:not(.d-none)")?.id,
+    error: document.getElementById("rev-weeklyVigorousMins-err")?.textContent || ""
+  }));
+  if (blank.step !== "rv-step-1" || !blank.error) problems.push(`flow2: a blank review box was let through (${JSON.stringify(blank)})`);
+  await page.fill("#rev-weeklyVigorousMins", "30");
+
+  // A reload keeps the typed numbers and the screen, and says so.
+  await page.reload({ waitUntil: "networkidle" });
+  await page.waitForSelector("#weekly-review-form", { timeout: 10000 });
+  const resumed = await page.evaluate(() => ({
+    step: document.querySelector(".rv-step:not(.d-none)")?.id,
+    days: document.getElementById("rev-weeklyVigorousDays")?.value,
+    banner: !document.getElementById("rv-resume").classList.contains("d-none")
+  }));
+  if (resumed.step !== "rv-step-1" || resumed.days !== "5" || !resumed.banner) {
+    problems.push(`flow2: a reload lost the half-done review (${JSON.stringify(resumed)})`);
+  }
+
+  // Enter in a box goes to the next screen; it used to submit the review.
+  await page.press("#rev-weeklyVigorousDays", "Enter");
+  for (let t = 0; t < 60 && await page.evaluate(() => !!document.querySelector(".rv-wipe.on") || !document.querySelector("#rv-step-2:not(.d-none)")); t++) {
+    await page.waitForTimeout(50);
+  }
+  const entered = await page.evaluate(() => ({
+    step: document.querySelector(".rv-step:not(.d-none)")?.id,
+    reviews: (JSON.parse(localStorage.getItem("lifequest_state")).reviews || []).length
+  }));
+  if (entered.step !== "rv-step-2" || entered.reviews) problems.push(`flow2: Enter in a review box did not act as Next (${JSON.stringify(entered)})`);
+  await page.click(".rv-step:not(.d-none) .rv-back");
   await page.click(".rv-step:not(.d-none) .rv-back");
 
   // The form is prefilled; only touch what changed this week.
@@ -448,6 +494,43 @@ try {
   }
 } catch (err) {
   problems.push(`flow2 (weekly review): ${err.message}`);
+}
+
+// --- FLOW 2b: the pages that used to take a wrong answer without a word ---
+try {
+  if (await page.evaluate(() => localStorage.getItem("lifequest_draft_review"))) {
+    problems.push("flow2b: the review's draft outlived the review it was for");
+  }
+
+  // The Re-assessment, opened by hand before one is due, asks nothing.
+  await page.goto(`${BASE}/#/checkin`);
+  await page.waitForSelector(".checkin-view", { timeout: 10000 });
+  const checkin = await page.evaluate(() => ({
+    form: !!document.getElementById("checkin-form"),
+    text: document.querySelector(".checkin-view").textContent
+  }));
+  if (checkin.form || !/next re-assessment opens on/i.test(checkin.text)) {
+    problems.push(`flow2b: a Re-assessment that is not due still asked its questions (${JSON.stringify(checkin).slice(0, 120)})`);
+  }
+
+  // Goals: a blank target is refused with a message, not turned into 3.
+  await goTo("quests");
+  const pledgesBefore = (await readState()).goals.length;
+  const id = await page.evaluate(() => document.querySelector(".cat[data-template]")?.dataset.template);
+  await page.fill(`#cat-${id}`, "");
+  await page.click(`[data-add="${id}"]`);
+  const goal = await page.evaluate((i) => document.getElementById(`cat-err-${i}`)?.textContent || "", id);
+  if (!goal || (await readState()).goals.length !== pledgesBefore) problems.push(`flow2b: a blank pledge target was accepted (${goal})`);
+
+  // Side by Side: your own code is refused.
+  await goTo("leaderboard");
+  const mine = await page.inputValue("#my-comparison-code");
+  await page.fill("#friend-code", mine);
+  await page.press("#friend-code", "Enter");
+  const own = await page.evaluate(() => document.getElementById("friend-error")?.textContent || "");
+  if (!/your own code/i.test(own) || (await readState()).friends.length) problems.push(`flow2b: your own comparison code was accepted (${own})`);
+} catch (err) {
+  problems.push(`flow2b (refused answers): ${err.message}`);
 }
 
 // --- FLOW 3: EN -> TH language toggle persists across reload ---

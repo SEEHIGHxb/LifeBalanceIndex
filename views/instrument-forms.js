@@ -250,16 +250,19 @@ export function validateScope(scopeEl) {
 
   // 4. A number box with no FIELD_CONSTRAINTS key (the journey's age) is held
   //    to its own min/max. The forms are novalidate, so without this nothing
-  //    would: age 150 was saved as 100 without a word.
+  //    would: age 150 was saved as 100 without a word. With no `step` the box
+  //    takes whole numbers only, as a browser would hold it: 30.7 became 31.
   scopeEl.querySelectorAll('input[type="number"]:not([data-field])').forEach(inp => {
     if (isConditionallyHidden(inp) || String(inp.value).trim() === "") return;
     const num = Number(inp.value);
     const min = inp.min === "" ? -Infinity : Number(inp.min);
     const max = inp.max === "" ? Infinity : Number(inp.max);
-    if (Number.isFinite(num) && num >= min && num <= max) return;
-    const message = Number.isFinite(num)
-      ? tp("Enter a value between {min} and {max}.", { min: inp.min, max: inp.max })
-      : tp("Enter a number.", {});
+    const inRange = Number.isFinite(num) && num >= min && num <= max;
+    const whole = Boolean(inp.step) || Number.isInteger(num);
+    if (inRange && whole) return;
+    const message = !Number.isFinite(num) ? tp("Enter a number.", {})
+      : !inRange ? tp("Enter a value between {min} and {max}.", { min: inp.min, max: inp.max })
+      : t("Enter a whole number.");
     setError(inp.parentElement.querySelector(".field-error"), message, inp);
     inp.classList.add("input-invalid");
     fail(inp);

@@ -38,7 +38,13 @@ import { typedMarkup, typeIn, settleIn, burst, onAbort, SPRITES, isQuietChapter 
 import { label } from "./stage-page.js";
 import { chapterOf, dotDate, shiftSummary, starThumb, newsRow } from "./news.js";
 import { animate, easeStar, isReduced } from "../motion.js";
-import { carriedStep } from "./lang-carry.js";
+import { carriedStep, isCarrying } from "./lang-carry.js";
+import { applyDraft, saveDraft, clearDraft, readDraft } from "../draft.js";
+
+// The review's half-typed answers survive a reload under this draft name, for
+// the week they were typed in only: last week's unfinished numbers are not
+// this week's answers.
+const DRAFT_KEY = "review";
 
 // Form ids are "rev-<profileField>" so errors from validateProfile (keyed by
 // field name) map straight onto the numberField error spans.
@@ -269,6 +275,9 @@ function formMarkup(state) {
     ${connectionBanner(conn, state.profile)}`;
   return `
     <div class="journey review">
+      <div id="rv-resume" class="onb-resume d-none">
+        <span>${t("Picked up where you left off. Your answers were saved on this device.")}</span>
+      </div>
       <form id="weekly-review-form" novalidate>
         ${STEPS.map((step, i) => stepMarkup(step, i, box, intro)).join("")}
       </form>
@@ -402,7 +411,7 @@ export function renderReview(containerId, state, onComplete) {
   // Returns the first field in error on this screen, or null.
   const checkStep = (i) => {
     const { fields } = STEPS[i];
-    const { errors } = validateProfile(readFields(fields));
+    const { errors } = validateProfile(readFields(fields), { required: fields });
     for (const field of fields) {
       const input = document.getElementById(FIELD_IDS[field]);
       const span = document.getElementById(`${FIELD_IDS[field]}-err`);
@@ -415,14 +424,20 @@ export function renderReview(containerId, state, onComplete) {
     return bad;
   };
 
+  const week = isoWeekKey(new Date());
+  const save = () => saveDraft(DRAFT_KEY, form, { week, step: current });
+
   // Focus follows the screen, so a screen-reader user hears where they are.
   // Under a wipe the arrival shares the wipe's scope: a fresh mount here would
   // abort the wipe before its second half.
-  const land = (i, { forward, signal = null }) => {
+  const land =(i, { forward, signal = null }) => {
     current = i;
     // Published for views/lang-carry.js: a language switch re-renders the
     // review, and without this it came back on the first screen.
     form.dataset.step = String(i);
+    // The screen is part of the draft, so a reload comes back to it. saveDraft
+    // writes nothing until a box holds something, and every box is prefilled.
+    save();
     STEPS.forEach((_, k) => page(k).classList.toggle("d-none", k !== i));
     scrollIntoViewGently(container, { block: "start" });
     page(i).querySelector(".q-title")?.focus({ preventScroll: true });
@@ -446,9 +461,25 @@ export function renderReview(containerId, state, onComplete) {
       .finally(() => { busy = false; });
   };
 
-  // Back on the screen the reader was on when they switched language. Not
-  // announced as an arrival: focus stays with the language button.
-  const carried = carriedStep("weekly-review-form");
+  // A draft from this week puts the typed numbers back over the prefills; one
+  // from an earlier week is dropped. Only when the draft was actually saved
+  // mid-review does it say so: after a language switch the reader never left.
+  const draft = readDraft(DRAFT_KEY);
+  let draftStep = null;
+  if (draft && draft.week !== week) clearDraft(DRAFT_KEY);
+  else if (draft) {
+    const restored = applyDraft(DRAFT_KEY, form);
+    if (restored) {
+      draftStep = Number.isInteger(restored.step) ? restored.step : null;
+      if (!isCarrying()) document.getElementById("rv-resume")?.classList.remove("d-none");
+    }
+  }
+  form.addEventListener("input", save);
+  form.addEventListener("change", save);
+
+  // Back on the screen the reader was on when they switched language, or when
+  // the draft was saved. Not announced as an arrival: focus stays put.
+  const carried = carriedStep("weekly-review-form") ?? draftStep;
   if (carried !== null && carried > 0 && carried < STEPS.length) {
     current = carried;
     form.dataset.step = String(carried);
@@ -469,16 +500,31 @@ export function renderReview(containerId, state, onComplete) {
     playEnding(ending, scope.signal).catch(reportMotion);
   };
 
+  const next = () => {
+    const bad = checkStep(current);
+    if (bad) document.getElementById(FIELD_IDS[bad])?.focus();
+    else goForward(current + 1);
+  };
+
   form.addEventListener("click", (e) => {
     if (busy) return;
     if (e.target.closest(".rv-next")) {
-      const bad = checkStep(current);
-      if (bad) document.getElementById(FIELD_IDS[bad])?.focus();
-      else goForward(current + 1);
+      next();
     } else if (e.target.closest(".rv-back")) {
       hideError();
       land(current - 1, { forward: false });
     }
+  });
+
+  // Enter in a box moves to the next screen, as the Next button would. Left to
+  // the browser it submitted the whole review from the first screen, with
+  // every later screen's prefills unseen.
+  form.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" || !e.target.matches("input")) return;
+    e.preventDefault();
+    if (busy) return;
+    if (current < STEPS.length - 1) next();
+    else form.requestSubmit();
   });
 
   form.addEventListener("submit", (e) => {
@@ -501,11 +547,14 @@ export function renderReview(containerId, state, onComplete) {
     // always have. Income is not a weekly-review field, so it comes from the
     // saved profile.
     inputs.savingsRate = savingsRateFrom(inputs.monthlySavings, stateManager.state.profile.income);
-    if (!validateProfile(inputs).ok) {
+    if (!validateProfile(inputs, { required: REVIEW_FIELDS }).ok) {
       showError(t("Please fix the highlighted fields before continuing."));
       return;
     }
     const record = stateManager.submitWeeklyReview(inputs);
+    // Recorded, or refused because this week already was: either way the
+    // draft is spent. A save the storage rejected keeps it for another try.
+    if (!record || record.persisted !== false) clearDraft(DRAFT_KEY);
     // Already recorded this week, or the save was refused: nothing to
     // celebrate, and the app says why (a toast, or the storage warning).
     if (!record || record.persisted === false) {

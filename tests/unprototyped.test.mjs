@@ -17,6 +17,9 @@ beforeEach(() => { dom = installDom(); });
 installDom();
 const { renderCheckin, renderDeepAssessment } = await import("../views/assessments.js");
 const { DEEP_SECTIONS } = await import("../surveys.js");
+const { stateManager } = await import("../state.js");
+// The Re-assessment's questions are drawn only once one is due.
+stateManager.isCheckinDue = () => true;
 
 const STATE = { ...DEFAULT_STATE, onboarded: true, profile: { ...DEFAULT_STATE.profile, relationshipStatus: "Single" } };
 const html = () => dom.html[MAIN] || "";
@@ -98,4 +101,21 @@ test("every screen is full-bleed and the old frame's styles are gone", () => {
   for (const dead of ["body.bleed", ".onboarding-container", ".aspect-back", ".radar-legend", ".sbs-table", ".deep-section-head"]) {
     assert.ok(!css.includes(dead), `index.css still styles ${dead}`);
   }
+});
+
+test("a Re-assessment opened before one is due says when it opens and asks nothing", () => {
+  stateManager.isCheckinDue = () => false;
+  const nextCheckinDate = stateManager.nextCheckinDate;
+  stateManager.nextCheckinDate = () => new Date("2026-10-24T00:00:00.000Z");
+  try {
+    renderCheckin(MAIN, STATE, () => {});
+  } finally {
+    stateManager.isCheckinDue = () => true;
+    stateManager.nextCheckinDate = nextCheckinDate;
+  }
+  const out = html();
+  // The date is in the reader's locale ("24 Oct" or "Oct 24").
+  assert.match(out, /The next re-assessment opens on [^<]*24[^<]*\./);
+  assert.doesNotMatch(out, /<form|name="who5-q0"/, "no questions to answer for nothing");
+  assert.match(out, /href="#\/dashboard"/);
 });

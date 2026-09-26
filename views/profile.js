@@ -318,10 +318,13 @@ export function renderProfile(containerId, state, onSaved) {
     });
     Object.assign(errors, numErrors);
 
-    // Age isn't a FIELD_CONSTRAINTS key — bound it explicitly.
+    // Age isn't a FIELD_CONSTRAINTS key — bound it explicitly. Whole years
+    // only: 30.7 used to be saved as 31, and the level moved with it.
     const ageNum = Number(val("pf-age"));
     if (!Number.isFinite(ageNum) || ageNum < AGE_MIN || ageNum > AGE_MAX) {
       errors.age = tp("Enter a value between {min} and {max}.", { min: AGE_MIN, max: AGE_MAX });
+    } else if (!Number.isInteger(ageNum)) {
+      errors.age = t("Enter a whole number.");
     }
 
     // Birthday: both-or-neither, and a real calendar date. Blank keeps the

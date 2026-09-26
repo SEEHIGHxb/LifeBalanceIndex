@@ -7,7 +7,7 @@
 import { stateManager } from "../state.js";
 import { DEEP_SECTIONS, deepSectionInstruments, deepAskIndices } from "../surveys.js";
 import { isAspectDeepVerified } from "../aspects.js";
-import { t } from "../i18n.js";
+import { t, tp, dateLocale } from "../i18n.js";
 import {
   instrumentBlock, collectInstrument,
   deepInstrumentBlock, collectDeepInstrument,
@@ -44,6 +44,23 @@ function assessPanel(aspect, inner, { id = "", sideExtra = "" } = {}) {
 export function renderCheckin(containerId, state, onComplete) {
   const container = document.getElementById(containerId);
   if (!container) return;
+
+  // Opened by hand before one is due: say when it opens, and ask nothing.
+  // state.js refuses the submission anyway; this saves answering for nothing.
+  if (!stateManager.isCheckinDue()) {
+    const next = stateManager.nextCheckinDate();
+    const line = next
+      ? tp("The next re-assessment opens on {date}.", {
+          date: next.toLocaleDateString(dateLocale(), { day: "numeric", month: "short" })
+        })
+      : t("Re-assessment needs a baseline — complete the initial assessment first.");
+    container.innerHTML = `
+      <div class="stage-page textpage assess checkin-view">
+        ${pageHead(t("Re-assessment"), [escapeHtml(line)])}
+        <p class="rv-done-links"><a class="pill" href="#/dashboard">${t("See Home")}</a></p>
+      </div>`;
+    return;
+  }
 
   const isCoupled = state.profile.relationshipStatus !== "Single";
   // The seven instruments, grouped by the aspect each one re-scores.
@@ -203,6 +220,7 @@ export function renderDeepAssessment(containerId, state, onComplete, onRunwaySav
       ${done ? `<p class="deep-done-note">${t("Completed — this aspect's score is verified. You can redo it to update.")}</p>` : ""}
       <form class="deep-form" data-aspect="${section.aspect}" data-keys="${keys.join(",")}">
         ${keys.map(k => deepInstrumentBlock(k, deepAskIndices(k, state.baseline))).join("")}
+        <p class="onboarding-error deep-form-error d-none" role="alert"></p>
         <div class="assess-submit">
           <button type="submit" class="pill">${done ? t("Update this section") : t("Save this section")}</button>
         </div>
@@ -270,7 +288,10 @@ export function renderDeepAssessment(containerId, state, onComplete, onRunwaySav
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const errorEl = document.getElementById("deep-error");
+      // The section's own message, beside its Save button. The page-wide one
+      // sat under the last section, out of sight of whoever pressed Save on
+      // the first.
+      const errorEl = form.querySelector(".deep-form-error");
       errorEl.classList.add("d-none");
       const invalid = validateScope(form);
       if (invalid) {
@@ -288,12 +309,15 @@ export function renderDeepAssessment(containerId, state, onComplete, onRunwaySav
         // reconstruct the full-length sum.
         keys.forEach(k => { deepData[k] = collectDeepInstrument(k, deepAskIndices(k, state.baseline)); });
         const result = stateManager.submitDeepAssessment(aspect, deepData);
-        clearDraft(draftKey);
         if (result && result.flagged) {
+          // The answers are kept: the reader is asked to change some and save
+          // again, which a cleared draft would lose on the next reload.
           errorEl.textContent = t("Some answers all sat on the same option, so that questionnaire was not counted. Vary your answers to reflect your real experience and save again.");
           errorEl.classList.remove("d-none");
+          scrollIntoViewGently(errorEl, { block: "center" });
           return;
         }
+        clearDraft(draftKey);
         onComplete(aspect, result);
       } catch (err) {
         console.error("Deep assessment submission failed:", err);

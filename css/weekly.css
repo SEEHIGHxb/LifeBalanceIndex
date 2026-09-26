@@ -78,6 +78,8 @@
 .criteria-card + .aspect-more { margin-top: 0; }
 .aspect-more summary {
   display: list-item;
+  min-height: 44px;
+  box-sizing: border-box;
   padding: 10px 0;
   font-weight: 700;
   font-size: max(15px, calc(24 * var(--px)));

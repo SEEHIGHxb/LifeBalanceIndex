@@ -106,6 +106,10 @@ const CHECKIN_INSTRUMENTS = [
 
 test("the monthly check-in carries every instrument it re-scores", async () => {
   const { renderCheckin } = await import("../views/assessments.js");
+  // Its questions are drawn only once one is due; the next test's render
+  // leans on this too.
+  const { stateManager } = await import("../state.js");
+  stateManager.isCheckinDue = () => true;
   const html = render(() => renderCheckin(MAIN, STATE, () => {}));
 
   for (const { key, feeds } of CHECKIN_INSTRUMENTS) {

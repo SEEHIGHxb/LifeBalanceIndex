@@ -45,6 +45,11 @@ const scoresOf = (aspects) => CHAPTERS.map(c => Number((aspects || {})[c.aspect]
 const AVERAGES = CHAPTERS.map(c => AVERAGE_ASPECT_SCORES[c.aspect]);
 const clearsAverage = (aspects, key) => Number((aspects || {})[key]) >= AVERAGE_ASPECT_SCORES[key];
 
+// Two snapshots are the same person at the same moment: the name as the roster
+// matches it (ignoring case) and every aspect score.
+const sameSnapshot = (a, b) => a.name.toLowerCase() === b.name.toLowerCase()
+  && ASPECT_KEYS.every(key => Number((a.aspects || {})[key]) === Number((b.aspects || {})[key]));
+
 // The one genuinely useful thing a peer tells you that the population cannot:
 // which aspects they have cleared that you have not. Framed as something to
 // learn from, never as a deficit — no "they beat you", no count, no total.
@@ -270,6 +275,13 @@ export function renderLeaderboard(containerId, state, onRefresh, view = {}) {
     const errorEl = document.getElementById("friend-error");
     try {
       const friend = decodeComparisonCode(input.value);
+      // Your own code would put you beside yourself, and a friend's code that
+      // is already on the list, unchanged, would do nothing: both used to pass
+      // without a word. A newer code from a friend still updates them.
+      const own = decodeComparisonCode(encodeComparisonCode(state));
+      if (sameSnapshot(friend, own)) throw new Error(t("That's your own code. Paste the code a friend sent you."));
+      const listed = (stateManager.state.friends || []).find(f => sameSnapshot(f, friend));
+      if (listed) throw new Error(tp("{name} is already on your list with these scores.", { name: friend.name }));
       const result = stateManager.addFriend(friend);
       if (!result.ok) throw new Error(result.reason);
       const at = stateManager.state.friends.findIndex(f => f.id === result.friend.id);

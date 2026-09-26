@@ -77,6 +77,17 @@ function pledgeCard(goal, k, confirming) {
 }
 
 // One row per pledge type you do not have yet: what it is, its target box and
+// What is wrong with a typed target, or "" when nothing is. A blank box used
+// to become the template's default and an out-of-range one its nearest bound,
+// both without a word; now the reader is told and picks the number.
+function targetProblem(id, value) {
+  const { min, max } = goalTemplate(id);
+  const n = Number(value);
+  if (String(value).trim() === "" || !Number.isFinite(n)) return tp("Enter a number.", {});
+  if (n < min || n > max) return tp("Enter a value between {min} and {max}.", { min, max });
+  return "";
+}
+
 // Add. A full list leaves every row there but disabled, so the reader can
 // still see what there is.
 function catalogRow(id, k, full) {
@@ -242,7 +253,8 @@ export function renderQuests(containerId, state, view = {}) {
     const { add, pledgeId, confirmRemove, cancelRemove } = button.dataset;
     if (add) {
       const input = root.querySelector(`#cat-${add}`);
-      const result = stateManager.addPledge(add, parseFloat(input.value));
+      const problem = targetProblem(add, input.value);
+      const result = problem ? { ok: false, reason: problem } : stateManager.addPledge(add, Number(input.value));
       if (!result.ok) {
         const err = root.querySelector(`#cat-err-${add}`);
         err.classList.remove("d-none");

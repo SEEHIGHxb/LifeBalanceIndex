@@ -29,6 +29,9 @@ function calibratedManager(overrides = {}) {
   m.state.baseline = { ...BASELINE, ...(overrides.baseline || {}) };
   m.state.profile = { ...m.state.profile, ...(overrides.profile || {}) };
   m.state.aspects = { ...m.state.aspects, ...(overrides.aspects || {}) };
+  // A second manager in one test loads the first one's save; its check-in
+  // would make this one's not due yet.
+  m.state.checkins = [];
   return m;
 }
 
@@ -99,4 +102,15 @@ test("coupled users recalibrate relationships with the fresh RAS reading", () =>
   // target = 0.4*56.7 + 0.3*100 + 0.3*100 = 82.7 -> shift capped +15
   assert.equal(shifts.relationships, 15);
   assert.equal(m.state.baseline.ras, 15, "fresh RAS sum stored");
+});
+
+test("a re-assessment that is not due is refused, so its points cannot be farmed", () => {
+  const answers = { who5: [3, 3, 3, 3, 3], st5: [0, 0, 0, 0, 0], ucla: [1, 1, 1], gse: [3, 3, 3, 3, 3, 3] };
+  const m = calibratedManager();
+  assert.ok(m.submitCheckin(structuredClone(answers)), "the first one, due, is taken");
+  assert.equal(m.submitCheckin(structuredClone(answers)), null, "the same again straight away is refused");
+  assert.equal(m.state.checkins.length, 1);
+  assert.equal(m.state.profile.season.earnedXp, 40, "+40 once, not twice");
+  const next = m.nextCheckinDate();
+  assert.equal(Math.round((next - new Date(m.state.checkins[0].date)) / 86400000), 28);
 });

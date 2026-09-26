@@ -34,8 +34,24 @@ test("out-of-range values are rejected on the right fields", () => {
   assert.ok(errors.income, "negative income flagged");
   assert.ok(errors.savingsRate, "over-100% savings rate flagged");
   // Message carries the boundary values so the user knows the range.
-  assert.match(errors.weight, /20/);
-  assert.match(errors.weight, /400/);
+  assert.match(errors.weight, /25/);
+  assert.match(errors.weight, /300/);
+});
+
+test("the check holds each box to the range the form prints beside it", () => {
+  // The owner chose the page's ranges (2026-09-26); these were looser here.
+  const { errors } = validateProfile({ height: 90, sleepHours: 20, weeklyWalkingMins: 700, vegetablePortions: 20 });
+  assert.match(errors.height, /100 and 250/);
+  assert.match(errors.sleepHours, /0 and 16/);
+  assert.match(errors.weeklyWalkingMins, /0 and 600/);
+  assert.match(errors.vegetablePortions, /0 and 15/);
+});
+
+test("a required box may not be left blank, and an optional one still may", () => {
+  const { errors } = validateProfile({ sleepHours: "", waterLiters: "  ", monthlyDonations: "" }, { required: ["sleepHours", "waterLiters"] });
+  assert.match(errors.sleepHours, /number/i, "a cleared sleep box is not 0 hours");
+  assert.match(errors.waterLiters, /number/i);
+  assert.equal(errors.monthlyDonations, undefined, "not required, so a blank passes");
 });
 
 test("boundary values are inclusive (min and max both pass)", () => {

@@ -445,6 +445,9 @@ export function renderOnboarding(containerId, onComplete) {
       hideError();
       const target = nextVisible(index, 1);
       if (target !== null) showScreen(target);
+      // The screen is saved with the draft, not only the answers: a reload
+      // used to come back to the last screen something was typed on.
+      save();
     });
   });
   container.querySelectorAll(".btn-onb-prev").forEach(btn => {
@@ -452,7 +455,19 @@ export function renderOnboarding(containerId, onComplete) {
       hideError();
       const target = nextVisible(parseInt(btn.dataset.screen), -1);
       if (target !== null) showScreen(target);
+      save();
     });
+  });
+
+  // Enter in a box presses this screen's Next, as it reads. Left to the
+  // browser it submitted the whole form, which jumped to the first unanswered
+  // screen ahead with "answer every question" before the reader got there.
+  form.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" || !e.target.matches("input")) return;
+    e.preventDefault();
+    const next = pageEl(currentScreen).querySelector(".btn-onb-next");
+    if (next) next.click();
+    else form.requestSubmit();
   });
 
   relationshipSelect.addEventListener("change", () => {

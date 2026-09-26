@@ -743,6 +743,10 @@ html {
   color: var(--color-navy);
   font-weight: 600;
 }
+/* A fold's header is a thumb's 44px on a touchscreen (WCAG 2.5.5). */
+@media (pointer: coarse) {
+  .benchmark-sources summary { min-height: 44px; padding-block: 10px; box-sizing: border-box; }
+}
 
 .benchmark-sources ul {
   margin: 6px 0 0 18px;
@@ -965,7 +969,7 @@ html {
   top: -60px;
   left: 8px;
   z-index: 1300;
-  padding: 10px 16px;
+  padding: 11px 16px;
   background: var(--color-navy);
   color: #ffffff;
   border-radius: var(--radius);

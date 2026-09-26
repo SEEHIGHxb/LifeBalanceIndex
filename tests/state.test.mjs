@@ -404,6 +404,8 @@ test("a re-assessment upgrades survey confidence from estimated to high (Phase 3
   });
   assert.equal(getAspectConfidence(m.state, "mental").tier, "estimated", "starts estimated");
 
+  // A re-assessment is only taken once one is due.
+  m.state.baseline.date = new Date(Date.now() - 30 * 86400000).toISOString();
   m.submitCheckin({
     who5: [4, 4, 4, 4, 4], st5: [0, 0, 0, 0, 0], ucla: [1, 1, 1], ras: null, gse: [4, 4, 4, 4, 4, 4]
   });

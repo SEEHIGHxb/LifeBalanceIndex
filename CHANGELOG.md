@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `109`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `110`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,48 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.52.4] — 2026-09-26 (APP_VERSION 110)
+
+### Fixed
+- **A cleared Weekly Review box was saved as 0.** A blank (or letters, which
+  a number box hands over as blank) became `Number("") === 0`, so clearing
+  the sleep box recorded no sleep. Every review box is now required, and
+  `submitWeeklyReview` skips a blank as a backstop.
+- **Enter submitted the whole form.** In the journey it jumped ahead to the
+  first unanswered screen with "answer every question"; in the Weekly Review
+  it submitted every screen from the first. Enter in a box now presses that
+  screen's Next.
+- **The Re-assessment could be taken again and again,** +40 points each time,
+  by opening `#/checkin` by hand. Before one is due the page now says when it
+  opens and asks nothing, and `submitCheckin` refuses it.
+- **The Weekly Review lost everything on a reload.** It now keeps a draft,
+  for the week it was typed in, with the screen you were on.
+- **The journey resumed on the wrong screen.** Its draft saved the screen
+  only when something was typed; it now saves it on Next and Back too.
+- **A blank pledge target silently became the default** (and an out-of-range
+  one its nearest bound). Goals now says what is wrong.
+- **Side by Side accepted your own code,** and re-adding a friend with the
+  same scores did nothing without a word. Both now say so.
+- **An emoji at the 20th character of a name was cut in half** in comparison
+  codes. Names are now cut by characters, not UTF-16 units.
+- **Profile took an age of 30.7 and saved 31** (the level moved with it).
+  Age is whole years, in Profile and in the journey.
+- **The in-depth assessment's messages sat at the bottom of the page,** out
+  of sight of the section being saved, and a straight-lined section lost its
+  draft before being sent back. Each section now has its own message, and
+  keeps its answers until it is accepted.
+- **Tap targets under 44px** on touchscreens: the footer links, the source
+  folds and the skip link.
+
+### Changed
+- **The answer limits now match what each box prints beside it** (the
+  owner's choice): height 100-250 cm, weight 25-300 kg, sleep 0-16 h,
+  vegetables 0-15, water 0-10 L, exercise minutes 0-600, learning 0-80 h.
+  They were looser in `validation.js`, so Profile accepted a height of 90.
+
+### Needs review
+- Four new Thai strings in `th.js`, marked "v110, awaiting the owner's review".
 
 ## [2.52.3] — 2026-09-26 (APP_VERSION 109)
 

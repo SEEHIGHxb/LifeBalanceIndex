@@ -307,6 +307,11 @@ body.menu-open .wordmark a:focus-visible { outline-color: #ffffff; }
   color: var(--frame-ink);
   text-decoration: none;
 }
+/* On a touchscreen, a thumb's 44px (WCAG 2.5.5, Apple's HIG): 24px was the
+   minimum, and three links of it stacked are easy to miss-tap. */
+@media (pointer: coarse) {
+  .site-footer .footer-links a { min-height: 44px; }
+}
 .site-footer .footer-links a:hover { text-decoration: underline; text-underline-offset: 0.3em; }
 .site-footer .footer-links a:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
 .footer-meta {

@@ -155,3 +155,13 @@ test("removeFriend deletes by id and the roster caps at 50", () => {
   assert.equal(overflow.ok, false);
   assert.match(overflow.reason, /full/i);
 });
+
+test("a long name is cut by characters, never through the middle of an emoji", () => {
+  // 19 letters, then an emoji that is two UTF-16 units: slicing at 20 units
+  // used to keep half of it.
+  const name = "abcdefghijklmnopqrs\u{1F600}xyz";
+  const code = encodeComparisonCode({ profile: { name }, aspects: {} });
+  const decoded = decodeComparisonCode(code);
+  assert.equal(decoded.name, "abcdefghijklmnopqrs\u{1F600}");
+  assert.equal(decoded.name.isWellFormed(), true, "no lone surrogate left at the end");
+});

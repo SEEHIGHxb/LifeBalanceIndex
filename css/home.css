@@ -122,6 +122,10 @@
 .home-note,
 .home-sources { margin: calc(40 * var(--px)) 0 0; font-size: max(14px, calc(20 * var(--px))); line-height: 1.7; }
 .home-sources summary { cursor: pointer; font-weight: 700; }
+/* A thumb's 44px on a touchscreen (WCAG 2.5.5). */
+@media (pointer: coarse) {
+  .home-sources summary { min-height: 44px; padding-block: 10px; box-sizing: border-box; }
+}
 .home-sources ul { padding-left: 1.2em; }
 
 /* ------------------------------------------- where to start, and recent */

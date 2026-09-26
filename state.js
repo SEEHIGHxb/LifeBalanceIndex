@@ -602,8 +602,12 @@ export class GameStateManager {
     // Only the known weekly fields are read, only finite numbers land, and
     // the merged candidate profile is range-clamped before any math sees it.
     const submitted = {};
+    // A blank is not a zero: Number("") is 0, and a cleared sleep box used to
+    // record no sleep at all. The form refuses blanks; this is the backstop.
     for (const field of WEEKLY_REVIEW_FIELDS) {
-      const n = Number(inputs && inputs[field]);
+      const raw = inputs && inputs[field];
+      if (raw === undefined || raw === null || String(raw).trim() === "") continue;
+      const n = Number(raw);
       if (Number.isFinite(n)) submitted[field] = n;
     }
     const newProfile = sanitizeProfileFields({ ...p, ...submitted });
@@ -726,6 +730,12 @@ export class GameStateManager {
     return this.state.baseline ? this.state.baseline.date : null;
   }
 
+  // When the next re-assessment opens, for the page that says it is not due.
+  nextCheckinDate() {
+    const last = this.lastCalibrationDate();
+    return last ? new Date(new Date(last).getTime() + CHECKIN_INTERVAL_DAYS * 86400000) : null;
+  }
+
   isCheckinDue() {
     if (!this.state.onboarded || !this.state.baseline) return false;
     const last = this.lastCalibrationDate();
@@ -738,10 +748,12 @@ export class GameStateManager {
   // reviews since the last calibration. Shifts are capped at ±CHECKIN_MAX_SHIFT.
   // Targets come from the shared composites in scoring.js — the SAME functions
   // onboarding uses — so a check-in can never drift from the baseline formula.
+  // Refused until one is due, like a second weekly review: #/checkin could be
+  // opened by hand and submitted again and again, +40 points each time.
   submitCheckin(surveyData) {
     const p = this.state.profile;
     const b = this.state.baseline;
-    if (!b) return null;
+    if (!b || !this.isCheckinDue()) return null;
 
     const sums = {
       who5: rawSum(surveyData.who5),

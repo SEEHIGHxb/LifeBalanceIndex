@@ -277,9 +277,18 @@ export function criteriaCard(criteria) {
     .map(c => c.source)
     .filter(src => src && !seen.has(src.url) && seen.add(src.url));
 
+  // Folded (the owner, 2026-09-26: the caption alone ran six lines on a
+  // phone). The verdicts stay on the closed fold, beside the heading that
+  // says they are guideline checks, so a chip is not read as a rank. One chip
+  // per verdict with its count, in first-appearance order: five bare chips
+  // would repeat themselves without saying which check is which.
+  const counts = new Map();
+  for (const c of criteria) counts.set(c.status, (counts.get(c.status) || 0) + 1);
+  const verdicts = [...counts].map(([status, n]) =>
+    `<span class="criterion-chip criterion-chip-${escapeHtml(status)}">${escapeHtml(labels[status] || status)}${n > 1 ? ` ×${n}` : ""}</span>`).join(" ");
   return `
-    <div class="card criteria-card">
-      <h4 class="card-header">${t("Guideline checks")}</h4>
+    <details class="card criteria-card">
+      <summary><span class="card-header">${t("Guideline checks")}</span> ${verdicts}</summary>
       <p class="criteria-caption">${t("These compare you with published health guidelines, not with a population. A guideline states what a body needs, so it applies regardless of country — which is why these checks exist for aspects where no representative Thai norm does. They do not affect your score, grade or Balance Index.")}</p>
       <ul class="criteria-list">${rows}</ul>
       <div class="benchmark-sources">
@@ -290,7 +299,7 @@ export function criteriaCard(criteria) {
           </ul>
         </details>
       </div>
-    </div>`;
+    </details>`;
 }
 
 // Localized method tag for a benchmark ("vs published norms", …). Was a

@@ -42,24 +42,40 @@
 .aspect-page .gauge-summary { color: #444444; }
 .aspect-page .aspect-note { padding-left: calc(30 * var(--px)); border-left: 3px solid var(--frame-ink); }
 .aspect-page .aspect-note strong { color: inherit; }
-/* The guideline checks keep their rows but lose the old boxed card. */
+/* The guideline checks: a fold like the others, with their verdicts showing
+   on it while it is closed. No boxed card. */
 .aspect-page .criteria-card {
-  margin: calc(80 * var(--px)) 0 0;
+  margin: calc(40 * var(--px)) 0 0;
   padding: 0;
   border: 0;
   border-radius: 0;
   background: none;
   box-shadow: none;
 }
+.aspect-page .criteria-card > summary {
+  display: list-item;
+  padding: 10px 0;
+  cursor: pointer;
+  line-height: 1.9;
+}
+.aspect-page .criteria-card > summary:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+.aspect-page .criteria-card[open] > summary { margin-bottom: calc(24 * var(--px)); }
 .aspect-page .criteria-card .card-header {
-  margin: 0 0 calc(24 * var(--px));
-  font-size: max(16px, calc(30 * var(--px)));
+  display: inline;
+  margin: 0 8px 0 0;
+  padding: 0;
+  border: 0;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: max(15px, calc(24 * var(--px)));
   color: var(--frame-ink);
 }
+.aspect-page .criteria-card > summary .criterion-chip { display: inline-block; vertical-align: 1px; }
 .aspect-society .gauge-track { max-width: calc(1400 * var(--px)); }
 .aspect-page .criteria-card details { margin-top: calc(40 * var(--px)); font-size: max(14px, calc(22 * var(--px))); }
 /* The long explanations, one click away. */
 .aspect-more { margin-top: calc(40 * var(--px)); }
+.criteria-card + .aspect-more { margin-top: 0; }
 .aspect-more summary {
   display: list-item;
   padding: 10px 0;

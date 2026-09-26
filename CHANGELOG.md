@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `106`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `107`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.52.1] — 2026-09-26 (APP_VERSION 107)
+
+### Changed
+- **The guideline checks fold** on the aspect pages that have them (Physical,
+  Mental), at the owner's request: the closed fold shows "Guideline checks"
+  and one chip per verdict with its count ("Below guideline ×2"), so the
+  result is visible and cannot be read as a rank; the explanation, each
+  check and the sources open under it. Mental on a phone 2,510px → 2,130px,
+  Physical about 2,240px.
 
 ## [2.52.0] — 2026-09-26 (APP_VERSION 106)
 

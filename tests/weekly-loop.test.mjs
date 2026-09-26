@@ -114,6 +114,14 @@ test("an aspect page is compact: the emblem on the region's photograph, rows, an
   assert.match(out, /class="careers-row aspect-measured"/);
 });
 
+test("the guideline checks fold, with their verdicts showing while closed", () => {
+  renderAspectPage(MAIN, STATE, "mental");
+  const out = html();
+  assert.match(out, /<details class="card criteria-card">\s*<summary><span class="card-header">Guideline checks<\/span> <span class="criterion-chip criterion-chip-[a-z-]+">[^<]+<\/span>/);
+  assert.doesNotMatch(out, /<details class="card criteria-card" open/);
+  assert.ok(out.indexOf("criteria-caption") > out.indexOf("</summary>", out.indexOf("criteria-card")), "the caption is inside the fold");
+});
+
 test("an aspect with no grade keeps the reason open, not folded", () => {
   renderAspectPage(MAIN, STATE, "relationships");
   const open = html().split('<details class="aspect-more">')[0];

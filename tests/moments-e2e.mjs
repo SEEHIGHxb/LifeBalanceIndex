@@ -393,7 +393,7 @@ try {
   await finishJourney(page, { last: ["who5"] });
 
   // An aspect page: its emblem bursts its region's motifs and comes home.
-  await openHash(page, "#/aspect/physical", ".aspect-page .hero .mark img");
+  await openHash(page, "#/aspect/physical", ".aspect-page .page-top .mark img");
   await page.click(".aspect-page .mark-hit");
   await advance(page, FRAME_MS * 3);
   const tapped = await pieceState(page, ".aspect-page");
@@ -402,7 +402,7 @@ try {
   const rested = await pieceState(page, ".aspect-page");
   if (rested.particles || rested.styled.length) problems.push(`aspect: the emblem did not come home (${rested.styled.join(" | ")})`);
   // A quiet region's page is still.
-  await openHash(page, "#/aspect/relationships", ".aspect-page .hero .mark img");
+  await openHash(page, "#/aspect/relationships", ".aspect-page .page-top .mark img");
   await page.click(".aspect-page .mark-hit");
   await advance(page, 400);
   const hush = await pieceState(page, ".aspect-page");

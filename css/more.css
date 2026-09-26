@@ -57,7 +57,19 @@
 .code-row { display: flex; gap: 12px; align-items: center; }
 .stage-page .code-input { flex: 1; min-width: 0; font-family: ui-monospace, Consolas, monospace; font-size: 14px; }
 
-.duo { padding: calc(170 * var(--px)) 0 calc(200 * var(--px)); }
+.stage-page .codes-fold summary {
+  display: list-item;
+  padding: 10px 0;
+  font-weight: 700;
+  font-size: max(15px, calc(24 * var(--px)));
+  cursor: pointer;
+}
+.stage-page .codes-fold summary:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+.stage-page .codes-fold[open] summary { margin-bottom: calc(30 * var(--px)); }
+.stage-page .codes p { font-size: max(15px, calc(24 * var(--px))); margin-bottom: 0; }
+.stage-page .compare-learn p { margin: 0 0 calc(30 * var(--px)); font-size: max(15px, calc(26 * var(--px))); }
+
+.stage-page .duo { padding: calc(100 * var(--px)) 0 calc(90 * var(--px)); }
 .duo .split { --col: 704; }
 .stage-page .duo .duo-note {
   max-width: calc(560 * var(--px));
@@ -86,8 +98,7 @@
 /* A pasted name can be one long unbroken handle: it wraps instead of pushing
    the page wide. */
 .duo-legend li,
-.people-rm .linkbtn,
-.duo-row dt { min-width: 0; overflow-wrap: anywhere; }
+.people-rm .linkbtn { min-width: 0; overflow-wrap: anywhere; }
 .duo-legend i { display: inline-block; width: 22px; height: 12px; margin-right: 8px; border-radius: 3px; vertical-align: -1px; }
 .lg-you { background: #e2b866; border: 1.5px solid #a88752; }
 .lg-them { background: rgba(27, 27, 27, 0.6); border: 1.5px solid var(--frame-dark); }
@@ -98,7 +109,7 @@
 .people-rm { display: flex; flex-wrap: wrap; gap: 0 calc(40 * var(--px)); margin: 8px 0 calc(40 * var(--px)); }
 .people-ask { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; flex-basis: 100%; margin: 8px 0; }
 .stage-page .people-ask p { flex-basis: 100%; max-width: none; margin: 0; font-weight: 700; font-size: 15px; line-height: 1.6; }
-.duo-fig { width: min(100%, calc(1000 * var(--px))); aspect-ratio: 1; }
+.duo-fig { width: min(100%, calc(760 * var(--px))); aspect-ratio: 1; }
 .duo-fig svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .duo-ground { fill: #fbf3e2; }
 .duo-you { fill: #e2b866; }
@@ -106,42 +117,38 @@
 .duo-avg { fill: none; stroke: var(--frame-ink); stroke-width: 0.5; stroke-dasharray: 1.6 1.2; stroke-linejoin: round; opacity: 0.7; }
 .duo-edge { fill: none; stroke: #a88752; stroke-width: 0.9; stroke-linejoin: round; }
 
-.duocard {
-  display: grid;
-  grid-template-columns: calc(700 * var(--px)) minmax(0, 1fr);
-  gap: calc(60 * var(--px));
-  align-items: start;
-  padding: calc(60 * var(--px)) calc(80 * var(--px));
+/* The eight aspects as one table (2026-09-26; it was a card each). Many
+   people scroll the table sideways, never the page. */
+.compare-aspects .label { margin-bottom: calc(40 * var(--px)); }
+.sbs-scroll { overflow-x: auto; }
+.sbs-table { width: 100%; border-collapse: collapse; }
+.sbs-table th,
+.sbs-table td {
+  padding: calc(18 * var(--px)) calc(20 * var(--px));
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.25);
+  text-align: right;
+  vertical-align: middle;
 }
-.duo-card + .duo-card { margin-top: calc(40 * var(--px)); }
-.duocard-head { display: grid; gap: calc(24 * var(--px)); justify-items: start; }
-.duocard-head .brand-logo {
-  position: static;
-  display: grid;
-  place-items: center;
-  width: calc(220 * var(--px));
-  height: calc(220 * var(--px));
-  border-radius: calc(28 * var(--px));
+.sbs-table thead th {
+  font-weight: 700;
+  font-size: max(12px, calc(18 * var(--px)));
+  /* Whole words; only a pasted name too long for any line breaks inside. */
+  overflow-wrap: break-word;
+  vertical-align: bottom;
 }
-.duocard-head .brand-logo img { width: 70%; height: auto; }
-.duocard .card-title a { color: inherit; text-decoration: none; }
-.duocard .card-title a:hover { text-decoration: underline; text-underline-offset: 0.15em; }
-.duocard .card-title a:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
-.duo-rows { display: grid; margin: 0; }
-.duo-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 20px;
-  padding: calc(14 * var(--px)) 0;
-  border-bottom: 1px dashed rgba(0, 0, 0, 0.2);
-}
-.duo-row dt { font-weight: 600; font-size: max(14px, calc(19 * var(--px))); }
-.duo-row dd { display: flex; align-items: baseline; gap: calc(14 * var(--px)); margin: 0; }
-.duo-row b { font-family: var(--frame-word); font-weight: 400; font-size: max(24px, calc(56 * var(--px))); line-height: 1; }
-.duo-row-avg { opacity: 0.62; }
-.duo-row.is-you dt { font-weight: 800; }
-.sbs-mark { width: 1.2em; font-size: max(12px, calc(18 * var(--px))); text-align: center; }
+.sbs-table tbody th { text-align: left; padding-left: 0; }
+.sbs-table tbody th a { display: flex; align-items: center; gap: calc(24 * var(--px)); color: inherit; text-decoration: none; }
+.sbs-table tbody th a:hover .sbs-name { text-decoration: underline; text-underline-offset: 0.15em; }
+.sbs-table tbody th a:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+.sbs-emblem { display: grid; place-items: center; flex: none; width: max(40px, calc(90 * var(--px))); aspect-ratio: 1; border-radius: calc(16 * var(--px)); }
+.sbs-emblem img { width: 78%; height: auto; }
+.sbs-name { display: grid; font-weight: 700; font-size: max(14px, calc(22 * var(--px))); letter-spacing: 0.04em; text-transform: uppercase; }
+.sbs-name small { font-weight: 500; font-size: 0.8em; letter-spacing: normal; text-transform: none; color: #444444; }
+.sbs-table td b { font-family: var(--frame-word); font-weight: 400; font-size: max(24px, calc(52 * var(--px))); line-height: 1; }
+.sbs-table td { white-space: nowrap; }
+.sbs-table .sbs-avg { opacity: 0.62; }
+.sbs-table thead th:nth-child(3) { font-weight: 800; }
+.sbs-mark { display: inline-block; width: 1.2em; font-size: max(12px, calc(18 * var(--px))); text-align: center; }
 
 /* ============================================================ share poster
    The sheet the share button opens (openDialog): the choices beside the
@@ -377,11 +384,13 @@
   .q-side .assess-done { grid-area: theme; justify-self: start; margin-top: 8px; }
   .code-row { flex-wrap: wrap; }
   .stage-page .code-input { flex-basis: 100%; }
-  .duo { padding: calc(120 * var(--px)) 0; }
+  .stage-page .duo { padding: calc(90 * var(--px)) 0 calc(80 * var(--px)); }
   .stage-page .duo .duo-note { max-width: none; margin-right: 0; font-size: max(14px, calc(26 * var(--px))); }
-  .duocard { grid-template-columns: minmax(0, 1fr); gap: calc(24 * var(--px)); padding: calc(50 * var(--px)); }
-  .duo-row dt { font-size: max(14px, calc(28 * var(--px))); }
-  .duo-row b { font-size: calc(64 * var(--px)); }
+  .sbs-table th,
+  .sbs-table td { padding: calc(20 * var(--px)) calc(6 * var(--px)); }
+  .sbs-emblem { display: none; }
+  .sbs-name { font-size: max(13px, calc(26 * var(--px))); }
+  .sbs-table td b { font-size: max(22px, calc(60 * var(--px))); }
   .ypoints b { font-size: calc(180 * var(--px)); }
   .newsrow-delta { font-size: calc(40 * var(--px)); }
   .newsrow-title .meter { width: 100%; }
@@ -409,8 +418,8 @@ html[lang="th"] .lumi-label,
 html[lang="th"] .assess-done { letter-spacing: normal; }
 html[lang="th"] .share-title,
 html[lang="th"] .pagehead-word,
-html[lang="th"] .ypoints,
-html[lang="th"] .duo-row b { font-weight: 700; }
+html[lang="th"] .ypoints { font-weight: 700; }
+html[lang="th"] .sbs-name { letter-spacing: normal; text-transform: none; }
 
 /* ============================================================= Privacy
    privacy.html: the text page with no scripts, so no menu and no language

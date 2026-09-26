@@ -20,7 +20,9 @@
 // other with the population average dashed behind. Picking someone slides
 // their star into the new shape in the same time whoever is picked. Removing
 // someone asks on the page first, and the page redraws itself after a change
-// so focus can be put back where the reader was.
+// so focus can be put back where the reader was. Compact since 2026-09-26
+// (the owner's map): a short top, the shared star first, the eight aspects as
+// one table, and the codes last and folded once someone is added.
 
 import { stateManager } from "../state.js";
 import { encodeComparisonCode, decodeComparisonCode } from "../comparison-code.js";
@@ -29,7 +31,7 @@ import { AVERAGE_ASPECT_SCORES } from "../averages.js";
 import { t, tp } from "../i18n.js";
 import { escapeHtml, aspectLabel } from "./helpers.js";
 import { CHAPTERS } from "./journey.js";
-import { heroMarkup, missionMarkup, label, renderStagePage } from "./stage-page.js";
+import { topMarkup, label, renderStagePage } from "./stage-page.js";
 import { yourStarSvg, starOutlineAttr, starRayAttr, starLevelPath, openShareFor } from "./dashboard.js";
 import { aspectName } from "./news.js";
 import { animate, easeStar } from "../motion.js";
@@ -55,11 +57,11 @@ function complementLine(person, myAspects) {
   })}</p>`;
 }
 
-function codesSection(myCode) {
-  return `
-    <section class="panel statement codes"><div class="wrap split">
-      ${label(t("Comparison Codes"))}
-      <div>
+// With no one added the codes are the whole point, so they lead, open. Once
+// someone is added they are needed far less than the comparison, so they go
+// last and fold away (the owner's map, 2026-09-26).
+function codesSection(myCode, folded) {
+  const inner = `
         <p>${t("Share your code with others over LINE or Discord, and paste theirs below. A code carries only a name and the eight aspect scores — no age, no points, nothing else. Re-paste a newer code any time to update someone.")}</p>
         <div class="code-field">
           <label for="my-comparison-code">${t("Your Comparison Code")}</label>
@@ -75,8 +77,11 @@ function codesSection(myCode) {
             <button type="submit" class="pill">${t("Add")}</button>
           </div>
           <p id="friend-error" class="code-error d-none" role="alert"></p>
-        </form>
-      </div>
+        </form>`;
+  return `
+    <section class="panel statement codes"><div class="wrap split">
+      ${label(t("Comparison Codes"))}
+      <div>${folded ? `<details class="codes-fold"><summary>${t("Share or add a code")}</summary>${inner}</details>` : inner}</div>
     </div></section>`;
 }
 
@@ -151,36 +156,35 @@ function duoSection(state, friends, pick, confirm) {
     </div></section>`;
 }
 
-// One row of an aspect card: a score and whether it clears the average there.
-function scoreRow(name, value, key, isYou) {
+// One cell of the table: a score and whether it clears the average there.
+function scoreCell(value, key, isYou) {
   const v = Number.isFinite(Number(value)) ? Math.round(Number(value)) : 0;
   const above = v >= AVERAGE_ASPECT_SCORES[key];
-  return `
-    <div class="duo-row${isYou ? " is-you" : ""}">
-      <dt>${name}</dt>
-      <dd><b>${escapeHtml(v)}</b><span class="sbs-mark" aria-hidden="true">${above ? "▲" : "▽"}</span><span class="sr-only">${above ? t("At or above the population average") : t("Below the population average")}</span></dd>
-    </div>`;
+  return `<td${isYou ? ' class="is-you"' : ""}><b>${escapeHtml(v)}</b><span class="sbs-mark" aria-hidden="true">${above ? "▲" : "▽"}</span><span class="sr-only">${above ? t("At or above the population average") : t("Below the population average")}</span></td>`;
 }
 
-// One card per aspect. The order inside is fixed and meaningless on purpose:
-// the population, then you, then everyone in the order they were added. Never
-// sorted by score.
-function aspectCard(state, friends, chapter) {
-  const key = chapter.aspect;
+// One table, a row per aspect (the owner's map, 2026-09-26; it was a card
+// each). The columns are fixed and meaningless on purpose: the population,
+// then you, then everyone in the order they were added. Never sorted by score.
+function aspectTable(state, friends) {
   const you = tp("{name} (You)", { name: escapeHtml(state.profile.name) });
+  const head = [t("Population average"), you, ...friends.map(f => escapeHtml(f.name))]
+    .map(name => `<th scope="col">${name}</th>`).join("");
+  const rows = CHAPTERS.map(chapter => {
+    const key = chapter.aspect;
+    return `
+      <tr>
+        <th scope="row"><a href="#/aspect/${key}"><span class="sbs-emblem" style="background: ${chapter.wash};"><img src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async"></span><span class="sbs-name">${escapeHtml(chapter.region)}<small>${escapeHtml(aspectName(key))}</small></span></a></th>
+        <td class="sbs-avg"><b>${escapeHtml(AVERAGE_ASPECT_SCORES[key])}</b></td>
+        ${scoreCell((state.aspects || {})[key], key, true)}
+        ${friends.map(f => scoreCell((f.aspects || {})[key], key, false)).join("")}
+      </tr>`;
+  }).join("");
   return `
-    <div class="region-card duo-card"><div class="lcard duocard">
-      <div class="duocard-head">
-        <div class="brand-logo" style="background: ${chapter.wash};"><img src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async"></div>
-        <h3 class="card-title"><a href="#/aspect/${key}">${escapeHtml(chapter.region)}</a></h3>
-        <span class="tag" style="border-color: ${chapter.hue};">${escapeHtml(aspectName(key))}</span>
-      </div>
-      <dl class="duo-rows">
-        <div class="duo-row duo-row-avg"><dt>${t("Population average")}</dt><dd><b>${escapeHtml(AVERAGE_ASPECT_SCORES[key])}</b></dd></div>
-        ${scoreRow(you, (state.aspects || {})[key], key, true)}
-        ${friends.map(f => scoreRow(escapeHtml(f.name), (f.aspects || {})[key], key, false)).join("")}
-      </dl>
-    </div></div>`;
+    <div class="sbs-scroll"><table class="sbs-table">
+      <thead><tr><th scope="col"><span class="sr-only">${t("Aspect")}</span></th>${head}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
 }
 
 export function compareMarkup(state, { pick = 0, confirm = null } = {}) {
@@ -188,30 +192,29 @@ export function compareMarkup(state, { pick = 0, confirm = null } = {}) {
   const myCode = encodeComparisonCode(state);
   const learn = friends.map(f => complementLine(f, state.aspects)).join("");
   const count = tp("You + {n}", { n: friends.length });
+  const anyone = friends.length > 0;
   return `
     <div class="stage-page compare">
-      ${heroMarkup({
+      ${topMarkup({
         mark: yourStarSvg(scoresOf(state.aspects)),
-        word: t("Side by Side").toUpperCase(),
-        inc: count.toUpperCase(),
-        srTitle: `${t("Side by Side")} — ${count}`,
-        tapLabel: t("Play with the star")
+        word: t("Side by Side"),
+        inc: count,
+        tapLabel: t("Play with the star"),
+        body: `<p class="page-top-lead">${t("Not a ranking.")} ${t("Where you differ, not who is ahead.")}</p>`
       })}
-      ${missionMarkup(t("Side by Side"), [t("Not a ranking."), t("Where you differ, not who is ahead.")])}
-      ${codesSection(myCode)}
+      ${anyone ? "" : codesSection(myCode, false)}
       ${duoSection(state, friends, Math.min(pick, Math.max(0, friends.length - 1)), confirm)}
-      ${friends.length ? `
-      <section class="projects compare-aspects">
-        <div class="inner">
-          ${label(t("Eight aspects, side by side"))}
-          <div class="cardblock">${CHAPTERS.map(c => aspectCard(state, friends, c)).join("")}</div>
-        </div>
-      </section>` : ""}
+      ${anyone ? `
+      <section class="panel statement compare-aspects"><div class="wrap">
+        ${label(t("Eight aspects, side by side"))}
+        ${aspectTable(state, friends)}
+      </div></section>` : ""}
       ${learn ? `
       <section class="panel statement compare-learn"><div class="wrap split">
         ${label(t("What they have cleared"))}
         <div>${learn}</div>
       </div></section>` : ""}
+      ${anyone ? codesSection(myCode, true) : ""}
     </div>`;
 }
 

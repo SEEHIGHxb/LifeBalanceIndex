@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `104`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `105`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,41 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.51.0] — 2026-09-26 (APP_VERSION 105)
+
+Goals, Side by Side and the aspect pages are compact, with the section maps
+the owner approved on 2026-09-26: they are opened every week, so they read at
+a glance, as Home has since 2.50.0.
+
+### Changed
+- **A short top instead of the full-screen hero** on all three: the mark
+  beside the page's name (`topMarkup` in `views/stage-page.js`); a tap on
+  the mark still bursts.
+- **Goals** (laptop 5,130px → 1,910px; phone 7,200px → 3,010px): the top
+  carries the one-line explanation and the weekly review button (the separate
+  "Graded weekly" panel is gone); your pledges sit two to a line; the catalog
+  is one row per pledge type you do not have yet, instead of a tall card for
+  every type including the ones already added.
+- **Side by Side** (laptop 6,210px → 2,590px; phone 7,090px → 2,660px): the
+  top says "Not a ranking. Where you differ, not who is ahead." (the separate
+  panel is gone); the shared star comes first; the eight aspects are one table
+  (population average, you, then everyone in the order added) instead of eight
+  cards. The comparison codes lead while no one is added, and once someone is
+  they go last, folded under "Share or add a code".
+- **The aspect page** (laptop 6,240px → 2,500px; phone 5,740px → 2,880px):
+  the top holds the emblem, region, grade and score, where it stands, what
+  the aspect covers and how sure the score is, replacing the hero, the typed
+  "Standing" panel and the separate grade block. The standing section keeps
+  the gauge and the grade line open; the grade's reasoning, the benchmark
+  notes and the sources fold under "How this is worked out". Components are
+  rows, the photograph is a strip, the trend drops its repeated icon tiles,
+  and how the aspect is re-measured joins the suggested focus.
+- New copy, with Thai: "How this is worked out", "Share or add a code".
+
+### Removed
+- Orphaned strings: "Standing", "{n} out of 100.", "What it measures",
+  "Graded weekly".
 
 ## [2.50.1] — 2026-09-26 (APP_VERSION 104)
 

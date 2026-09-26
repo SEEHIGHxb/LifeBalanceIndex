@@ -7,7 +7,10 @@
 // THE REDESIGN (R4, v99; docs/prototype/redesign/weekly.js goalsHTML). A stage
 // page: the hero, your pledges as die-cut stickers that stick on the first
 // time the list comes into view, and every pledge type as a card with its own
-// target box, the ones for your lowest-graded aspects first. Removing a
+// target box, the ones for your lowest-graded aspects first. Compact since
+// 2026-09-26 (the owner's map): a short top with the review button instead of
+// the hero, your pledges two to a line, and one row per pledge type you do
+// not have yet. Removing a
 // pledge asks on the page, not in a browser pop-up. The page redraws itself
 // after a change, so focus can be put back where the reader was.
 
@@ -19,7 +22,7 @@ import { gradeAllAspects } from "../grades.js";
 import { rankPledgesByGrade, isPriorityPledge } from "../suggestions.js";
 import { escapeHtml, aspectLabel } from "./helpers.js";
 import { SPRITES, onAbort } from "./stage.js";
-import { heroMarkup, label, renderStagePage } from "./stage-page.js";
+import { topMarkup, label, renderStagePage } from "./stage-page.js";
 import { chapterOf, motifIcon } from "./news.js";
 import { writeMotionStyle } from "./motion-mount.js";
 import { animate, spring } from "../motion.js";
@@ -73,11 +76,14 @@ function pledgeCard(goal, k, confirming) {
     </article>`;
 }
 
-function catalogCard(id, k, { taken, full }) {
+// One row per pledge type you do not have yet: what it is, its target box and
+// Add. A full list leaves every row there but disabled, so the reader can
+// still see what there is.
+function catalogRow(id, k, full) {
   const tmpl = goalTemplate(id);
-  const off = taken || full ? " disabled" : "";
+  const off = full ? " disabled" : "";
   return `
-    <div class="region-card cat-card"><div class="lcard cat" data-template="${id}">
+    <li class="cat" data-template="${id}">
       ${sticker(tmpl.aspect, k)}
       <div class="cat-text">
         <p class="pledge-aspect">${aspectLabel(tmpl.aspect)}</p>
@@ -85,14 +91,14 @@ function catalogCard(id, k, { taken, full }) {
         <p class="card-desc" id="cat-desc-${id}">${tp(tmpl.desc, { target: tmpl.def })}</p>
       </div>
       <div class="cat-form">
-        <div class="form-group">
-          <label for="cat-${id}">${t("Weekly target")} (${t(tmpl.unit)})</label>
+        <label for="cat-${id}">${t("Weekly target")} (${t(tmpl.unit)})</label>
+        <div class="cat-row">
           <input type="number" id="cat-${id}" class="form-control" min="${tmpl.min}" max="${tmpl.max}" step="${tmpl.step}" value="${tmpl.def}"${off}>
+          <button type="button" class="pill" data-add="${id}"${off}>${t("Add Pledge")}</button>
         </div>
-        <button type="button" class="pill" data-add="${id}"${off}>${taken ? t("Added") : t("Add Pledge")}</button>
         <p class="cat-error d-none" id="cat-err-${id}" role="alert"></p>
       </div>
-    </div></div>`;
+    </li>`;
 }
 
 export function goalsMarkup(state, { confirm = null } = {}) {
@@ -110,19 +116,23 @@ export function goalsMarkup(state, { confirm = null } = {}) {
     ? tp("Pledge list is full (max {max}).", { max: PLEDGE_LIMIT })
     : hasPriority ? t("Pledges for the aspects you're graded lowest on are listed first.") : "";
   const due = stateManager.isWeeklyReviewDue();
+  // A pledge you already have is under "Your pledges"; the catalog offers only
+  // the rest (the owner's map, 2026-09-26).
+  const offered = ids.filter(id => !taken.has(id));
   return `
     <div class="stage-page goals">
-      ${heroMarkup({
+      ${topMarkup({
         mark: STAR_SVG,
-        word: t("Weekly Pledges").toUpperCase(),
-        inc: active.toUpperCase(),
-        srTitle: `${t("Weekly Pledges")} — ${active}`,
-        tapLabel: t("Play with the star")
+        word: t("Weekly Pledges"),
+        inc: active,
+        tapLabel: t("Play with the star"),
+        body: `
+          <p class="goals-intro">${t("A pledge is a weekly quantity target. Your weekly review grades every pledge automatically — nothing to log day to day.")}</p>
+          <p class="page-top-actions"><a class="pill" href="#/review">${due ? t("Start Weekly Review") : t("Weekly Review")}</a></p>`
       })}
       <section class="panel statement goals-mine"><div class="wrap split">
         <h2 class="label" id="pledges-label" tabindex="-1">(${escapeHtml(t("Your pledges"))})</h2>
         <div>
-          <p class="goals-intro">${t("A pledge is a weekly quantity target. Your weekly review grades every pledge automatically — nothing to log day to day.")}</p>
           <div class="pledge-list">
             ${pledges.length
               ? pledges.map((g, k) => pledgeCard(g, k, confirm === g.id)).join("")
@@ -131,22 +141,14 @@ export function goalsMarkup(state, { confirm = null } = {}) {
           <p class="sr-only" id="goals-live" aria-live="polite"></p>
         </div>
       </div></section>
-      <section class="projects goals-catalog">
-        <div class="inner">
-          ${label(t("Add a Pledge"))}
-          <div class="cardblock">
-            ${catalogNote ? `<p class="goals-note">${catalogNote}</p>` : ""}
-            ${ids.map((id, k) => catalogCard(id, k, { taken: taken.has(id), full })).join("")}
-          </div>
+      ${offered.length ? `
+      <section class="panel statement goals-catalog"><div class="wrap split">
+        ${label(t("Add a Pledge"))}
+        <div>
+          ${catalogNote ? `<p class="goals-note">${catalogNote}</p>` : ""}
+          <ul class="cat-list">${offered.map((id, k) => catalogRow(id, k, full)).join("")}</ul>
         </div>
-      </section>
-      <section class="panel careers goals-graded"><div class="wrap split">
-        ${label(t("Graded weekly"))}
-        <div class="careers-row">
-          <p class="careers-head">${t("Graded at your next weekly review.")}</p>
-          <a class="pill" href="#/review">${due ? t("Start Weekly Review") : t("Weekly Review")}</a>
-        </div>
-      </div></section>
+      </div></section>` : ""}
     </div>`;
 }
 

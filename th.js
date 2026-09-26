@@ -492,6 +492,7 @@ export const TH = {
   "Standing vs Society": "สถานะเทียบกับสังคม",
   "Percentile vs society": "เปอร์เซ็นไทล์เทียบสังคม",
   "Sources": "แหล่งอ้างอิง",
+  "How this is worked out": "ที่มาของผลนี้",
   "No baseline data for this comparison yet — re-run the onboarding sync to unlock it.": "ยังไม่มีข้อมูลพื้นฐานสำหรับการเทียบนี้ — ทำแบบประเมินเริ่มต้นใหม่เพื่อปลดล็อก",
   "Component Breakdown": "องค์ประกอบย่อย",
   "Baseline survey data needed for this breakdown.": "ต้องมีข้อมูลแบบประเมินพื้นฐานจึงจะแสดงส่วนนี้ได้",
@@ -523,6 +524,7 @@ export const TH = {
 
   // --- Side by Side / Comparison Codes ---
   "Comparison Codes": "รหัสเปรียบเทียบ",
+  "Share or add a code": "แชร์หรือเพิ่มรหัส",
   "Share your code with others over LINE or Discord, and paste theirs below. A code carries only a name and the eight aspect scores — no age, no points, nothing else. Re-paste a newer code any time to update someone.":
     "แชร์รหัสของคุณให้ผู้อื่นทาง LINE หรือ Discord แล้วนำรหัสของพวกเขามาวางด้านล่าง รหัสมีแค่ชื่อและคะแนนรายด้านทั้งแปด — ไม่มีอายุ ไม่มีคะแนนสะสม ไม่มีอย่างอื่น วางรหัสใหม่ได้ทุกเมื่อเพื่ออัปเดตข้อมูลของแต่ละคน",
   "Your Comparison Code": "รหัสเปรียบเทียบของคุณ",
@@ -1334,9 +1336,6 @@ export const TH = {
   // prototype's Thai where it had the line (aStanding, aHead, aCovers, aTrend,
   // aTrendRow, aTrendSame, aTrendDelta, aKind, aQuiet, rHead, rStep, rSeeHome,
   // gInc, gAdded, gGraded); the rest is new and awaits the owner's review.
-  "Standing": "สถานะ",
-  "{n} out of 100.": "{n} จาก 100",
-  "What it measures": "สิ่งที่วัด",
   "Trend": "แนวโน้ม",
   "Score {n}": "คะแนน {n}",
   "Same as the week before": "เท่ากับสัปดาห์ก่อน",
@@ -1350,7 +1349,6 @@ export const TH = {
   "{n} active": "{n} รายการ",
   "Added": "เพิ่มแล้ว",
   "Removed": "ลบแล้ว",
-  "Graded weekly": "ตรวจทุกสัปดาห์",
   // The rest of the map (views/leaderboard.js, yearreview.js, methodology.js,
   // lumi.js; redesign R5). The prototype's Thai where it had the line
   // (content-more.js cInc, cHead, cOver, cOverP, cPick, cAspects, cLearn,

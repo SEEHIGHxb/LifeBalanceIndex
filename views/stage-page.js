@@ -10,6 +10,8 @@
 //
 //   hero      a lockup (a mark over a word and a smaller line) that follows
 //             the pointer on a laptop and bursts when it lets go or is tapped
+//   top       the compact head of a weekly page: the mark, which bursts when
+//             tapped, beside the page's name
 //   mission   a label and a headline that types itself once it is well in view
 //   cards     region cards that slide in from the right as they come up
 //   band      three region photographs that wipe over each other on scroll
@@ -73,6 +75,28 @@ export function heroMarkup({ mark, word, inc, srTitle, tapLabel, wash = "" }) {
           <div class="part" data-part="inc"><div class="inc">${escapeHtml(inc)}</div></div>
         </div>
         <button class="mark-hit" type="button" aria-label="${escapeHtml(tapLabel)}"></button>
+      </div>
+    </section>`;
+}
+
+// The compact top of a page opened every week (Goals, Side by Side, the aspect
+// pages; the owner's maps of 2026-09-26): the mark beside the page's name and a
+// smaller line, then whatever the page puts under them. One short band, not a
+// screen; a tap on the mark still bursts. `mark` and `body` are trusted markup
+// built by the caller; every other value is text and is escaped here.
+export function topMarkup({ mark, word, inc, body = "", tapLabel, wash = "" }) {
+  return `
+    <section class="panel page-top"${wash ? ` style="background: ${wash};"` : ""}>
+      <div class="burst-layer" aria-hidden="true"></div>
+      <div class="wrap page-top-grid">
+        <div class="page-top-mark">
+          <div class="mark">${mark}</div>
+          <button class="mark-hit" type="button" aria-label="${escapeHtml(tapLabel)}"></button>
+        </div>
+        <div class="page-top-text">
+          <h2 class="page-top-word">${escapeHtml(word)} <small>${escapeHtml(inc)}</small></h2>
+          ${body}
+        </div>
       </div>
     </section>`;
 }
@@ -244,6 +268,15 @@ function mountHero(root, scope, motifs) {
   scope.listen(stage.querySelector(".mark-hit"), "click", tap);
 }
 
+// --- the compact top: a tap on the mark bursts it ------------------------
+function mountTop(root, scope, motifs) {
+  const top = root.querySelector(".page-top");
+  const hit = top?.querySelector(".mark-hit");
+  if (!hit) return;
+  scope.listen(hit, "click", () => burst(top.querySelector(".burst-layer"), top.querySelector(".mark"), { motifs, signal: scope.signal })
+    .catch(err => console.error("Page top burst failed:", err)));
+}
+
 // --- the headline types itself once it is well into view ------------------
 function mountMission(root, scope) {
   const typed = root.querySelector(".mission-head .typed");
@@ -337,6 +370,7 @@ export function renderStagePage(container, markup, { motifs = EVERY_MOTIF, still
   if (!root) return null;
   try {
     mountHero(root, scope, motifs);
+    mountTop(root, scope, motifs);
     mountMission(root, scope);
     mountScroll(root, scope);
     return scope;

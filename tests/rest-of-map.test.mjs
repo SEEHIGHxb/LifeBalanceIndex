@@ -51,13 +51,25 @@ test("everyone keeps the order they were added in, whatever their scores", () =>
   renderLeaderboard(MAIN, { ...STATE, friends }, () => {});
   const picks = [...html().matchAll(/data-pick="\d+"[^>]*>([^<]+)</g)].map(m => m[1]);
   assert.deepEqual(picks, ["Ann", "Bo", "Cy"]);
-  // One card per aspect, each listing the average, you, then the three.
-  const cards = html().split('class="lcard duocard"').slice(1);
-  assert.equal(cards.length, 8);
-  for (const card of cards) {
-    const rows = [...card.matchAll(/<dt>([^<]+)<\/dt>/g)].map(m => m[1]);
-    assert.deepEqual(rows, ["Population average", "Fixture (You)", "Ann", "Bo", "Cy"]);
-  }
+  // One table: the columns are the average, you, then the three; a row per
+  // aspect, each with a score in every column.
+  const head = [...html().matchAll(/<th scope="col">([^<]+)<\/th>/g)].map(m => m[1]);
+  assert.deepEqual(head, ["Population average", "Fixture (You)", "Ann", "Bo", "Cy"]);
+  const rows = html().split("<tbody>")[1].split("</tbody>")[0].split("<tr>").slice(1);
+  assert.equal(rows.length, 8);
+  for (const row of rows) assert.equal((row.match(/<td/g) || []).length, 5);
+});
+
+test("the codes lead when no one is added, and fold away last once someone is", () => {
+  renderLeaderboard(MAIN, STATE, () => {});
+  const empty = html();
+  assert.ok(empty.indexOf("statement codes") < empty.indexOf("statement duo"), "with no one added the codes come first");
+  assert.doesNotMatch(empty, /codes-fold/);
+  renderLeaderboard(MAIN, { ...STATE, friends: [person("f1", "Ann", 20)] }, () => {});
+  const some = html();
+  assert.ok(some.indexOf("codes-fold") > some.indexOf("compare-aspects"), "once someone is added the codes come last");
+  assert.match(some, /<summary>Share or add a code<\/summary>/);
+  assert.doesNotMatch(some, /class="hero"|class="panel mission"/);
 });
 
 test("the picked person is the one whose star lies over yours", () => {

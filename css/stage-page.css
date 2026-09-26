@@ -99,6 +99,57 @@
 .hero .word { top: calc(740 * var(--px)); font-size: calc(170 * var(--px)); }
 .hero .inc { top: calc(910 * var(--px)); font-size: calc(124 * var(--px)); }
 
+/* ------------------------------------------------ the compact page top
+   A weekly page's head (views/stage-page.js topMarkup): the mark beside the
+   page's name, one short band. The weekly pages' own sections are tighter
+   than the Landing's statements too. */
+.page-top {
+  position: relative;
+  overflow: hidden;
+  padding: calc(100 * var(--px)) 0 calc(90 * var(--px));
+}
+.page-top-grid {
+  display: grid;
+  grid-template-columns: calc(250 * var(--px)) minmax(0, 1fr);
+  gap: calc(90 * var(--px));
+  align-items: center;
+}
+.page-top-mark { position: relative; aspect-ratio: 1; }
+.page-top .mark { width: 100%; height: 100%; }
+.page-top .mark svg,
+.page-top .mark img { display: block; width: 100%; height: 100%; overflow: visible; }
+.page-top .mark-hit {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+.page-top .mark-hit:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 6px; }
+.page-top-word {
+  margin: 0 0 calc(24 * var(--px));
+  font-family: var(--frame-word);
+  font-weight: 400;
+  font-size: max(40px, calc(130 * var(--px)));
+  line-height: 1;
+  text-transform: uppercase;
+}
+.page-top-word small { display: block; margin-top: calc(10 * var(--px)); font-size: 0.55em; }
+.page-top-text p {
+  max-width: calc(1400 * var(--px));
+  margin: 0 0 calc(16 * var(--px));
+  font-weight: 500;
+  font-size: max(15px, calc(24 * var(--px)));
+  line-height: 1.7;
+}
+.page-top-text .page-top-lead { font-weight: 700; font-size: max(16px, calc(30 * var(--px))); }
+.page-top-text .page-top-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: calc(30 * var(--px)); }
+.goals .statement,
+.compare .statement,
+.aspect-page .statement { padding: calc(100 * var(--px)) 0 calc(90 * var(--px)); }
+
 /* ------------------------------------------------ why and how it works */
 .mission {
   padding: calc(300 * var(--px)) 0 calc(320 * var(--px));
@@ -487,6 +538,16 @@ a.newsrow:hover .newsrow-title { text-decoration: underline; text-underline-offs
   .hero .part-mark { transform-origin: calc(410 * var(--px)) calc(370 * var(--px)); }
   .hero .word { top: calc(580 * var(--px)); font-size: calc(118 * var(--px)); }
   .hero .inc { top: calc(716 * var(--px)); font-size: calc(84 * var(--px)); }
+  .page-top { padding: calc(80 * var(--px)) 0; }
+  .page-top-grid { grid-template-columns: calc(170 * var(--px)) minmax(0, 1fr); gap: calc(30 * var(--px)) calc(40 * var(--px)); }
+  .page-top-word { font-size: max(30px, calc(84 * var(--px))); margin: 0; }
+  /* Under the mark and the name, the rest runs the full width. */
+  .page-top-text { display: contents; }
+  .page-top-text > :not(.page-top-word) { grid-column: 1 / -1; }
+  .page-top-text p { font-size: max(15px, calc(30 * var(--px))); }
+  .goals .statement,
+  .compare .statement,
+  .aspect-page .statement { padding: calc(90 * var(--px)) 0 calc(80 * var(--px)); }
   .cardblock { width: auto; margin: 0 calc(20 * var(--px)); }
   .projects .inner { padding-top: calc(200 * var(--px)); }
   .projects .label { margin-left: calc(20 * var(--px)); }
@@ -536,7 +597,8 @@ html[lang="th"] .stage-page .pill,
 html[lang="th"] .careers-head {
   letter-spacing: normal;
 }
-html[lang="th"] .photoband span { font-weight: 700; }
+html[lang="th"] .photoband span,
+html[lang="th"] .page-top-word { font-weight: 700; }
 html[lang="th"] .newsrow-kind,
 html[lang="th"] .newsrow-date,
 html[lang="th"] .score-figure small,

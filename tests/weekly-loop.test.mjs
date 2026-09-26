@@ -93,6 +93,19 @@ test("the trend lists the snapshots newest first, each against the week before",
   assert.match(out, /Score 62<small>Same as the week before<\/small>/);
 });
 
+test("an aspect page is compact: a short top, component rows, and the reasoning folded", () => {
+  renderAspectPage(MAIN, STATE, "finance");
+  const out = html();
+  assert.doesNotMatch(out, /class="hero"|class="panel mission"|region-card/);
+  assert.match(out, /<h2 class="page-top-word">The Market <small>[^<]+<\/small><\/h2>/);
+  assert.match(out, /class="aspect-score-badge"/, "the grade and score sit in the top");
+  assert.ok(out.indexOf("page-top") < out.indexOf("aspect-society"));
+  assert.match(out, /<details class="aspect-more"><summary>How this is worked out<\/summary>/);
+  assert.ok(out.indexOf("aspect-more") < out.indexOf("aspect-parts"), "the sources fold inside the standing section");
+  assert.match(out, /class="part-row"/);
+  assert.match(out, /class="careers-row aspect-measured"/);
+});
+
 test("a quiet region's page says it is still on purpose, and a loud one does not", () => {
   renderAspectPage(MAIN, STATE, "relationships");
   assert.match(html(), /kept still on purpose/);
@@ -102,12 +115,24 @@ test("a quiet region's page says it is still on purpose, and a loud one does not
 
 // --- Goals --------------------------------------------------------------------
 
-test("the catalog offers every pledge type, and one already taken is disabled", () => {
+test("the catalog offers every pledge type you do not have yet, one row each", () => {
   renderQuests(MAIN, { ...STATE, goals: [{ id: "g1", templateId: "water", target: 2, streak: 0, lastResult: null }] });
   const out = html();
-  for (const id of Object.keys(GOAL_TEMPLATES)) assert.match(out, new RegExp(`data-add="${id}"`));
-  assert.match(out, /<button type="button" class="pill" data-add="water" disabled>Added<\/button>/);
+  const rest = Object.keys(GOAL_TEMPLATES).filter(id => id !== "water");
+  for (const id of rest) assert.match(out, new RegExp(`<li class="cat" data-template="${id}">`));
+  assert.equal((out.match(/<li class="cat"/g) || []).length, rest.length);
+  // The one you have is under "Your pledges", not offered again.
+  assert.doesNotMatch(out, /data-add="water"/);
+  assert.match(out, /data-pledge="g1"/);
   assert.match(out, /<button type="button" class="pill" data-add="sleep">Add Pledge<\/button>/);
+});
+
+test("Goals opens on a short top with the review button, not a full-screen hero", () => {
+  renderQuests(MAIN, STATE);
+  const out = html();
+  assert.doesNotMatch(out, /class="hero"|goals-graded/);
+  assert.match(out, /<h2 class="page-top-word">Weekly Pledges <small>0 active<\/small><\/h2>/);
+  assert.match(out, /class="page-top-actions"><a class="pill" href="#\/review">/);
 });
 
 test("a full pledge list says so and disables every card", () => {

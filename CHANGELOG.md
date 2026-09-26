@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `110`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `111`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.52.5] — 2026-09-26 (APP_VERSION 111)
+
+### Fixed
+- **The journey could not be finished on `http://`.** The site answers on
+  plain http as well as https, and a page there is not a secure context:
+  `crypto.randomUUID` does not exist, so Complete Assessment threw and Home
+  never came. Ids now come from `getRandomValues` (`secure-context.js`
+  `shortId`), which every page has, and a page on plain http is moved to
+  https before anything runs. Local development hosts stay on http.
+- **A backup could only be restored after the whole journey.** Import lived
+  on Profile alone, so after Reset Data, or in a new browser, the only way to
+  a backup was thirty screens of answers it then replaced. The Landing now has
+  "Restore from a backup".
+- **Clearing the name in Profile saved "Guest" without a word.** It now says
+  "Enter a name."
+- **An empty friend code said codes start with "LQ1-".** It now says
+  "Paste a friend's code first."
+
+### Needs review
+- Three new Thai strings in `th.js`, marked "v111, awaiting the owner's review".
 
 ## [2.52.4] — 2026-09-26 (APP_VERSION 110)
 

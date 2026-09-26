@@ -16,7 +16,7 @@ import {
   renderMethodology,
   openDialog,
   prefersReducedMotion
-} from "./ui.js?v=110";
+} from "./ui.js?v=111";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
@@ -24,8 +24,9 @@ import { syncReduceMotionAttr } from "./motion.js";
 import { disposeMotion } from "./views/motion-mount.js";
 import { bindMenu, renderMenu, closeMenu, syncMenuRoute } from "./views/menu.js";
 import { withCarriedScreen } from "./views/lang-carry.js";
-import { readDraft } from "./draft.js";
+import { readDraft, clearDraft } from "./draft.js";
 import { bindLumi, closeLumi, setLumiAvailable } from "./views/lumi.js";
+import { httpsUpgradeUrl } from "./secure-context.js";
 
 const TOAST_DURATION_MS = 1600;
 const TABS = ["dashboard", "review", "quests", "leaderboard"];
@@ -183,6 +184,7 @@ function renderFirstRun() {
   syncMenuRoute(onJourney ? "journey" : "");
   if (!onJourney) {
     renderLanding("main-view", { resume: readDraft("onboarding") !== null });
+    setupLandingRestore();
     return;
   }
   document.getElementById("main-view").innerHTML = `<div id="onboarding-mount"></div>`;
@@ -392,20 +394,40 @@ function setupBackupControls() {
         fileInput.click();
       }
     });
-
-    fileInput.addEventListener("change", async () => {
-      const file = fileInput.files[0];
-      if (!file) return;
-      try {
-        stateManager.importState(await file.text());
-        showToast(t("Data imported successfully."));
-        initializeApp();
-      } catch (err) {
-        console.error("Import failed:", err);
-        showToast(tp("Import failed: {msg}", { msg: err.message }), "warning");
-      }
-    });
+    bindFileImport(fileInput);
   }
+}
+
+// Reads the backup picked in `fileInput` and, when it is good, starts the app
+// over on it. Shared by Profile's Import and the Landing's Restore, which has
+// no data to confirm replacing: before this, a backup could only be restored
+// from Profile, after answering the whole journey first.
+function bindFileImport(fileInput) {
+  fileInput.addEventListener("change", async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    try {
+      stateManager.importState(await file.text());
+      // A half-answered journey on this device is moot once a backup is in.
+      clearDraft("onboarding");
+      showToast(t("Data imported successfully."));
+      initializeApp();
+    } catch (err) {
+      console.error("Import failed:", err);
+      showToast(tp("Import failed: {msg}", { msg: err.message }), "warning");
+    }
+  });
+}
+
+function setupLandingRestore() {
+  const button = document.getElementById("btn-restore-backup");
+  const fileInput = document.getElementById("restore-file-input");
+  if (!button || !fileInput) return;
+  button.addEventListener("click", () => {
+    fileInput.value = "";
+    fileInput.click();
+  });
+  bindFileImport(fileInput);
 }
 
 // --- UNREADABLE-SAVE RECOVERY OFFER ---
@@ -617,6 +639,13 @@ if ("serviceWorker" in navigator) {
 // deliberately no longer happens when state.js is merely imported
 // (finding #13) — construction reads, init() writes.
 window.addEventListener("DOMContentLoaded", () => {
+  // A page on plain http is not a secure context (secure-context.js): move it
+  // to https before anything reads or writes.
+  const secure = httpsUpgradeUrl(window.location);
+  if (secure) {
+    window.location.replace(secure);
+    return;
+  }
   stateManager.init();
   initializeApp();
 });

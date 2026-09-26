@@ -45,7 +45,7 @@ const AGE_MAX = 100;
 // its inline <span class="field-error"> in the DOM.
 const ERR_IDS = {
   income: "pf-income-err", weight: "pf-weight-err", height: "pf-height-err",
-  age: "pf-age-err", birthday: "pf-birthday-err",
+  name: "pf-name-err", age: "pf-age-err", birthday: "pf-birthday-err",
   liquidSavings: "pf-liquid-err", committedOutflow: "pf-outflow-err",
   familySupport: "pf-family-err"
 };
@@ -317,6 +317,9 @@ export function renderProfile(containerId, state, onSaved) {
       familySupport: val("pf-family")
     });
     Object.assign(errors, numErrors);
+
+    // A cleared name was saved as "Guest" without a word.
+    if (!String(val("pf-name")).trim()) errors.name = t("Enter a name.");
 
     // Age isn't a FIELD_CONSTRAINTS key — bound it explicitly. Whole years
     // only: 30.7 used to be saved as 31, and the level moved with it.

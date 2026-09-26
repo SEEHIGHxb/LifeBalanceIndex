@@ -9,6 +9,7 @@
 
 import { DEFAULT_STATE } from "./defaults.js";
 import { goalTemplate, clampPledgeTarget, createPledge } from "./goals.js";
+import { shortId } from "./secure-context.js";
 
 const ASPECT_SCORE_KEYS = Object.keys(DEFAULT_STATE.aspects);
 const SAFE_ID_RE = /[^A-Za-z0-9_-]/g;
@@ -69,7 +70,7 @@ export function safeString(value, maxLen = 200) {
 // HTML attribute it is rendered into. Empty results get a fresh prefixed id.
 export function safeId(value, prefix) {
   const cleaned = safeString(value, 40).replace(SAFE_ID_RE, "");
-  return cleaned || `${prefix}_${crypto.randomUUID().slice(0, 8)}`;
+  return cleaned || shortId(prefix);
 }
 
 // Keep ONLY the eight known aspect keys, each a clamped 0-100 number. Unknown

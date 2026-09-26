@@ -523,6 +523,10 @@ export const TH = {
   "Enter a whole number.": "กรุณาใส่จำนวนเต็ม",
   "That's your own code. Paste the code a friend sent you.": "นี่คือรหัสของคุณเอง กรุณาวางรหัสที่เพื่อนส่งมาให้",
   "{name} is already on your list with these scores.": "{name} อยู่ในรายชื่อของคุณแล้วด้วยคะแนนชุดนี้",
+  // v111, awaiting the owner's review.
+  "Restore from a backup": "กู้คืนจากไฟล์สำรอง",
+  "Paste a friend's code first.": "กรุณาวางรหัสของเพื่อนก่อน",
+  "Enter a name.": "กรุณาใส่ชื่อ",
 
   // --- Shared dialog actions ---
   "Cancel": "ยกเลิก",

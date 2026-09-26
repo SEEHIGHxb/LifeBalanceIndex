@@ -377,6 +377,8 @@
   line-height: 1.8;
   letter-spacing: 0.02em;
 }
+/* The call to begin, and under it the way back in for someone with a backup. */
+.careers-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 
 /* ------------------------------------------------ the care notice, still, on top (Home and the Mental page) */
 .stage-page .notice-panel {

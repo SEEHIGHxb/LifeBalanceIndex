@@ -6,6 +6,7 @@
 
 import { t, tp } from "./i18n.js";
 import { DEFAULT_STATE } from "./defaults.js";
+import { shortId } from "./secure-context.js";
 import {
   createDefaultPledges, createPledge, clampPledgeTarget, goalTemplate,
   gradeGoal, PLEDGE_LIMIT, WEEKLY_REVIEW_FIELDS
@@ -708,7 +709,7 @@ export class GameStateManager {
       return { ok: false, reason: tp("Participant list is full (max {max}).", { max: FRIEND_LIMIT }) };
     }
     const entry = {
-      id: "crew_" + crypto.randomUUID().slice(0, 8),
+      id: shortId("crew"),
       addedAt: new Date().toISOString(),
       ...friend
     };

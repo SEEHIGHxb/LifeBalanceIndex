@@ -114,6 +114,13 @@ test("the years filed are listed newest first", () => {
 
 // --- the text pages -------------------------------------------------------------
 
+test("the Landing offers to restore a backup before the journey", async () => {
+  const { landingMarkup } = await import("../views/landing.js");
+  const out = landingMarkup();
+  assert.match(out, /<button type="button" id="btn-restore-backup"[^>]*>Restore from a backup<\/button>/);
+  assert.match(out, /<input type="file" id="restore-file-input" accept="application\/json,\.json" class="d-none"/);
+});
+
 test("Profile is a text page that keeps every field and control", () => {
   renderProfile(MAIN, STATE, () => {});
   const out = html();

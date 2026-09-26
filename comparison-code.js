@@ -61,6 +61,8 @@ export function encodeComparisonCode(state) {
 // Throws a user-friendly Error on anything malformed or out of range.
 export function decodeComparisonCode(code) {
   const trimmed = String(code || "").trim();
+  // Nothing pasted is its own mistake, not a code with the wrong start.
+  if (!trimmed) throw new Error(t("Paste a friend's code first."));
   if (!trimmed.startsWith(CODE_PREFIX)) {
     throw new Error(tp('Comparison codes start with "{prefix}".', { prefix: CODE_PREFIX }));
   }

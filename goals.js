@@ -9,6 +9,7 @@
 // cannot farm points.
 
 import { metMinutes } from "./scoring.js";
+import { shortId } from "./secure-context.js";
 
 // field: the profile field graded, or an "@derived" metric computed below.
 // cmp:   "gte" (reach at least the target) or "lte" (stay at or under it).
@@ -139,7 +140,7 @@ export function clampPledgeTarget(templateId, target) {
 export function createPledge(templateId, target) {
   if (!goalTemplate(templateId)) return null;
   return {
-    id: "goal_" + crypto.randomUUID().slice(0, 8),
+    id: shortId("goal"),
     templateId,
     target: clampPledgeTarget(templateId, target),
     streak: 0,

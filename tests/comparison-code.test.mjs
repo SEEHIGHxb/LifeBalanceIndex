@@ -87,7 +87,9 @@ test("a legacy v1 code still decodes, dropping its level and points", () => {
 test("decodeComparisonCode rejects malformed, tampered, and unsupported codes", () => {
   assert.throws(() => decodeComparisonCode("hello"), /start with "LQ1-"/);
   assert.throws(() => decodeComparisonCode("LQ1-%%%not-base64%%%"), /damaged/);
-  assert.throws(() => decodeComparisonCode(""), /start with/);
+  // Nothing pasted is its own mistake: "codes start with LQ1-" misread it.
+  assert.throws(() => decodeComparisonCode(""), /Paste a friend's code first/);
+  assert.throws(() => decodeComparisonCode("   "), /Paste a friend's code first/);
 
   // A version that is neither 1 nor 2 is refused.
   assert.throws(() => decodeComparisonCode(forge({ v: 3, n: "X", a: Array(8).fill(50) })), /version/);

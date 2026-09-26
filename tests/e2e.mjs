@@ -529,6 +529,36 @@ try {
   await page.press("#friend-code", "Enter");
   const own = await page.evaluate(() => document.getElementById("friend-error")?.textContent || "");
   if (!/your own code/i.test(own) || (await readState()).friends.length) problems.push(`flow2b: your own comparison code was accepted (${own})`);
+  // Nothing pasted says so, not "codes start with LQ1-".
+  await page.fill("#friend-code", "");
+  await page.press("#friend-code", "Enter");
+  const empty = await page.evaluate(() => document.getElementById("friend-error")?.textContent || "");
+  if (!/paste a friend's code first/i.test(empty)) problems.push(`flow2b: an empty friend code said "${empty}"`);
+
+  // Profile: a cleared name is refused, not saved as "Guest".
+  await goTo("profile");
+  const nameBefore = (await readState()).profile.name;
+  await page.fill("#pf-name", "  ");
+  await page.click("#pf-save");
+  const nameErr = await page.evaluate(() => document.getElementById("pf-name-err")?.textContent || "");
+  if (!nameErr || (await readState()).profile.name !== nameBefore) problems.push(`flow2b: a blank name was saved (${nameErr})`);
+
+  // The Landing restores a backup, with no journey first. The backup is
+  // Profile's own export, restored in a fresh browser.
+  await page.goto(`${BASE}/#/profile`);
+  await page.waitForSelector("#btn-export-data");
+  const [download] = await Promise.all([page.waitForEvent("download"), page.click("#btn-export-data")]);
+  const backupPath = await download.path();
+  const fresh = await browser.newContext();
+  const landing = await fresh.newPage();
+  landing.on("pageerror", e => problems.push(`flow2b restore: uncaught: ${e.message}`));
+  await landing.goto(`${BASE}/`, { waitUntil: "networkidle" });
+  const [chooser] = await Promise.all([landing.waitForEvent("filechooser"), landing.click("#btn-restore-backup")]);
+  await chooser.setFiles(backupPath);
+  await landing.waitForSelector(ONBOARDED, { state: "attached", timeout: 10000 });
+  const restored = await landing.evaluate(() => JSON.parse(localStorage.getItem("lifequest_state")).profile.name);
+  if (restored !== nameBefore) problems.push(`flow2b: the Landing restored "${restored}", not "${nameBefore}"`);
+  await fresh.close();
 } catch (err) {
   problems.push(`flow2b (refused answers): ${err.message}`);
 }

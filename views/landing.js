@@ -65,7 +65,11 @@ export function landingMarkup({ resume = false } = {}) {
         ${label(t("Begin"))}
         <div class="careers-row">
           <p class="careers-head">${escapeHtml(t("Eight chapters."))}<br>${escapeHtml(t("One star at the end."))}</p>
-          <a class="pill" href="#/journey">${escapeHtml(cta)}</a>
+          <div class="careers-actions">
+            <a class="pill" href="#/journey">${escapeHtml(cta)}</a>
+            <button type="button" id="btn-restore-backup" class="linkbtn">${escapeHtml(t("Restore from a backup"))}</button>
+            <input type="file" id="restore-file-input" accept="application/json,.json" class="d-none" aria-hidden="true" tabindex="-1">
+          </div>
         </div>
       </div></section>
     </div>`;

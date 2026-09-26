@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `107`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `108`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.52.2] — 2026-09-26 (APP_VERSION 108)
+
+### Fixed
+- **Complete Assessment did nothing** at the end of the first-run journey
+  when any answer had a decimal (a weight of 65.5, a height of 170.5). The
+  browser's own form check rejected it, since a number box with no `step`
+  takes whole numbers only, but the field was on a hidden screen, so it
+  dropped the submit without a word. The journey form and the in-depth
+  runway form are now `novalidate`: the app's own check, which accepts
+  decimals and runs over every screen on submit, is the only judge. Found by
+  a tester.
 
 ## [2.52.1] — 2026-09-26 (APP_VERSION 107)
 

@@ -15,6 +15,7 @@ import {
 } from "./instrument-forms.js";
 import { escapeHtml, scrollIntoViewGently } from "./helpers.js";
 import { applyDraft, saveDraft, clearDraft } from "../draft.js";
+import { isCarrying } from "./lang-carry.js";
 import { pageHead } from "./stage-page.js";
 import { emblemImg } from "./onboarding.js";
 import { chapterOf, aspectName } from "./news.js";
@@ -86,7 +87,9 @@ export function renderCheckin(containerId, state, onComplete) {
   // reads every instrument straight off the DOM at submit time and tracks no
   // "touched" sets, so restoring the controls is the whole job.
   const checkinForm = document.getElementById("checkin-form");
-  if (applyDraft("checkin", checkinForm)) {
+  // Not after a language switch, which re-renders from this same draft: the
+  // reader never left, so there is nothing to have picked up.
+  if (applyDraft("checkin", checkinForm) && !isCarrying()) {
     document.getElementById("checkin-resume").classList.remove("d-none");
   }
   const saveCheckin = () => saveDraft("checkin", checkinForm, {});

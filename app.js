@@ -23,6 +23,7 @@ import { APP_VERSION } from "./version.js";
 import { syncReduceMotionAttr } from "./motion.js";
 import { disposeMotion } from "./views/motion-mount.js";
 import { bindMenu, renderMenu, closeMenu, syncMenuRoute } from "./views/menu.js";
+import { withCarriedScreen } from "./views/lang-carry.js";
 import { readDraft } from "./draft.js";
 import { bindLumi, closeLumi, setLumiAvailable } from "./views/lumi.js";
 
@@ -119,7 +120,13 @@ function setupLanguageToggle() {
   btn.parentNode.replaceChild(newBtn, btn);
   newBtn.addEventListener("click", () => {
     setLang(getLang() === "th" ? "en" : "th");
-    initializeApp(); // re-render everything in the new language
+    // Re-render everything in the new language, carrying across whatever is
+    // half-typed and the screen a stepped form is on (views/lang-carry.js).
+    withCarriedScreen(document.getElementById("main-view"), initializeApp);
+    // initializeApp swaps this button for a fresh clone, which drops keyboard
+    // focus to <body>; hand it to the new button so the next Tab goes on from
+    // where the reader was.
+    document.getElementById("btn-lang")?.focus({ preventScroll: true });
   });
 }
 

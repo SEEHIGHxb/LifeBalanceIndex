@@ -24,13 +24,27 @@ function readStoredLang() {
 
 let currentLang = readStoredLang();
 
+// Content modules that build translated text ONCE, when they are first
+// imported, register here to rebuild it when the language changes. Without
+// this the journey's questions stayed in whatever language the page loaded
+// in: the header toggle re-rendered every screen, but from strings that had
+// already been translated at import time.
+const langListeners = new Set();
+
+export function onLangChange(listener) {
+  langListeners.add(listener);
+  return () => langListeners.delete(listener);
+}
+
 export function getLang() {
   return currentLang;
 }
 
 export function setLang(lang) {
   if (!SUPPORTED_LANGS.includes(lang)) return currentLang;
+  const changed = lang !== currentLang;
   currentLang = lang;
+  if (changed) langListeners.forEach(listener => listener(lang));
   try {
     if (typeof localStorage !== "undefined") {
       localStorage.setItem(LANG_STORAGE_KEY, lang);

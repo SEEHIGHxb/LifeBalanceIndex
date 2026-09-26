@@ -38,6 +38,7 @@ import { typedMarkup, typeIn, settleIn, burst, onAbort, SPRITES, isQuietChapter 
 import { label } from "./stage-page.js";
 import { chapterOf, dotDate, shiftSummary, starThumb, newsRow } from "./news.js";
 import { animate, easeStar, isReduced } from "../motion.js";
+import { carriedStep } from "./lang-carry.js";
 
 // Form ids are "rev-<profileField>" so errors from validateProfile (keyed by
 // field name) map straight onto the numberField error spans.
@@ -419,6 +420,9 @@ export function renderReview(containerId, state, onComplete) {
   // abort the wipe before its second half.
   const land = (i, { forward, signal = null }) => {
     current = i;
+    // Published for views/lang-carry.js: a language switch re-renders the
+    // review, and without this it came back on the first screen.
+    form.dataset.step = String(i);
     STEPS.forEach((_, k) => page(k).classList.toggle("d-none", k !== i));
     scrollIntoViewGently(container, { block: "start" });
     page(i).querySelector(".q-title")?.focus({ preventScroll: true });
@@ -441,6 +445,15 @@ export function renderReview(containerId, state, onComplete) {
       .catch(err => { land(i, { forward: true }); reportMotion(err); })
       .finally(() => { busy = false; });
   };
+
+  // Back on the screen the reader was on when they switched language. Not
+  // announced as an arrival: focus stays with the language button.
+  const carried = carriedStep("weekly-review-form");
+  if (carried !== null && carried > 0 && carried < STEPS.length) {
+    current = carried;
+    form.dataset.step = String(carried);
+    STEPS.forEach((_, k) => page(k).classList.toggle("d-none", k !== carried));
+  }
 
   const showEnding = (record, onContinue) => {
     const ending = document.getElementById("rv-ending");

@@ -48,6 +48,7 @@ import { animate, easeStar, isReduced } from "../motion.js";
 import { SOURCES } from "../benchmarks.js";
 import { INSTRUMENTS } from "../surveys.js";
 import { t, tp } from "../i18n.js";
+import { carriedStep, isCarrying } from "./lang-carry.js";
 
 // The form is long enough that losing it hurts. draft.js keeps a scratch copy
 // under this name so a reload resumes instead of restarting. Cleared the moment
@@ -406,6 +407,9 @@ export function renderOnboarding(containerId, onComplete) {
   const showScreen = (index, { moveFocus = true } = {}) => {
     const forward = moveFocus && index > currentScreen;
     currentScreen = index;
+    // Published for views/lang-carry.js, so a language switch comes back to
+    // this screen rather than to the last one a draft happened to be saved on.
+    form.dataset.step = String(index);
     screens.forEach((_, i) => pageEl(i).classList.toggle("d-none", i !== index));
     const page = pageEl(index);
     syncReveal(page);
@@ -506,7 +510,9 @@ export function renderOnboarding(containerId, onComplete) {
     // an unconditional call here would do nothing except require a live DOM at
     // render time -- which the view tests deliberately do not provide.
     syncCoupleBlock();
-    document.getElementById("onb-resume").classList.remove("d-none");
+    // Not after a language switch: the reader never left, so there is nothing
+    // to have picked up.
+    if (!isCarrying()) document.getElementById("onb-resume").classList.remove("d-none");
   }
 
   // WHERE A RESUMED READER LANDS: the screen they saved on, or the first screen
@@ -533,7 +539,12 @@ export function renderOnboarding(containerId, onComplete) {
     ? Math.min(Math.max(restored.step, 0), lastIndex)
     : 0;
   const resumeAt = firstIncompleteUpTo(savedStep);
-  showScreen(isSkipped(resumeAt) ? (nextVisible(resumeAt, 1) ?? 0) : resumeAt, { moveFocus: false });
+  // A language switch re-renders the screen the reader is on, even one they
+  // went Back to or have not typed on yet; the draft's step only moves when
+  // something is typed, so it can lag behind by a screen or more.
+  const carried = carriedStep("onboarding-form");
+  const landAt = carried !== null && carried >= 0 && carried <= lastIndex ? carried : resumeAt;
+  showScreen(isSkipped(landAt) ? (nextVisible(landAt, 1) ?? 0) : landAt, { moveFocus: false });
 
   // Start over: drop the draft and put the form back to the blank-first state
   // the markup was rendered in. form.reset() is exactly right here BECAUSE of

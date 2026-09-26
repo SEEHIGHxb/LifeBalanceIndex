@@ -15,7 +15,7 @@
 
 import { numberField, selectField, instrumentBlock } from "./instrument-forms.js";
 import { INSTRUMENTS } from "../surveys.js";
-import { t, tp } from "../i18n.js";
+import { t, tp, onLangChange } from "../i18n.js";
 
 // A screen is the unit the reader actually sees: one instrument, or one small
 // group of related numbers. `stem` is the line pinned above the items while
@@ -51,7 +51,7 @@ function fieldsScreen(id, title, stem, body) {
 // against. Putting them inside The Market -- where step 1 used to bury them
 // under a header promising benchmark comparison -- was the original reason a
 // tester read the finance step as three unrelated money questions.
-export const PROLOGUE = fieldsScreen(
+const buildPrologue = () => fieldsScreen(
   "prologue",
   t("Before you set out"),
   t("Six quick things, so the rest of the journey can compare you with people in a similar situation. Nothing here is scored."),
@@ -122,7 +122,7 @@ function highCount(values, floor = 3) {
   return values.filter(v => Number(v) >= floor).length;
 }
 
-export const CHAPTERS = [
+const buildChapters = () => [
   // --- 1. THE MARKET (finance) -------------------------------------------
   {
     aspect: "finance",
@@ -492,6 +492,19 @@ export const CHAPTERS = [
     }
   }
 ];
+
+// The content is built by a function rather than written as a constant because
+// every label, stem, question and fact in it is translated as it is built. A
+// constant froze them in the language the page loaded in, so pressing the
+// header's language button mid-journey re-rendered the screens with the old
+// language's questions. Rebuilt on every language change; `export let` keeps
+// the importers' bindings live, so each of them sees the new build.
+export let PROLOGUE = buildPrologue();
+export let CHAPTERS = buildChapters();
+onLangChange(() => {
+  PROLOGUE = buildPrologue();
+  CHAPTERS = buildChapters();
+});
 
 // Every screen in order, prologue first, each tagged with the chapter it
 // belongs to and whether it is that chapter's last. The engine renders from

@@ -5,6 +5,8 @@
 //
 // smoke.mjs proves the app boots; this proves the three flows a real user
 // actually depends on still work end-to-end (finding #13e):
+//   J. language button mid-journey -> the question text changes language, and
+//                             the answers and the screen survive the switch
 //   0. onboarding a11y     -> the error is announced, Next moves focus, and a
 //                             resumed draft lands on its first blank screen
 //   1. express onboarding  -> Home renders with a real baseline: your star,
@@ -207,6 +209,63 @@ try {
   problems.push(`flow0 (onboarding focus and resume): ${err.message}`);
 }
 
+// --- FLOW J: the language button, pressed mid-journey ---
+// The owner's report: the questions stayed in the old language. The journey's
+// content was built once at import, so the re-render drew the same strings.
+// Own context, at phone size. Asserts on the question text itself, that the
+// answer already given survives, and that the reader stays on the screen they
+// were reading -- including one they reached by Next and typed nothing on,
+// which the draft's saved step does not know about.
+try {
+  const ctxJ = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const pJ = await ctxJ.newPage();
+  pJ.on("pageerror", err => problems.push(`flowJ uncaught: ${err.message}`));
+  await pJ.goto(`${BASE}/#/journey`, { waitUntil: "networkidle" });
+  await pJ.waitForSelector("#onboarding-form", { timeout: 10000 });
+  const visible = () => pJ.evaluate(() => {
+    const pageEl = document.querySelector(".survey-page:not(.d-none)");
+    return {
+      page: pageEl?.id,
+      legend: pageEl?.querySelector("fieldset.survey-question legend")?.textContent.trim() || "",
+      checked: pageEl ? Array.from(pageEl.querySelectorAll('input[type="radio"]:checked'), r => r.name + "=" + r.value) : [],
+      name: document.getElementById("onb-name")?.value,
+      income: document.getElementById("onb-income")?.value,
+      resumeShown: !document.getElementById("onb-resume").classList.contains("d-none")
+    };
+  });
+  // Prologue and the money screen, so the CFPB questions are next.
+  await pJ.fill("#onb-name", "Lang Runner");
+  await pJ.evaluate(() => {
+    const scope = document.querySelector(".survey-page:not(.d-none)");
+    scope.querySelectorAll('input[type="number"]').forEach(i => { i.value = "30"; i.dispatchEvent(new Event("input", { bubbles: true })); });
+    scope.querySelectorAll("select").forEach(s => { s.value = s.options[s.options.length - 1].value; s.dispatchEvent(new Event("change", { bubbles: true })); });
+  });
+  await pJ.click(".survey-page:not(.d-none) .btn-onb-next");
+  await pJ.fill("#onb-income", "25000");
+  await pJ.fill("#onb-savings", "3000");
+  await pJ.click(".survey-page:not(.d-none) .btn-onb-next");
+  const blank = await visible();
+  await pJ.click("#btn-lang");
+  const blankTh = await visible();
+  if (blankTh.page !== blank.page) problems.push(`flowJ: switching language on an untouched screen moved ${blank.page} to ${blankTh.page}`);
+
+  await pJ.check('.survey-page:not(.d-none) input[name="cfpb-q0"] >> nth=2', { force: true });
+  const th = await visible();
+  await pJ.click("#btn-lang");
+  const en = await visible();
+  if (!/[฀-๿]/.test(th.legend)) problems.push(`flowJ: after switching to Thai the question still reads "${th.legend}"`);
+  if (/[฀-๿]/.test(en.legend) || en.legend === th.legend) problems.push(`flowJ: after switching back the question reads "${en.legend}"`);
+  if (en.page !== th.page) problems.push(`flowJ: the switch moved the reader from ${th.page} to ${en.page}`);
+  if (en.checked.join() !== th.checked.join() || en.checked.length !== 1) {
+    problems.push(`flowJ: the answer did not survive the switch (${th.checked} -> ${en.checked})`);
+  }
+  if (en.name !== "Lang Runner" || en.income !== "25000") problems.push("flowJ: earlier answers were lost on the switch");
+  if (en.resumeShown) problems.push('flowJ: a language switch showed "Picked up where you left off"');
+  await ctxJ.close();
+} catch (err) {
+  problems.push(`flowJ (language switch mid-journey): ${err.message}`);
+}
+
 // --- FLOW 1: full onboarding -> dashboard ---
 // Blank-first: nothing is pre-filled, every required field must be answered,
 // and there is no express shortcut. Fill every screen at once, even the hidden
@@ -330,6 +389,22 @@ try {
   await page.reload({ waitUntil: "networkidle" });
   await goTo("review");
   await page.waitForSelector("#weekly-review-form", { timeout: 10000 });
+
+  // The language button mid-review: the review has no draft, so before the fix
+  // a switch rebuilt it on its first screen with last week's numbers. Switched
+  // twice so the flows after this one still start in English.
+  await page.click(".rv-step:not(.d-none) .rv-next");
+  await page.waitForSelector("#rv-step-1:not(.d-none)", { timeout: 5000 });
+  await page.fill("#rev-weeklyVigorousDays", "5");
+  await page.click("#btn-lang");
+  await page.click("#btn-lang");
+  const kept = await page.evaluate(() => ({
+    step: document.querySelector(".rv-step:not(.d-none)")?.id,
+    days: document.getElementById("rev-weeklyVigorousDays")?.value
+  }));
+  if (kept.step !== "rv-step-1") problems.push(`flow2: a language switch moved the review from rv-step-1 to ${kept.step}`);
+  if (kept.days !== "5") problems.push(`flow2: a language switch dropped a typed review answer (5 -> ${kept.days})`);
+  await page.click(".rv-step:not(.d-none) .rv-back");
 
   // The form is prefilled; only touch what changed this week.
   await walkReview({ "rev-waterLiters": "2.5" });

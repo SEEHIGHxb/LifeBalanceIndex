@@ -42,6 +42,7 @@ const APP_SHELL = [
   "./motion.js",
   "./views/helpers.js",
   "./views/menu.js",
+  "./views/lang-carry.js",
   "./views/motion-mount.js",
   "./views/instrument-forms.js",
   "./views/lumi.js",

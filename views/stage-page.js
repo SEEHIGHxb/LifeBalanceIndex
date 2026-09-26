@@ -84,17 +84,36 @@ export function heroMarkup({ mark, word, inc, srTitle, tapLabel, wash = "" }) {
 // smaller line, then whatever the page puts under them. One short band, not a
 // screen; a tap on the mark still bursts. `mark` and `body` are trusted markup
 // built by the caller; every other value is text and is escaped here.
-export function topMarkup({ mark, word, inc, body = "", tapLabel, wash = "" }) {
-  return `
-    <section class="panel page-top"${wash ? ` style="background: ${wash};"` : ""}>
-      <div class="burst-layer" aria-hidden="true"></div>
-      <div class="wrap page-top-grid">
+//
+// With a `plate` (a region photograph's path, from CHAPTERS), the mark and the
+// name sit on the photograph and the body runs under it on the wash, so a
+// region's emblem and its picture read as one thing (the owner, 2026-09-26).
+export function topMarkup({ mark, word, inc, body = "", tapLabel, wash = "", plate = "" }) {
+  const head = `
         <div class="page-top-mark">
           <div class="mark">${mark}</div>
           <button class="mark-hit" type="button" aria-label="${escapeHtml(tapLabel)}"></button>
+        </div>`;
+  const name = `<h2 class="page-top-word">${escapeHtml(word)} <small>${escapeHtml(inc)}</small></h2>`;
+  const style = wash ? ` style="background: ${wash};"` : "";
+  if (plate) {
+    return `
+    <section class="panel page-top has-plate"${style}>
+      <div class="burst-layer" aria-hidden="true"></div>
+      <div class="page-top-plate" style="background-image: url('${plate}');">
+        <div class="wrap page-top-grid">${head}
+          <div class="page-top-text">${name}</div>
         </div>
+      </div>
+      <div class="wrap page-top-body">${body}</div>
+    </section>`;
+  }
+  return `
+    <section class="panel page-top"${style}>
+      <div class="burst-layer" aria-hidden="true"></div>
+      <div class="wrap page-top-grid">${head}
         <div class="page-top-text">
-          <h2 class="page-top-word">${escapeHtml(word)} <small>${escapeHtml(inc)}</small></h2>
+          ${name}
           ${body}
         </div>
       </div>

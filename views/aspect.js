@@ -5,18 +5,23 @@
 // the page is opened from Home's aspect rows every week, so it reads at a
 // glance and keeps the long explanations one click away.
 //
+// Shorter again on phones since the owner's map of 2026-09-26 (a page nobody
+// scrolls to the bottom of hides what is down there): the emblem sits on the
+// region's photograph, and nothing is said twice.
+//
 // Top to bottom:
 //   notice      the Mental page's duty-of-care notice, past the cutoff; still
-//   top         the region's emblem and name, your score, grade and standing,
-//               what the aspect covers and how sure the score is
-//   standing    the percentile gauge and the grade in a line; the notes, the
-//               guideline checks, and under "How this is worked out" the
-//               grade's reasoning, the estimate notes and the sources
-//   parts       one row per component, and the facts measured but not scored
-//   band        the region's photograph, as a strip
-//   trend       the weekly snapshots, newest first
+//   top         the emblem and the name on the region's photograph, then the
+//               grade, the score, where it stands and how sure it is
+//   standing    the percentile gauge and its exact figure; the notes and the
+//               guideline checks; under "How this is worked out" what the
+//               aspect covers, the grade's reasoning, the percentile's
+//               definition, the estimate notes and the sources
+//   parts       one row per component; the facts measured but not scored,
+//               folded
+//   trend       the last few weekly snapshots as one strip, oldest to newest
 //   focus       the suggestions for this aspect, then how it is re-measured
-//               and the call to do it
+//               and the call to do it, in one line
 //
 // The Still Water and The Commons are quiet regions, and a page beside the
 // care notice is quiet too: nothing bursts there.
@@ -29,11 +34,12 @@ import { gradeForAspect } from "../grades.js";
 import { criteriaForAspect } from "../criteria.js";
 import { CHAPTERS } from "./journey.js";
 import { isQuietChapter } from "./stage.js";
-import { topMarkup, bandMarkup, label, renderStagePage } from "./stage-page.js";
-import { dotDate, newsRow } from "./news.js";
+import { topMarkup, label, renderStagePage } from "./stage-page.js";
+import { dotDate } from "./news.js";
+import { percentileBand } from "../benchmarks.js";
 import {
   escapeHtml, confidenceBadge, componentConfidenceChip, gradeBadge, percentilePhrase,
-  benchmarkStanding, methodTag, mentalHealthNotice, criteriaCard, CHECKIN_ASPECTS
+  methodTag, mentalHealthNotice, criteriaCard, CHECKIN_ASPECTS
 } from "./helpers.js";
 
 // The weekly-review inputs that re-measure each aspect. Mental and
@@ -48,7 +54,8 @@ const WEEKLY_MEASURED = {
   humanityFuture: "Learning hours"
 };
 
-const TREND_ROWS = 8;
+// Four weeks fit across a phone; the trend is the direction, not the archive.
+const TREND_CELLS = 4;
 const MINUS = "−";
 const signed = (d) => (d > 0 ? `+${d}` : d < 0 ? `${MINUS}${Math.abs(d)}` : "0");
 
@@ -66,7 +73,6 @@ function readAspect(state, key) {
     key,
     detail,
     chapter: CHAPTERS[index],
-    index,
     b,
     grade,
     // Set only when the aspect HAS a benchmark but that benchmark declines to
@@ -116,10 +122,12 @@ function gradeBlock(a) {
     </div>`;
 }
 
-// The top's own body: the grade and score, where they stand, what the aspect
-// covers and how sure the score is.
+// Under the photograph: the grade and score, where they stand with the band's
+// two-word chip, and how sure the score is.
 function topBody(a) {
-  const { detail, chapter } = a;
+  const { detail, b } = a;
+  const band = b && Number.isFinite(b.percentile) ? percentileBand(b.percentile) : null;
+  const chip = band ? ` <span class="percentile-band band-${band.key}">${t(band.label)}</span>` : "";
   const conf = detail.confidence && detail.confidence.tier ? `
     <p class="aspect-confidence-line">
       ${confidenceBadge(detail.confidence)}
@@ -128,10 +136,11 @@ function topBody(a) {
   return `
     <div class="aspect-top-read">
       ${gradeBlock(a)}
-      <p class="page-top-lead aspect-standing">${escapeHtml(standingLine(a))}</p>
-    </div>
-    <p class="aspect-blurb">${escapeHtml(detail.blurb)} <em class="aspect-theme">${escapeHtml(chapter.theme)}</em></p>
-    ${conf}`;
+      <div class="aspect-top-lines">
+        <p class="page-top-lead aspect-standing">${escapeHtml(standingLine(a))}${chip}</p>
+        ${conf}
+      </div>
+    </div>`;
 }
 
 // The grade in one line, and the reasoning behind it for "How this is worked
@@ -181,40 +190,56 @@ function gauge(b) {
     </div>`;
 }
 
-// Where you stand and the grade stay open; why, and from what, fold under
-// "How this is worked out".
+// The exact figure under the gauge. The plain-language standing and its chip
+// are in the top, so they are not said again here.
+function gaugeCaption(b) {
+  if (!Number.isFinite(b.percentile)) return "";
+  const detail = tp("{pct} percentile · typical range {low}–{high}", {
+    pct: percentileLabel(b.percentile),
+    low: percentileLabel(b.range.low),
+    high: percentileLabel(b.range.high)
+  });
+  const verified = b.verified ? ` · <span class="benchmark-verified">${t("in-depth verified")}</span>` : "";
+  return `<p class="benchmark-detail">${detail} <span class="benchmark-method">(${methodTag(b.method)})</span>${verified}</p>`;
+}
+
+// Where you stand stays open, with anything that changes how to read it (a
+// missing grade, an estimate, uniform answers, the guideline checks); why, and
+// from what, fold under "How this is worked out". A letter grade is already in
+// the top, so its sentence folds too; a missing one keeps its sentence open,
+// because that sentence is the reason and the way to fix it.
 function standingSection(a) {
-  const { b, detail, chapter } = a;
+  const { b, detail, chapter, grade } = a;
   const reassess = a.canReassess ? ` <a href="#/checkin">${t("Start Re-assessment")}</a>` : "";
   const note = gradeNote(a);
   const estimated = detail.confidence && detail.confidence.tier === "estimated" ? `
     <p class="aspect-note"><strong>${t("Estimated score.")}</strong> ${tp("This score comes from default answers. Answer the {aspect} questions or submit a Weekly Review to confirm it.", { aspect: detail.label })}${reassess}</p>` : "";
   const uniform = detail.flaggedInstruments && detail.flaggedInstruments.length > 0 ? `
     <p class="aspect-note"><strong>${t("Uniform answers detected.")}</strong> ${t("Some questionnaire answers all sat on the same option, so they are not counted as a confirmed measurement. Re-answer them honestly to confirm this score.")}</p>` : "";
-  const open = b ? `
-    ${gauge(b)}
-    <div class="gauge-caption">
-      ${benchmarkStanding(b)}
-      ${Number.isFinite(b.percentile) ? `<p class="benchmark-method benchmark-method-line">(${methodTag(b.method)})</p>` : ""}
-    </div>` : `<p class="aspect-note">${t("No baseline data for this comparison yet — re-run the onboarding sync to unlock it.")}</p>`;
-  const more = b ? `
-    ${note.why}
+  const open = b
+    ? `${gauge(b)}${gaugeCaption(b)}`
+    : `<p class="aspect-note">${t("No baseline data for this comparison yet — re-run the onboarding sync to unlock it.")}</p>`;
+  const blurb = `<p class="aspect-blurb">${escapeHtml(detail.blurb)} <em class="aspect-theme">${escapeHtml(chapter.theme)}</em></p>`;
+  const definition = b && Number.isFinite(b.percentile)
+    ? `<p class="gauge-note percentile-definition">${t("“Percentile” = the share of people you're ahead of, so higher is better. The range shows how precise this estimate is, not a statistical confidence interval.")}</p>`
+    : "";
+  const sources = b ? `
     <p class="gauge-summary">${escapeHtml(b.summary)}</p>
     ${b.notes.map(n => `<p class="gauge-note">${escapeHtml(n)}</p>`).join("")}
     <p class="aspect-sources-head"><strong>${t("Sources")}</strong></p>
     <ul class="aspect-sources">
       ${b.sources.map(src => `<li><a href="${escapeHtml(src.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(src.label)}</a></li>`).join("")}
-    </ul>` : note.why;
+    </ul>` : "";
   return `
     <section class="panel statement aspect-society"><div class="wrap split">
       ${label(t("Standing vs Society"))}
       <div>
         ${open}
-        <div class="grade-explainer">${note.line}</div>
+        ${grade ? "" : `<div class="grade-explainer">${note.line}</div>`}
         ${isQuietChapter(chapter) ? `<p class="aspect-note aspect-quiet">${t("This region is kept still on purpose.")}</p>` : ""}
         ${estimated}${uniform}
         ${criteriaCard(a.criteria)}
-        ${more.trim() ? `<details class="aspect-more"><summary>${t("How this is worked out")}</summary>${more}</details>` : ""}
+        <details class="aspect-more"><summary>${t("How this is worked out")}</summary>${blurb}${grade ? note.line : ""}${note.why}${definition}${sources}</details>
       </div>
     </div></section>`;
 }
@@ -250,10 +275,10 @@ function factsBlock(detail) {
       <small class="fact-detail">${escapeHtml(detail.invite.text)} <a href="${escapeHtml(detail.invite.href)}">${escapeHtml(detail.invite.linkLabel)}</a></small>
     </li>` : "";
   return `
-    <div class="facts">
-      <h3 class="card-title">${t("Measured, Not Scored")}</h3>
+    <details class="aspect-more facts">
+      <summary>${t("Measured, Not Scored")}</summary>
       <ul class="fact-list">${facts}${invite}</ul>
-    </div>`;
+    </details>`;
 }
 
 function partsSection(a) {
@@ -268,26 +293,36 @@ function partsSection(a) {
     </div></section>`;
 }
 
-// The weekly snapshots, newest first, each against the week before it.
-function trendSection(a) {
-  const series = a.detail.trend.slice(-(TREND_ROWS + 1));
-  const rows = series.map((s, k) => {
-    const prev = series[k - 1];
-    const sub = !prev ? "" : prev.value === s.value
-      ? t("Same as the week before")
-      : tp("{d} on the week before", { d: signed(s.value - prev.value) });
-    return { date: dotDate(s.date), title: tp("Score {n}", { n: s.value }), sub };
-  }).reverse().slice(0, TREND_ROWS);
-  const list = rows.length
-    ? rows.map(r => newsRow({ ...r, kind: t("Weekly snapshot"), thumb: "" })).join("")
-    : `<li class="newsrow newsrow-empty">${escapeHtml(t("No snapshots yet — trends appear after your first weekly sync."))}</li>`;
+// The last few weekly snapshots as one strip, oldest to newest, each with its
+// change on the week before. The change reads as a sign and a number; a screen
+// reader hears the whole sentence.
+function trendCell(s, prev) {
+  const d = prev ? s.value - prev.value : null;
+  const said = d === null ? "" : d === 0
+    ? t("Same as the week before")
+    : tp("{d} on the week before", { d: signed(d) });
+  const dir = d === null || d === 0 ? "flat" : d > 0 ? "up" : "down";
   return `
-    <section class="panel news aspect-trend">
-      <div class="wrap split news-block">
-        <div class="news-side">${label(t("Trend"))}</div>
-        <ul class="newslist">${list}</ul>
-      </div>
-    </section>`;
+    <li class="trend-cell trend-${dir}">
+      <span class="trend-date">${escapeHtml(dotDate(s.date))}</span>
+      <b class="trend-score" aria-hidden="true">${escapeHtml(s.value)}</b>
+      <small class="trend-delta" aria-hidden="true">${d === null ? "" : escapeHtml(signed(d))}</small>
+      <span class="sr-only">${escapeHtml(tp("Score {n}", { n: s.value }))}${said ? `, ${escapeHtml(said)}` : ""}</span>
+    </li>`;
+}
+
+function trendSection(a) {
+  // One snapshot more than is shown, so the first cell has a week before it.
+  const series = a.detail.trend.slice(-(TREND_CELLS + 1));
+  const offset = series.length > TREND_CELLS ? 1 : 0;
+  const body = series.length
+    ? `<ol class="trend-strip">${series.slice(offset).map((s, k) => trendCell(s, series[k + offset - 1])).join("")}</ol>`
+    : `<p class="aspect-note">${escapeHtml(t("No snapshots yet — trends appear after your first weekly sync."))}</p>`;
+  return `
+    <section class="panel statement aspect-trend"><div class="wrap split">
+      ${label(t("Trend"))}
+      <div>${body}</div>
+    </div></section>`;
 }
 
 // How the aspect is re-measured, and the call to do it.
@@ -299,15 +334,17 @@ function measuredRow(a) {
     head = tp("Your weekly review re-measures this aspect from: {fields}.", { fields: t(weekly) });
     action = stateManager.isWeeklyReviewDue()
       ? `<a href="#/review" class="pill">${t("Start Weekly Review")}</a>`
-      : `<p class="careers-note">${t("Reviewed this week — the next review opens next week.")}</p>`;
+      : `<span class="careers-note">${t("Reviewed this week — the next review opens next week.")}</span>`;
   } else {
     head = t("This aspect is measured by its questionnaires rather than weekly quantities — update it at the monthly re-assessment.");
     if (a.state.baseline) action = `<a href="#/checkin" class="pill">${t("Start Re-assessment")}</a>`;
   }
+  // A note joins the sentence; a button keeps its own line.
+  const inline = action.startsWith("<span");
   return `
     <div class="careers-row aspect-measured">
-      <p class="careers-head">${escapeHtml(head)}</p>
-      ${action}
+      <p class="careers-head">${escapeHtml(head)}${inline ? ` ${action}` : ""}</p>
+      ${inline ? "" : action}
     </div>`;
 }
 
@@ -339,11 +376,11 @@ export function aspectMarkup(a) {
         inc: detail.label,
         tapLabel: t("Play with the star"),
         wash: chapter.wash,
+        plate: `./assets/regions/${chapter.art}.jpg`,
         body: topBody(a)
       })}
       ${standingSection(a)}
       ${partsSection(a)}
-      ${bandMarkup([a.index])}
       ${trendSection(a)}
       ${focusSection(a)}
     </div>`;

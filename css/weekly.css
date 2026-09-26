@@ -11,10 +11,11 @@
   border-radius: 18%;
   box-shadow: 0 calc(14 * var(--px)) calc(40 * var(--px)) rgba(0, 0, 0, 0.12);
 }
-/* The grade and score beside where they stand, in the top. */
-.aspect-top-read { display: flex; flex-wrap: wrap; align-items: center; gap: calc(20 * var(--px)) calc(50 * var(--px)); margin: 0 0 calc(20 * var(--px)); }
-.aspect-page .page-top-text .aspect-standing { flex: 1 1 calc(600 * var(--px)); margin: 0; }
-.aspect-page .page-top-text .aspect-blurb { color: #333333; }
+/* Under the photograph: the grade and score beside where they stand. */
+.aspect-top-read { display: flex; align-items: center; gap: calc(50 * var(--px)); }
+.aspect-top-lines { display: grid; gap: 8px; min-width: 0; }
+.aspect-page .aspect-standing .percentile-band { margin-left: 6px; vertical-align: 1px; }
+.aspect-page .aspect-confidence-line { margin: 0; }
 
 /* The long sections carry prose and small print, not one statement each: a
    tighter measure than the Landing's. */
@@ -34,6 +35,7 @@
   padding: max(12px, calc(30 * var(--px))) max(18px, calc(44 * var(--px)));
 }
 .aspect-page .aspect-theme { font-style: italic; }
+.aspect-page .benchmark-detail { margin: 12px 0 0; font-size: max(14px, calc(22 * var(--px))); color: #444444; }
 .aspect-page .grade-explainer { margin: calc(30 * var(--px)) 0 calc(30 * var(--px)); }
 .aspect-page .grade-explainer-note,
 .aspect-page .gauge-note,
@@ -90,9 +92,7 @@
 .pr-score small { font-size: max(11px, calc(15 * var(--px))); font-weight: 700; }
 .part-row .meter { width: 100%; max-width: none; margin: 0; }
 .aspect-page .statement .pr-desc { grid-column: 1 / -1; margin: 0; font-size: max(14px, calc(20 * var(--px))); color: #444444; }
-.facts { margin-top: calc(50 * var(--px)); }
-.facts .card-title { margin: 0; font-size: max(15px, calc(26 * var(--px))); }
-.fact-list { margin: calc(20 * var(--px)) 0 0; padding: 0; list-style: none; }
+.fact-list { margin: 0; padding: 0; list-style: none; }
 .fact-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -105,28 +105,28 @@
 .fact-value { font-size: max(15px, calc(24 * var(--px))); }
 .fact-detail { grid-column: 1 / -1; font-size: max(13px, calc(19 * var(--px))); line-height: 1.7; color: #444444; }
 
-/* The region's photograph as a strip, not a screen. */
-.aspect-page .photoband { height: calc(420 * var(--px)); margin-top: 0; }
-.aspect-page .photoband span { bottom: calc(50 * var(--px)); font-size: calc(90 * var(--px)); }
-
-/* The trend: the date and the score, no picture per row. */
-.aspect-trend { padding: calc(100 * var(--px)) 0 calc(90 * var(--px)); }
-.aspect-trend .newsrow,
-.aspect-trend .newslist > li:first-child > .newsrow,
-.aspect-trend .newslist > .newsrow:first-child {
-  grid-template-columns: calc(333 * var(--px)) minmax(0, 1fr);
-  align-items: center;
-  min-height: 0;
-  padding: calc(22 * var(--px)) 0;
+/* The trend: one strip of the last few weeks, oldest to newest. */
+.trend-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: calc(24 * var(--px)); max-width: calc(1400 * var(--px)); margin: 0; padding: 0; list-style: none; }
+.aspect-page .statement .trend-cell {
+  display: grid;
+  gap: 4px;
+  max-width: none;
+  margin: 0;
+  padding: calc(24 * var(--px));
+  border-radius: calc(20 * var(--px));
+  background: var(--frame-card);
+  line-height: 1.2;
 }
-.aspect-trend .newslist > li:first-child > .newsrow,
-.aspect-trend .newslist > .newsrow:first-child { padding-top: 0; }
+.trend-date { font-size: max(11px, calc(16 * var(--px))); font-weight: 700; letter-spacing: 0.04em; }
+.trend-score { font-family: var(--frame-word); font-weight: 400; font-size: max(28px, calc(70 * var(--px))); line-height: 1; }
+.trend-delta { min-height: 1.2em; font-weight: 700; font-size: max(12px, calc(18 * var(--px))); }
 
 /* Suggested focus, then how the aspect is re-measured. */
 .aspect-page .aspect-measured { margin-top: calc(40 * var(--px)); padding-top: calc(40 * var(--px)); border-top: 1px dashed rgba(0, 0, 0, 0.25); }
 .aspect-page .focus-list + .aspect-measured { margin-top: 0; border-top: 0; }
 .aspect-page .aspect-focus .wrap > div > .aspect-measured:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
 .aspect-page .aspect-measured .careers-head { margin: 0; font-size: max(15px, calc(26 * var(--px))); }
+.aspect-page .careers-head .careers-note { font-size: inherit; color: #444444; }
 
 .focus-list { margin: 0; padding: 0; list-style: none; }
 .aspect-page .focus-row { max-width: none; margin: 0; padding: calc(40 * var(--px)) 0; border-bottom: 1px dashed rgba(0, 0, 0, 0.25); }
@@ -332,19 +332,22 @@
 
 /* ================================================================ phones */
 @container (max-width: 900px) {
+  /* A phone screen is short: tighter sections and rows, same content. */
+  .aspect-page .statement { padding: calc(60 * var(--px)) 0 calc(56 * var(--px)); }
   .aspect-page .statement p,
-  .aspect-page .statement li { font-size: max(15px, calc(30 * var(--px))); }
-  .part-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .aspect-page .statement li { margin-bottom: calc(24 * var(--px)); font-size: max(15px, calc(30 * var(--px))); line-height: 1.6; }
+  .aspect-top-read { gap: calc(30 * var(--px)); }
+  .aspect-page .aspect-score-badge { padding: 8px 14px; }
+  .part-row { grid-template-columns: minmax(0, 1fr) auto; gap: 6px calc(20 * var(--px)); padding: calc(20 * var(--px)) 0; }
   .part-row .meter { grid-column: 1 / -1; }
-  .pr-score b { font-size: max(30px, calc(80 * var(--px))); }
-  .aspect-page .statement .pr-desc { font-size: max(14px, calc(26 * var(--px))); }
-  .aspect-page .photoband { height: calc(360 * var(--px)); }
-  .aspect-page .photoband span { font-size: calc(70 * var(--px)); }
-  .aspect-trend { padding: calc(90 * var(--px)) 0 calc(80 * var(--px)); }
-  .aspect-trend .newsrow,
-  .aspect-trend .newslist > li:first-child > .newsrow,
-  .aspect-trend .newslist > .newsrow:first-child { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: calc(24 * var(--px)) 0; }
-  .aspect-page .aspect-measured .careers-head { font-size: max(15px, calc(30 * var(--px))); }
+  .pr-score b { font-size: max(26px, calc(64 * var(--px))); }
+  .aspect-page .statement .pr-desc { font-size: max(13px, calc(25 * var(--px))); line-height: 1.5; }
+  .aspect-more { margin-top: calc(24 * var(--px)); }
+  .trend-strip { gap: calc(14 * var(--px)); }
+  .aspect-page .statement .trend-cell { padding: calc(18 * var(--px)); }
+  .trend-date { font-size: 10.5px; letter-spacing: 0; }
+  .aspect-page .focus-row { padding: calc(26 * var(--px)) 0; }
+  .aspect-page .aspect-measured .careers-head { font-size: max(15px, calc(28 * var(--px))); }
   .pledge-list { grid-template-columns: minmax(0, 1fr); gap: calc(40 * var(--px)); }
   .pledge { gap: calc(30 * var(--px)); }
   /* The sticker beside the text, the target box and Add under both. */

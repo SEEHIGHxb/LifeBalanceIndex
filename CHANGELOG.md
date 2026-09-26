@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `105`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `106`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.52.0] — 2026-09-26 (APP_VERSION 106)
+
+Shorter on phones, with the maps the owner approved on 2026-09-26: a long page
+loses the reader before the bottom, and whatever is down there goes unseen.
+
+### Changed
+- **The aspect page** (phone 2,900px → 1,790px; laptop 2,500px → 1,750px, for
+  The Market): the emblem and the region's name sit on the region's
+  photograph at the top, instead of the emblem on its own band and the
+  photograph as a strip four sections down (`plate` in `topMarkup`). Under
+  the photograph: the grade, the score, where it stands with its two-word
+  band, and how sure it is. Where it stands is said once; the gauge keeps
+  only its exact figure. What the aspect covers, a letter grade's sentence
+  and the percentile's definition join the reasoning and sources under "How
+  this is worked out"; a missing grade keeps its reason open. "Measured, not
+  scored" folds. The trend is one strip of the last four weeks, oldest to
+  newest, and the re-measure note is one sentence.
+- **Home on a phone** (3,470px → 2,860px): the eight aspects are a
+  two-by-four grid of tiles (emblem, name, score on its bar, grade), all on
+  one screen, instead of eight tall rows; the standing sentence stays on each
+  aspect page. Where to start and Recent use a smaller icon and two lines.
+
+### Removed
+- The orphaned string "Weekly snapshot", and the aspect page's unused
+  `.gauge-caption` and `.benchmark-method-line` styles.
 
 ## [2.51.0] — 2026-09-26 (APP_VERSION 105)
 

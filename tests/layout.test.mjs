@@ -143,3 +143,15 @@ test("every 100vh is followed by a dvh override in the same rule", () => {
     );
   }
 });
+
+// --- the eight aspects fit one phone screen --------------------------------
+
+test("on a phone the eight aspects are a two-column grid of tiles, not eight tall rows", () => {
+  // The owner, 2026-09-26: a long page loses the reader before the bottom.
+  // Eight rows stacked were 1,560px at 390 wide; as tiles two to a line they
+  // fit one screen.
+  const css = read("css/home.css");
+  const phone = css.slice(css.indexOf("@container (max-width: 900px)"));
+  assert.match(phone, /\.aspect-rows \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(phone, /\.ar-standing \{ display: none; \}/, "the standing sentence belongs to the aspect page on a phone");
+});

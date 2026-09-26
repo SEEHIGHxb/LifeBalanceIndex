@@ -81,29 +81,43 @@ test("a review done for the week lists the past reviews newest first", () => {
 
 // --- an aspect page ---------------------------------------------------------
 
-test("the trend lists the snapshots newest first, each against the week before", () => {
-  const snapshots = [60, 62, 62, 59].map((v, i) => ({
+test("the trend is one strip of the last four weeks, oldest to newest, each against the week before", () => {
+  const snapshots = [60, 62, 62, 59, 61].map((v, i) => ({
     date: `2026-09-0${i + 1}T00:00:00.000Z`, aspects: { ...STATE.aspects, physical: v }
   }));
   renderAspectPage(MAIN, { ...STATE, snapshots }, "physical");
   const out = html();
-  const dates = [...out.matchAll(/class="newsrow-date">([^<]*)</g)].map(m => m[1]);
-  assert.deepEqual(dates, ["2026.09.04", "2026.09.03", "2026.09.02", "2026.09.01"]);
-  assert.match(out, /Score 59<small>−3 on the week before<\/small>/);
-  assert.match(out, /Score 62<small>Same as the week before<\/small>/);
+  const dates = [...out.matchAll(/class="trend-date">([^<]*)</g)].map(m => m[1]);
+  // The fifth week back is read only so the first cell has a change to show.
+  assert.deepEqual(dates, ["2026.09.02", "2026.09.03", "2026.09.04", "2026.09.05"]);
+  assert.match(out, /class="trend-delta" aria-hidden="true">−3</);
+  assert.match(out, /class="sr-only">Score 59, −3 on the week before</);
+  assert.match(out, /class="sr-only">Score 62, Same as the week before</);
 });
 
-test("an aspect page is compact: a short top, component rows, and the reasoning folded", () => {
+test("an aspect page is compact: the emblem on the region's photograph, rows, and the reasoning folded", () => {
   renderAspectPage(MAIN, STATE, "finance");
   const out = html();
   assert.doesNotMatch(out, /class="hero"|class="panel mission"|region-card/);
+  // The emblem and the name sit on the photograph; no second strip of it.
+  assert.match(out, /class="page-top-plate" style="background-image: url\('\.\/assets\/regions\/[^']+\.jpg'\);"/);
+  assert.doesNotMatch(out, /class="photoband"/);
   assert.match(out, /<h2 class="page-top-word">The Market <small>[^<]+<\/small><\/h2>/);
   assert.match(out, /class="aspect-score-badge"/, "the grade and score sit in the top");
   assert.ok(out.indexOf("page-top") < out.indexOf("aspect-society"));
-  assert.match(out, /<details class="aspect-more"><summary>How this is worked out<\/summary>/);
+  // Where it stands is said once, in the top, not again under the gauge.
+  assert.equal((out.match(/Ahead of about/g) || []).length, 1);
+  assert.match(out, /<details class="aspect-more"><summary>How this is worked out<\/summary><p class="aspect-blurb">/);
   assert.ok(out.indexOf("aspect-more") < out.indexOf("aspect-parts"), "the sources fold inside the standing section");
   assert.match(out, /class="part-row"/);
+  assert.match(out, /<details class="aspect-more facts">\s*<summary>Measured, Not Scored<\/summary>/);
   assert.match(out, /class="careers-row aspect-measured"/);
+});
+
+test("an aspect with no grade keeps the reason open, not folded", () => {
+  renderAspectPage(MAIN, STATE, "relationships");
+  const open = html().split('<details class="aspect-more">')[0];
+  assert.match(open, /class="grade-explainer"><p><strong>Not ranked — on purpose\.<\/strong>/);
 });
 
 test("a quiet region's page says it is still on purpose, and a loud one does not", () => {

@@ -144,7 +144,29 @@
   font-size: max(15px, calc(24 * var(--px)));
   line-height: 1.7;
 }
-.page-top-text .page-top-lead { font-weight: 700; font-size: max(16px, calc(30 * var(--px))); }
+.page-top-text .page-top-lead,
+.page-top-body .page-top-lead { font-weight: 700; font-size: max(16px, calc(30 * var(--px))); }
+/* With a plate: the mark and the name on the region's photograph, darkened at
+   the foot so white type reads, and the body under it on the wash. */
+.page-top.has-plate { padding: 0 0 calc(60 * var(--px)); }
+.page-top-plate {
+  position: relative;
+  padding: calc(260 * var(--px)) 0 calc(50 * var(--px));
+  background-size: cover;
+  background-position: center;
+}
+.page-top-plate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 70%);
+  pointer-events: none;
+}
+.page-top-plate .page-top-grid { position: relative; grid-template-columns: calc(200 * var(--px)) minmax(0, 1fr); gap: calc(50 * var(--px)); align-items: end; }
+.page-top-plate .page-top-word { margin: 0; color: #ffffff; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45); }
+.page-top-plate .mark-hit:focus-visible { outline-color: #ffffff; }
+.page-top-body { padding-top: calc(50 * var(--px)); }
+.page-top-body p { margin: 0; font-weight: 500; font-size: max(15px, calc(24 * var(--px))); line-height: 1.6; }
 .page-top-text .page-top-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: calc(30 * var(--px)); }
 .goals .statement,
 .compare .statement,
@@ -545,6 +567,11 @@ a.newsrow:hover .newsrow-title { text-decoration: underline; text-underline-offs
   .page-top-text { display: contents; }
   .page-top-text > :not(.page-top-word) { grid-column: 1 / -1; }
   .page-top-text p { font-size: max(15px, calc(30 * var(--px))); }
+  .page-top.has-plate { padding: 0 0 calc(50 * var(--px)); }
+  .page-top-plate { padding: calc(230 * var(--px)) 0 calc(36 * var(--px)); }
+  .page-top-plate .page-top-grid { grid-template-columns: calc(150 * var(--px)) minmax(0, 1fr); gap: calc(30 * var(--px)); }
+  .page-top-body { padding-top: calc(40 * var(--px)); }
+  .page-top-body p { font-size: max(15px, calc(28 * var(--px))); }
   .goals .statement,
   .compare .statement,
   .aspect-page .statement { padding: calc(90 * var(--px)) 0 calc(80 * var(--px)); }

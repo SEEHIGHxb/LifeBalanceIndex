@@ -184,29 +184,52 @@
   .home-headline { grid-column: 1 / -1; margin: 0; font-size: max(15px, calc(30 * var(--px))); }
   .home-identity { grid-column: 1 / -1; }
   .home .todo-text { font-size: max(15px, calc(28 * var(--px))); }
-  .aspect-row {
-    grid-template-columns: calc(96 * var(--px)) minmax(0, 1fr) calc(150 * var(--px));
+  /* The eight aspects as a two-by-four grid of tiles, so all of them fit on
+     one screen (the owner, 2026-09-26). Each tile keeps the emblem, the name,
+     the score on its bar and the grade; the standing sentence is on the
+     aspect page the tile opens. */
+  .aspect-rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: calc(20 * var(--px)); }
+  .aspect-rows > li { display: grid; }
+  .aspect-row,
+  .aspect-rows > li:first-child .aspect-row {
+    grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas:
-      "emblem name score"
-      "emblem meter score"
-      "standing standing badges";
-    gap: calc(10 * var(--px)) calc(24 * var(--px));
-    padding: calc(28 * var(--px)) 0;
+      "emblem score"
+      "name name"
+      "meter meter"
+      "badges badges";
+    align-content: start;
+    gap: calc(14 * var(--px));
+    padding: calc(24 * var(--px));
+    border: 0;
+    border-radius: calc(24 * var(--px));
+    background: var(--wash);
   }
-  .ar-emblem { grid-area: emblem; align-self: start; border-radius: calc(16 * var(--px)); }
+  .ar-emblem { grid-area: emblem; width: calc(84 * var(--px)); border-radius: 0; background: none; }
+  .ar-emblem img { width: 100%; }
   .ar-name { grid-area: name; }
-  .ar-score { grid-area: score; font-size: max(34px, calc(88 * var(--px))); }
+  .ar-name b { font-size: max(12px, calc(24 * var(--px))); }
+  .ar-name small { font-size: max(11px, calc(21 * var(--px))); }
+  .ar-score { grid-area: score; align-self: center; font-size: max(30px, calc(76 * var(--px))); }
   .ar-meter { grid-area: meter; }
-  .ar-standing { grid-area: standing; font-size: 13px; }
-  .ar-badges { grid-area: badges; align-self: center; }
+  .ar-standing { display: none; }
+  .ar-badges { grid-area: badges; justify-content: flex-start; }
+  /* Where to start and Recent: a small icon beside two lines. The full
+     suggestion is on the aspect page the row opens. */
   .home-news .newsrow,
   .home-news .newslist > li:first-child > .newsrow,
   .home-news .newslist > .newsrow:first-child {
     grid-template-columns: auto minmax(0, 1fr);
-    gap: calc(24 * var(--px));
-    padding: calc(24 * var(--px)) 0;
+    gap: calc(10 * var(--px)) calc(24 * var(--px));
+    padding: calc(22 * var(--px)) 0;
   }
-  .home-news .newsrow-thumb { width: calc(110 * var(--px)); }
+  .home-news .newsrow-thumb { width: calc(76 * var(--px)); }
+  .home-news .newsrow-title small {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
   .wall { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .wall-col:nth-child(n + 4) { display: none; }
 }

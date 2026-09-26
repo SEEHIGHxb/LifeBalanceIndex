@@ -1340,7 +1340,6 @@ export const TH = {
   "Score {n}": "คะแนน {n}",
   "Same as the week before": "เท่ากับสัปดาห์ก่อน",
   "{d} on the week before": "{d} จากสัปดาห์ก่อน",
-  "Weekly snapshot": "ภาพรวมรายสัปดาห์",
   "This region is kept still on purpose.": "พื้นที่นี้ตั้งใจให้นิ่ง",
   "How was {region} this week?": "สัปดาห์นี้{region}เป็นอย่างไรบ้าง",
   "Weekly Review · {i} / {n}": "ทบทวนรายสัปดาห์ · {i} / {n}",

@@ -692,14 +692,6 @@ html {
   transform: translateX(-50%);
 }
 
-.gauge-caption {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 8px;
-  font-family: var(--font-sans);
-  color: var(--color-navy);
-}
 
 .gauge-summary {
   font-size: var(--text-base);
@@ -1255,9 +1247,7 @@ html {
   color: var(--color-text-secondary);
 }
 /* Keep the method tag whole: "(vs participation rates)" was breaking after
-   "participation", leaving an orphaned "rates)". Scoped to .benchmark-detail so
-   the standalone <p class="benchmark-method-line"> on the aspect page, which is
-   meant to be a block, is unaffected. */
+   "participation", leaving an orphaned "rates)". */
 .benchmark-detail .benchmark-method {
   white-space: nowrap;
 }
@@ -1268,7 +1258,6 @@ html {
   color: var(--color-text-secondary);
   line-height: 1.4;
 }
-.benchmark-method-line { margin-top: 4px; }
 
 /* Band chip: a coarse plain-language label next to the number. nowrap so a
    two-word band ("Around average") can never split, and tight tracking because

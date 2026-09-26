@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `108`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `109`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.52.3] — 2026-09-26 (APP_VERSION 109)
+
+### Fixed
+- **The language button left the questions in the old language.** The
+  journey's questions, screen titles, region names and facts were built once
+  when the page loaded, so pressing ไทย / EN mid-journey redrew the screens
+  with the old language's text (Home and the aspect pages kept old region
+  names too). They are now rebuilt on every language change (`onLangChange`
+  in `i18n.js`). The switch also keeps whatever is half-typed and the
+  screen you are on (`views/lang-carry.js`): before, the Weekly Review went
+  back to its first screen with last week's numbers, the journey could drop
+  back a screen, and unsaved Profile, runway, birthday and friend-code edits
+  were cleared. Found by a tester.
+- **An age outside 15-100 was saved without a word.** Since 2.52.2 turned off
+  the browser's form check, nothing held the journey's age to its range, and
+  150 was saved as 100. The app's own check now stops it at Next.
 
 ## [2.52.2] — 2026-09-26 (APP_VERSION 108)
 

@@ -34,9 +34,6 @@ but not a minor version.
 - **An empty friend code said codes start with "LQ1-".** It now says
   "Paste a friend's code first."
 
-### Needs review
-- Three new Thai strings in `th.js`, marked "v111, awaiting the owner's review".
-
 ## [2.52.4] — 2026-09-26 (APP_VERSION 110)
 
 ### Fixed

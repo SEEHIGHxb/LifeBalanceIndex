@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `114`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `115`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.54.1] — 2026-09-26 (APP_VERSION 115)
+
+### Changed
+- **The first visit is faster** (the owner: "the web took a bit long to load").
+  Measured on a phone profile (4G, 150 ms round trip, 4x CPU), the Landing is
+  drawn about 1.3 s sooner (3.9 s to 2.6 s on a local server) and the first
+  visit downloads 1.4 MB instead of 2.6 MB. Repeat visits were already fast
+  (0.2–0.4 s, from the offline cache).
+  - `index.html` preloads all 49 modules app.js imports, so they arrive
+    together instead of one import level at a time (five levels deep), and
+    preloads the first screen's two fonts (Anton and Inter).
+    `tests/load-speed.test.mjs` fails if the list and the import graph drift.
+  - The Landing's eight card photographs and the three-photo band are lazy
+    `<img>`s instead of background images, so 1.1 MB of photographs no longer
+    downloads before anyone scrolls. They look the same; none was seen on
+    screen before it had loaded.
+- Re-encoding the photographs was tried and dropped: 0% saved as JPEG and
+  10–30% as WebP, for a visible cost on detailed pictures.
 
 ## [2.54.0] — 2026-09-26 (APP_VERSION 114)
 

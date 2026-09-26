@@ -20,7 +20,7 @@ function cardMarkup(chapter) {
     <div class="region-card">
       <article class="lcard brand-visual">
         <div class="brand-logo" style="background: ${chapter.wash};"><img src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async"></div>
-        <div class="brand-photo" style="background-image: url('./assets/regions/${chapter.art}.jpg');"></div>
+        <div class="brand-photo"><img src="./assets/regions/${chapter.art}.jpg" alt="" loading="lazy" decoding="async"></div>
       </article>
       <article class="lcard info">
         <h3 class="card-title">${escapeHtml(chapter.region)}</h3>

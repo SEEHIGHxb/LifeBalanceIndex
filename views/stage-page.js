@@ -151,11 +151,12 @@ export function textSection(labelText, inner, cls = "") {
     </div></section>`;
 }
 
-// Three regions' photographs, by chapter index; decoration, so hidden.
+// Three regions' photographs, by chapter index; decoration, so hidden. Lazy,
+// as they sit far down the page (tests/load-speed.test.mjs).
 export function bandMarkup(indices) {
   return `
     <section class="photoband" aria-hidden="true">
-      ${indices.map(i => `<i><b style="background-image: url('./assets/regions/${CHAPTERS[i].art}.jpg');"><span>${escapeHtml(CHAPTERS[i].region)}</span></b></i>`).join("")}
+      ${indices.map(i => `<i><b><img src="./assets/regions/${CHAPTERS[i].art}.jpg" alt="" loading="lazy" decoding="async"><span>${escapeHtml(CHAPTERS[i].region)}</span></b></i>`).join("")}
     </section>`;
 }
 

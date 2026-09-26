@@ -33,17 +33,74 @@
        vendored under assets/fonts. Self-hosting removes the round-trip to
        Google on every cold load, makes the PWA genuinely offline-capable,
        and means no visitor IP is disclosed to a third party. -->
-  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=114">
-  <link rel="stylesheet" href="./index.css?v=114">
+  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=115">
+  <link rel="stylesheet" href="./index.css?v=115">
   <!-- The redesign's frame; loaded after index.css so it wins where both
        style the same element. One sheet per redesign area, each under 800
        lines (docs/redesign-build-plan.md §3). -->
-  <link rel="stylesheet" href="./css/frame.css?v=114">
-  <link rel="stylesheet" href="./css/stage-page.css?v=114">
-  <link rel="stylesheet" href="./css/home.css?v=114">
-  <link rel="stylesheet" href="./css/journey.css?v=114">
-  <link rel="stylesheet" href="./css/weekly.css?v=114">
-  <link rel="stylesheet" href="./css/more.css?v=114">
+  <link rel="stylesheet" href="./css/frame.css?v=115">
+  <link rel="stylesheet" href="./css/stage-page.css?v=115">
+  <link rel="stylesheet" href="./css/home.css?v=115">
+  <link rel="stylesheet" href="./css/journey.css?v=115">
+  <link rel="stylesheet" href="./css/weekly.css?v=115">
+  <link rel="stylesheet" href="./css/more.css?v=115">
+  <!-- The first screen waits on every module below; listed here, they are
+     fetched together instead of one import level at a time (five levels,
+     one round trip each). tests/load-speed.test.mjs keeps the list whole.
+     Deepest first, so the leaves are asked for first. -->
+  <link rel="modulepreload" href="./th.js">
+  <link rel="modulepreload" href="./i18n.js">
+  <link rel="modulepreload" href="./defaults.js">
+  <link rel="modulepreload" href="./secure-context.js">
+  <link rel="modulepreload" href="./benchmarks.js">
+  <link rel="modulepreload" href="./scoring.js">
+  <link rel="modulepreload" href="./goals.js">
+  <link rel="modulepreload" href="./sanitize.js">
+  <link rel="modulepreload" href="./season.js">
+  <link rel="modulepreload" href="./surveys.js">
+  <link rel="modulepreload" href="./validation.js">
+  <link rel="modulepreload" href="./state.js">
+  <link rel="modulepreload" href="./views/instrument-forms.js">
+  <link rel="modulepreload" href="./criteria.js">
+  <link rel="modulepreload" href="./aspects.js">
+  <link rel="modulepreload" href="./motion.js">
+  <link rel="modulepreload" href="./views/helpers.js">
+  <link rel="modulepreload" href="./version.js">
+  <link rel="modulepreload" href="./draft.js">
+  <link rel="modulepreload" href="./views/journey.js">
+  <link rel="modulepreload" href="./views/journey-progress.js">
+  <link rel="modulepreload" href="./views/motion-mount.js">
+  <link rel="modulepreload" href="./views/stage.js">
+  <link rel="modulepreload" href="./views/lang-carry.js">
+  <link rel="modulepreload" href="./views/onboarding.js">
+  <link rel="modulepreload" href="./views/stage-page.js">
+  <link rel="modulepreload" href="./views/landing.js">
+  <link rel="modulepreload" href="./averages.js">
+  <link rel="modulepreload" href="./chart.js">
+  <link rel="modulepreload" href="./grades.js">
+  <link rel="modulepreload" href="./suggestions.js">
+  <link rel="modulepreload" href="./story-card.js">
+  <link rel="modulepreload" href="./views/share.js">
+  <link rel="modulepreload" href="./views/news.js">
+  <link rel="modulepreload" href="./connections.js">
+  <link rel="modulepreload" href="./views/review.js">
+  <link rel="modulepreload" href="./views/dashboard.js">
+  <link rel="modulepreload" href="./views/aspect.js">
+  <link rel="modulepreload" href="./views/assessments.js">
+  <link rel="modulepreload" href="./views/methodology.js">
+  <link rel="modulepreload" href="./views/yearreview.js">
+  <link rel="modulepreload" href="./views/quests.js">
+  <link rel="modulepreload" href="./comparison-code.js">
+  <link rel="modulepreload" href="./views/leaderboard.js">
+  <link rel="modulepreload" href="./views/profile.js">
+  <link rel="modulepreload" href="./views/menu.js">
+  <link rel="modulepreload" href="./views/lumi.js">
+  <link rel="modulepreload" href="./ui.js?v=115">
+  <link rel="modulepreload" href="./views/magnet.js">
+  <!-- The wordmark and body faces of the first screen, found only once
+     fonts.css has loaded otherwise. -->
+  <link rel="preload" href="./assets/fonts/anton-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="./assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
 </head>
 <body>
   <!-- Skip link (WCAG 2.4.1). href is #main-view for the semantics and for the
@@ -116,6 +173,6 @@
   </div>
 
   <!-- Core Scripts -->
-  <script type="module" src="./app.js?v=114"></script>
+  <script type="module" src="./app.js?v=115"></script>
 </body>
 </html>

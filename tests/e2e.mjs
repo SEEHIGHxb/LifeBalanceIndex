@@ -231,6 +231,12 @@ try {
       const r = fs.querySelector('input[type="radio"]');
       if (r) { r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true })); }
     });
+    // A weight with a half kilo, as a tester really typed it. Whole numbers
+    // hid the bug where the browser's own step check refused this on its
+    // hidden screen and swallowed Complete Assessment without a word.
+    const weight = document.getElementById("onb-weight");
+    weight.value = "65.5";
+    weight.dispatchEvent(new Event("input", { bubbles: true }));
   });
 
   // Walk every screen to the last one, then submit.
@@ -266,6 +272,7 @@ try {
   const state = await readState();
   if (!state?.onboarded) problems.push("flow1: state not onboarded after completing the assessment");
   if (state?.profile?.name !== "E2E Runner") problems.push("flow1: profile name not saved");
+  if (state?.profile?.weight !== 65.5) problems.push(`flow1: a 65.5 kg weight was saved as ${state?.profile?.weight}`);
   if (state?.profile?.assessmentComplete !== true) {
     problems.push("flow1: a completed baseline must be marked assessmentComplete=true");
   }

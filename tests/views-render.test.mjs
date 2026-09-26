@@ -171,6 +171,40 @@ test("onboarding asks every question of every instrument, not just the first", a
   }
 });
 
+// A tester answered every screen of the baseline and then could not press
+// "Complete Assessment": the button did nothing at all. Their weight was 65.5.
+// A number input with no `step` only accepts whole numbers to the BROWSER, so
+// native validation refused the form -- and since that input sat on a screen
+// hidden with display:none, the browser could not show its bubble either, and
+// dropped the submit with nothing but a console line. validateScope had
+// already accepted 65.5 on the weight screen's own Next, so nothing on the
+// page said why. The JS validator is the only authority on these forms; a
+// form that holds a number box must opt out of the browser's second opinion.
+function formsWithNumberInputs(html) {
+  return [...html.matchAll(/<form\b([^>]*)>([\s\S]*?)<\/form>/g)]
+    .filter(([, , body]) => body.includes('type="number"'))
+    .map(([, attrs]) => attrs);
+}
+
+test("the baseline form leaves validation to validateScope, so a decimal answer cannot block Complete Assessment", async () => {
+  const { renderOnboarding } = await import("../views/onboarding.js");
+  const html = render(() => renderOnboarding(MAIN, () => {}));
+  const forms = formsWithNumberInputs(html);
+  assert.equal(forms.length, 1, "the baseline is expected to be one form holding its number boxes");
+  assert.match(forms[0], /\bnovalidate\b/,
+    "#onboarding-form must carry novalidate: a native step/min/max failure on a hidden screen silently swallows the submit");
+});
+
+test("every assessment form holding a number box leaves validation to validateScope", async () => {
+  const { renderDeepAssessment } = await import("../views/assessments.js");
+  const html = render(() => renderDeepAssessment(MAIN, STATE, () => {}));
+  const forms = formsWithNumberInputs(html);
+  assert.ok(forms.length > 0, "the deep page's runway figures are number boxes in a form");
+  for (const attrs of forms) {
+    assert.match(attrs, /\bnovalidate\b/, `form${attrs} holds a number box but lets the browser validate it`);
+  }
+});
+
 // --- views/aspect.js -----------------------------------------------------
 
 test("every aspect page renders, for all eight aspects", async () => {

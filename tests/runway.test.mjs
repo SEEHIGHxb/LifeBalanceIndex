@@ -339,7 +339,7 @@ test("v80: the in-depth assessment asks instead, without requiring or scoring", 
   // instruments, and the answer is that they are not inside one. Merging them
   // into .deep-form would make three optional money boxes blockable by an
   // unanswered Likert item and would carry them into submitDeepAssessment.
-  assert.match(deep, /<form id="deep-runway-form">/,
+  assert.match(deep, /<form id="deep-runway-form"[\s>]/,
     "the runway figures must stay a separate form from the deep instrument");
 
   // Saved through the profile mutator, so blank-means-zero for family support

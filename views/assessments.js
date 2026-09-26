@@ -168,7 +168,7 @@ export function renderDeepAssessment(containerId, state, onComplete, onRunwaySav
   const runwayBlock = () => `
     <h4 class="instrument-title assess-runway">${t("Runway — optional, and never scored")}</h4>
     <p class="onb-note">${t("Both optional. Together they give your runway: how long you could cover the unskippable if income stopped. Reported on your Finance page, not scored.")}</p>
-    <form id="deep-runway-form">
+    <form id="deep-runway-form" novalidate>
       <div class="grid-2">
         ${numberField("deep-liquid", t("Liquid Savings You Could Reach This Week (THB)"), givenValue("liquidSavings"), 'min="0"', {
           field: "liquidSavings",
@@ -238,7 +238,9 @@ export function renderDeepAssessment(containerId, state, onComplete, onRunwaySav
       errorEl.classList.add("d-none");
       // Range-checks whatever was typed and skips the blanks, which is what
       // makes three optional boxes safe to validate with the same call the
-      // mandatory questionnaires use.
+      // mandatory questionnaires use. The form is novalidate so this is the
+      // only check: left to the browser, a box with no `step` refuses 50,000.50
+      // baht with an untranslated bubble before this handler ever runs.
       const invalid = validateScope(runwayForm);
       if (invalid) {
         scrollIntoViewGently(invalid, { block: "center" });

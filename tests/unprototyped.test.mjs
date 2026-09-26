@@ -62,7 +62,7 @@ test("the in-depth assessment is one panel per aspect, each saved on its own", (
   assert.equal(panels(out).length, DEEP_SECTIONS.length);
   assert.doesNotMatch(out, /class="assess-done"/, "nothing is marked in-depth before it is done");
   // The runway figures stay in the finance panel, as their own form.
-  assert.match(between(out, "deep-section-finance", "deep-section-physical"), /<form id="deep-runway-form">/);
+  assert.match(between(out, "deep-section-finance", "deep-section-physical"), /<form id="deep-runway-form"[\s>]/);
 });
 
 test("a finished section is marked In-depth beside its region", () => {

@@ -227,6 +227,13 @@ export function renderOnboarding(containerId, onComplete) {
       </section>`;
   };
 
+  // `novalidate` because validateScope is the only judge of these answers. The
+  // browser's own check disagrees with it -- a number box with no `step`
+  // rejects 65.5 kg, and several boxes carry a tighter min/max than
+  // validation.js -- and it runs on submit, when every screen but the last is
+  // display:none. A browser cannot point at a hidden field, so it dropped the
+  // submit without a word: a tester answered all eight regions and the
+  // Complete Assessment button did nothing.
   container.innerHTML = `
     <div class="journey">
       <p class="sr-only" id="journey-status" role="status" aria-live="polite"></p>
@@ -234,7 +241,7 @@ export function renderOnboarding(containerId, onComplete) {
         <span>${t("Picked up where you left off. Your answers were saved on this device.")}</span>
         <button type="button" class="btn btn-sm" id="onb-resume-clear">${t("Start over")}</button>
       </div>
-      <form id="onboarding-form">
+      <form id="onboarding-form" novalidate>
         ${screens.map(screenMarkup).join("")}
       </form>
       <p id="onboarding-error" class="onboarding-error d-none" role="alert"></p>

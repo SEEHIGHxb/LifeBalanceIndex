@@ -44,7 +44,10 @@ export function landingMarkup({ resume = false } = {}) {
         word: "LIFE BALANCE",
         inc: "INDEX",
         srTitle: "Life Balance Index",
-        tapLabel: t("Play with the star")
+        tapLabel: t("Play with the star"),
+        // On the first screen (the owner, 2026-09-26): the page's two lower
+        // calls to begin were three sections down.
+        cta: `<a class="pill pill-xl" href="#/journey">${escapeHtml(cta)}</a>`
       })}
       ${missionMarkup(t("Why"), [t("Eight parts of one life,"), t("measured against the evidence.")])}
       <section class="panel statement"><div class="wrap split">

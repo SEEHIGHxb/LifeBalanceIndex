@@ -98,6 +98,18 @@
 }
 .hero .word { top: calc(740 * var(--px)); font-size: calc(170 * var(--px)); }
 .hero .inc { top: calc(910 * var(--px)); font-size: calc(124 * var(--px)); }
+/* The Landing's call to begin, under the lockup on the first screen. Above
+   the star's tap target, which covers only the star. */
+.hero-cta {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(1110 * var(--px));
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+}
 
 /* ------------------------------------------------ the compact page top
    A weekly page's head (views/stage-page.js topMarkup): the mark beside the
@@ -324,6 +336,9 @@
   font-size: max(14px, calc(24 * var(--px)));
 }
 .stage-page .pill:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 4px; }
+/* The hero sits on the light page, where the card-coloured large pill all but
+   vanishes: the hero's call to begin keeps the large size in the dark pill. */
+.stage-page .hero-cta .pill-xl { background: var(--frame-dark); color: #ffffff; }
 
 /* ------------------------------------------------------------ photo band
    Three photographs stacked; the upper two wipe in as the band scrolls
@@ -557,6 +572,8 @@ a.newsrow:hover .newsrow-title { text-decoration: underline; text-underline-offs
   .statement .label { margin-top: 0; }
   .statement p { font-size: max(15px, calc(34 * var(--px))); }
   .hero { height: calc(1000 * var(--px)); }
+  .landing .hero { height: calc(1080 * var(--px)); }
+  .hero-cta { top: calc(860 * var(--px)); }
   .hero .mark,
   .hero .mark-hit { left: calc(270 * var(--px)); top: calc(230 * var(--px)); width: calc(280 * var(--px)); }
   .hero .part-mark { transform-origin: calc(410 * var(--px)) calc(370 * var(--px)); }

@@ -62,8 +62,9 @@ export const label = (text) => `<h2 class="label">(${escapeHtml(text)})</h2>`;
 
 // The hero. `mark` is trusted markup built by the caller, and `wash` a
 // chapter's own colour (an aspect page sits on its region's wash); every other
-// value is text and is escaped here.
-export function heroMarkup({ mark, word, inc, srTitle, tapLabel, wash = "" }) {
+// value is text and is escaped here. `cta`, also trusted markup, is a call to
+// act under the lockup (the Landing's "Start the journey").
+export function heroMarkup({ mark, word, inc, srTitle, tapLabel, wash = "", cta = "" }) {
   return `
     <section class="hero"${wash ? ` style="background: ${wash};"` : ""}>
       <div class="hero-stage">
@@ -76,6 +77,7 @@ export function heroMarkup({ mark, word, inc, srTitle, tapLabel, wash = "" }) {
         </div>
         <button class="mark-hit" type="button" aria-label="${escapeHtml(tapLabel)}"></button>
       </div>
+      ${cta ? `<p class="hero-cta">${cta}</p>` : ""}
     </section>`;
 }
 

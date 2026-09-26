@@ -114,6 +114,24 @@ test("the years filed are listed newest first", () => {
 
 // --- the text pages -------------------------------------------------------------
 
+// The owner, 2026-09-26: the call to begin belongs on the first screen, not
+// three sections down, and the menu's Start opens the assessment.
+test("the Landing's first screen has the call to begin", async () => {
+  const { landingMarkup } = await import("../views/landing.js");
+  const hero = landingMarkup().match(/<section class="hero"[\s\S]*?<\/section>/)?.[0] || "";
+  assert.match(hero, /<p class="hero-cta"><a class="pill pill-xl" href="#\/journey">Start the journey<\/a><\/p>/);
+  assert.match(landingMarkup({ resume: true }).match(/<section class="hero"[\s\S]*?<\/section>/)[0], />Continue the journey</);
+});
+
+test("before the journey the menu's Start opens the assessment and About the Landing", async () => {
+  const { renderMenu } = await import("../views/menu.js");
+  renderMenu({ onboarded: false });
+  const menu = dom.html["site-menu"] || "";
+  const tops = [...menu.matchAll(/<a class="menu-top" href="([^"]*)"><span class="sr-only">([^<]*)</g)].map(m => [m[1], m[2]]);
+  assert.deepEqual(tops, [["#/journey", "Start"], ["#/", "About"]]);
+  assert.match(menu, /href="\.\/privacy\.html"/);
+});
+
 test("the Landing offers to restore a backup before the journey", async () => {
   const { landingMarkup } = await import("../views/landing.js");
   const out = landingMarkup();

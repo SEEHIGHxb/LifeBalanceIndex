@@ -55,7 +55,6 @@ export const TH = {
   "Main menu": "เมนูหลัก",
   "Open menu": "เปิดเมนู",
   "Close menu": "ปิดเมนู",
-  "The journey": "การเดินทาง",
   "Aspects": "แปดด้าน",
   "You": "คุณ",
   "Stored only in this browser": "เก็บไว้ในเบราว์เซอร์นี้เท่านั้น",
@@ -529,6 +528,8 @@ export const TH = {
   "Enter a name.": "กรุณาใส่ชื่อ",
   // v112, awaiting the owner's review.
   "Your first review opens on {date}.": "การทบทวนรายสัปดาห์ครั้งแรกเปิดให้ทำในวันที่ {date}",
+  // v113, awaiting the owner's review: the first-run menu's link to the Landing.
+  "About": "เกี่ยวกับ",
 
   // --- Shared dialog actions ---
   "Cancel": "ยกเลิก",

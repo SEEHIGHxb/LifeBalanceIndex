@@ -67,12 +67,15 @@ const group = (top, subs = []) => `
 // Privacy & Data is a sub line, not a heading: a line never wraps (a wrap
 // between letter cells can split a Thai word), and at heading size the Thai
 // name is wider than a menu column.
+//
+// Start opens the assessment and About the Landing (the owner, 2026-09-26):
+// "Start" used to lead to the Landing, beside a separate "The journey".
 function menuHtml(onboarded) {
   const privacy = link("./privacy.html", t("Privacy & Data"));
   if (!onboarded) {
-    const start = group(link("#/", t("Start"), "menu-top"));
-    const journey = group(link("#/journey", t("The journey"), "menu-top"), [privacy]);
-    return `<div class="menu-cols"><div>${start}${journey}</div></div>`;
+    const start = group(link("#/journey", t("Start"), "menu-top"));
+    const about = group(link("#/", t("About"), "menu-top"), [privacy]);
+    return `<div class="menu-cols"><div>${start}${about}</div></div>`;
   }
   const home = group(link("#/dashboard", t("Overview"), "menu-top"), [
     link("#/review", t("Weekly Review")),

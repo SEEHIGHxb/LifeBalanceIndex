@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `112`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `113`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.53.0] — 2026-09-26 (APP_VERSION 113)
+
+### Changed
+- **The call to begin is on the Landing's first screen** (the owner's call):
+  "Start the journey" (or "Continue the journey") now sits under the star and
+  LIFE BALANCE INDEX, in the dark pill. The two lower buttons stay.
+  `heroMarkup` takes an optional `cta`.
+- **The menu's Start opens the assessment** (the owner's call). Before the
+  journey, Start led to the Landing, beside a separate "The journey". Start now
+  opens `#/journey`, and the Landing's link is "About".
+
+### Needs review
+- One new Thai string in `th.js`, "About" (เกี่ยวกับ), marked "v113, awaiting
+  the owner's review". "The journey" is no longer used and is removed.
 
 ## [2.52.6] — 2026-09-26 (APP_VERSION 112)
 

@@ -1,24 +1,10 @@
 // app.js - LifeQuest Core Coordinator
 
 import { stateManager } from "./state.js";
-import {
-  renderOnboarding,
-  renderLanding,
-  renderDashboard,
-  renderReview,
-  renderYearReview,
-  renderQuests,
-  renderLeaderboard,
-  renderProfile,
-  renderAspectPage,
-  renderCheckin,
-  renderDeepAssessment,
-  renderMethodology,
-  openDialog,
-  prefersReducedMotion
-} from "./ui.js?v=115";
+import { openDialog, prefersReducedMotion } from "./views/helpers.js";
+import { createViewLoader } from "./view-loader.js";
 import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
-import { t, tp, getLang, setLang } from "./i18n.js";
+import { t, tp, getLang, setLang, loadLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
 import { syncReduceMotionAttr } from "./motion.js";
 import { disposeMotion } from "./views/motion-mount.js";
@@ -32,6 +18,28 @@ import { httpsUpgradeUrl } from "./secure-context.js";
 const TOAST_DURATION_MS = 1600;
 const TABS = ["dashboard", "review", "quests", "leaderboard"];
 const DEFAULT_TAB = "dashboard";
+
+// Each screen's code is fetched the first time it is shown (view-loader.js;
+// the owner, 2026-09-27: "load only the code each screen needs"). The Landing
+// is preloaded with the core in index.html, as every first visit starts there.
+const views = createViewLoader({
+  landing: () => import("./views/landing.js"),
+  onboarding: () => import("./views/onboarding.js"),
+  dashboard: () => import("./views/dashboard.js"),
+  aspect: () => import("./views/aspect.js"),
+  assessments: () => import("./views/assessments.js"),
+  methodology: () => import("./views/methodology.js"),
+  year: () => import("./views/yearreview.js"),
+  profile: () => import("./views/profile.js"),
+  review: () => import("./views/review.js"),
+  quests: () => import("./views/quests.js"),
+  leaderboard: () => import("./views/leaderboard.js")
+}, {
+  onError: (name, err) => {
+    console.error(`The ${name} screen failed to load:`, err);
+    showToast(t("This page could not load. Check your connection and try again."), "warning");
+  }
+});
 
 // --- ROUTING (hash-based so GitHub Pages and the back button both work) ---
 
@@ -120,16 +128,40 @@ function setupLanguageToggle() {
   if (!btn) return;
   const newBtn = btn.cloneNode(true);
   btn.parentNode.replaceChild(newBtn, btn);
-  newBtn.addEventListener("click", () => {
-    setLang(getLang() === "th" ? "en" : "th");
-    // Re-render everything in the new language, carrying across whatever is
-    // half-typed and the screen a stepped form is on (views/lang-carry.js).
-    withCarriedScreen(document.getElementById("main-view"), initializeApp);
-    // initializeApp swaps this button for a fresh clone, which drops keyboard
-    // focus to <body>; hand it to the new button so the next Tab goes on from
-    // where the reader was.
-    document.getElementById("btn-lang")?.focus({ preventScroll: true });
-  });
+  // The Thai dictionary is fetched on first use (i18n.js). A pointer on the
+  // button or focus on it starts the fetch, so the press usually finds it here.
+  const warm = () => loadLang("th").catch(() => {});
+  newBtn.addEventListener("pointerenter", warm, { once: true });
+  newBtn.addEventListener("focus", warm, { once: true });
+  newBtn.addEventListener("click", switchLanguage);
+}
+
+// Each press flips the language wanted; a switch lands only if it is still
+// wanted once its dictionary is here. Two quick presses while Thai was still
+// downloading otherwise both switched to Thai instead of there and back.
+let wantedLang = null;
+async function switchLanguage() {
+  wantedLang = (wantedLang ?? getLang()) === "th" ? "en" : "th";
+  const next = wantedLang;
+  try {
+    await loadLang(next);
+  } catch (err) {
+    wantedLang = null;
+    console.error("The language failed to load:", err);
+    showToast(t("This page could not load. Check your connection and try again."), "warning");
+    return;
+  }
+  if (wantedLang !== next) return;
+  wantedLang = null;
+  // Switch only now, so no screen draws half in English.
+  setLang(next);
+  // Re-render everything in the new language, carrying across whatever is
+  // half-typed and the screen a stepped form is on (views/lang-carry.js).
+  withCarriedScreen(document.getElementById("main-view"), initializeApp);
+  // initializeApp swaps this button for a fresh clone, which drops keyboard
+  // focus to <body>; hand it to the new button so the next Tab goes on from
+  // where the reader was.
+  document.getElementById("btn-lang")?.focus({ preventScroll: true });
 }
 
 function initializeApp() {
@@ -178,6 +210,7 @@ function initializeApp() {
 
 // The two first-run screens: the journey at #/journey, and the Landing at any
 // other route (a bookmark to #/dashboard from before a reset included).
+// Resolves once the screen is drawn (false when a later route replaced it).
 function renderFirstRun() {
   disposeMotion();
   const onJourney = routeHashPath() === "journey";
@@ -186,10 +219,17 @@ function renderFirstRun() {
   document.getElementById("journey-progress").classList.add("d-none");
   syncMenuRoute(onJourney ? "journey" : "");
   if (!onJourney) {
-    renderLanding("main-view", { resume: readDraft("onboarding") !== null });
-    setupLandingRestore();
-    return;
+    return views.show("landing", ({ renderLanding }) => {
+      renderLanding("main-view", { resume: readDraft("onboarding") !== null });
+      setupLandingRestore();
+      // The Landing's one call is to begin: have the journey ready for it.
+      views.prefetch("onboarding");
+    });
   }
+  return views.show("onboarding", ({ renderOnboarding }) => drawJourney(renderOnboarding));
+}
+
+function drawJourney(renderOnboarding) {
   document.getElementById("main-view").innerHTML = `<div id="onboarding-mount"></div>`;
   renderOnboarding("onboarding-mount", () => {
     // Now that there is data worth keeping, ask the browser not to evict it.
@@ -255,37 +295,39 @@ function renderActiveTab() {
   // Mark the current route in the menu and the quick links (aria-current).
   syncMenuRoute(routePath(route));
 
-  if (route.type === "aspect") {
-    renderAspectPage("main-view", state, route.key);
-  } else if (route.type === "checkin") {
-    renderCheckin("main-view", state, handleCheckinComplete);
-  } else if (route.type === "deep") {
-    // The fourth argument is the runway block's save handler, not the
-    // assessment's: those three figures are profile facts and report exactly as
-    // the Profile page's own save does.
-    renderDeepAssessment("main-view", state, handleDeepComplete, handleProfileSaved);
-  } else if (route.type === "methodology") {
-    renderMethodology("main-view", state);
-  } else if (route.type === "year") {
-    renderYearReview("main-view", state, renderActiveTab);
-  } else if (route.type === "profile") {
-    renderProfile("main-view", state, handleProfileSaved);
-    // The Export/Import/Reset controls live on this page now, so bind them
-    // here — the freshly rendered buttons carry no stale listeners.
-    setupBackupControls();
-    const resetBtn = document.getElementById("btn-reset-data");
-    if (resetBtn) resetBtn.addEventListener("click", confirmReset);
-  } else if (activeTab === "dashboard") {
-    renderDashboard("main-view", state, downloadBackup);
-  } else if (activeTab === "review") {
-    renderReview("main-view", state, handleReviewComplete);
-  } else if (activeTab === "quests") {
-    renderQuests("main-view", state);
-  } else if (activeTab === "leaderboard") {
-    renderLeaderboard("main-view", state, renderActiveTab);
-  }
+  const [name, draw] = screenFor(route, activeTab, state);
+  // Resolves once drawn: at once when the screen's code is already loaded.
+  return views.show(name, (mod) => {
+    draw(mod);
+    announceRoute(route);
+  });
+}
 
-  announceRoute(route);
+// Which screen a route shows, and how to draw it from that screen's module.
+function screenFor(route, activeTab, state) {
+  const main = "main-view";
+  switch (route.type) {
+    case "aspect": return ["aspect", m => m.renderAspectPage(main, state, route.key)];
+    case "checkin": return ["assessments", m => m.renderCheckin(main, state, handleCheckinComplete)];
+    // The fourth argument is the runway block's save handler, not the
+    // assessment's: those three figures are profile facts and report exactly
+    // as the Profile page's own save does.
+    case "deep": return ["assessments", m => m.renderDeepAssessment(main, state, handleDeepComplete, handleProfileSaved)];
+    case "methodology": return ["methodology", m => m.renderMethodology(main, state)];
+    case "year": return ["year", m => m.renderYearReview(main, state, renderActiveTab)];
+    case "profile": return ["profile", m => {
+      m.renderProfile(main, state, handleProfileSaved);
+      // The Export/Import/Reset controls live on this page now, so bind them
+      // here — the freshly rendered buttons carry no stale listeners.
+      setupBackupControls();
+      document.getElementById("btn-reset-data")?.addEventListener("click", confirmReset);
+    }];
+    default: break;
+  }
+  if (activeTab === "review") return ["review", m => m.renderReview(main, state, handleReviewComplete)];
+  if (activeTab === "quests") return ["quests", m => m.renderQuests(main, state)];
+  if (activeTab === "leaderboard") return ["leaderboard", m => m.renderLeaderboard(main, state, renderActiveTab)];
+  return ["dashboard", m => m.renderDashboard(main, state, downloadBackup)];
 }
 
 // The hash path a route lives at, without "#/": what the menu's links point to.
@@ -344,8 +386,7 @@ function handleReviewComplete(record) {
   // (views/review.js), which said what moved; the reader pressed Continue to
   // get here, so focus lands on the page they return to. When storage rejected
   // the write, the lifequest_storage_error listener below warns them instead.
-  renderActiveTab();
-  document.getElementById("rv-done-head")?.focus();
+  renderActiveTab().then(() => document.getElementById("rv-done-head")?.focus());
 }
 
 // A profile edit re-renders the page (so the new values + scores show) and
@@ -601,9 +642,11 @@ window.addEventListener("hashchange", () => {
     renderActiveTab();
     return;
   }
-  renderFirstRun();
-  window.scrollTo(0, 0);
-  document.getElementById("main-view")?.focus({ preventScroll: true });
+  renderFirstRun().then(drawn => {
+    if (!drawn) return;
+    window.scrollTo(0, 0);
+    document.getElementById("main-view")?.focus({ preventScroll: true });
+  });
 });
 
 // PWA: offline support via the network-first service worker.
@@ -629,7 +672,7 @@ window.addEventListener("hashchange", () => {
 // This cannot fix the CDN rule itself. `/sw.js` wants to be served no-store;
 // the versioned query is what makes a release land while it is not.
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
+  whenReady("load", () => document.readyState === "complete", () => {
     navigator.serviceWorker
       .register(`./sw.js?v=${APP_VERSION}`, { updateViaCache: "none" })
       .catch(err => {
@@ -638,10 +681,19 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+// Once the document is parsed; at once when it already is. For a Thai reader
+// this module runs only after i18n.js has fetched the dictionary (a top-level
+// await), by which time DOMContentLoaded and even load may have fired, and a
+// listener added then would never run: the app would not start at all.
+function whenReady(event, ready, run) {
+  if (ready()) run();
+  else window.addEventListener(event, run, { once: true });
+}
+
 // Start the App. init() runs the boot maintenance (the weekly snapshot) that
 // deliberately no longer happens when state.js is merely imported
 // (finding #13) — construction reads, init() writes.
-window.addEventListener("DOMContentLoaded", () => {
+whenReady("DOMContentLoaded", () => document.readyState !== "loading", () => {
   // A page on plain http is not a secure context (secure-context.js): move it
   // to https before anything reads or writes.
   const secure = httpsUpgradeUrl(window.location);

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `115`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `116`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,43 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.55.0] — 2026-09-27 (APP_VERSION 116)
+
+### Changed
+- **Each screen's code loads the first time it is shown** (the owner: "load
+  only the code each screen needs"). On a phone profile (4G, 150 ms round
+  trip, 4x CPU, local server), a first visit's Landing is drawn 0.7 s sooner
+  in English (2.59 s to 1.85 s) and in Thai (2.84 s to 2.10 s), and half the
+  script is downloaded (524 KB instead of 1,064 KB, uncompressed).
+  - `view-loader.js`: app.js imports the core only; each screen is fetched on
+    first use. A screen already loaded draws at once, so the language button
+    and the review's ending, which re-render the current screen and act on it
+    straight after, are unchanged. When fetches overlap, only the last screen
+    asked for is drawn. A screen that cannot load says so in a toast.
+  - The Landing is preloaded with the core, and once drawn it fetches the
+    journey in the background, so "Start the journey" opens at once.
+  - `ui.js`, the barrel of every screen, is gone, and with it app.js's only
+    `?v=` (the screens never carried one; the service worker revalidates every
+    module).
+  - The Thai dictionary (54 KB compressed) loads only for a Thai reader. It
+    loads at the top of `i18n.js`, before any module that translates as it
+    loads, and `lang-preload.js` starts it with the core for a returning Thai
+    reader. The language button fetches it on first use, starting when the
+    pointer or focus reaches the button.
+
+### Fixed (found while building this, never released)
+- With the dictionary loading first, app.js runs after DOMContentLoaded for a
+  Thai reader, and the app did not start. It now starts at once when the page
+  is already parsed, and registers the service worker the same way.
+- Two quick presses of the language button while Thai was downloading both
+  switched to Thai. Each press now flips the language wanted, and a switch
+  lands only if it is still wanted. tests/e2e.mjs checks it.
+
+### Needs review
+- One new Thai string in `th.js`, "This page could not load. Check your
+  connection and try again." (โหลดหน้านี้ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง),
+  marked "v116, awaiting the owner's review".
 
 ## [2.54.1] — 2026-09-26 (APP_VERSION 115)
 

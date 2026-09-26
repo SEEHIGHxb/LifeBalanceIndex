@@ -7,8 +7,11 @@
 // had to be carried across too (views/lang-carry.js).
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { setLang, onLangChange, t } from "../i18n.js";
+import { setLang, onLangChange, t, loadLang } from "../i18n.js";
 import { TH } from "../th.js";
+
+// The app fetches the Thai dictionary before switching to Thai (i18n.js).
+await loadLang("th");
 import { INSTRUMENTS } from "../surveys.js";
 import * as journey from "../views/journey.js";
 import {

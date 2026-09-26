@@ -6,7 +6,6 @@
 // language choice lives in its own localStorage key so it survives a
 // game-data reset. Pure module: no DOM at import time, fully testable.
 
-import { TH } from "./th.js";
 
 const LANG_STORAGE_KEY = "lifequest_lang";
 const SUPPORTED_LANGS = ["en", "th"];
@@ -23,6 +22,22 @@ function readStoredLang() {
 }
 
 let currentLang = readStoredLang();
+
+// The Thai dictionary is a quarter of the app, so it is fetched only for a
+// Thai reader (the owner, 2026-09-27: "load only the code each screen needs").
+// Until it has loaded, t() falls back to the English key.
+let TH = null;
+
+// Fetches the dictionary for `lang` if it has not been fetched. The app awaits
+// it before switching language (app.js setupLanguageToggle).
+export async function loadLang(lang) {
+  if (lang === "th" && !TH) TH = (await import("./th.js")).TH;
+}
+
+// A Thai reader's dictionary loads here, before this module finishes, so every
+// module that imports i18n.js (and translates as it loads, as criteria.js and
+// benchmarks.js do) runs after it has arrived.
+if (currentLang === "th") await loadLang("th");
 
 // Content modules that build translated text ONCE, when they are first
 // imported, register here to rebuild it when the language changes. Without
@@ -60,7 +75,7 @@ export function setLang(lang) {
 
 // Translate a canonical English string.
 export function t(text) {
-  if (currentLang === "th") {
+  if (currentLang === "th" && TH) {
     return TH[text] || text;
   }
   return text;

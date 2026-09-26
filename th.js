@@ -530,6 +530,8 @@ export const TH = {
   "Your first review opens on {date}.": "การทบทวนรายสัปดาห์ครั้งแรกเปิดให้ทำในวันที่ {date}",
   // v113, awaiting the owner's review: the first-run menu's link to the Landing.
   "About": "เกี่ยวกับ",
+  // v116, awaiting the owner's review: a screen or the Thai text failed to download.
+  "This page could not load. Check your connection and try again.": "โหลดหน้านี้ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
 
   // --- Shared dialog actions ---
   "Cancel": "ยกเลิก",

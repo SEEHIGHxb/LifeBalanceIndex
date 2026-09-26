@@ -56,7 +56,12 @@ test("every ?v=N cache buster matches APP_VERSION", () => {
   // was left out of this list for six releases and silently drifted to ?v=27,
   // serving a stale stylesheet to anyone who opened it — a page omitted from
   // the guard is a page nobody notices going stale.
-  for (const f of ["index.html", "app.js", "privacy.html"]) {
+  //
+  // app.js is no longer on the list: its one ?v= was the import of ui.js, the
+  // barrel of every screen, and the screens now load on demand
+  // (view-loader.js). The screens never carried a version of their own; the
+  // service worker revalidates every module (sw.js).
+  for (const f of ["index.html", "privacy.html"]) {
     const found = [...read(f).matchAll(/\?v=(\d+)/g)].map(m => m[1]);
     assert.ok(found.length > 0, `${f}: expected at least one ?v=N cache buster`);
     for (const v of found) {

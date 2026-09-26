@@ -1,7 +1,10 @@
 // Tests for the EN/TH localization layer (node --test)
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { t, tp, getLang, setLang, percentileLabel, dateLocale, graphemes } from "../i18n.js";
+import { t, tp, getLang, setLang, loadLang, percentileLabel, dateLocale, graphemes } from "../i18n.js";
+
+// The app fetches the Thai dictionary before switching to Thai (i18n.js).
+await loadLang("th");
 import { TH } from "../th.js";
 
 function installMockStorage(initial = {}) {

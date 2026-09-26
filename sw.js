@@ -7,7 +7,7 @@
 // Every fetch here is issued with cache: "no-cache", which forces the browser
 // to revalidate against the origin instead of serving its own HTTP cache. That
 // is what actually makes "network-first" true, and it is load-bearing: the
-// ?v=N query only tags three URLs (index.css, app.js, ui.js), while the module
+// ?v=N query only tags the stylesheets and app.js, while the module
 // graph has ~66 relative imports — state.js, chart.js, views/*.js and the rest
 // carry no version at all. Without revalidation a returning user could get a
 // fresh app.js against stale view modules: a torn deploy, half-new half-old.
@@ -15,7 +15,7 @@
 // nothing changed, so the bandwidth is negligible and the version can never
 // tear. Do NOT "optimise" this back to a plain fetch(req).
 
-const CACHE_NAME = "lifequest-v115";
+const CACHE_NAME = "lifequest-v116";
 
 const APP_SHELL = [
   "./",
@@ -38,7 +38,8 @@ const APP_SHELL = [
   "./draft.js",
   "./scoring.js",
   "./connections.js",
-  "./ui.js",
+  "./view-loader.js",
+  "./lang-preload.js",
   "./motion.js",
   "./views/helpers.js",
   "./views/menu.js",
@@ -79,7 +80,7 @@ const APP_SHELL = [
   "./i18n.js",
   "./th.js",
   "./manifest.webmanifest",
-  "./assets/lumi.png?v=115",
+  "./assets/lumi.png?v=116",
   // The eight region chapter plates. 0.73 MB for the set, which is why they
   // are band-cropped JPEGs and not the 10.3 MB of source PNGs they came from.
   "./assets/regions/market.jpg",

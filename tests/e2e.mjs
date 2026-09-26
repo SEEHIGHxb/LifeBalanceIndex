@@ -45,6 +45,15 @@ page.on("console", msg => {
   if (msg.type() === "error") problems.push(`console.error: ${msg.text()}`);
 });
 
+// Presses the language button and waits for the switch to land: the Thai
+// dictionary is fetched on first use (i18n.js), so the page changes language
+// a moment after the press, not during it.
+async function pressLang(p) {
+  const before = await p.evaluate(() => document.documentElement.lang);
+  await p.click("#btn-lang");
+  await p.waitForSelector(`html:not([lang="${before}"])`, { state: "attached", timeout: 10000 });
+}
+
 // The app is navigated through the burger menu (redesign R1, which replaced the
 // tab bar): open it, follow the route's link, and wait for it to close, which
 // it does as the link is followed.
@@ -117,6 +126,12 @@ try {
   if (await pL.$("#onboarding-form")) problems.push("flowL: a first visit opened the assessment, not the Landing");
   if (!(await pL.getAttribute(".hero .mark-hit", "aria-label"))) problems.push("flowL: the star's button has no name");
   if (await pans()) problems.push("flowL: the Landing scrolls sideways at 375px");
+  // Two quick presses are there and back, even while the Thai dictionary is
+  // still downloading (it loads on first use): they once both landed on Thai.
+  await pL.click("#btn-lang");
+  await pL.click("#btn-lang");
+  await pL.waitForTimeout(1500);
+  if (await pL.evaluate(() => document.documentElement.lang) !== "en") problems.push("flowL: two quick presses of the language button did not come back to English");
   await pL.click("#btn-lang");
   await pL.waitForSelector("html[lang='th'] .landing", { timeout: 10000 });
   if (await pans()) problems.push("flowL: the Thai Landing scrolls sideways at 375px");
@@ -245,13 +260,13 @@ try {
   await pJ.fill("#onb-savings", "3000");
   await pJ.click(".survey-page:not(.d-none) .btn-onb-next");
   const blank = await visible();
-  await pJ.click("#btn-lang");
+  await pressLang(pJ);
   const blankTh = await visible();
   if (blankTh.page !== blank.page) problems.push(`flowJ: switching language on an untouched screen moved ${blank.page} to ${blankTh.page}`);
 
   await pJ.check('.survey-page:not(.d-none) input[name="cfpb-q0"] >> nth=2', { force: true });
   const th = await visible();
-  await pJ.click("#btn-lang");
+  await pressLang(pJ);
   const en = await visible();
   if (!/[฀-๿]/.test(th.legend)) problems.push(`flowJ: after switching to Thai the question still reads "${th.legend}"`);
   if (/[฀-๿]/.test(en.legend) || en.legend === th.legend) problems.push(`flowJ: after switching back the question reads "${en.legend}"`);
@@ -414,8 +429,8 @@ try {
   await page.click(".rv-step:not(.d-none) .rv-next");
   await page.waitForSelector("#rv-step-1:not(.d-none)", { timeout: 5000 });
   await page.fill("#rev-weeklyVigorousDays", "5");
-  await page.click("#btn-lang");
-  await page.click("#btn-lang");
+  await pressLang(page);
+  await pressLang(page);
   const kept = await page.evaluate(() => ({
     step: document.querySelector(".rv-step:not(.d-none)")?.id,
     days: document.getElementById("rev-weeklyVigorousDays")?.value
@@ -571,7 +586,7 @@ try {
 
 // --- FLOW 3: EN -> TH language toggle persists across reload ---
 try {
-  await page.click("#btn-lang");
+  await pressLang(page);
   const lang = await page.evaluate(() => localStorage.getItem("lifequest_lang"));
   if (lang !== "th") problems.push(`flow3: toggle stored "${lang}", expected "th"`);
   const thaiBefore = await page.evaluate(() => /[฀-๿]/.test(document.body.innerText));

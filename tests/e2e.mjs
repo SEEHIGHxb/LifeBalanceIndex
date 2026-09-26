@@ -393,6 +393,12 @@ try {
     problems.push("flow2: the birthday prompt fired before the first weekly review");
   }
 
+  // The week of the journey: the review is not due, and says when it opens
+  // rather than "Reviewed this week." to someone who never did one.
+  await goTo("review");
+  const firstWeek = await page.textContent("#rv-done-head");
+  if (!/first review opens on/i.test(firstWeek)) problems.push(`flow2: the week of the journey said "${firstWeek}"`);
+
   await page.evaluate(() => {
     const s = JSON.parse(localStorage.getItem("lifequest_state"));
     s.baseline.date = new Date(Date.now() - 8 * 86400000).toISOString();

@@ -299,14 +299,24 @@ function doneMarkup(state) {
   const checkin = stateManager.isCheckinDue() ? `
     <p class="rv-done-note">${t("One thing while you're here: the monthly re-assessment is due.")}
       <a href="#/checkin">${t("Start Re-assessment")}</a></p>` : "";
+  // No reviews yet: the journey was this week's measurement, and the first
+  // review opens next Monday. "Reviewed this week." over an empty list said
+  // otherwise.
+  const first = !rows;
+  const head = first
+    ? tp("Your first review opens on {date}.", { date: nextReviewDate() })
+    : t("Reviewed this week.");
+  const note = first
+    ? ""
+    : `<p class="rv-done-note">${tp("Nothing to do here until {date} — live your week; the app can wait.", { date: nextReviewDate() })}</p>`;
   return `
     <div class="stage-page review-done">
       <section class="panel news rv-done">
         <div class="wrap split news-block">
-          <div class="news-side">${label(t("Past Reviews"))}</div>
+          <div class="news-side">${label(first ? t("Weekly Review") : t("Past Reviews"))}</div>
           <div>
-            <h2 class="rv-done-head" id="rv-done-head" tabindex="-1">${t("Reviewed this week.")}</h2>
-            <p class="rv-done-note">${tp("Nothing to do here until {date} — live your week; the app can wait.", { date: nextReviewDate() })}</p>
+            <h2 class="rv-done-head" id="rv-done-head" tabindex="-1">${head}</h2>
+            ${note}
             ${checkin}
             ${rows ? `<ul class="newslist">${rows}</ul>` : ""}
             <p class="rv-done-links"><a class="pill" href="#/dashboard">${t("See Home")}</a></p>

@@ -79,6 +79,23 @@ test("a review done for the week lists the past reviews newest first", () => {
   assert.match(html(), /id="rv-done-head"/);
 });
 
+// The journey counts as the first week's measurement, so the review is not due
+// until next Monday. That page said "Reviewed this week." over an empty list of
+// past reviews to someone who had never done one.
+test("the week of the journey says when the first review opens", () => {
+  const isDue = stateManager.isWeeklyReviewDue;
+  stateManager.isWeeklyReviewDue = () => false;
+  try {
+    renderReview(MAIN, { ...STATE, reviews: [] }, () => {});
+  } finally {
+    stateManager.isWeeklyReviewDue = isDue;
+  }
+  const out = html();
+  assert.match(out, /id="rv-done-head"[^>]*>Your first review opens on [^<]+\.</);
+  assert.doesNotMatch(out, /Reviewed this week|Past Reviews|class="newslist"/);
+  assert.match(out, /href="#\/dashboard"/, "the way Home stays");
+});
+
 // --- an aspect page ---------------------------------------------------------
 
 test("the trend is one strip of the last four weeks, oldest to newest, each against the week before", () => {

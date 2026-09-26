@@ -527,6 +527,8 @@ export const TH = {
   "Restore from a backup": "กู้คืนจากไฟล์สำรอง",
   "Paste a friend's code first.": "กรุณาวางรหัสของเพื่อนก่อน",
   "Enter a name.": "กรุณาใส่ชื่อ",
+  // v112, awaiting the owner's review.
+  "Your first review opens on {date}.": "การทบทวนรายสัปดาห์ครั้งแรกเปิดให้ทำในวันที่ {date}",
 
   // --- Shared dialog actions ---
   "Cancel": "ยกเลิก",

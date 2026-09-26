@@ -55,9 +55,6 @@ but not a minor version.
   vegetables 0-15, water 0-10 L, exercise minutes 0-600, learning 0-80 h.
   They were looser in `validation.js`, so Profile accepted a height of 90.
 
-### Needs review
-- Four new Thai strings in `th.js`, marked "v110, awaiting the owner's review".
-
 ## [2.52.3] — 2026-09-26 (APP_VERSION 109)
 
 ### Fixed

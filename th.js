@@ -518,7 +518,7 @@ export const TH = {
     "ตอบตามช่วงสัปดาห์ที่ผ่านมา ไม่ใช่ความรู้สึกตอนเริ่มต้น คะแนนขยับได้ไม่เกิน ±15 คะแนนต่อการประเมินซ้ำ และการทบทวนรายสัปดาห์อย่างสม่ำเสมอตั้งแต่ครั้งก่อนจะได้โบนัสเล็กน้อย รางวัล: +40 คะแนน",
   "Complete Re-assessment": "เสร็จสิ้นการประเมินซ้ำ",
   "Re-assessment Error: ": "การประเมินซ้ำผิดพลาด: ",
-  // v110, awaiting the owner's review.
+  // v110, approved by the owner.
   "The next re-assessment opens on {date}.": "การประเมินซ้ำครั้งถัดไปเปิดให้ทำในวันที่ {date}",
   "Enter a whole number.": "กรุณาใส่จำนวนเต็ม",
   "That's your own code. Paste the code a friend sent you.": "นี่คือรหัสของคุณเอง กรุณาวางรหัสที่เพื่อนส่งมาให้",

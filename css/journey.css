@@ -116,26 +116,30 @@
 .journey .radio-group {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  gap: 10px;
+  grid-auto-columns: auto;
+  gap: 6px;
 }
-/* The answers are steps: the radio over its words. The radio stays a real,
-   focusable control inside each one; only its drawing changes. */
+/* Each step is one line: the radio beside its words (the owner, 2026-09-27:
+   the boxes were too tall). `auto` columns give each step the width its words
+   need and share out what is left, so "Describes me completely" keeps one line
+   next to "Not at all"; words wrap only when the whole row cannot fit. The
+   radio stays a real, focusable control; only its drawing changes. */
 .journey .radio-option {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  min-height: 48px;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 44px;
   margin: 0;
-  padding: 14px 10px;
+  padding: 9px 9px;
   border: 0;
-  border-radius: 20px;
-  text-align: center;
+  border-radius: 999px;
+  text-align: left;
   background: var(--frame-card);
   color: var(--frame-ink);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.3;
   cursor: pointer;
@@ -147,8 +151,8 @@
   flex: none;
   display: grid;
   place-content: center;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   margin: 0;
   border: 2px solid currentColor;
   border-radius: 50%;
@@ -551,7 +555,9 @@
     justify-content: flex-start;
     gap: 10px;
     width: 100%;
+    min-height: 48px;
     padding: 10px 22px 10px 16px;
+    font-size: 15px;
     border-radius: 999px;
     text-align: left;
   }

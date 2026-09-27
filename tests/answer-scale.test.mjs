@@ -27,7 +27,11 @@ test("on a computer the answers run left to right in one row, lowest first", () 
   const group = body(desktop, ".journey .radio-group");
   assert.match(group, /display: grid;/);
   assert.match(group, /grid-auto-flow: column;/, "one row: a wrapped second row breaks the scale");
-  assert.match(group, /grid-auto-columns: minmax\(0, 1fr\);/, "equal steps");
+  // Each step as wide as its words (the owner, 2026-09-27: one line, smaller
+  // boxes). Equal columns wrapped "Describes me completely" onto two lines.
+  assert.match(group, /grid-auto-columns: auto;/, "steps sized to their words");
+  const option = body(desktop, ".journey .radio-option");
+  assert.match(option, /flex-direction: row;/, "the radio beside its words, not above them");
 });
 
 test("on a phone the answers climb from the bottom, lowest at the bottom", () => {

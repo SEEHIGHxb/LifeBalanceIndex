@@ -1,21 +1,27 @@
 // sw.js - LifeQuest service worker (PWA offline support)
 //
-// Strategy: NETWORK-FIRST with cache fallback. Online users always get fresh
-// files, and offline users get the last shell that loaded.
+// Strategy: CACHE-FIRST from one release's complete copy (v119). A returning
+// visitor opens at once from this worker's cache; a new release arrives as a
+// new worker with a new cache, found by the page's release check (app.js).
 // Bump CACHE_NAME together with the ?v=N version on each release.
 //
-// Every fetch here is issued with cache: "no-cache", which forces the browser
-// to revalidate against the origin instead of serving its own HTTP cache. That
-// is what actually makes "network-first" true, and it is load-bearing: the
-// ?v=N query only tags the stylesheets and app.js, while the module
-// graph has ~66 relative imports — state.js, chart.js, views/*.js and the rest
-// carry no version at all. Without revalidation a returning user could get a
-// fresh app.js against stale view modules: a torn deploy, half-new half-old.
-// Revalidation costs a conditional request per file and answers 304 when
-// nothing changed, so the bandwidth is negligible and the version can never
-// tear. Do NOT "optimise" this back to a plain fetch(req).
+// It was network-first until v118, and that was the "sometimes it takes 5-10
+// seconds" the owner reported (2026-09-27): every visit waited on the network
+// for the page and each of ~50 modules before touching the copy already here.
+// Measured with the worker installed: 2 s at one second a request, and never
+// opened at all (20 s) on a connection that stalls, the weak phone signal
+// that the "sometimes" was. The cache was complete the whole time.
+//
+// It cannot tear. Every file answered here comes from the same CACHE_NAME, and
+// install stores the whole shell or fails (below), so there is never a new
+// app.js against old view modules. Files outside the shell go to the network
+// once and are kept.
+//
+// On localhost the worker stays network-first, so an edit shows on reload
+// while the version is unchanged.
+const IS_DEV = ["localhost", "127.0.0.1", "[::1]"].includes(self.location.hostname);
 
-const CACHE_NAME = "lifequest-v118";
+const CACHE_NAME = "lifequest-v119";
 
 const APP_SHELL = [
   "./",
@@ -81,7 +87,7 @@ const APP_SHELL = [
   "./i18n.js",
   "./th.js",
   "./manifest.webmanifest",
-  "./assets/lumi.png?v=118",
+  "./assets/lumi.png?v=119",
   // The eight region chapter plates. 0.73 MB for the set, which is why they
   // are band-cropped JPEGs and not the 10.3 MB of source PNGs they came from.
   "./assets/regions/market.jpg",
@@ -137,9 +143,16 @@ self.addEventListener("install", (event) => {
       // Fetched at the versioned URL and stored under the BARE one, so the
       // page's bare module imports still match what is in here. addAll cannot
       // do that: it keys each entry by the URL it fetched.
+      //
+      // All or nothing: a file that fails fails the install, so the previous
+      // worker keeps serving its own whole copy and the browser tries again on
+      // the next check. A half-filled cache would be served cache-first.
       .then(cache => Promise.all(APP_SHELL.map(url =>
         fetch(versioned(new URL(url, self.location).toString()), { cache: "no-cache" })
-          .then(res => (res.ok ? cache.put(url, res) : null))
+          .then(res => {
+            if (!res.ok) throw new Error(`precache ${url}: HTTP ${res.status}`);
+            return cache.put(url, res);
+          })
       )))
       .then(() => self.skipWaiting())
   );
@@ -186,21 +199,36 @@ function versioned(url) {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
+  // The page's release check (app.js) must see the network, not this copy.
+  if (req.cache === "no-store") return;
 
   event.respondWith(
-    fetch(versioned(req.url), { cache: "no-cache", credentials: "same-origin" })
-      .then(res => {
-        if (res.ok) {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
-        }
-        return res;
-      })
-      .catch(() =>
-        // ignoreSearch lets a cached "app.js" satisfy "app.js?v=N" offline.
-        caches.match(req, { ignoreSearch: true }).then(hit =>
-          hit || (req.mode === "navigate" ? caches.match("./index.html") : Response.error())
-        )
-      )
+    caches.open(CACHE_NAME).then(cache =>
+      IS_DEV
+        ? fromNetwork(req, cache).then(res => res || fromCache(req, cache))
+        : fromCache(req, cache).then(hit => hit || fromNetwork(req, cache))
+    ).then(res => res || offlineAnswer(req))
   );
 });
+
+// ignoreSearch lets the stored "app.js" answer "app.js?v=N", and "./" answer
+// "/?anything". Only ?v= and the page's own queries ever reach here.
+function fromCache(req, cache) {
+  return cache.match(req, { ignoreSearch: true });
+}
+
+function fromNetwork(req, cache) {
+  return fetch(versioned(req.url), { cache: "no-cache", credentials: "same-origin" })
+    .then(res => {
+      if (res.ok) cache.put(req, res.clone());
+      return res;
+    })
+    // Offline and not in the copy: answered by offlineAnswer.
+    .catch(() => null);
+}
+
+function offlineAnswer(req) {
+  return req.mode === "navigate"
+    ? caches.match("./index.html").then(hit => hit || Response.error())
+    : Response.error();
+}

@@ -649,7 +649,8 @@ window.addEventListener("hashchange", () => {
   });
 });
 
-// PWA: offline support via the network-first service worker.
+// PWA: offline support and instant return visits via the cache-first service
+// worker (sw.js says why it stopped being network-first in v119).
 //
 // THE SCRIPT URL CARRIES THE VERSION, and that is load-bearing rather than
 // tidy. The site sits behind a CDN that served `/sw.js` with
@@ -675,10 +676,42 @@ if ("serviceWorker" in navigator) {
   whenReady("load", () => document.readyState === "complete", () => {
     navigator.serviceWorker
       .register(`./sw.js?v=${APP_VERSION}`, { updateViaCache: "none" })
+      .then(checkForRelease)
       .catch(err => {
         console.error("Service worker registration failed:", err);
       });
   });
+}
+
+// THE RELEASE CHECK. A cache-first page is the release its worker cached, and
+// it registers that release's own worker URL above, which the CDN may hold
+// for four hours. So after the page is up, one tiny request asks which
+// release is live: version.js at a query the edge has never seen, no-store so
+// neither the browser nor the worker answers it. A newer number registers that
+// release's worker, which caches the new copy whole and takes over.
+//
+// The page on screen is then reloaded into the new release only if nobody has
+// touched it yet; otherwise the new release opens next time. A reload under a
+// hand already answering would be worse than one more visit on the old copy.
+let pageTouched = false;
+for (const type of ["pointerdown", "keydown"]) {
+  window.addEventListener(type, () => { pageTouched = true; }, { once: true, capture: true });
+}
+
+function checkForRelease() {
+  return fetch(`./version.js?live=${Date.now()}`, { cache: "no-store" })
+    .then(res => (res.ok ? res.text() : ""))
+    .then(src => {
+      const live = src.match(/APP_VERSION\s*=\s*"(\d+)"/)?.[1];
+      if (!live || Number(live) <= Number(APP_VERSION)) return;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (!pageTouched) window.location.reload();
+      }, { once: true });
+      return navigator.serviceWorker.register(`./sw.js?v=${live}`, { updateViaCache: "none" });
+    })
+    // Offline, or a weak signal: the cached release keeps serving, and the
+    // next visit asks again. Nothing is lost by not knowing.
+    .catch(err => console.warn("Release check skipped:", err.message));
 }
 
 // Once the document is parsed; at once when it already is. For a Thai reader

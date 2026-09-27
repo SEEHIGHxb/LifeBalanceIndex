@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `118`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `119`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,34 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.58.0] — 2026-09-27 (APP_VERSION 119)
+
+### Fixed
+- **A return visit no longer waits on the network** (the owner: "sometime it
+  took like 5-10s to load"). The service worker was network-first: every
+  visit asked the network for the page and each of ~50 modules before using
+  the complete copy it already held, so a weak phone signal became the wait.
+  Measured with the worker installed: 2 s at one second a request, and never
+  opened (20 s) on a connection that stalls. It is now cache-first from one
+  release's whole copy: the same visits open in about 0.02 s, stalled or not.
+  The server was never the problem (0.2-0.5 s a request; a first visit loads
+  in about 0.45 s).
+- New releases still arrive. After the page is up, one small request asks
+  which release is live, past the worker and the CDN; a newer one installs
+  in the background as a whole copy (the install is now all or nothing, so
+  half a release is never served). The page moves to it at once if nobody
+  has touched it yet, otherwise on the next open. localhost stays
+  network-first for development. tests/return-visit.test.mjs.
+
+### Changed
+- **Answer boxes are one line on a computer** (the owner: "I don't want the
+  box to be too large"). The radio sits beside its words instead of above
+  them, and each step is as wide as its words need, so "Describes me
+  completely" keeps one line next to "Not at all". The boxes are about half
+  as tall. 62 of 67 answer rows are one line at 1440 px in both languages;
+  the rest (six long WHO-5 answers, "Very much like me") wrap to two lines,
+  still beside the radio. Phones keep the bottom-to-top list.
 
 ## [2.57.0] — 2026-09-27 (APP_VERSION 118)
 

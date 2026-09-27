@@ -389,3 +389,32 @@ html[lang="th"] .rv-continue { letter-spacing: normal; }
 html[lang="th"] .rv-ending h2,
 html[lang="th"] .rv-done-head,
 html[lang="th"] .rv-wipe-window span { font-weight: 700; }
+
+/* Your character in this region (v122, characters.js): the name large, the
+   two sides it was drawn from, a tip, and the region's four with yours
+   filled in. */
+.aspect-page .statement .character-name {
+  margin: 0;
+  font-family: var(--frame-word);
+  font-size: max(40px, calc(96 * var(--px)));
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.aspect-page .statement .character-line { margin: calc(16 * var(--px)) 0 calc(28 * var(--px)); font-size: max(16px, calc(28 * var(--px))); line-height: 1.6; }
+.character-sides { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0 0 calc(24 * var(--px)); padding: 0; list-style: none; }
+.character-sides li { font-size: max(14px, calc(21 * var(--px))); }
+.character-sides span { color: var(--frame-muted); }
+.aspect-page .statement .character-tip { margin: 0 0 calc(28 * var(--px)); font-size: max(15px, calc(22 * var(--px))); line-height: 1.6; }
+.character-cast { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 calc(36 * var(--px)); padding: 0; list-style: none; }
+.character-cast li {
+  padding: 6px 14px;
+  border: 1px solid #c8c8c8;
+  border-radius: 999px;
+  font-size: max(13px, calc(18 * var(--px)));
+  color: var(--frame-muted);
+}
+.character-cast li[aria-current="true"] { border-color: var(--frame-ink); background: var(--frame-ink); color: #ffffff; font-weight: 700; }
+.character-research { margin: 0 0 calc(20 * var(--px)); padding-left: 1.2em; }
+.aspect-page .statement .character-research li { font-size: max(14px, calc(20 * var(--px))); line-height: 1.6; margin-bottom: 6px; }
+html[lang="th"] .aspect-page .statement .character-name { letter-spacing: 0; text-transform: none; line-height: 1.4; }

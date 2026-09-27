@@ -29,6 +29,7 @@
 import { stateManager } from "../state.js";
 import { getAspectDetail } from "../aspects.js";
 import { getAspectSuggestions, getMentalHealthNotice } from "../suggestions.js";
+import { characterFor, characterDisclaimer } from "../characters.js";
 import { t, tp, percentileLabel } from "../i18n.js";
 import { gradeForAspect } from "../grades.js";
 import { criteriaForAspect } from "../criteria.js";
@@ -84,6 +85,7 @@ function readAspect(state, key) {
     // institutional criterion, and criteriaCard() renders "" for those.
     criteria: criteriaForAspect(state.profile, state.baseline, key),
     notice: key === "mental" ? getMentalHealthNotice(state) : null,
+    character: characterFor(state, key),
     canReassess: CHECKIN_ASPECTS.includes(key) && !!state.baseline
   };
 }
@@ -203,6 +205,32 @@ function gaugeCaption(b) {
 // from what, fold under "How this is worked out". A letter grade is already in
 // the top, so its sentence folds too; a missing one keeps its sentence open,
 // because that sentence is the reason and the way to fix it.
+// Your character in this region (characters.js): the name, the two sides it
+// was drawn from, a tip, the four characters with yours marked, and the
+// research the lines rest on. Nothing when a side has no answer yet.
+function characterSection(a) {
+  const c = a.character;
+  if (!c) return "";
+  return `
+    <section class="panel statement aspect-character"><div class="wrap split">
+      ${label(t("Your character"))}
+      <div>
+        <p class="character-name">${escapeHtml(c.name)}</p>
+        <p class="character-line">${escapeHtml(c.line)}</p>
+        <ul class="character-sides">
+          ${c.sides.map(s => `<li><span>${escapeHtml(s.label)}</span> <b>${escapeHtml(s.value)}</b></li>`).join("")}
+        </ul>
+        <p class="character-tip"><strong>${t("Try this:")}</strong> ${escapeHtml(c.tip)}</p>
+        <ul class="character-cast" aria-label="${escapeHtml(t("The four characters in this region"))}">
+          ${c.cast.map((name, i) => `<li${i === c.index ? ' aria-current="true"' : ""}>${escapeHtml(name)}</li>`).join("")}
+        </ul>
+        <p class="aspect-sources-head"><strong>${t("What the research says")}</strong></p>
+        <ul class="character-research">${c.research.map(r => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
+        <p class="gauge-note character-disclaimer">${escapeHtml(characterDisclaimer())}</p>
+      </div>
+    </div></section>`;
+}
+
 function standingSection(a) {
   const { b, detail, chapter, grade } = a;
   const reassess = a.canReassess ? ` <a href="#/checkin">${t("Start Re-assessment")}</a>` : "";
@@ -374,6 +402,7 @@ export function aspectMarkup(a) {
         plate: `./assets/regions/${chapter.art}.jpg`,
         body: topBody(a)
       })}
+      ${characterSection(a)}
       ${standingSection(a)}
       ${partsSection(a)}
       ${trendSection(a)}

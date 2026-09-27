@@ -334,3 +334,14 @@ test("no grade badge prints a score in the percentile slot", async () => {
   const pctBadge = gradeBadge(gradeForPercentile(42));
   assert.match(pctBadge, /percentile 42/, "a real percentile is still printed as one");
 });
+
+// The aspect page tells you your character, the two sides it came from,
+// the research, and that it is made up for fun (v122).
+test("an aspect page shows your character with its research and the made-up disclaimer", async () => {
+  const { renderAspectPage } = await import("../views/aspect.js");
+  const html = render(() => renderAspectPage(MAIN, STATE, "finance"));
+  assert.match(html, /class="panel statement aspect-character"/);
+  assert.match(html, /class="character-name">/);
+  assert.match(html, /aria-current="true"/);
+  assert.match(html, /made up for fun/);
+});

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `121`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `122`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.61.0] — 2026-09-28 (APP_VERSION 122)
+
+### Added
+- **A character in every region, MBTI-style** (the owner, after testers asked
+  for it: name groups of people for fun, and not straight from the grade).
+  Each region reads two either/or sides from answers already given, and the
+  pair picks one of four one-word characters (the owner chose the people set):
+  Treasurer, Merchant, Sage and Vendor in the Market; Guide, Climber, Herder and
+  Pilgrim in the Highlands; and so on, 32 in all. Each side is one part of the
+  aspect cut at a published line (the income median, WHO activity, 7 hours of
+  sleep, the WHO-5 and ST-5 bands, the UCLA-3 loneliness line, and others,
+  named in `characters.js`), never the score, so the characters do not pile up
+  in the middle the way grades do. Home shows your character beside each
+  region; each aspect page has a card with the two sides, a tip, the four
+  characters with yours marked, two research lines and a made-up-for-fun
+  disclaimer. A region with an unanswered side shows no character. 162 Thai
+  drafts await the owner's review.
 
 ## [2.60.0] — 2026-09-27 (APP_VERSION 121)
 

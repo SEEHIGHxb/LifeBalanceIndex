@@ -165,3 +165,11 @@ test("on Home the care notice can be closed, and stays closed for the visit", ()
   } finally { delete globalThis.sessionStorage; }
   assert.match(render(low), /care-banner/, "a new visit shows it again");
 });
+
+// Your character in each region sits beside its name (characters.js, v122).
+test("each aspect row names your character there", () => {
+  const html = render(STATE);
+  const names = html.match(/class="ar-character">([^<]+)</g) || [];
+  // The fixture skips the goal, giving and green questionnaires: no character there.
+  assert.equal(names.length, 5, `${names.length} rows named a character`);
+});

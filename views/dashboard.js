@@ -24,6 +24,7 @@ import { starOutline, starRay } from "../chart.js";
 import { getAllBenchmarks, collectSources } from "../benchmarks.js";
 import { ASPECT_KEYS, isAspectDeepVerified } from "../aspects.js";
 import { getTopSuggestions, getMentalHealthNotice } from "../suggestions.js";
+import { characterFor } from "../characters.js";
 import {
   balanceIndex, balanceBand, weakestAspect, gradeAllAspects, aspectsAtOrAboveAverage,
   isBottomGrade, relativeToPopulation
@@ -255,10 +256,13 @@ function aspectRow(h, chapter, i) {
   const score = h.scores[i];
   const avg = AVERAGE_ASPECT_SCORES[key];
   const b = h.benchmarks[key];
+  // Your character here (characters.js), beside the aspect's name.
+  const who = characterFor(h.state, key);
+  const character = who ? ` · <span class="ar-character">${escapeHtml(who.name)}</span>` : "";
   return `
     <li><a class="aspect-row" href="#/aspect/${key}" aria-label="${escapeHtml(tp("Open {aspect} details", { aspect: aspectName(key) }))}" style="--hue: ${chapter.hue}; --wash: ${chapter.wash};">
       <span class="ar-emblem"><img src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async"></span>
-      <span class="ar-name"><b>${escapeHtml(chapter.region)}</b><small>${escapeHtml(aspectName(key))}</small></span>
+      <span class="ar-name"><b>${escapeHtml(chapter.region)}</b><small>${escapeHtml(aspectName(key))}${character}</small></span>
       <span class="ar-score">${escapeHtml(score)}</span>
       <span class="ar-meter">
         <span class="meter" aria-hidden="true"><i style="width: ${Number(score) || 0}%;"></i><em style="left: ${Number(avg) || 0}%;"></em></span>

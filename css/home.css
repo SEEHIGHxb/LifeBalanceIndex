@@ -241,3 +241,6 @@
 /* ------------------------------------------------------------- Thai
    No tracking and no uppercase for Thai (the Thai block in index.css). */
 html[lang="th"] .ar-name b { letter-spacing: 0; text-transform: none; }
+
+/* Your character beside the aspect's name (v122). */
+.ar-name .ar-character { font-weight: 700; color: var(--frame-ink); }

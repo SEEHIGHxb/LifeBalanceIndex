@@ -15,7 +15,6 @@
 .aspect-top-read { display: flex; align-items: center; gap: calc(50 * var(--px)); }
 .aspect-top-lines { display: grid; gap: 8px; min-width: 0; }
 .aspect-page .aspect-standing .percentile-band { margin-left: 6px; vertical-align: 1px; }
-.aspect-page .aspect-confidence-line { margin: 0; }
 
 /* The long sections carry prose and small print, not one statement each: a
    tighter measure than the Landing's. */

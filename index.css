@@ -168,17 +168,14 @@ html[lang="th"] .balance-index-caption {
   line-height: 1.75;
 }
 
-/* The thirteen rules in this sheet that set letter-spacing for Latin. Listed
+/* The twelve rules in this sheet that set letter-spacing for Latin. Listed
    explicitly rather than reset with a wildcard: a wildcard would also flatten
    the Latin runs — source names, instrument acronyms, currency codes — that
    sit inside Thai copy and still want their tracking.
-   .confidence-badge and .component-confidence share one declaration; both are
-   named, because listing only the second is exactly the kind of miss this
-   enumeration invites — it left the trust chip tracked to a Latin eye. */
-html[lang="th"] .confidence-badge,
+   Two selectors sharing a declaration both need listing: listing one left a
+   chip tracked to a Latin eye once (tests/typography.test.mjs). */
 html[lang="th"] .criterion-chip,
 html[lang="th"] .prefill-chip,
-html[lang="th"] .component-confidence,
 html[lang="th"] .percentile-band,
 html[lang="th"] .grade-badge,
 html[lang="th"] .grade-none,
@@ -1170,48 +1167,6 @@ html {
 .completeness-note { border-left-color: var(--color-accent); }
 .completeness-note strong { color: var(--color-accent); }
 .completeness-note a { color: var(--color-accent); font-weight: 600; }
-
-/* --- Confidence tiers (Phase 2a) ---
-   0.75rem (12px), not the 0.62rem this used to be. These badges are the
-   trust layer: "High" / "Partial" / "Estimated" is what tells a reader how
-   much to believe the number sitting next to it, and at 9.92px it was the
-   least legible text on a page whose entire pitch is cited honesty. Uppercase
-   with 0.03em tracking costs legibility on top of the size, so the floor
-   matters more here than for ordinary body copy. */
-.confidence-badge,
-.component-confidence {
-  display: inline-block;
-  vertical-align: middle;
-  font-family: var(--font-sans);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  padding: 1px 6px;
-  border-radius: 999px;
-  border: 1px solid currentColor;
-  line-height: 1.5;
-}
-.confidence-high { color: var(--color-success); }
-.confidence-partial { color: var(--color-accent); }
-.confidence-estimated { color: var(--color-text-secondary); }
-
-.aspect-confidence-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
-.confidence-caption {
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-}
-/* "In-depth" (deep-assessment) tier reads as the strongest — filled, not outlined. */
-.confidence-verified {
-  color: #fff;
-  background: var(--color-navy);
-  border-color: var(--color-navy);
-}
 
 /* --- Friendlier percentile presentation --- */
 .benchmark-plain-lead {

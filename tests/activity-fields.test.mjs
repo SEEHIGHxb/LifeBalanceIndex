@@ -86,3 +86,54 @@ test("the journey still writes every old field under its old id", () => {
     assert.match(html, new RegExp(`<input type="number" id="${id}" hidden`), `${id} is gone`);
   }
 });
+
+// --- v120: donations, volunteering, and the plastic tally -------------------
+
+const more = await import("../views/activity-fields.js");
+const { plasticScore, donationVolumeFactor, volunteerFactor } = await import("../scoring.js");
+
+test("the plastic tally is blank until answered, then counts ticks plus a kept answer", () => {
+  const items = Array(8).fill(false);
+  assert.equal(more.summarizeTally({ items, none: false, carried: 0 }), "");
+  assert.equal(more.summarizeTally({ items, none: true, carried: 0 }), 0);
+  assert.equal(more.summarizeTally({ items: items.map((_, i) => i < 3), none: false, carried: 0 }), 3);
+  assert.equal(more.summarizeTally({ items, none: false, carried: 5 }), 5, "last week's 5 kept whole");
+});
+
+test("every plastic band in the scoring has a tally that lands in it", () => {
+  const bands = new Set();
+  for (let n = 0; n <= more.PLASTIC_ITEMS.length; n++) bands.add(plasticScore({ singleUsePlastics: n }));
+  assert.deepEqual([...bands].sort((a, b) => a - b), [0, 25, 50, 80, 100]);
+});
+
+test("the giving steps reach both sides of the scoring's maximum", () => {
+  const don = more.DONATION_STEPS.map(s => donationVolumeFactor({ monthlyDonations: s.value, income: 0 }));
+  assert.equal(don[0], 0);
+  assert.ok(don.some(v => v > 0 && v < 100) && don.includes(100));
+  const vol = more.VOLUNTEER_STEPS.map(s => volunteerFactor({ volunteeringHours: s.value }));
+  assert.equal(vol[0], 0);
+  assert.ok(vol.some(v => v > 0 && v < 100) && vol.includes(100));
+});
+
+test("the review keeps an off-step earlier answer as its own chosen step", () => {
+  const html = more.donationMarkup("rev-monthlyDonations", 300);
+  assert.match(html, /value="300" checked/);
+  assert.match(html, /id="rev-monthlyDonations" hidden step="any" value="300"/);
+  const vol = more.volunteerMarkup("rev-volunteeringHours", 0.5);
+  assert.match(vol, /value="0.5" checked/);
+});
+
+test("the review's tally keeps last week's count whole when the ticks are unknown", () => {
+  globalThis.localStorage?.removeItem?.("lifequest_plastic_items");
+  const html = more.tallyMarkup("rev-singleUsePlastics", 4);
+  assert.match(html, /name="rev-singleUsePlastics-last" value="4" checked/);
+  assert.match(html, /id="rev-singleUsePlastics" hidden step="any" min="0" max="100" data-required="1" value="4"/);
+  assert.match(more.tallyMarkup("rev-singleUsePlastics", 0), /name="rev-singleUsePlastics-none" value="1" checked/);
+});
+
+test("the journey asks all three with the old ids, so submit and scoring are unchanged", () => {
+  const html = allScreens().map(s => s.body ?? s.html ?? "").join("");
+  for (const id of ["onb-donations", "onb-volunteer", "onb-plastics"]) {
+    assert.match(html, new RegExp(`id="${id}" hidden`), `${id} carries the stored value`);
+  }
+});

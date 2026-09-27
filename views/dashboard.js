@@ -22,7 +22,7 @@ import { stateManager } from "../state.js";
 import { AVERAGE_ASPECT_SCORES } from "../averages.js";
 import { starOutline, starRay } from "../chart.js";
 import { getAllBenchmarks, collectSources } from "../benchmarks.js";
-import { getAspectConfidence, ASPECT_KEYS, isAspectDeepVerified } from "../aspects.js";
+import { ASPECT_KEYS, isAspectDeepVerified } from "../aspects.js";
 import { getTopSuggestions, getMentalHealthNotice } from "../suggestions.js";
 import {
   balanceIndex, balanceBand, weakestAspect, gradeAllAspects, aspectsAtOrAboveAverage,
@@ -41,7 +41,7 @@ import { writeMotionStyle } from "./motion-mount.js";
 import { nextReviewDate } from "./review.js";
 import { t, tp } from "../i18n.js";
 import {
-  escapeHtml, aspectLabel, confidenceBadge, benchmarkStanding, estimatedAspects,
+  escapeHtml, aspectLabel, benchmarkStanding, estimatedAspects,
   mentalHealthNotice, gradeBadge, balanceIndexBlock, CHECKIN_ASPECTS
 } from "./helpers.js";
 
@@ -267,7 +267,6 @@ function aspectRow(h, chapter, i) {
       <span class="ar-standing">${b ? benchmarkStanding(b, { compact: true }) : ""}</span>
       <span class="ar-badges">
         ${gradeBadge(h.grades[key], b && !h.grades[key] ? b.unranked : null)}
-        ${confidenceBadge(getAspectConfidence(h.state, key))}
       </span>
     </a></li>`;
 }

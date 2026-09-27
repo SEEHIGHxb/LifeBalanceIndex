@@ -11,6 +11,9 @@
 //   days; tap a day or drag across several, and one day can hold more than one
 //   kind. Then one tap for how long a usual session of each kind lasts.
 //
+//   v120: donations and volunteering as everyday steps like learning, and
+//   single-use plastic as a tally of things a usual day brings.
+//
 // THE STORED NUMBERS DO NOT CHANGE. Each question writes the same values the
 // old number boxes held into hidden number inputs with the old ids, so the
 // submit paths, validation, drafts, recaps and scoring read them exactly as
@@ -28,6 +31,44 @@ export const LEARNING_STEPS = Object.freeze([
   { hours: 8, label: "A class plus some practice" },
   { hours: 12, label: "Like a part-time course, or more" }
 ]);
+
+// v120, the same treatment for the other three boxes (the owner: "change these
+// part as well"). Each step is a month someone can recognise, worth a set
+// number. The scoring's own breakpoints sit between the steps: 500 baht or 4
+// hours a month max their factors (scoring.js), so each side of them has an
+// answer.
+export const DONATION_STEPS = Object.freeze([
+  { value: 0, label: "Nothing this month" },
+  { value: 50, label: "Spare change in a donation box" },
+  { value: 200, label: "Making merit at the temple now and then" },
+  { value: 500, label: "A regular gift, like a monthly pledge" },
+  { value: 1500, label: "Supporting a cause I care about every month" },
+  { value: 5000, label: "A big gift, like sponsoring a child's schooling" }
+]);
+
+export const VOLUNTEER_STEPS = Object.freeze([
+  { value: 0, label: "None this month" },
+  { value: 1, label: "A small favour for a group, about an hour" },
+  { value: 3, label: "One afternoon helping out" },
+  { value: 6, label: "A couple of afternoons" },
+  { value: 12, label: "A few hours every week" },
+  { value: 24, label: "Most weekends, or more" }
+]);
+
+// Plastic is counted, not estimated: tick what a usual day brings, one piece
+// each. Eight things, so the scoring's top band (8 or more, scoring.js) is
+// reachable and every lower band has room.
+export const PLASTIC_ITEMS = Object.freeze([
+  "A shopping bag",
+  "A bag for food to go (curry, soup, ice)",
+  "A straw",
+  "A plastic cup (iced coffee, bubble tea)",
+  "A food box or foam tray",
+  "A plastic spoon or fork",
+  "A bottle of water or a soft drink",
+  "A snack or sauce wrapper"
+]);
+const PLASTIC_KEY = "lifequest_plastic_items";
 
 // Examples of what counts, in the IPAQ's own terms: vigorous is too hard to
 // chat through, moderate is faster breathing that still allows talk, and a
@@ -109,30 +150,114 @@ const valueAttr = (v) => isBlank(v) ? "" : ` value="${Number(v)}"`;
 
 // --- learning ---------------------------------------------------------------
 
-// `id` is the old number box's id; `current` pre-selects an earlier answer.
-export function learningMarkup(id, current = null) {
-  const hours = withCurrent(LEARNING_STEPS.map(s => s.hours), current);
-  const options = hours.map(h => {
-    const step = LEARNING_STEPS.find(s => s.hours === h);
-    const words = step ? t(step.label) : tp("About {n} h — your last answer", { n: h });
-    const hint = step && h > 0 ? ` <span class="step-hint">${tp("about {n} h", { n: h })}</span>` : "";
-    const checked = !isBlank(current) && Number(current) === h ? " checked" : "";
+// One question of everyday steps, lowest first. `id` is the old number box's
+// id; `current` pre-selects an earlier answer. `hint(n)` is the number under
+// a step's words, `last(n)` the words for an earlier answer between steps.
+export function stepsMarkup(id, { question, steps, hint, last }, current = null) {
+  const values = withCurrent(steps.map(s => s.value), current);
+  const options = values.map(v => {
+    const step = steps.find(s => s.value === v);
+    const words = step ? t(step.label) : last(v);
+    const under = step && v > 0 ? ` <span class="step-hint">${hint(v)}</span>` : "";
+    const checked = !isBlank(current) && Number(current) === v ? " checked" : "";
     return `
           <label class="radio-option">
-            <input type="radio" name="${id}-pick" value="${h}"${checked}>
-            <span>${words}${hint}</span>
+            <input type="radio" name="${id}-pick" value="${v}"${checked}>
+            <span>${words}${under}</span>
           </label>`;
   }).join("");
   return `
-    <div class="easy-field" data-easy="learning" data-out="${id}">
+    <div class="easy-field" data-easy="steps" data-out="${id}">
       <fieldset class="survey-question" data-required="1"
         role="radiogroup" aria-required="true" aria-labelledby="${id}-legend">
-        <legend id="${id}-legend">${t("How much of your week goes to learning something on purpose?")}</legend>
+        <legend id="${id}-legend">${question}</legend>
         <div class="radio-group">${options}
         </div>
         <span class="field-error d-none" id="${id}-err" aria-live="polite"></span>
       </fieldset>
       ${hidden(id, valueAttr(current))}
+    </div>`;
+}
+
+export function learningMarkup(id, current = null) {
+  return stepsMarkup(id, {
+    question: t("How much of your week goes to learning something on purpose?"),
+    steps: LEARNING_STEPS.map(s => ({ value: s.hours, label: s.label })),
+    hint: (n) => tp("about {n} h", { n }),
+    last: (n) => tp("About {n} h — your last answer", { n })
+  }, current);
+}
+
+const baht = (n) => Number(n).toLocaleString("en-US");
+
+export function donationMarkup(id, current = null) {
+  return stepsMarkup(id, {
+    question: t("What does your giving look like in a usual month?"),
+    steps: DONATION_STEPS,
+    hint: (n) => tp("about {amount} baht", { amount: baht(n) }),
+    last: (n) => tp("{amount} baht — your last answer", { amount: baht(n) })
+  }, current);
+}
+
+export function volunteerMarkup(id, current = null) {
+  return stepsMarkup(id, {
+    question: t("How much time do you give to helping others, unpaid, in a usual month?"),
+    steps: VOLUNTEER_STEPS,
+    hint: (n) => tp("about {n} h a month", { n }),
+    last: (n) => tp("{n} h a month — your last answer", { n })
+  }, current);
+}
+
+// --- the plastic tally ------------------------------------------------------
+
+function readItems() {
+  try {
+    const saved = JSON.parse(globalThis.localStorage?.getItem(PLASTIC_KEY) || "null");
+    return Array.isArray(saved) && saved.length === PLASTIC_ITEMS.length ? saved.map(Boolean) : null;
+  } catch {
+    return null;
+  }
+}
+
+// The count, as the old box held it: blank until something is ticked or
+// "none" is, then the ticks plus an earlier answer kept whole.
+export function summarizeTally({ items, none, carried }) {
+  const count = items.filter(Boolean).length + carried;
+  return count || none ? count : "";
+}
+
+// `current` (the review) is last week's count. The items ticked then come
+// back if they still add up to it; otherwise the count is kept whole as one
+// ticked line of its own, so confirming it changes nothing.
+export function tallyMarkup(id, current = null) {
+  const n = isBlank(current) ? null : Math.max(0, Math.round(Number(current)));
+  const saved = n ? readItems() : null;
+  const ticked = saved && saved.filter(Boolean).length === n ? saved : [];
+  const carried = n && !ticked.length ? n : 0;
+  const items = PLASTIC_ITEMS.map((label, i) => `
+        <label class="tally-item">
+          <input type="checkbox" name="${id}-i${i}" value="1"${ticked[i] ? " checked" : ""}>
+          <span>${t(label)}</span>
+        </label>`).join("");
+  const kept = carried ? `
+        <label class="tally-item">
+          <input type="checkbox" name="${id}-last" value="${carried}" checked>
+          <span>${tp("{n} pieces a day — your last answer", { n: carried })}</span>
+        </label>` : "";
+  return `
+    <div class="easy-field tally" data-easy="tally" data-out="${id}">
+      <fieldset class="survey-question" aria-labelledby="${id}-legend">
+        <legend id="${id}-legend">${t("Which of these does a usual day bring you? Tick each one you use once and throw away.")}</legend>
+        <div class="tally-grid">${items}${kept}
+        </div>
+        <label class="wk-none">
+          <input type="checkbox" name="${id}-none" value="1"${n === 0 ? " checked" : ""}>
+          ${t("None of these on a usual day")}
+        </label>
+        <p class="tally-count" aria-live="polite"></p>
+        <span class="field-error d-none" id="${id}-err" aria-live="polite"></span>
+      </fieldset>
+      ${hidden(id, ` min="0" max="100" data-required="1"${valueAttr(n)}`)}
     </div>`;
 }
 
@@ -215,9 +340,30 @@ function put(el, value) {
   el.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
-function syncLearning(field) {
+function syncSteps(field) {
   const pick = field.querySelector("input[type=radio]:checked");
   put(field.querySelector(`#${field.dataset.out}`), pick ? pick.value : "");
+}
+
+function syncTally(field) {
+  const boxes = [...field.querySelectorAll(`.tally-item input[name^="${field.dataset.out}-i"]`)];
+  const items = boxes.map(b => b.checked);
+  const last = field.querySelector(`input[name="${field.dataset.out}-last"]`);
+  const none = field.querySelector(".wk-none input").checked;
+  const count = summarizeTally({ items, none, carried: last?.checked ? Number(last.value) : 0 });
+  put(field.querySelector(`#${field.dataset.out}`), count);
+  field.querySelector(".tally-count").textContent = count === "" ? ""
+    : tp("{n} pieces a day", { n: count });
+  if (count !== "") {
+    const err = field.querySelector(".field-error");
+    err.textContent = "";
+    err.classList.add("d-none");
+  }
+  try {
+    globalThis.localStorage?.setItem(PLASTIC_KEY, JSON.stringify(items));
+  } catch {
+    // Only a convenience for next week's review.
+  }
 }
 
 function syncWeek(week) {
@@ -252,7 +398,8 @@ function syncWeek(week) {
 // Every value recomputed from what is on screen. Call after anything sets the
 // controls from script (a draft restore, a form reset), which fires no events.
 export function syncActivityFields(root) {
-  root.querySelectorAll('[data-easy="learning"]').forEach(syncLearning);
+  root.querySelectorAll('[data-easy="steps"]').forEach(syncSteps);
+  root.querySelectorAll('[data-easy="tally"]').forEach(syncTally);
   root.querySelectorAll('[data-easy="week"]').forEach(syncWeek);
 }
 
@@ -302,8 +449,19 @@ export function bindActivityFields(root) {
   root.addEventListener("change", (e) => {
     const field = e.target.closest("[data-easy]");
     if (!field) return;
-    if (field.dataset.easy === "learning") {
-      syncLearning(field);
+    if (field.dataset.easy === "steps") {
+      syncSteps(field);
+      return;
+    }
+    // A ticked thing and "none of these" rule each other out, here and in the
+    // week below.
+    if (field.dataset.easy === "tally") {
+      if (e.target.closest(".wk-none")) {
+        if (e.target.checked) field.querySelectorAll(".tally-item input:checked").forEach(b => { b.checked = false; });
+      } else if (e.target.checked) {
+        field.querySelector(".wk-none input").checked = false;
+      }
+      syncTally(field);
       return;
     }
     // Painting a day and "none of these" rule each other out.

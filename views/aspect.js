@@ -38,7 +38,7 @@ import { topMarkup, label, renderStagePage } from "./stage-page.js";
 import { dotDate } from "./news.js";
 import { percentileBand } from "../benchmarks.js";
 import {
-  escapeHtml, confidenceBadge, componentConfidenceChip, gradeBadge, percentilePhrase,
+  escapeHtml, gradeBadge, percentilePhrase,
   methodTag, mentalHealthNotice, criteriaCard, CHECKIN_ASPECTS
 } from "./helpers.js";
 
@@ -123,22 +123,17 @@ function gradeBlock(a) {
 }
 
 // Under the photograph: the grade and score, where they stand with the band's
-// two-word chip, and how sure the score is.
+// two-word chip. The confidence tier was here until v120: readers took "High"
+// for a high score (the owner, 2026-09-27), and it told them nothing they used.
 function topBody(a) {
-  const { detail, b } = a;
+  const { b } = a;
   const band = b && Number.isFinite(b.percentile) ? percentileBand(b.percentile) : null;
   const chip = band ? ` <span class="percentile-band band-${band.key}">${t(band.label)}</span>` : "";
-  const conf = detail.confidence && detail.confidence.tier ? `
-    <p class="aspect-confidence-line">
-      ${confidenceBadge(detail.confidence)}
-      <span class="confidence-caption">${tp("{answered}/{total} inputs answered", { answered: detail.confidence.answered, total: detail.confidence.total })}</span>
-    </p>` : "";
   return `
     <div class="aspect-top-read">
       ${gradeBlock(a)}
       <div class="aspect-top-lines">
         <p class="page-top-lead aspect-standing">${escapeHtml(standingLine(a))}${chip}</p>
-        ${conf}
       </div>
     </div>`;
 }
@@ -250,7 +245,7 @@ function partRow(c, chapter) {
   const value = Number(c.value) || 0;
   return `
     <li class="part-row">
-      <div class="pr-name"><h3 class="card-title">${escapeHtml(c.label)}</h3>${componentConfidenceChip(c.confidence)}</div>
+      <div class="pr-name"><h3 class="card-title">${escapeHtml(c.label)}</h3></div>
       <p class="pr-score"><b>${escapeHtml(c.value)}</b><small>${escapeHtml(t("out of 100"))}</small></p>
       <span class="meter" aria-hidden="true"><i style="width: ${value}%; background: ${chapter.hue};"></i></span>
       <p class="pr-desc">${escapeHtml(c.detail)}</p>

@@ -31,7 +31,8 @@ test("on a computer the answers run left to right in one row, lowest first", () 
   // boxes). Equal columns wrapped "Describes me completely" onto two lines.
   assert.match(group, /grid-auto-columns: auto;/, "steps sized to their words");
   const option = body(desktop, ".journey .radio-option");
-  assert.match(option, /flex-direction: row;/, "the radio beside its words, not above them");
+  // Two lines: the radio, then the words on one line (the owner, 2026-09-27).
+  assert.match(option, /flex-direction: column;/, "the radio above its words");
 });
 
 test("on a phone the answers climb from the bottom, lowest at the bottom", () => {

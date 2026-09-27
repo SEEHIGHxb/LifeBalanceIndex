@@ -181,9 +181,6 @@ export const TH = {
   "One portion ≈ 80 g — about one handful, or half a plate of cooked greens. Vegetables only: the guideline check behind this field counts vegetables, not fruit.": "หนึ่งส่วน ≈ 80 กรัม ประมาณหนึ่งกำมือ หรือครึ่งจานของผักสุก นับเฉพาะผัก เกณฑ์ที่ใช้ตรวจสอบข้อนี้นับเฉพาะผัก ไม่รวมผลไม้",
   "Water Intake per Day (Liters)": "น้ำดื่มต่อวัน (ลิตร)",
   "Weekly Physical Activity (IPAQ)": "กิจกรรมทางกายรายสัปดาห์ (IPAQ)",
-  "Monthly Donations (THB)": "เงินบริจาคต่อเดือน (บาท)",
-  "Volunteering Hours per Month": "ชั่วโมงจิตอาสาต่อเดือน",
-  "Single-Use Plastic Items per Day": "พลาสติกใช้ครั้งเดียวต่อวัน (ชิ้น)",
   // The pension question was retired in v68 — it scored nothing anywhere, and
   // round 9 established it never should. Its three Thai keys go with it;
   // leaving them here would fail tests/i18n-orphans.test.mjs.
@@ -261,8 +258,6 @@ export const TH = {
   "App-authored behavioral items — not a standardized instrument. Read this aspect as a habits index, not a validated psychological measure.":
     "ชุดคำถามพฤติกรรมที่แอปสร้างเอง — ไม่ใช่เครื่องมือมาตรฐาน โปรดอ่านด้านนี้เป็นดัชนีนิสัย ไม่ใช่การวัดทางจิตวิทยาที่ผ่านการตรวจสอบ",
   "Confidence, benchmarks, and answer quality": "ความเชื่อมั่น เกณฑ์เปรียบเทียบ และคุณภาพคำตอบ",
-  "Every score carries a confidence tier: High (you answered everything), Partial, Estimated (defaults stood in), or Verified (you completed the full-length in-depth instruments).":
-    "ทุกคะแนนมีระดับความเชื่อมั่น: สูง (ตอบครบ), บางส่วน, ประมาณการ (ใช้ค่าเริ่มต้นแทน) หรือยืนยันแล้ว (ทำแบบประเมินเชิงลึกฉบับเต็มครบ)",
   "Society percentiles are honest approximations against cited published statistics — each benchmark names its method and sources, and the band around it is an indicative range, not a statistical confidence interval.":
     "เปอร์เซ็นไทล์เทียบสังคมเป็นการประมาณอย่างตรงไปตรงมาจากสถิติที่ตีพิมพ์และอ้างอิงได้ — แต่ละเกณฑ์ระบุวิธีและแหล่งที่มา และช่วงคะแนนเป็นช่วงบ่งชี้ ไม่ใช่ช่วงความเชื่อมั่นทางสถิติ",
   "Answer quality is checked: a questionnaire answered with the same option on every row (despite reverse-worded questions) is not counted as a confirmed measurement until re-answered.":
@@ -494,8 +489,6 @@ export const TH = {
   "High": "สูง",
   "Partial": "บางส่วน",
   "Estimated": "ประมาณการ",
-  "Score confidence: {answered} of {total} inputs answered": "ความเชื่อมั่นของคะแนน: ตอบแล้ว {answered} จาก {total} รายการ",
-  "{answered}/{total} inputs answered": "ตอบแล้ว {answered}/{total} รายการ",
   "Some scores are estimates.": "บางคะแนนเป็นค่าประมาณ",
   "These are scored from default answers: {aspects}. Re-run your assessment or submit a Weekly Review to confirm them.":
     "คะแนนเหล่านี้คิดจากคำตอบเริ่มต้น: {aspects} ทำแบบประเมินใหม่หรือส่งการทบทวนรายสัปดาห์เพื่อยืนยัน",
@@ -977,8 +970,6 @@ export const TH = {
   // because items shared with onboarding already had Thai entries). The
   // canonical instruments remain the cited English versions on #/methodology.
   "In-depth": "เชิงลึก",
-  "Measured with the full long-form instruments (deep assessment complete)":
-    "วัดด้วยแบบประเมินฉบับเต็ม (ทำแบบประเมินเชิงลึกครบแล้ว)",
   "Ahead of about {pct}% of people like you": "นำหน้าผู้คนที่คล้ายคุณราว {pct}%",
   // {pct}/{low}/{high} arrive from percentileLabel() already prefixed with
   // "ที่ " in Thai, so the template adds no space before them.
@@ -1701,5 +1692,37 @@ export const TH = {
   "How long is a usual walk?": "เดินแต่ละครั้ง ปกตินานเท่าไร",
   "{n} min": "{n} นาที",
   "{n} h": "{n} ชม.",
-  "{n} h or more": "{n} ชม. ขึ้นไป"
+  "{n} h or more": "{n} ชม. ขึ้นไป",
+  // v120, awaiting the owner's review: donations, volunteering and the
+  // plastic tally as everyday answers.
+  "What does your giving look like in a usual month?": "เดือนปกติ คุณให้หรือบริจาคประมาณไหน",
+  "Nothing this month": "เดือนนี้ไม่ได้ให้",
+  "Spare change in a donation box": "หยอดเศษเหรียญลงตู้บริจาค",
+  "Making merit at the temple now and then": "ทำบุญที่วัดเป็นครั้งคราว",
+  "A regular gift, like a monthly pledge": "บริจาคประจำ เช่น ตัดบัญชีรายเดือน",
+  "Supporting a cause I care about every month": "สนับสนุนเรื่องที่ใส่ใจทุกเดือน",
+  "A big gift, like sponsoring a child's schooling": "ให้ก้อนใหญ่ เช่น ทุนเรียนให้เด็กหนึ่งคน",
+  "about {amount} baht": "ประมาณ {amount} บาท",
+  "{amount} baht — your last answer": "{amount} บาท — คำตอบครั้งก่อนของคุณ",
+  "How much time do you give to helping others, unpaid, in a usual month?": "เดือนปกติ คุณใช้เวลาช่วยเหลือผู้อื่นโดยไม่รับค่าตอบแทนประมาณไหน",
+  "None this month": "เดือนนี้ไม่ได้ทำ",
+  "A small favour for a group, about an hour": "ช่วยงานกลุ่มเล็กน้อย ราวหนึ่งชั่วโมง",
+  "One afternoon helping out": "ช่วยงานหนึ่งบ่าย",
+  "A couple of afternoons": "สองสามบ่าย",
+  "A few hours every week": "ทุกสัปดาห์ สัปดาห์ละไม่กี่ชั่วโมง",
+  "Most weekends, or more": "เกือบทุกสุดสัปดาห์ หรือมากกว่านั้น",
+  "about {n} h a month": "ประมาณเดือนละ {n} ชม.",
+  "{n} h a month — your last answer": "เดือนละ {n} ชม. — คำตอบครั้งก่อนของคุณ",
+  "Which of these does a usual day bring you? Tick each one you use once and throw away.": "วันปกติของคุณมีสิ่งไหนบ้าง ติ๊กทุกอย่างที่ใช้ครั้งเดียวแล้วทิ้ง",
+  "A shopping bag": "ถุงหิ้วใส่ของ",
+  "A bag for food to go (curry, soup, ice)": "ถุงใส่อาหาร (ถุงแกง ถุงน้ำซุป ถุงน้ำแข็ง)",
+  "A straw": "หลอด",
+  "A plastic cup (iced coffee, bubble tea)": "แก้วพลาสติก (กาแฟเย็น ชานมไข่มุก)",
+  "A food box or foam tray": "กล่องข้าวหรือถาดโฟม",
+  "A plastic spoon or fork": "ช้อนหรือส้อมพลาสติก",
+  "A bottle of water or a soft drink": "ขวดน้ำหรือขวดน้ำอัดลม",
+  "A snack or sauce wrapper": "ซองขนมหรือซองซอส",
+  "None of these on a usual day": "วันปกติไม่มีสิ่งเหล่านี้เลย",
+  "{n} pieces a day": "วันละ {n} ชิ้น",
+  "{n} pieces a day — your last answer": "วันละ {n} ชิ้น — คำตอบครั้งก่อนของคุณ"
 };

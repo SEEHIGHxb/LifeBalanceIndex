@@ -312,6 +312,17 @@ try {
       day.checked = true;
       day.dispatchEvent(new Event("change", { bubbles: true }));
     }
+    // The plastic tally: a shopping bag and a straw, ticked as a reader would,
+    // so the count comes from the ticks and not from the box set above. And
+    // the fourth giving step, a regular gift of about 500 baht.
+    for (const i of [0, 2]) {
+      const item = document.querySelector(`input[name="onb-plastics-i${i}"]`);
+      item.checked = true;
+      item.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    const gift = document.querySelector('input[name="onb-donations-pick"][value="500"]');
+    gift.checked = true;
+    gift.dispatchEvent(new Event("change", { bubbles: true }));
     // A weight with a half kilo, as a tester really typed it. Whole numbers
     // hid the bug where the browser's own step check refused this on its
     // hidden screen and swallowed Complete Assessment without a word.
@@ -383,6 +394,8 @@ try {
   const moved = ["weeklyWalkingDays", "weeklyWalkingMins", "weeklyVigorousDays", "weeklyVigorousMins", "weeklyModerateDays", "weeklyModerateMins", "weeklyLearningHours"]
     .map(f => state?.profile?.[f]).join(",");
   if (moved !== "3,10,0,0,0,0,0") problems.push(`flow1: the painted week and learning saved ${moved}, not 3,10,0,0,0,0,0`);
+  const given = ["singleUsePlastics", "monthlyDonations", "volunteeringHours"].map(f => state?.profile?.[f]).join(",");
+  if (given !== "2,500,0") problems.push(`flow1: the plastic tally and giving steps saved ${given}, not 2,500,0`);
   if (state?.profile?.assessmentComplete !== true) {
     problems.push("flow1: a completed baseline must be marked assessmentComplete=true");
   }

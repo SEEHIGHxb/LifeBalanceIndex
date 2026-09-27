@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `119`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `120`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,34 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.59.0] — 2026-09-27 (APP_VERSION 120)
+
+### Changed
+- **Donations, volunteering and single-use plastic are everyday answers**
+  (the owner: "change these part as well", after learning and exercise in
+  v118). Giving is six recognisable months, from "Nothing this month" and
+  "Spare change in a donation box" to "A big gift, like sponsoring a child's
+  schooling" (0, 50, 200, 500, 1,500, 5,000 baht); volunteering is six, from
+  "None this month" to "Most weekends, or more" (0, 1, 3, 6, 12, 24 hours).
+  Plastic is counted, not estimated: tick what a usual day brings from eight
+  things (a shopping bag, a bag for food to go, a straw, a cup, a food box, a
+  spoon or fork, a bottle, a wrapper), one piece each, or "None of these".
+  Every scoring band has an answer that lands in it. The stored numbers and
+  fields are unchanged; in the weekly review last week's answer comes back
+  chosen, an off-step value as its own step and an unknown mix of plastic as
+  one ticked line of its count. tests/activity-fields.test.mjs; tests/e2e.mjs
+  ticks the plastic and picks a giving step.
+- **The confidence badge is gone** from the results table, the aspect page
+  and its parts (the owner: testers read "High" as a high score). The note
+  that says defaults stood in for missing answers stays.
+- **Answer boxes are two lines: the circle, then the words on one line**
+  (the owner: "not too dense and too spacy"). Steps are still as wide as their
+  words; the six-sentence questions (learning, giving, volunteering) sit in
+  two rows of three, still lowest first, so a sentence has room.
+
+### Needs review
+- 30 new Thai strings in `th.js`, marked "v120, awaiting the owner's review".
 
 ## [2.58.0] — 2026-09-27 (APP_VERSION 119)
 

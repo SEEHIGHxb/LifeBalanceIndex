@@ -14,7 +14,7 @@
 // and inventoried in docs/chapter-facts.md.
 
 import { numberField, selectField, instrumentBlock } from "./instrument-forms.js";
-import { learningMarkup, weekMarkup } from "./activity-fields.js";
+import { learningMarkup, weekMarkup, donationMarkup, volunteerMarkup, tallyMarkup } from "./activity-fields.js";
 import { INSTRUMENTS } from "../surveys.js";
 import { t, tp, onLangChange } from "../i18n.js";
 
@@ -382,11 +382,7 @@ const buildChapters = () => [
         "giving",
         t("Money and hours"),
         t("Both can be zero. Giving is not the only way to contribute and this app does not pretend otherwise."),
-        `
-          <div class="grid-2">
-            ${numberField("onb-donations", t("Monthly Donations (THB)"), "", 'min="0"', { required: true, field: "monthlyDonations" })}
-            ${numberField("onb-volunteer", t("Volunteering Hours per Month"), "", 'min="0" max="168"', { required: true, field: "volunteeringHours", placeholder: "0–168" })}
-          </div>`
+        donationMarkup("onb-donations") + volunteerMarkup("onb-volunteer")
       )
     ],
     recap(read) {
@@ -435,7 +431,7 @@ const buildChapters = () => [
         "plastics",
         t("One last count"),
         t("Bags, straws, cups, cutlery, bottles — anything used once and thrown away."),
-        numberField("onb-plastics", t("Single-Use Plastic Items per Day"), "", 'min="0" max="100"', { required: true, field: "singleUsePlastics", placeholder: "0–100" })
+        tallyMarkup("onb-plastics")
       )
     ],
     recap(read) {

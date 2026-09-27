@@ -40,7 +40,10 @@ import { chapterOf, dotDate, shiftSummary, starThumb, newsRow } from "./news.js"
 import { animate, easeStar, isReduced } from "../motion.js";
 import { carriedStep, isCarrying } from "./lang-carry.js";
 import { applyDraft, saveDraft, clearDraft, readDraft } from "../draft.js";
-import { learningMarkup, weekMarkup, bindActivityFields, syncActivityFields } from "./activity-fields.js";
+import {
+  learningMarkup, weekMarkup, donationMarkup, volunteerMarkup, tallyMarkup,
+  bindActivityFields, syncActivityFields
+} from "./activity-fields.js";
 
 // The review's half-typed answers survive a reload under this draft name, for
 // the week they were typed in only: last week's unfinished numbers are not
@@ -101,13 +104,19 @@ const FIELD_LABELS = {
   sleepHours: "Average Nightly Sleep (Hours)",
   waterLiters: "Water Intake per Day (Liters)",
   vegetablePortions: "Vegetable Portions per Day",
-  singleUsePlastics: "Single-Use Plastic Items per Day",
-  monthlySavings: "Monthly Savings (THB)",
-  monthlyDonations: "Monthly Donations (THB)",
-  volunteeringHours: "Volunteering Hours per Month"
+  monthlySavings: "Monthly Savings (THB)"
 };
 
-const FIELD_STEPS = { sleepHours: 0.5, waterLiters: 0.1, volunteeringHours: 0.5 };
+const FIELD_STEPS = { sleepHours: 0.5, waterLiters: 0.1 };
+
+// Fields asked as everyday answers (views/activity-fields.js), each drawn from
+// last week's value.
+const EASY_FIELDS = {
+  weeklyLearningHours: learningMarkup,
+  monthlyDonations: donationMarkup,
+  volunteeringHours: volunteerMarkup,
+  singleUsePlastics: tallyMarkup
+};
 
 // The prototype's timings: the title types at this pace; the next region's
 // photograph wipes up, holds, then wipes away; the ending's curtain lifts and
@@ -203,7 +212,7 @@ function reviewWeek(profile, prefills) {
 function reviewField(field, profile, prefills = {}) {
   if (field === "weeklyVigorousDays") return reviewWeek(profile, prefills);
   if (Object.values(WEEK_KINDS).flat().includes(field)) return "";
-  if (field === "weeklyLearningHours") return learningMarkup(FIELD_IDS[field], profile[field] ?? 0);
+  if (EASY_FIELDS[field]) return EASY_FIELDS[field](FIELD_IDS[field], profile[field] ?? 0);
   const c = FIELD_CONSTRAINTS[field];
   const step = FIELD_STEPS[field] ? ` step="${FIELD_STEPS[field]}"` : "";
   const pre = Object.hasOwn(prefills, field) ? prefills[field] : null;
@@ -494,10 +503,10 @@ export function renderReview(containerId, state, onComplete) {
   let draftStep = null;
   if (draft && draft.week !== week) clearDraft(DRAFT_KEY);
   else if (draft) {
-    // A draft records only the days that were painted, so a day the reader
-    // cleared is absent from it: last week's paint comes off first, or the
-    // restore would leave it on.
-    const painted = [...form.querySelectorAll(".wk-cell input:checked, .wk-none input:checked")];
+    // A draft records only the boxes that were ticked (days painted, plastic
+    // items), so one the reader cleared is absent from it: last week's ticks
+    // come off first, or the restore would leave them on.
+    const painted = [...form.querySelectorAll(".wk-cell input:checked, .wk-none input:checked, .tally-item input:checked")];
     painted.forEach(box => { box.checked = false; });
     const restored = applyDraft(DRAFT_KEY, form);
     if (!restored) painted.forEach(box => { box.checked = true; });

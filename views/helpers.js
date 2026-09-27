@@ -92,28 +92,9 @@ export function birthdayFields({ idPrefix, month = null, day = null }) {
 
 // --- CONFIDENCE UI (Phase 2) ---
 
-export const CONFIDENCE_LABELS = () => ({ verified: t("In-depth"), high: t("High"), partial: t("Partial"), estimated: t("Estimated") });
-
 // Aspects whose survey inputs the monthly re-assessment (#/checkin) re-runs, so
 // an estimated one there gets an actionable link rather than text-only guidance.
 export const CHECKIN_ASPECTS = ["mental", "relationships", "personalGoals"];
-
-// Small tier badge for an aspect (dashboard rows + aspect header). Empty string
-// when confidence is unknown (older saves with no captured coverage).
-export function confidenceBadge(conf) {
-  if (!conf || !conf.tier) return "";
-  const title = conf.tier === "verified"
-    ? t("Measured with the full long-form instruments (deep assessment complete)")
-    : tp("Score confidence: {answered} of {total} inputs answered", { answered: conf.answered, total: conf.total });
-  return `<span class="confidence-badge confidence-${conf.tier}" title="${escapeHtml(title)}">${CONFIDENCE_LABELS()[conf.tier]}</span>`;
-}
-
-// Component-row chip: shown for partial/estimated (to flag low confidence) and
-// for verified (to credit deep-assessment rows); high stays uncluttered.
-export function componentConfidenceChip(tier) {
-  if (tier !== "partial" && tier !== "estimated" && tier !== "verified") return "";
-  return `<span class="component-confidence confidence-${tier}">${CONFIDENCE_LABELS()[tier]}</span>`;
-}
 
 // --- GRADES (Phase L1) ---
 

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `116`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `117`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.56.0] — 2026-09-27 (APP_VERSION 117)
+
+### Changed
+- **The answers read as a scale, lowest first** (the owner: "on the PC web
+  ... order from low-high, left-right ... on the mobile phone ... from
+  low-high, bottom-top"). On a computer a question's answers sit in one row of
+  equal steps, the radio over its words, lowest on the left; they used to wrap
+  onto a second row. On a phone they stack with the lowest at the bottom. Only
+  the layout changed: the markup, tab order and screen reader still go from
+  low to high.
+- **The chosen answer is a soft tint of its region** (the owner: "the color is
+  too dark and make the text hard to read"). It was near-black with white
+  words; it is now the region's hue mixed with white, ringed in the hue, with
+  the page's black ink (at least 7:1 in every region). The filled radio still
+  marks it without relying on colour. tests/answer-scale.test.mjs holds all
+  three.
 
 ## [2.55.0] — 2026-09-27 (APP_VERSION 116)
 

@@ -109,22 +109,30 @@
   line-height: 1.45;
   color: var(--frame-ink);
 }
+/* The answers read as a scale, lowest first (the owner, 2026-09-27): left to
+   right in one row here, bottom to top on a phone (below). Every instrument
+   lists its options lowest first, so only the layout changes; the markup, tab
+   order and screen reader stay low to high (tests/answer-scale.test.mjs). */
 .journey .radio-group {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: 10px;
 }
-/* The answers are pills. The radio stays a real, focusable control inside
-   each one; only its drawing changes. */
+/* The answers are steps: the radio over its words. The radio stays a real,
+   focusable control inside each one; only its drawing changes. */
 .journey .radio-option {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  justify-content: flex-start;
+  gap: 8px;
   min-height: 48px;
   margin: 0;
-  padding: 10px 22px 10px 16px;
+  padding: 14px 10px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 20px;
+  text-align: center;
   background: var(--frame-card);
   color: var(--frame-ink);
   font-size: 15px;
@@ -153,9 +161,15 @@
   border-radius: 50%;
   background: currentColor;
 }
+/* The chosen answer: a soft tint of the region with the page's ink, ringed in
+   the region's hue. It was near-black with white words, which the owner found
+   too dark to read (2026-09-27). The filled radio still marks it without
+   colour. */
 .journey .radio-option:has(input:checked) {
-  background: var(--frame-dark);
-  color: #ffffff;
+  background: #d6d6d6;
+  background: color-mix(in srgb, var(--chapter-hue, #8a8a8a) 45%, #ffffff);
+  color: var(--frame-ink);
+  box-shadow: inset 0 0 0 2px var(--chapter-hue, #8a8a8a);
 }
 .journey .radio-option:has(input:focus-visible) {
   outline: 2px solid var(--frame-ink);
@@ -442,8 +456,19 @@
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "label" "count";
   }
-  .journey .radio-group { display: grid; }
-  .journey .radio-option { width: 100%; }
+  .journey .radio-group {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .journey .radio-option {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 22px 10px 16px;
+    border-radius: 999px;
+    text-align: left;
+  }
 }
 
 /* ------------------------------------------------------------- Thai

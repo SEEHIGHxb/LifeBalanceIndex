@@ -420,51 +420,73 @@
 /* The call to begin, and under it the way back in for someone with a backup. */
 .careers-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 
-/* ------------------------------------------------ the care notice, still, on top (Home and the Mental page) */
+/* ------------------------------------------------ the care notice, still, on top (Home and the Mental page)
+   A slim strip since v121 (the owner: "smaller, like temporary banner that
+   can be close"): a soft band under the header, text and numbers in a few
+   short lines, and on Home a close button at its right. */
 .stage-page .notice-panel {
   z-index: 1;
-  padding: calc(250 * var(--px)) 0 calc(130 * var(--px));
-  background: var(--frame-card);
+  padding: 14px 0;
+  background: #eef3f8;
+  border-bottom: 1px solid #cdd9e4;
 }
 .stage-page .care-banner {
+  position: relative;
   margin: 0;
-  padding: 0;
+  padding: 0 44px 0 0;
   border: 0;
   background: none;
   box-shadow: none;
 }
 .stage-page .care-banner-title {
-  margin: 0 0 calc(30 * var(--px));
-  max-width: calc(1500 * var(--px));
-  font-size: max(20px, calc(46 * var(--px)));
-  line-height: 1.45;
+  margin: 0 0 2px;
+  font-size: 16px;
+  line-height: 1.4;
   font-weight: 700;
 }
 .stage-page .care-banner-text {
-  margin: 0 0 calc(56 * var(--px));
-  max-width: calc(1500 * var(--px));
-  font-size: max(15px, calc(24 * var(--px)));
-  line-height: 1.8;
+  margin: 0 0 6px;
+  max-width: 900px;
+  font-size: 13px;
+  line-height: 1.5;
 }
 .stage-page .care-resources {
   display: flex;
+  flex-direction: row;
   flex-wrap: wrap;
-  gap: calc(34 * var(--px)) calc(90 * var(--px));
+  gap: 4px 22px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.stage-page .care-resources li { display: grid; gap: 6px; }
-.stage-page .care-resource-label { order: 2; font-size: max(13px, calc(17 * var(--px))); font-weight: 600; }
+.stage-page .care-resources li { display: flex; justify-content: flex-start; align-items: baseline; gap: 6px; font-size: 13px; color: var(--frame-muted); }
+.stage-page .care-resource-label { order: 2; font-weight: 500; }
 .stage-page .care-resource-tel {
-  font-family: var(--frame-word);
-  font-size: max(34px, calc(84 * var(--px)));
-  line-height: 1.05;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 16px;
   color: var(--frame-ink);
   text-decoration: none;
+  white-space: nowrap;
 }
 .stage-page .care-resource-tel:hover { text-decoration: underline; text-underline-offset: 0.12em; }
 .stage-page .care-resource-tel:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 4px; }
+.stage-page .care-banner-close {
+  position: absolute;
+  top: -6px;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--frame-ink);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+.stage-page .care-banner-close:hover { background: rgba(0, 0, 0, 0.06); }
+.stage-page .care-banner-close:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
 
 /* --------------------------------------------- shared by the long pages
    The secondary pill, a score with its meter, the dated news list and the
@@ -589,7 +611,6 @@ a.newsrow:hover .newsrow-title { text-decoration: underline; text-underline-offs
     --gutter: calc(40 * var(--px));
   }
   .stage-page .wrap { width: calc(740 * var(--px)); }
-  .stage-page .notice-panel { padding: calc(200 * var(--px)) 0 calc(90 * var(--px)); }
   .stage-page .split { grid-template-columns: minmax(0, 1fr); gap: calc(40 * var(--px)); }
   .stage-page .label { font-size: max(11px, calc(22 * var(--px))); }
   .stage-page .headline { white-space: normal; font-size: calc(46 * var(--px)); }

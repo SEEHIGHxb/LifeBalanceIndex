@@ -307,10 +307,19 @@ export function estimatedAspects(state) {
 // from getMentalHealthNotice(): static app copy plus Thailand hotline numbers,
 // escaped defensively to match the other innerHTML sinks. Returns "" when
 // there is nothing to show.
-export function mentalHealthNotice(notice) {
+//
+// A slim strip since v121 (the owner, 2026-09-27: "make this smaller, like
+// temporary banner that can be close"). `closable` adds the close button;
+// Home passes it, the Mental page does not, so the numbers always have a
+// place that cannot be closed.
+export function mentalHealthNotice(notice, { closable = false } = {}) {
   if (!notice) return "";
+  const close = closable
+    ? `<button type="button" class="care-banner-close" id="care-banner-close" aria-label="${escapeHtml(t("Close"))}">&times;</button>`
+    : "";
   return `
     <div class="care-banner" role="note" aria-label="${escapeHtml(t("Mental health support"))}">
+      ${close}
       <p class="care-banner-title">${escapeHtml(notice.title)}</p>
       <p class="care-banner-text">${escapeHtml(notice.body)}</p>
       <ul class="care-resources">
@@ -321,6 +330,17 @@ export function mentalHealthNotice(notice) {
           </li>`).join("")}
       </ul>
     </div>`;
+}
+
+// Closing the care strip lasts for this visit only (the tab's session): if
+// the answers still cross the cutoff, it is back on the next visit. Storage
+// can throw or be missing (private windows, tests); then it simply shows.
+const CARE_CLOSED_KEY = "lifequest_care_closed";
+export function isCareNoticeClosed() {
+  try { return sessionStorage.getItem(CARE_CLOSED_KEY) === "1"; } catch { return false; }
+}
+export function closeCareNotice() {
+  try { sessionStorage.setItem(CARE_CLOSED_KEY, "1"); } catch { /* shows again next render */ }
 }
 
 // Accessible modal scaffold shared by every popup (level-up, reset flow).

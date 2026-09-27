@@ -153,3 +153,15 @@ test("the care notice leads the page, before your star", () => {
   assert.ok(notice > -1, "the fixture must cross the cutoff or this test proves nothing");
   assert.ok(notice < html.indexOf("home-top"), "the notice must come before your star");
 });
+
+// A slim strip that can be closed (the owner, 2026-09-27), for this visit only.
+test("on Home the care notice can be closed, and stays closed for the visit", () => {
+  const low = { ...STATE, baseline: { ...STATE.baseline, who5: 0, st5: 20 } };
+  assert.match(render(low), /id="care-banner-close"/);
+  globalThis.sessionStorage = { store: {}, getItem(k) { return this.store[k] ?? null; }, setItem(k, v) { this.store[k] = String(v); } };
+  try {
+    globalThis.sessionStorage.setItem("lifequest_care_closed", "1");
+    assert.doesNotMatch(render(low), /care-banner/, "closed this visit, so it stays closed");
+  } finally { delete globalThis.sessionStorage; }
+  assert.match(render(low), /care-banner/, "a new visit shows it again");
+});

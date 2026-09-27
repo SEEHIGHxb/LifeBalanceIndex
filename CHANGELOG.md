@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `120`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `121`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.60.0] — 2026-09-27 (APP_VERSION 121)
+
+### Changed
+- **The care notice is a slim strip that can be closed** (the owner: "make
+  this smaller, like temporary banner that can be close"). On Home it went
+  from a full screen of large numbers to about 120 px on a computer: the title,
+  the self-check line, and the three numbers on one row. A close button hides
+  it for the current visit only (sessionStorage); it returns on the next visit
+  while the answers still cross the screening cutoff. The Mental page keeps
+  the same strip without a close button, so the numbers always have a place
+  that cannot be closed.
 
 ## [2.59.0] — 2026-09-27 (APP_VERSION 120)
 

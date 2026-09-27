@@ -42,7 +42,7 @@ import { nextReviewDate } from "./review.js";
 import { t, tp } from "../i18n.js";
 import {
   escapeHtml, aspectLabel, benchmarkStanding, estimatedAspects,
-  mentalHealthNotice, gradeBadge, balanceIndexBlock, CHECKIN_ASPECTS
+  mentalHealthNotice, isCareNoticeClosed, closeCareNotice, gradeBadge, balanceIndexBlock, CHECKIN_ASPECTS
 } from "./helpers.js";
 
 const RECENT_ROWS = 5;
@@ -107,7 +107,7 @@ function readHome(state) {
     state,
     profile: p,
     pace: seasonPace(p.season),
-    careNotice: getMentalHealthNotice(state),
+    careNotice: isCareNoticeClosed() ? null : getMentalHealthNotice(state),
     benchmarks,
     sources: collectSources(benchmarks),
     // state.aspects is passed because finance grades off its composite score,
@@ -138,7 +138,7 @@ function readHome(state) {
 
 function noticeSection(h) {
   if (!h.careNotice) return "";
-  return `<section class="panel notice-panel"><div class="wrap">${mentalHealthNotice(h.careNotice)}</div></section>`;
+  return `<section class="panel notice-panel"><div class="wrap">${mentalHealthNotice(h.careNotice, { closable: true })}</div></section>`;
 }
 
 // Your star beside what it adds up to: the Balance Index and its band, where
@@ -441,6 +441,12 @@ export function renderDashboard(containerId, state, onExportBackup) {
       console.error("Home motion failed:", err);
     }
   }
+
+  // Closed for this visit; removed in place so the reader keeps their scroll.
+  document.getElementById("care-banner-close")?.addEventListener("click", (e) => {
+    closeCareNotice();
+    e.target.closest(".notice-panel")?.remove();
+  });
 
   // Removing the row rather than re-rendering: the flag is persisted either
   // way, and a full re-render would scroll the reader back to the top as a

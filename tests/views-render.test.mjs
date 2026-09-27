@@ -246,6 +246,8 @@ test("the Mental page carries the help notice and the others do not", async () =
 
   assert.ok(mental.includes("care-banner"), "the Mental page lost its help notice");
   assert.ok(!finance.includes("care-banner"), "the help notice leaked onto Finance");
+  // The Mental page is where the numbers always are: no close button there.
+  assert.ok(!mental.includes("care-banner-close"), "the Mental page notice must not be closable");
 });
 
 // --- views/dashboard.js --------------------------------------------------

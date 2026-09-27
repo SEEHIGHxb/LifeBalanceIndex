@@ -14,6 +14,7 @@
 // and inventoried in docs/chapter-facts.md.
 
 import { numberField, selectField, instrumentBlock } from "./instrument-forms.js";
+import { learningMarkup, weekMarkup } from "./activity-fields.js";
 import { INSTRUMENTS } from "../surveys.js";
 import { t, tp, onLangChange } from "../i18n.js";
 
@@ -201,20 +202,14 @@ const buildChapters = () => [
       fieldsScreen(
         "activity",
         t("Weekly Physical Activity (IPAQ)"),
-        t("Three pairs. For each: how many days in a normal week, and how long on one of those days — not the weekly total."),
-        `
-          <div class="grid-2">
-            ${numberField("onb-vig-days", t("Vigorous Exercise (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyVigorousDays", placeholder: "0–7" })}
-            ${numberField("onb-vig-mins", t("Vigorous Minutes on Each of Those Days"), "", 'min="0" max="600"', { required: true, field: "weeklyVigorousMins", placeholder: "0–600", note: t("Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.") })}
-          </div>
-          <div class="grid-2">
-            ${numberField("onb-mod-days", t("Moderate Exercise (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyModerateDays", placeholder: "0–7" })}
-            ${numberField("onb-mod-mins", t("Moderate Minutes on Each of Those Days"), "", 'min="0" max="600"', { required: true, field: "weeklyModerateMins", placeholder: "0–600", note: t("Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.") })}
-          </div>
-          <div class="grid-2">
-            ${numberField("onb-walk-days", t("Walking (Days/Week)"), "", 'min="0" max="7"', { required: true, field: "weeklyWalkingDays", placeholder: "0–7" })}
-            ${numberField("onb-walk-mins", t("Walking Minutes on Each of Those Days"), "", 'min="0" max="600"', { required: true, field: "weeklyWalkingMins", placeholder: "0–600", note: t("Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.") })}
-          </div>`
+        // Painted, not typed (the owner, 2026-09-27): nobody measures their
+        // exercise in days and minutes, but everyone knows which days they run.
+        t("Paint the days you move in a normal week."),
+        weekMarkup("onb", {
+          vig: { days: "onb-vig-days", mins: "onb-vig-mins" },
+          mod: { days: "onb-mod-days", mins: "onb-mod-mins" },
+          walk: { days: "onb-walk-days", mins: "onb-walk-mins" }
+        })
       ),
       instrumentScreen("jss", t("Four questions about how the sleep actually went, which the hours alone do not tell us."))
     ],
@@ -347,7 +342,7 @@ const buildChapters = () => [
         "learning",
         t("Time at the bench"),
         t("Any deliberate learning counts — a course, a language, a craft, a manual."),
-        numberField("onb-learning", t("Weekly Learning / Study Hours"), "", 'min="0" max="80" step="0.5"', { required: true, field: "weeklyLearningHours", placeholder: "0–80" })
+        learningMarkup("onb-learning")
       )
     ],
     recap(read) {

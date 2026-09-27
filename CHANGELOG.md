@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `117`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `118`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,34 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.57.0] — 2026-09-27 (APP_VERSION 118)
+
+### Changed
+- **Weekly learning is one question with six everyday answers** (the owner:
+  "a vague question that people doesn't measure these kind of number ... many
+  user need to ask me about what they are to answer"). "How much of your week
+  goes to learning something on purpose?", from "None" through "About one
+  evening's worth" to "Like a part-time course, or more", each worth a set
+  number of hours (0, 1, 3, 5, 8, 12) shown under its words.
+- **Exercise is a painted week.** Three rows (hard, moderate, walking), each
+  with examples of what counts, of seven days: tap a day or drag across
+  several, and one day can hold more than one kind (the owner asked for
+  "drag and paint so we can make multiple activities in a single day").
+  Each painted kind then asks how long a usual session is, in steps from
+  10 minutes to 2 hours or more. "None of these in my week" answers it as
+  nothing.
+- Both are in the journey and the weekly review. They store exactly the
+  numbers the old boxes did, under the same fields, so scoring, drafts and
+  backups are unchanged. In the review they start on last week's answer:
+  the days painted last time come back where they were, and a value that is
+  not one of the steps (an older typed answer, or Runaway's measured minutes)
+  is offered as its own step, already chosen, so confirming it changes
+  nothing. tests/activity-fields.test.mjs; tests/e2e.mjs paints the week and
+  checks what is saved.
+
+### Needs review
+- 23 new Thai strings in `th.js`, marked "v118, awaiting the owner's review".
 
 ## [2.56.0] — 2026-09-27 (APP_VERSION 117)
 

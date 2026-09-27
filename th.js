@@ -179,16 +179,8 @@ export const TH = {
   "Average Nightly Sleep (Hours)": "ชั่วโมงนอนเฉลี่ยต่อคืน",
   "Vegetable Portions per Day": "ผักต่อวัน (ส่วน)",
   "One portion ≈ 80 g — about one handful, or half a plate of cooked greens. Vegetables only: the guideline check behind this field counts vegetables, not fruit.": "หนึ่งส่วน ≈ 80 กรัม ประมาณหนึ่งกำมือ หรือครึ่งจานของผักสุก นับเฉพาะผัก เกณฑ์ที่ใช้ตรวจสอบข้อนี้นับเฉพาะผัก ไม่รวมผลไม้",
-  "Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.": "นับนาทีเฉพาะวันที่ทำจริง ไม่ใช่ค่าเฉลี่ยทั้งสัปดาห์ เช่น ออกกำลัง 30 นาที 3 วัน ให้กรอก 3 วัน และ 30 นาที",
   "Water Intake per Day (Liters)": "น้ำดื่มต่อวัน (ลิตร)",
   "Weekly Physical Activity (IPAQ)": "กิจกรรมทางกายรายสัปดาห์ (IPAQ)",
-  "Vigorous Exercise (Days/Week)": "ออกกำลังหนัก (วัน/สัปดาห์)",
-  "Vigorous Minutes on Each of Those Days": "นาทีต่อวัน เฉพาะวันที่ออกกำลังหนัก",
-  "Moderate Exercise (Days/Week)": "ออกกำลังปานกลาง (วัน/สัปดาห์)",
-  "Moderate Minutes on Each of Those Days": "นาทีต่อวัน เฉพาะวันที่ออกกำลังปานกลาง",
-  "Walking (Days/Week)": "เดิน (วัน/สัปดาห์)",
-  "Walking Minutes on Each of Those Days": "นาทีต่อวัน เฉพาะวันที่เดิน",
-  "Weekly Learning / Study Hours": "ชั่วโมงเรียนรู้/ศึกษาต่อสัปดาห์",
   "Monthly Donations (THB)": "เงินบริจาคต่อเดือน (บาท)",
   "Volunteering Hours per Month": "ชั่วโมงจิตอาสาต่อเดือน",
   "Single-Use Plastic Items per Day": "พลาสติกใช้ครั้งเดียวต่อวัน (ชิ้น)",
@@ -1552,8 +1544,6 @@ export const TH = {
     "วันธรรมดาวันหนึ่ง",
   "Not your best day and not your worst — the one that repeats.":
     "ไม่ใช่วันที่ดีที่สุดและไม่ใช่วันที่แย่ที่สุด แต่เป็นวันที่เกิดซ้ำ ๆ",
-  "Three pairs. For each: how many days in a normal week, and how long on one of those days — not the weekly total.":
-    "สามคู่ แต่ละคู่ถามว่าในหนึ่งสัปดาห์ปกติทำกี่วัน และในวันที่ทำนั้นทำนานเท่าไร ไม่ใช่ยอดรวมทั้งสัปดาห์",
   "Four questions about how the sleep actually went, which the hours alone do not tell us.":
     "สี่คำถามว่าการนอนเป็นอย่างไรจริง ๆ ซึ่งจำนวนชั่วโมงอย่างเดียวบอกไม่ได้",
   "{hours} hours a night — around {annual} hours of sleep a year.":
@@ -1680,5 +1670,36 @@ export const TH = {
   "Travel on":
     "เดินทางต่อ",
   "Please answer every question on this screen.":
-    "กรุณาตอบทุกคำถามในหน้านี้"
+    "กรุณาตอบทุกคำถามในหน้านี้",
+
+  // v118, awaiting the owner's review: the learning question and the painted
+  // week (views/activity-fields.js).
+  "How much of your week goes to learning something on purpose?":
+    "แต่ละสัปดาห์ คุณใช้เวลาเรียนรู้สิ่งใหม่อย่างตั้งใจมากแค่ไหน",
+  "A video or an article here and there": "ดูคลิปหรืออ่านบทความบ้างเป็นครั้งคราว",
+  "About one evening's worth": "ประมาณหนึ่งเย็น",
+  "A couple of evenings": "สองสามเย็น",
+  "A class plus some practice": "เรียนหนึ่งคลาสและฝึกเพิ่มเติม",
+  "Like a part-time course, or more": "เท่ากับเรียนคอร์สพาร์ตไทม์ หรือมากกว่านั้น",
+  "about {n} h": "ประมาณ {n} ชม.",
+  "About {n} h — your last answer": "ประมาณ {n} ชม. — คำตอบครั้งก่อน",
+  "Paint the days you move in a normal week.": "ระบายวันที่คุณได้ขยับร่างกายในสัปดาห์ปกติ",
+  "Tap a day, or drag across several. One day can hold more than one kind.":
+    "แตะที่วัน หรือลากผ่านหลายวัน วันเดียวเลือกได้มากกว่าหนึ่งแบบ",
+  "Hard exercise": "ออกกำลังหนัก",
+  "You breathe hard and can't chat: running, football, fast cycling, a gym workout.":
+    "หายใจแรงจนคุยไม่ถนัด เช่น วิ่ง เตะฟุตบอล ปั่นจักรยานเร็ว เล่นเวทในยิม",
+  "Moderate exercise": "ออกกำลังปานกลาง",
+  "Breathing faster but you can still talk: easy cycling, casual badminton, carrying loads, dancing.":
+    "หายใจเร็วขึ้นแต่ยังคุยได้ เช่น ปั่นจักรยานสบาย ๆ ตีแบดเล่น ๆ ยกของ เต้น",
+  "Walking": "เดิน",
+  "Any walk of 10 minutes or more: to the bus, around the market, with the dog.":
+    "เดินครั้งละ 10 นาทีขึ้นไป เช่น เดินไปขึ้นรถ เดินตลาด พาสุนัขเดินเล่น",
+  "None of these in my week": "ไม่ได้ทำเลยสักอย่างในสัปดาห์",
+  "How long is a usual hard session?": "ออกกำลังหนักแต่ละครั้ง ปกตินานเท่าไร",
+  "How long is a usual moderate session?": "ออกกำลังปานกลางแต่ละครั้ง ปกตินานเท่าไร",
+  "How long is a usual walk?": "เดินแต่ละครั้ง ปกตินานเท่าไร",
+  "{n} min": "{n} นาที",
+  "{n} h": "{n} ชม.",
+  "{n} h or more": "{n} ชม. ขึ้นไป"
 };

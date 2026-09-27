@@ -241,6 +241,9 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0 24px;
 }
+/* The painted week and the learning steps are one field each, as wide as the
+   form (views/activity-fields.js). */
+.review .rv-fields > .easy-field { grid-column: 1 / -1; }
 .review .form-group { margin-bottom: 20px; }
 .review .field-error { color: #8a1c1c; font-weight: 600; }
 .review .conn-banner { margin: 0 0 28px; background: var(--frame-card); border-radius: 16px; }

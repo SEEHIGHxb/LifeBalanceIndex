@@ -39,6 +39,7 @@ import { buildProvidedFlags, buildAnsweredFlags } from "../validation.js";
 import { collectInstrument, validateScope, clearScopeErrors } from "./instrument-forms.js";
 import { escapeHtml, scrollIntoViewGently } from "./helpers.js";
 import { applyDraft, saveDraft, clearDraft, instrumentsIn } from "../draft.js";
+import { bindActivityFields, syncActivityFields } from "./activity-fields.js";
 import { savingsRateFrom } from "../scoring.js";
 import { CHAPTERS, allScreens } from "./journey.js";
 import { progressMarkup, paintProgress } from "./journey-progress.js";
@@ -250,6 +251,9 @@ export function renderOnboarding(containerId, onComplete) {
   `;
 
   const form = document.getElementById("onboarding-form");
+  // The learning question and the painted week write the old number boxes'
+  // values (views/activity-fields.js).
+  bindActivityFields(form);
   // The header's progress pill (index.html). Absent outside the app shell,
   // which is fine: the status line carries the same count.
   const pill = document.getElementById("journey-progress");
@@ -525,6 +529,7 @@ export function renderOnboarding(containerId, onComplete) {
     // an unconditional call here would do nothing except require a live DOM at
     // render time -- which the view tests deliberately do not provide.
     syncCoupleBlock();
+    syncActivityFields(form);
     // Not after a language switch: the reader never left, so there is nothing
     // to have picked up.
     if (!isCarrying()) document.getElementById("onb-resume").classList.remove("d-none");
@@ -572,6 +577,9 @@ export function renderOnboarding(containerId, onComplete) {
     touchedFields.clear();
     touchedInstruments.clear();
     syncCoupleBlock();
+    syncActivityFields(form);
+    // The sync above reports the emptied boxes as typed in; they were not.
+    touchedFields.clear();
     document.getElementById("onb-resume").classList.add("d-none");
     hideError();
     showScreen(0);

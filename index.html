@@ -33,17 +33,17 @@
        vendored under assets/fonts. Self-hosting removes the round-trip to
        Google on every cold load, makes the PWA genuinely offline-capable,
        and means no visitor IP is disclosed to a third party. -->
-  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=117">
-  <link rel="stylesheet" href="./index.css?v=117">
+  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=118">
+  <link rel="stylesheet" href="./index.css?v=118">
   <!-- The redesign's frame; loaded after index.css so it wins where both
        style the same element. One sheet per redesign area, each under 800
        lines (docs/redesign-build-plan.md §3). -->
-  <link rel="stylesheet" href="./css/frame.css?v=117">
-  <link rel="stylesheet" href="./css/stage-page.css?v=117">
-  <link rel="stylesheet" href="./css/home.css?v=117">
-  <link rel="stylesheet" href="./css/journey.css?v=117">
-  <link rel="stylesheet" href="./css/weekly.css?v=117">
-  <link rel="stylesheet" href="./css/more.css?v=117">
+  <link rel="stylesheet" href="./css/frame.css?v=118">
+  <link rel="stylesheet" href="./css/stage-page.css?v=118">
+  <link rel="stylesheet" href="./css/home.css?v=118">
+  <link rel="stylesheet" href="./css/journey.css?v=118">
+  <link rel="stylesheet" href="./css/weekly.css?v=118">
+  <link rel="stylesheet" href="./css/more.css?v=118">
   <!-- Starts a Thai reader's dictionary with the core (lang-preload.js). -->
   <script async fetchpriority="high" src="./lang-preload.js"></script>
   <!-- The core every screen needs, then the Landing: listed here, they are
@@ -82,6 +82,7 @@
   <!-- The Landing, the first screen of every first visit (view-loader.js). -->
   <link rel="modulepreload" href="./views/stage-page.js">
   <link rel="modulepreload" href="./views/landing.js">
+  <link rel="modulepreload" href="./views/activity-fields.js">
   <!-- The wordmark and body faces of the first screen, found only once
      fonts.css has loaded otherwise. -->
   <link rel="preload" href="./assets/fonts/anton-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -158,6 +159,6 @@
   </div>
 
   <!-- Core Scripts -->
-  <script type="module" src="./app.js?v=117"></script>
+  <script type="module" src="./app.js?v=118"></script>
 </body>
 </html>

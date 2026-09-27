@@ -305,6 +305,13 @@ try {
       const r = fs.querySelector('input[type="radio"]');
       if (r) { r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true })); }
     });
+    // The painted week (views/activity-fields.js): walking on Monday to
+    // Wednesday. Its length is the first step, 10 minutes, chosen above.
+    for (const d of [0, 1, 2]) {
+      const day = document.querySelector(`input[name="onb-walk-days-d${d}"]`);
+      day.checked = true;
+      day.dispatchEvent(new Event("change", { bubbles: true }));
+    }
     // A weight with a half kilo, as a tester really typed it. Whole numbers
     // hid the bug where the browser's own step check refused this on its
     // hidden screen and swallowed Complete Assessment without a word.
@@ -370,6 +377,12 @@ try {
   if (!state?.onboarded) problems.push("flow1: state not onboarded after completing the assessment");
   if (state?.profile?.name !== "E2E Runner") problems.push("flow1: profile name not saved");
   if (state?.profile?.weight !== 65.5) problems.push(`flow1: a 65.5 kg weight was saved as ${state?.profile?.weight}`);
+  // The painted week and the learning steps store the numbers the old boxes
+  // did: three painted walking days of 10 minutes, nothing else, and the
+  // first learning step ("None", 0 hours).
+  const moved = ["weeklyWalkingDays", "weeklyWalkingMins", "weeklyVigorousDays", "weeklyVigorousMins", "weeklyModerateDays", "weeklyModerateMins", "weeklyLearningHours"]
+    .map(f => state?.profile?.[f]).join(",");
+  if (moved !== "3,10,0,0,0,0,0") problems.push(`flow1: the painted week and learning saved ${moved}, not 3,10,0,0,0,0,0`);
   if (state?.profile?.assessmentComplete !== true) {
     problems.push("flow1: a completed baseline must be marked assessmentComplete=true");
   }
@@ -428,7 +441,8 @@ try {
   // twice so the flows after this one still start in English.
   await page.click(".rv-step:not(.d-none) .rv-next");
   await page.waitForSelector("#rv-step-1:not(.d-none)", { timeout: 5000 });
-  await page.fill("#rev-weeklyVigorousDays", "5");
+  // The painted week: hard exercise Monday to Friday, by real clicks.
+  for (let d = 0; d < 5; d++) await page.click(`.rv-step:not(.d-none) .wk-row[data-kind="vig"] .wk-cell >> nth=${d}`);
   await pressLang(page);
   await pressLang(page);
   const kept = await page.evaluate(() => ({
@@ -436,17 +450,16 @@ try {
     days: document.getElementById("rev-weeklyVigorousDays")?.value
   }));
   if (kept.step !== "rv-step-1") problems.push(`flow2: a language switch moved the review from rv-step-1 to ${kept.step}`);
-  if (kept.days !== "5") problems.push(`flow2: a language switch dropped a typed review answer (5 -> ${kept.days})`);
+  if (kept.days !== "5") problems.push(`flow2: a language switch dropped a painted review answer (5 -> ${kept.days})`);
 
-  // A cleared box is refused, not saved as 0.
-  await page.fill("#rev-weeklyVigorousMins", "");
+  // Newly painted hard days with no length yet are refused, not saved as 0.
   await page.click(".rv-step:not(.d-none) .rv-next");
   const blank = await page.evaluate(() => ({
     step: document.querySelector(".rv-step:not(.d-none)")?.id,
     error: document.getElementById("rev-weeklyVigorousMins-err")?.textContent || ""
   }));
-  if (blank.step !== "rv-step-1" || !blank.error) problems.push(`flow2: a blank review box was let through (${JSON.stringify(blank)})`);
-  await page.fill("#rev-weeklyVigorousMins", "30");
+  if (blank.step !== "rv-step-1" || !blank.error) problems.push(`flow2: painted days with no length were let through (${JSON.stringify(blank)})`);
+  await page.click('.rv-step:not(.d-none) .wk-len[data-kind="vig"] label:has(input[value="30"])');
 
   // A reload keeps the typed numbers and the screen, and says so.
   await page.reload({ waitUntil: "networkidle" });
@@ -460,8 +473,8 @@ try {
     problems.push(`flow2: a reload lost the half-done review (${JSON.stringify(resumed)})`);
   }
 
-  // Enter in a box goes to the next screen; it used to submit the review.
-  await page.press("#rev-weeklyVigorousDays", "Enter");
+  // Enter in a field goes to the next screen; it used to submit the review.
+  await page.press('input[name="rev-weeklyVigorousDays-d0"]', "Enter");
   for (let t = 0; t < 60 && await page.evaluate(() => !!document.querySelector(".rv-wipe.on") || !document.querySelector("#rv-step-2:not(.d-none)")); t++) {
     await page.waitForTimeout(50);
   }
@@ -801,9 +814,10 @@ try {
   // The source must be visible on the boxes it filled, and only on those.
   const chips = await page.evaluate(() => Array.from(
     document.querySelectorAll("#weekly-review-form .prefill-chip"),
-    el => `${el.closest("label")?.getAttribute("for") || "?"}:${el.textContent.trim()}`
+    el => `${el.closest(".wk") ? "painted week" : el.closest("label")?.getAttribute("for") || "?"}:${el.textContent.trim()}`
   ).sort());
-  const expected = ["rev-weeklyVigorousDays:Runaway", "rev-weeklyVigorousMins:Runaway"];
+  // One chip over the painted week, whose hard-exercise row Runaway fills.
+  const expected = ["painted week:Runaway"];
   if (JSON.stringify(chips) !== JSON.stringify(expected)) {
     problems.push(`flow6: source chips were ${JSON.stringify(chips)}, expected ${JSON.stringify(expected)}`);
   }

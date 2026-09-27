@@ -252,8 +252,9 @@ test("every pre-filled box says which app filled it, and over what dates", () =>
     { midori: true, runaway: true }
   );
 
-  // The chip names the source in the label, before the number is read.
-  assert.equal((html.match(/class="prefill-chip"/g) || []).length, 3);
+  // The chip names the source in the label, before the number is read: one
+  // on the savings box, one over the painted week Runaway's two numbers fill.
+  assert.equal((html.match(/class="prefill-chip"/g) || []).length, 2);
   assert.ok(html.includes(">Midori</span>"));
   assert.ok(html.includes(">Runaway</span>"));
 

@@ -40,6 +40,7 @@ import { chapterOf, dotDate, shiftSummary, starThumb, newsRow } from "./news.js"
 import { animate, easeStar, isReduced } from "../motion.js";
 import { carriedStep, isCarrying } from "./lang-carry.js";
 import { applyDraft, saveDraft, clearDraft, readDraft } from "../draft.js";
+import { learningMarkup, weekMarkup, bindActivityFields, syncActivityFields } from "./activity-fields.js";
 
 // The review's half-typed answers survive a reload under this draft name, for
 // the week they were typed in only: last week's unfinished numbers are not
@@ -87,34 +88,26 @@ export const REVIEW_FIELDS = Object.freeze(Object.keys(FIELD_IDS));
 
 // The onboarding label strings are reused verbatim so the review form needs no
 // new translations and the two forms can never phrase the same field two ways.
-// Per-field clarifications, shown under the input. Only where the QUESTION is
-// ambiguous rather than the value hard to recall: criteria.js multiplies days
-// by minutes, so these three mean "minutes on a day you did it", and reading
-// them as a weekly average is a 2.3x-7x error inside the WHO guideline check.
-const FIELD_NOTES = {
-  weeklyVigorousMins: "Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.",
-  weeklyModerateMins: "Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes.",
-  weeklyWalkingMins: "Minutes on a day you actually did it, not an average across the week. 30 minutes on each of 3 days = 3 days, 30 minutes."
+// The exercise and learning fields are not boxes: they are the journey's
+// painted week and six-step question (views/activity-fields.js), pre-set to
+// last week's answer.
+const WEEK_KINDS = {
+  vig: ["weeklyVigorousDays", "weeklyVigorousMins"],
+  mod: ["weeklyModerateDays", "weeklyModerateMins"],
+  walk: ["weeklyWalkingDays", "weeklyWalkingMins"]
 };
 
 const FIELD_LABELS = {
-  weeklyVigorousDays: "Vigorous Exercise (Days/Week)",
-  weeklyVigorousMins: "Vigorous Minutes on Each of Those Days",
-  weeklyModerateDays: "Moderate Exercise (Days/Week)",
-  weeklyModerateMins: "Moderate Minutes on Each of Those Days",
-  weeklyWalkingDays: "Walking (Days/Week)",
-  weeklyWalkingMins: "Walking Minutes on Each of Those Days",
   sleepHours: "Average Nightly Sleep (Hours)",
   waterLiters: "Water Intake per Day (Liters)",
   vegetablePortions: "Vegetable Portions per Day",
-  weeklyLearningHours: "Weekly Learning / Study Hours",
   singleUsePlastics: "Single-Use Plastic Items per Day",
   monthlySavings: "Monthly Savings (THB)",
   monthlyDonations: "Monthly Donations (THB)",
   volunteeringHours: "Volunteering Hours per Month"
 };
 
-const FIELD_STEPS = { sleepHours: 0.5, waterLiters: 0.1, weeklyLearningHours: 0.5, volunteeringHours: 0.5 };
+const FIELD_STEPS = { sleepHours: 0.5, waterLiters: 0.1, volunteeringHours: 0.5 };
 
 // The prototype's timings: the title types at this pace; the next region's
 // photograph wipes up, holds, then wipes away; the ending's curtain lifts and
@@ -192,7 +185,25 @@ function connectionBanner(conn, profile) {
   return `<div class="conn-banner">${lines.map(line => `<p>${line}</p>`).join("")}</div>`;
 }
 
+// The painted week stands where the six exercise boxes stood: drawn once, at
+// the first of them, from last week's answers or a connected app's.
+function reviewWeek(profile, prefills) {
+  const value = (field) => Object.hasOwn(prefills, field) ? prefills[field].value : profile[field] ?? 0;
+  const ids = {};
+  const current = {};
+  for (const [kind, [days, mins]] of Object.entries(WEEK_KINDS)) {
+    ids[kind] = { days: FIELD_IDS[days], mins: FIELD_IDS[mins] };
+    current[kind] = { days: value(days), mins: value(mins) };
+  }
+  const pre = prefills.weeklyVigorousDays || prefills.weeklyVigorousMins;
+  const note = pre ? `<span class="prefill-chip">${SOURCE_NAMES[pre.source]}</span> ${prefillNote(pre)}` : "";
+  return weekMarkup("rev", ids, current, note);
+}
+
 function reviewField(field, profile, prefills = {}) {
+  if (field === "weeklyVigorousDays") return reviewWeek(profile, prefills);
+  if (Object.values(WEEK_KINDS).flat().includes(field)) return "";
+  if (field === "weeklyLearningHours") return learningMarkup(FIELD_IDS[field], profile[field] ?? 0);
   const c = FIELD_CONSTRAINTS[field];
   const step = FIELD_STEPS[field] ? ` step="${FIELD_STEPS[field]}"` : "";
   const pre = Object.hasOwn(prefills, field) ? prefills[field] : null;
@@ -206,13 +217,7 @@ function reviewField(field, profile, prefills = {}) {
   // The chip names the app in the label, so the source is visible before the
   // number is read. SOURCE_NAMES are our own literals, never payload text.
   const chip = pre ? ` <span class="prefill-chip">${SOURCE_NAMES[pre.source]}</span>` : "";
-  // The clarification note travels with the field, not just with onboarding.
-  // These three are re-entered EVERY week, so the week-average-vs-per-session
-  // ambiguity that the v77 relabel fixed bites here more often than it does at
-  // onboarding, where it is read once. When a connected source prefilled the
-  // box, both notes are shown: the provenance and the unit are different facts.
-  const ownNote = FIELD_NOTES[field] ? t(FIELD_NOTES[field]) : "";
-  const note = [pre ? prefillNote(pre) : "", ownNote].filter(Boolean).join(" ");
+  const note = pre ? prefillNote(pre) : "";
   return numberField(
     FIELD_IDS[field],
     `${t(FIELD_LABELS[field])}${chip}`,
@@ -220,6 +225,16 @@ function reviewField(field, profile, prefills = {}) {
     `min="${c.min}" max="${c.max}"${step}`,
     note ? { note } : {}
   );
+}
+
+// Focus the control a field in error is answered with: a painted or picked
+// field's box is hidden, so its first visible choice takes the focus.
+function focusField(id) {
+  const box = document.getElementById(id);
+  const target = box?.hidden
+    ? box.closest(".survey-question, .easy-field")?.querySelector("input:not([hidden])")
+    : box;
+  target?.focus();
 }
 
 // Next ISO week starts on the coming Monday.
@@ -474,12 +489,20 @@ export function renderReview(containerId, state, onComplete) {
   // A draft from this week puts the typed numbers back over the prefills; one
   // from an earlier week is dropped. Only when the draft was actually saved
   // mid-review does it say so: after a language switch the reader never left.
+  bindActivityFields(form);
   const draft = readDraft(DRAFT_KEY);
   let draftStep = null;
   if (draft && draft.week !== week) clearDraft(DRAFT_KEY);
   else if (draft) {
+    // A draft records only the days that were painted, so a day the reader
+    // cleared is absent from it: last week's paint comes off first, or the
+    // restore would leave it on.
+    const painted = [...form.querySelectorAll(".wk-cell input:checked, .wk-none input:checked")];
+    painted.forEach(box => { box.checked = false; });
     const restored = applyDraft(DRAFT_KEY, form);
+    if (!restored) painted.forEach(box => { box.checked = true; });
     if (restored) {
+      syncActivityFields(form);
       draftStep = Number.isInteger(restored.step) ? restored.step : null;
       if (!isCarrying()) document.getElementById("rv-resume")?.classList.remove("d-none");
     }
@@ -512,7 +535,7 @@ export function renderReview(containerId, state, onComplete) {
 
   const next = () => {
     const bad = checkStep(current);
-    if (bad) document.getElementById(FIELD_IDS[bad])?.focus();
+    if (bad) focusField(FIELD_IDS[bad]);
     else goForward(current + 1);
   };
 
@@ -547,7 +570,7 @@ export function renderReview(containerId, state, onComplete) {
       if (!bad) continue;
       if (i !== current) land(i, { forward: false });
       checkStep(i);
-      document.getElementById(FIELD_IDS[bad])?.focus();
+      focusField(FIELD_IDS[bad]);
       return;
     }
 

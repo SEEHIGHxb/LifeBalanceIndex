@@ -102,6 +102,11 @@ async function openJourney(browser, { reduced = false } = {}) {
       const opt = Array.from(s.options).find(o => o.value !== "");
       if (opt) { s.value = opt.value; s.dispatchEvent(new Event("change", { bubbles: true })); }
     });
+    // The painted week (views/activity-fields.js): a walk on Monday; its
+    // length is answered with every other question.
+    const day = document.querySelector('input[name="onb-walk-days-d0"]');
+    day.checked = true;
+    day.dispatchEvent(new Event("change", { bubbles: true }));
   });
   return { context, page };
 }

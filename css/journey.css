@@ -207,6 +207,92 @@
   to { opacity: 1; transform: none; }
 }
 
+/* ------------------------------------------- learning and the painted week
+   views/activity-fields.js. The learning answers are ordinary answer steps
+   with their hours under the words. The week is three rows of seven days;
+   a painted day takes its row's shade of the region's hue, deeper for harder
+   exercise, and the row it sits in says which kind it is. */
+.journey .step-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--journey-muted);
+}
+.journey .wk-how {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--journey-muted);
+}
+.journey .wk-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) repeat(7, minmax(36px, 56px));
+  gap: 8px 6px;
+  /* A drag paints; it must not scroll the page or select the letters. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.journey .wk-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+}
+.journey .wk-kind { margin: 0; font-size: 13px; line-height: 1.4; color: var(--journey-muted); }
+.journey .wk-kind b { display: block; font-size: 15px; color: var(--frame-ink); }
+.journey .wk-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-height: 40px;
+  border-radius: 12px;
+  background: var(--frame-card);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 160ms linear;
+}
+/* The day is a real checkbox under the letter, for the keyboard and screen
+   readers; the pointer lands on the label, which does the painting. */
+.journey .wk-cell input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.journey .wk-cell:has(input:focus-visible) {
+  outline: 2px solid var(--frame-ink);
+  outline-offset: 2px;
+}
+.journey .wk-row .wk-cell:has(input:checked) {
+  box-shadow: inset 0 0 0 2px var(--chapter-hue, #8a8a8a);
+}
+.journey .wk-row[data-kind="walk"] .wk-cell:has(input:checked) {
+  background: color-mix(in srgb, var(--chapter-hue, #8a8a8a) 30%, #ffffff);
+}
+.journey .wk-row[data-kind="mod"] .wk-cell:has(input:checked) {
+  background: color-mix(in srgb, var(--chapter-hue, #8a8a8a) 60%, #ffffff);
+}
+.journey .wk-row[data-kind="vig"] .wk-cell:has(input:checked) {
+  background: var(--chapter-hue, #8a8a8a);
+}
+.journey .wk-none {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  margin: 12px 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.journey .wk-none input { width: 18px; height: 18px; margin: 0; accent-color: var(--frame-ink); }
+.journey .wk-len { margin-top: 24px; }
+
 /* ------------------------------------------------------------ numbers */
 .journey .form-group label {
   font-size: 15px;
@@ -469,6 +555,9 @@
     border-radius: 999px;
     text-align: left;
   }
+  /* The kind's name over its seven days. */
+  .journey .wk-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px 5px; }
+  .journey .wk-kind { grid-column: 1 / -1; margin-top: 6px; }
 }
 
 /* ------------------------------------------------------------- Thai
@@ -491,8 +580,10 @@ html[lang="th"] .ending-region {
 @media (prefers-reduced-motion: reduce) {
   .journey .radio-option { animation: none; transition: none; }
   .journey .radio-option:active { transform: none; }
+  .journey .wk-cell { transition: none; }
   .progress-star .pt { transition: none; }
 }
 html[data-reduce-motion] .journey .radio-option { animation: none; transition: none; }
 html[data-reduce-motion] .journey .radio-option:active { transform: none; }
+html[data-reduce-motion] .journey .wk-cell { transition: none; }
 html[data-reduce-motion] .progress-star .pt { transition: none; }

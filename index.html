@@ -12,7 +12,7 @@
   <!-- viewport-fit=cover is required for env(safe-area-inset-*) to resolve, which the
        fixed mobile tab bar uses to clear the iPhone home indicator. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Life Balance Index — Personal Wellbeing Assessment</title>
+  <title>Asterism: Life Balance Index — Personal Wellbeing Assessment</title>
   <meta name="description" content="Assess your wellbeing across eight life aspects against cited Thai and international benchmarks. Local-first: your answers never leave your device, and there is no account.">
   <meta name="theme-color" content="#24344d">
   <link rel="canonical" href="https://lbi.plainpoint.net/">
@@ -20,8 +20,8 @@
        image we ship that reads at small sizes, and shipping a dedicated
        1200x630 card would add weight the app itself never loads. -->
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Life Balance Index">
-  <meta property="og:title" content="Life Balance Index — Personal Wellbeing Assessment">
+  <meta property="og:site_name" content="Asterism">
+  <meta property="og:title" content="Asterism: Life Balance Index">
   <meta property="og:description" content="Assess your wellbeing across eight life aspects against cited benchmarks. Local-first, no account.">
   <meta property="og:url" content="https://lbi.plainpoint.net/">
   <meta property="og:image" content="https://lbi.plainpoint.net/assets/icon-512.png">
@@ -34,17 +34,17 @@
        vendored under assets/fonts. Self-hosting removes the round-trip to
        Google on every cold load, makes the PWA genuinely offline-capable,
        and means no visitor IP is disclosed to a third party. -->
-  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=130">
-  <link rel="stylesheet" href="./index.css?v=130">
+  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=131">
+  <link rel="stylesheet" href="./index.css?v=131">
   <!-- The redesign's frame; loaded after index.css so it wins where both
        style the same element. One sheet per redesign area, each under 800
        lines (docs/redesign-build-plan.md §3). -->
-  <link rel="stylesheet" href="./css/frame.css?v=130">
-  <link rel="stylesheet" href="./css/stage-page.css?v=130">
-  <link rel="stylesheet" href="./css/home.css?v=130">
-  <link rel="stylesheet" href="./css/journey.css?v=130">
-  <link rel="stylesheet" href="./css/weekly.css?v=130">
-  <link rel="stylesheet" href="./css/more.css?v=130">
+  <link rel="stylesheet" href="./css/frame.css?v=131">
+  <link rel="stylesheet" href="./css/stage-page.css?v=131">
+  <link rel="stylesheet" href="./css/home.css?v=131">
+  <link rel="stylesheet" href="./css/journey.css?v=131">
+  <link rel="stylesheet" href="./css/weekly.css?v=131">
+  <link rel="stylesheet" href="./css/more.css?v=131">
   <!-- Starts a Thai reader's dictionary with the core (lang-preload.js). -->
   <script async fetchpriority="high" src="./lang-preload.js"></script>
   <!-- The core every screen needs, then the Landing: listed here, they are
@@ -105,7 +105,7 @@
     <button id="btn-menu" class="burger" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu"><span></span><span></span><span></span></button>
     <!-- The wordmark is a mark: LIFE BALANCE INDEX in both languages. Its
          accessible name is the translated app name, which app.js writes. -->
-    <h1 class="wordmark"><a id="brand-home" href="#/dashboard"><span class="wordmark-mark" aria-hidden="true">LIFE BALANCE<small>INDEX</small></span><span class="sr-only" id="brand-name">Life Balance Index</span></a></h1>
+    <h1 class="wordmark"><a id="brand-home" href="#/dashboard"><span class="wordmark-mark" aria-hidden="true">ASTERISM</span><span class="sr-only" id="brand-name">Asterism: Life Balance Index</span></a></h1>
     <nav id="navpill" class="navpill d-none" aria-label="Sections">
       <a id="navpill-dashboard" href="#/dashboard">Overview</a>
       <a id="navpill-review" href="#/review">Weekly Review</a>
@@ -161,6 +161,6 @@
   </div>
 
   <!-- Core Scripts -->
-  <script type="module" src="./app.js?v=130"></script>
+  <script type="module" src="./app.js?v=131"></script>
 </body>
 </html>

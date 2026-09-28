@@ -41,9 +41,9 @@ export function landingMarkup({ resume = false } = {}) {
     <div class="stage-page landing">
       ${heroMarkup({
         mark: `<svg viewBox="0 0 100 100"><use href="${SPRITES}#star"/></svg>`,
-        word: "LIFE BALANCE",
-        inc: "INDEX",
-        srTitle: "Life Balance Index",
+        word: "ASTERISM",
+        inc: "LIFE BALANCE INDEX",
+        srTitle: "Asterism: Life Balance Index",
         tapLabel: t("Play with the star"),
         // On the first screen (the owner, 2026-09-26): the page's two lower
         // calls to begin were three sections down.

@@ -23,7 +23,7 @@ export const TH = {
   "Grit {g}/5 from your full 12-item scale vs the ~3.4 adult reference point.": "ความมุ่งมั่น {g}/5 จากแบบวัดฉบับเต็ม 12 ข้อ เทียบกับค่าอ้างอิงผู้ใหญ่ ~3.4",
   "Grit {g}/5 — the onboarding measure is the perseverance facet only (4 of the 8 Grit-S items), so this is indicative, not an exact match to the ~3.4 reference.": "ความมุ่งมั่น {g}/5 — แบบวัดตอนเริ่มต้นครอบคลุมเฉพาะด้านความเพียร (4 จาก 8 ข้อของ Grit-S) จึงเป็นเพียงค่าชี้บ่ง ไม่ใช่การเทียบตรงกับค่าอ้างอิง ~3.4",
   // --- Core-surface i18n leaks fixed (finding #10) ---
-  "Life Balance Index": "ดัชนีสมดุลชีวิต",
+  "Asterism: Life Balance Index": "Asterism: ดัชนีสมดุลชีวิต", // v131 rename, awaiting the owner review
   "Lv.": "Lv.",
   // Recovery banner + storage-error toast (findings #1/#2, now translated)
   "We found earlier data we couldn't open after an update. Download it before it's replaced.": "เราพบข้อมูลเก่าที่เปิดไม่ได้หลังการอัปเดต ดาวน์โหลดเก็บไว้ก่อนที่จะถูกแทนที่",
@@ -49,7 +49,7 @@ export const TH = {
   "In-depth assessment": "การประเมินเชิงลึก",
   "{view} view": "หน้า {view}",
   // --- App chrome (header, tabs, dialogs) ---
-  "Life Balance Index — Personal Wellbeing Assessment": "ดัชนีสมดุลชีวิต — แบบประเมินสุขภาวะส่วนบุคคล",
+  "Asterism: Life Balance Index — Personal Wellbeing Assessment": "Asterism: ดัชนีสมดุลชีวิต — แบบประเมินสุขภาวะส่วนบุคคล",
   // Site menu and footer (redesign R1). The Thai follows the approved
   // prototype's copy (docs/prototype/redesign/content.js).
   "Main menu": "เมนูหลัก",

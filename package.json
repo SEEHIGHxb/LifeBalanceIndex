@@ -1,9 +1,9 @@
 {
   "name": "life-balance-index",
-  "version": "2.64.0",
+  "version": "2.65.0",
   "private": true,
   "type": "module",
-  "description": "Life Balance Index — local-first personal wellbeing self-assessment with cited aspect scoring",
+  "description": "Asterism: Life Balance Index — local-first personal wellbeing self-assessment with cited aspect scoring",
   "scripts": {
     "start": "npx --yes http-server . -p 8123 -c-1",
     "test": "node --test \"tests/*.test.mjs\"",

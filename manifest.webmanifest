@@ -1,6 +1,6 @@
 {
-  "name": "Life Balance Index — Personal Wellbeing Assessment",
-  "short_name": "Life Balance",
+  "name": "Asterism: Life Balance Index",
+  "short_name": "Asterism",
   "description": "Personal wellbeing self-assessment across eight life aspects, with cited benchmarks. Local-first, no account.",
   "start_url": "./index.html",
   "scope": "./",

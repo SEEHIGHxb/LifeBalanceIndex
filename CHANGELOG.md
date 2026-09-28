@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `130`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `131`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.65.0] - 2026-09-28
+
+### Changed
+- The app is renamed **Asterism: Life Balance Index** (v131). Header wordmark reads ASTERISM; the Landing hero reads ASTERISM over LIFE BALANCE INDEX; page titles, Open Graph tags, the manifest (short name "Asterism"), privacy, 404, README and package description follow. Thai keeps the brand in Latin: "Asterism: ดัชนีสมดุลชีวิต" (draft, awaiting the owner review). Storage keys (`lifequest_*`) and the web address are unchanged; the domain move is a separate step.
 
 ## [2.64.0] - 2026-09-28
 

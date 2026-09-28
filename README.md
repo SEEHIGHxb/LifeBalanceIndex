@@ -1,4 +1,4 @@
-# Life Balance Index — Personal Wellbeing Assessment
+# Asterism: Life Balance Index — Personal Wellbeing Assessment
 
 A formal, static self-assessment dashboard. Complete a scientifically-grounded baseline
 assessment, then check in ONCE A WEEK with rough measured quantities to track eight life

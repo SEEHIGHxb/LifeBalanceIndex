@@ -78,14 +78,14 @@ function routeFromHash() {
 // Translate the static header/nav chrome that lives in index.html.
 function applyChromeTranslations() {
   document.documentElement.lang = getLang();
-  document.title = t("Life Balance Index — Personal Wellbeing Assessment");
+  document.title = t("Asterism: Life Balance Index — Personal Wellbeing Assessment");
   const setText = (id, text) => {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
   };
   // The wordmark reads LIFE BALANCE INDEX in both languages; its accessible
   // name is the translated app name.
-  setText("brand-name", t("Life Balance Index"));
+  setText("brand-name", t("Asterism: Life Balance Index"));
   setText("skip-link", t("Skip to main content"));
   setText("navpill-dashboard", t("Overview"));
   setText("navpill-review", t("Weekly Review"));

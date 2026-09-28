@@ -114,3 +114,14 @@ test("card labels keep only plain strings", () => {
   assert.deepEqual(data.labels, { finance: { region: "<b>", character: null } });
   assert.deepEqual(storyCardData({ labels: "nope" }).labels, {});
 });
+
+test("the star flies home along an arc, not a straight line", async () => {
+  const { arcOffset } = await import("../views/star-zoom.js");
+  assert.deepEqual(arcOffset(300, -100, 0), { x: 300, y: -100 });
+  const end = arcOffset(300, -100, 1);
+  assert.ok(Math.abs(end.x) < 1e-9 && Math.abs(end.y) < 1e-9);
+  // Halfway, the flight is off the straight line from (300, -100) to (0, 0).
+  const mid = arcOffset(300, -100, 0.5);
+  const offLine = Math.abs(mid.x * -100 - mid.y * 300) / Math.hypot(300, 100);
+  assert.ok(offLine > 20, `only ${offLine.toFixed(1)} px off the line`);
+});

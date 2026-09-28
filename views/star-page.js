@@ -18,7 +18,7 @@ import { shapeFigure, shapeSwitchMarkup, bindShapeSwitch, adoptShape } from "./s
 import { readHome, regionLabels, shareStar } from "./dashboard.js";
 import { CHAPTERS } from "./journey.js";
 import { renderStagePage } from "./stage-page.js";
-import { markZoom, takeZoom, zoomFrom } from "./star-zoom.js";
+import { markZoom, takeZoom, enterStar, leaveStar } from "./star-zoom.js";
 import { escapeHtml } from "./helpers.js";
 
 const THEMES = ["paper", "navy"];
@@ -33,7 +33,7 @@ const optButton = (group, value, label, active) =>
 
 function optGroup(group, labelText, options, current) {
   const id = `sp-${group}-label`;
-  return `<div class="sp-control">
+  return `<div class="sp-control sp-control-${group}">
       <span class="sp-control-label" id="${id}">${escapeHtml(labelText)}</span>
       <div class="shape-switch sp-group" role="group" aria-labelledby="${id}">
         ${options.map(([value, label]) => optButton(group, value, label, value === current)).join("")}
@@ -54,27 +54,35 @@ export function starLabelsMarkup(state, detail) {
     const left = (50 + cos * LABEL_R).toFixed(1);
     const top = (50 + Math.sin(angle) * LABEL_R).toFixed(1);
     return `<li class="sp-label" data-side="${side}" style="left: ${left}%; top: ${top}%; --hue: ${c.hue};">` +
-      `<span class="sp-region">${escapeHtml(c.region)}</span>` +
+      `<span class="sp-label-in"><span class="sp-region">${escapeHtml(c.region)}</span>` +
       (value ? ` <span class="sp-value">${escapeHtml(value)}</span>` : "") +
-      `</li>`;
+      `</span></li>`;
   }).join("");
 }
 
+// One screen, no scrolling (the owner, 2026-09-28): the star takes all the
+// height the stage has, beside a column of everything else (above and below
+// it on a phone). The bloom is the disc of ground the entrance opens with.
 export function starPageMarkup(h, prefs) {
   const labels = DETAIL_LABELS();
   return `
     <div class="stage-page star-page" data-theme="${prefs.theme}">
       <section class="panel sp-stage">
-        <div class="wrap sp-wrap">
-          <p class="sp-top sp-fade"><a class="pill pill-light sp-back" href="#/dashboard">← ${escapeHtml(t("Overview"))}</a></p>
-          <h1 class="sp-title sp-fade">${escapeHtml(t("Your star"))}<small>${escapeHtml(h.profile.name || "")}</small></h1>
+        <i class="sp-bloom" aria-hidden="true"></i>
+        <div class="sp-layout">
+          <div class="sp-head sp-fade">
+            <a class="pill pill-light sp-back" href="#/dashboard">← ${escapeHtml(t("Overview"))}</a>
+            <h1 class="sp-title">${escapeHtml(t("Your star"))}<small>${escapeHtml(h.profile.name || "")}</small></h1>
+          </div>
           <div class="sp-figure">
-            <div class="sp-mark">${shapeFigure({ view: h.view, you: h.scores })}</div>
-            <ol class="sp-labels sp-fade" aria-label="${escapeHtml(t("Your eight regions"))}">${starLabelsMarkup(h.state, prefs.detail)}</ol>
+            <div class="sp-square">
+              <div class="sp-mark">${shapeFigure({ view: h.view, you: h.scores })}</div>
+              <ol class="sp-labels" aria-label="${escapeHtml(t("Your eight regions"))}">${starLabelsMarkup(h.state, prefs.detail)}</ol>
+            </div>
           </div>
           <p class="sp-index sp-fade"><span>${escapeHtml(t("Balance Index"))}</span> <b>${escapeHtml(h.index)}</b> <span class="balance-band band-${h.band.key}">${escapeHtml(t(h.band.label))}</span></p>
           <div class="sp-controls sp-fade">
-            <div class="sp-control">
+            <div class="sp-control sp-control-shape">
               <span class="sp-control-label">${escapeHtml(t("Shape"))}</span>
               ${shapeSwitchMarkup(h.view)}
             </div>
@@ -104,21 +112,47 @@ function bindOptions(container, state, prefs) {
   }));
 }
 
+// The moving parts of the entrance and the exit (views/star-zoom.js).
+const motionParts = (container) => ({
+  stage: container.querySelector(".sp-stage"),
+  bloom: container.querySelector(".sp-bloom"),
+  star: container.querySelector(".sp-mark svg.shape"),
+  labels: [...container.querySelectorAll(".sp-label-in")],
+  fades: [...container.querySelectorAll(".sp-fade")]
+});
+
+// Overview flies the star home when this page was reached from there; opened
+// by its address, Home settles its star from here instead.
+function bindBack(container, note, scope) {
+  const back = container.querySelector(".sp-back");
+  if (!back) return;
+  let leaving = false;
+  scope.listen(back, "click", (e) => {
+    if (!note) {
+      markZoom(container.querySelector(".sp-mark svg.shape"));
+      return;
+    }
+    e.preventDefault();
+    if (leaving) return;
+    leaving = true;
+    leaveStar(note, motionParts(container), scope).finally(() => { location.hash = "#/dashboard"; });
+  });
+}
+
 export function renderStarPage(containerId, state) {
   const container = document.getElementById(containerId);
   if (!container) return;
   const h = readHome(state);
   const prefs = readSharePrefs();
-  const zoom = takeZoom();
+  const note = takeZoom();
   globalThis.scrollTo?.(0, 0);
   // Beside the care notice this page is as still as Home is.
   const scope = renderStagePage(container, () => starPageMarkup(h, prefs), { still: !!h.careNotice });
-  const mark = container.querySelector(".sp-mark");
-  adoptShape(mark?.querySelector("svg.shape"), { view: h.view, you: h.scores });
+  adoptShape(container.querySelector(".sp-mark svg.shape"), { view: h.view, you: h.scores });
   bindShapeSwitch(container, scope);
   bindOptions(container, state, prefs);
   container.querySelector("#sp-share")?.addEventListener("click", () => shareStar(readHome(state)));
-  if (!scope || !mark) return;
-  scope.listen(container.querySelector(".sp-back"), "click", () => markZoom(mark));
-  zoomFrom(mark, zoom, scope, [...container.querySelectorAll(".sp-fade")]);
+  if (!scope) return;
+  bindBack(container, note, scope);
+  enterStar(note, motionParts(container), scope);
 }

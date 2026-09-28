@@ -1,58 +1,92 @@
 /* css/star-page.css - your star on a page of its own (#/star,
-   views/star-page.js, v135). The star is big and centred, its eight regions
-   labelled round it, and the switches under it. Light and Dark are the share
-   card's two styles, so the page previews the card's ground. */
+   views/star-page.js, v135). One screen with no scrolling (v136): the stage
+   fills the window under the header, the star takes all the height it can
+   beside a column of the rest (on a phone, the rest above and below it), and
+   the footer steps aside. Light and Dark are the share card's two styles, so
+   the page previews the card's ground. */
 
-.star-page { --sp-bg: #f4efe4; --sp-ink: #1b1b1b; --sp-muted: #4a4a4a; }
+.star-page { --sp-bg: #f4efe4; --sp-ink: #1b1b1b; --sp-muted: #4a4a4a; --sp-gap: clamp(12px, 2.2vh, 24px); }
 .star-page[data-theme="navy"] { --sp-bg: #16213e; --sp-ink: #ffffff; --sp-muted: #c9ccd6; }
+body:has(.star-page) .site-footer { display: none; }
+/* The frame is at least a window tall below the header; here the stage is
+   exactly the rest of the window, so that floor would add a scroll. */
+body:has(.star-page) .app-container { min-height: 0; }
 
 .star-page .sp-stage {
+  position: relative;
+  height: calc(100vh - var(--frame-header-h));
+  height: calc(100dvh - var(--frame-header-h));
+  min-height: 460px;
+  overflow: hidden;
+  border-radius: 0;
   background: var(--sp-bg);
   color: var(--sp-ink);
   transition: background-color 320ms ease, color 320ms ease;
 }
-.star-page .sp-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: max(14px, calc(36 * var(--px)));
-  padding: max(16px, calc(50 * var(--px))) 0 max(40px, calc(110 * var(--px)));
-  text-align: center;
+/* While the entrance plays, the stage shows Home's paper and the disc of
+   the page's own ground opens over it from the star (views/star-zoom.js). */
+.star-page .sp-stage[data-blooming] { background: var(--frame-page); transition: none; }
+.star-page .sp-bloom {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 300vmax;
+  height: 300vmax;
+  margin: -150vmax 0 0 -150vmax;
+  border-radius: 50%;
+  background: var(--sp-bg);
+  pointer-events: none;
 }
-.star-page .sp-top { align-self: flex-start; margin: 0; }
+
+.star-page .sp-layout {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 460px);
+  grid-template-rows: auto auto auto auto;
+  grid-template-areas: "fig head" "fig index" "fig controls" "fig share";
+  align-content: center;
+  column-gap: clamp(24px, 4vw, 72px);
+  row-gap: var(--sp-gap);
+  height: 100%;
+  box-sizing: border-box;
+  padding: var(--sp-gap) var(--frame-gutter);
+}
+.star-page .sp-head { grid-area: head; display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-gap); }
+.star-page .sp-figure { grid-area: fig; container-type: size; min-width: 0; min-height: 0; height: 100%; display: grid; place-items: center; }
+.star-page .sp-index { grid-area: index; }
+.star-page .sp-controls { grid-area: controls; }
+.star-page .sp-share { grid-area: share; margin: 0; }
+
 .star-page .sp-title {
   margin: 0;
   font-family: var(--frame-word);
   font-weight: 400;
-  font-size: max(34px, calc(110 * var(--px)));
+  font-size: clamp(34px, 8vh, 88px);
   line-height: 1;
   color: var(--sp-ink);
 }
 .star-page .sp-title small {
   display: block;
-  margin-top: 8px;
+  margin-top: 6px;
   font-family: inherit;
   font-size: 0.4em;
   letter-spacing: 0.06em;
   color: var(--sp-muted);
 }
 
-/* The figure: a square, the star inset so its labels have room around it. */
-.star-page .sp-figure {
-  position: relative;
-  width: min(100%, 760px);
-  aspect-ratio: 1;
-}
+/* The square the star and its labels share: as big as the cell allows. */
+.star-page .sp-square { position: relative; width: min(100cqw, 100cqh); height: min(100cqw, 100cqh); }
 .star-page .sp-mark { position: absolute; inset: 17%; }
 .star-page .sp-labels { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
 .star-page .sp-label {
   position: absolute;
   width: max-content;
   max-width: 30%;
-  font-size: clamp(11px, 1.9vw, 16px);
+  font-size: clamp(11px, 1.8cqh, 16px);
   line-height: 1.25;
   color: var(--sp-ink);
 }
+.star-page .sp-label-in { display: block; }
 .star-page .sp-label[data-side="r"] { transform: translate(0, -50%); text-align: left; }
 .star-page .sp-label[data-side="l"] { transform: translate(-100%, -50%); text-align: right; }
 .star-page .sp-label[data-side="t"] { transform: translate(-50%, -100%); text-align: center; }
@@ -70,14 +104,13 @@
 }
 .star-page .sp-value { display: block; color: var(--sp-muted); }
 
-.star-page .sp-index { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 10px; margin: 0; color: var(--sp-muted); }
-.star-page .sp-index b { font-family: var(--frame-word); font-weight: 400; font-size: max(34px, calc(96 * var(--px))); color: var(--sp-ink); }
+.star-page .sp-index { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin: 0; color: var(--sp-muted); }
+.star-page .sp-index b { font-family: var(--frame-word); font-weight: 400; font-size: clamp(34px, 7vh, 72px); line-height: 1; color: var(--sp-ink); }
 
-.star-page .sp-controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px 36px; }
-.star-page .sp-control { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.star-page .sp-control-label { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sp-muted); }
-.star-page .sp-group { flex-wrap: wrap; justify-content: center; }
-.star-page .sp-share { margin: 0; }
+.star-page .sp-controls { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-gap); }
+.star-page .sp-control { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.star-page .sp-control-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sp-muted); }
+.star-page .sp-group { flex-wrap: wrap; }
 
 /* On the dark ground the switches and the star's guides turn light. */
 .star-page[data-theme="navy"] .shape-switch { background: rgba(255, 255, 255, 0.1); }
@@ -88,16 +121,50 @@
 .star-page[data-theme="navy"] .balance-band { color: #e6b8c4; border-color: #e6b8c4; }
 .star-page[data-theme="navy"] #sp-share { background: #ffffff; color: #16213e; }
 
-/* On a phone there is no room round the star: it fills the width and the
-   eight labels line up under it in two columns. */
-@media (max-width: 767px) {
-  .star-page .sp-figure { width: 100%; aspect-ratio: auto; }
-  .star-page .sp-mark { position: relative; inset: auto; width: 88%; aspect-ratio: 1; margin: 0 auto; }
-  .star-page .sp-labels { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-top: 18px; text-align: left; }
+/* A phone, or a tablet held upright: one column. The heading and the index
+   share the top line, the star takes the height left over, its eight labels
+   line up under it in two columns, and under them three lines: the shape,
+   the style beside Share, and the label choices scrolling sideways. The
+   group names stay for screen readers. */
+@media (max-width: 767px), (max-width: 1100px) and (orientation: portrait) {
+  .star-page { --sp-gap: 10px; }
+  .star-page .sp-layout {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+    grid-template-areas: "head head index" "fig fig fig" "shape shape shape" "theme share share" "detail detail detail";
+    align-content: stretch;
+    padding: 12px 16px;
+  }
+  .star-page .sp-head { flex-direction: row; align-items: center; gap: 10px; min-width: 0; }
+  .star-page .sp-back { padding-left: 14px; padding-right: 14px; }
+  .star-page .sp-title { font-size: 26px; }
+  .star-page .sp-title small { display: none; }
+  .star-page .sp-index { align-self: center; gap: 6px; }
+  .star-page .sp-index > span:first-child,
+  .star-page .sp-index .balance-band { display: none; }
+  .star-page .sp-index b { font-size: 34px; }
+
+  .star-page .sp-figure { container-type: normal; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 10px; place-items: stretch; }
+  .star-page .sp-square { display: contents; }
+  .star-page .sp-mark { position: relative; inset: auto; min-height: 0; container-type: size; display: grid; place-items: center; }
+  .star-page .sp-mark svg.shape { width: min(100cqw, 100cqh); height: min(100cqw, 100cqh); }
+  .star-page .sp-labels { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; text-align: left; }
   .star-page .sp-label,
-  .star-page .sp-label[data-side] { position: static; width: auto; max-width: none; transform: none; text-align: left; font-size: 14px; }
+  .star-page .sp-label[data-side] { position: static; width: auto; max-width: none; transform: none; text-align: left; font-size: 12px; }
   .star-page .sp-value { padding-left: 0.97em; }
-  .star-page .sp-controls { flex-direction: column; align-items: stretch; }
+
+  .star-page .sp-controls { display: contents; }
+  .star-page .sp-control-shape { grid-area: shape; }
+  .star-page .sp-control-theme { grid-area: theme; }
+  .star-page .sp-control-detail { grid-area: detail; min-width: 0; }
+  .star-page .sp-share { align-self: center; }
+  .star-page .sp-control-label {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  .star-page .sp-group { flex-wrap: nowrap; }
+  .star-page .sp-control-detail .sp-group { flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .star-page :is(.shape-opt, .sp-opt) { min-height: 40px; padding: 0 12px; white-space: nowrap; }
+  .star-page .sp-share .pill { width: 100%; justify-content: center; }
 }
 
 html[data-reduce-motion] .star-page .sp-stage { transition: none; }

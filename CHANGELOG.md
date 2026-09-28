@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `135`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `136`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.69.0] - 2026-09-28 (v136)
+
+### Changed
+- **Your star's page fits one screen** with no scrolling. The star takes all
+  the height below the header beside a column of the heading, Balance Index,
+  switches and Share. On a phone, or an upright tablet, it is one column: the
+  label choices scroll sideways and Light/Dark sits beside Share. The footer
+  is hidden on this page.
+- **A new way in and out** (views/star-zoom.js):
+  - The page's ground opens as a disc out of the tapped star.
+  - The star flies in along an arc.
+  - The eight region labels shoot out of the star along their rays, one after
+    another clockwise from The Market.
+  - The heading and switches rise in turn.
+  - The Overview button plays it backwards: the labels are drawn back into
+    the star, and the disc closes onto Home's star as the star arcs home.
 
 ## [2.68.0] - 2026-09-28 (v135)
 

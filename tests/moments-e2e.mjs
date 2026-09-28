@@ -305,20 +305,30 @@ try {
   await finishJourney(page, { last: ["who5"] });
   if (await page.locator(".care-banner").count()) throw new Error("the calm reader was shown the care notice");
   await page.evaluate(() => window.scrollTo(0, 0));
-  // A tap on your star zooms into its own page (v135), and back out again.
+  // A tap on your star opens its own page (v135): the ground blooms out of
+  // the star, the star arcs in, the regions shoot out along their rays (v136).
   await page.click(".home .star-hit");
   await page.waitForSelector(".star-page .sp-mark svg.shape", { timeout: 10000 });
   await advance(page, FRAME_MS * 3);
-  const zooming = await page.evaluate(() => document.querySelector(".star-page .sp-mark").style.transform);
-  if (!zooming) problems.push("star page: your star did not zoom in from Home");
+  const entering = await page.evaluate(() => ({
+    star: document.querySelector(".star-page .sp-mark svg.shape").style.transform,
+    bloom: document.querySelector(".star-page .sp-bloom").style.transform,
+    label: document.querySelector(".star-page .sp-label-in")?.style.opacity
+  }));
+  if (!entering.star || !entering.bloom || entering.label !== "0") problems.push(`star page: the entrance did not play (${JSON.stringify(entering)})`);
   await advance(page, 2500);
-  const settled = await page.evaluate(() => [...document.querySelectorAll(".star-page .sp-mark, .star-page .sp-fade")].map(el => el.getAttribute("style")).filter(Boolean));
+  const moving = ".star-page .sp-mark svg, .star-page .sp-bloom, .star-page .sp-label-in, .star-page .sp-fade";
+  const settled = await page.evaluate((sel) => [...document.querySelectorAll(sel)].map(el => el.getAttribute("style")).filter(Boolean)
+    .concat(document.querySelector(".sp-stage[data-blooming]") ? ["still blooming"] : []), moving);
   if (settled.length) problems.push(`star page: not settled after 2.5 s (${settled.join(" | ")})`);
+  const fits = await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1);
+  if (!fits) problems.push("star page: it does not fit the window");
   await page.click(".star-page .sp-back");
-  await page.waitForSelector(".home .home-star svg", { timeout: 10000 });
   await advance(page, FRAME_MS * 3);
-  const shrinking = await page.evaluate(() => document.querySelector(".home .home-star-mark").style.transform);
-  if (!shrinking) problems.push("home: your star did not zoom back from its page");
+  const leaving = await page.evaluate(() => document.querySelector(".star-page .sp-mark svg.shape")?.style.transform);
+  if (!leaving) problems.push("star page: your star did not fly home");
+  await advance(page, 1000);
+  await page.waitForSelector(".home .home-star svg", { timeout: 10000 });
   await advance(page, 2500);
   const home = await heroState(page);
   if (home.particles || home.styled.length) problems.push(`home: your star did not come home (${home.particles} particles, ${home.styled.join(" | ")})`);
@@ -374,7 +384,7 @@ try {
   let moved = 0;
   for (let f = 0; f < 120; f++) {
     await advance(page, FRAME_MS);
-    moved += await page.evaluate(() => [...document.querySelectorAll(".star-page .sp-mark, .star-page .sp-fade")].filter(el => el.getAttribute("style")).length);
+    moved += await page.evaluate(() => [...document.querySelectorAll(".star-page .sp-mark svg, .star-page .sp-bloom, .star-page .sp-label-in, .star-page .sp-fade")].filter(el => el.getAttribute("style")).length);
   }
   if (moved) problems.push("quiet home: your star's page moved beside the care notice");
   await context.close();
@@ -550,7 +560,7 @@ try {
   await page.click(".home .star-hit");
   await page.waitForSelector(".star-page .sp-mark svg.shape", { timeout: 10000 });
   await advance(page, 400);
-  const zoomed = await page.evaluate(() => [...document.querySelectorAll(".star-page .sp-mark, .star-page .sp-fade")].map(el => el.getAttribute("style")).filter(Boolean));
+  const zoomed = await page.evaluate(() => [...document.querySelectorAll(".star-page .sp-mark svg, .star-page .sp-bloom, .star-page .sp-label-in, .star-page .sp-fade")].map(el => el.getAttribute("style")).filter(Boolean));
   if (zoomed.length) problems.push(`reduced: your star zoomed into its page (${zoomed.join(" | ")})`);
   // The review changes screen with no wipe at all.
   await reviewDue(page);
@@ -581,4 +591,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star zooms into its own page and back (and stays still beside the care notice), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi's panel settles and types, and reduced motion moves nothing");
+console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star blooms into its own page and flies back (and stays still beside the care notice), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi's panel settles and types, and reduced motion moves nothing");

@@ -12,7 +12,7 @@ let dom;
 beforeEach(() => { dom = installDom(); });
 
 installDom();
-const { renderDashboard, yourStarSvg } = await import("../views/dashboard.js");
+const { renderDashboard, yourStarSvg, litSkySlots } = await import("../views/dashboard.js");
 const { CHAPTERS } = await import("../views/journey.js");
 
 const STATE = {
@@ -141,10 +141,34 @@ test("the pledge wall appears only with pledges, and says in words what it shows
   const html = render({ ...STATE, goals: [{ id: "g", templateId: "sleep", target: 7 }] });
   assert.match(html, /<section class="wall" aria-hidden="true">/);
   assert.match(html, /1 active this week/);
-  // A strip, not a screen: a few stickers per column, not a wall of them.
-  const perColumn = html.split('class="wall-col"').slice(1).map(c => (c.match(/class="sticker/g) || []).length);
+  // A strip, not a screen: a few stars per column, not a wall of them.
+  const perColumn = html.split('class="wall-col"').slice(1).map(c => (c.match(/class="sky-star/g) || []).length);
   assert.equal(perColumn.length, 6);
-  assert.ok(perColumn.every(n => n <= 3), `columns hold ${perColumn.join(",")} stickers`);
+  assert.ok(perColumn.every(n => n <= 3), `columns hold ${perColumn.join(",")} stars`);
+  // Never reviewed: nothing lit, and no claim about keeping anything.
+  assert.doesNotMatch(html, /is-lit/);
+  assert.doesNotMatch(html, /kept at your last review/);
+});
+
+// The night sky (v127): one gilt star lit per pledge kept at the last review.
+test("the night sky lights one star for each pledge kept, and says so in words", () => {
+  const goals = [
+    { id: "a", templateId: "sleep", target: 7, lastResult: { week: "2026-W39", value: 8, met: true } },
+    { id: "b", templateId: "water", target: 2, lastResult: { week: "2026-W39", value: 1, met: false } },
+    { id: "c", templateId: "exerciseDays", target: 3, lastResult: { week: "2026-W39", value: 4, met: true } }
+  ];
+  const html = render({ ...STATE, goals });
+  assert.equal((html.match(/class="sky-star is-lit"/g) || []).length, 2);
+  assert.match(html, /2 kept at your last review/);
+});
+
+test("the lit stars spread across the sky and never exceed it", () => {
+  assert.equal(litSkySlots(0).size, 0);
+  assert.deepEqual([...litSkySlots(1)], [9]);
+  const six = [...litSkySlots(6)];
+  assert.equal(six.length, 6);
+  assert.equal(new Set(six.map(n => Math.floor(n / 3))).size, 6, "six kept pledges, one star in each column");
+  assert.equal(litSkySlots(99).size, 18);
 });
 
 test("the care notice leads the page, before your star", () => {

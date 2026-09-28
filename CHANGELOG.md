@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `126`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `127`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.62.0] - 2026-09-28
+
+### Changed
+- Home: the pledge sticker wall (a rounded box under a 50% black veil) is now a night sky. It is the table turned to night, not a card: a dark band with no corners of its own that runs under the rounded corners of the pledges card above and the footer below. One gilt star is lit for each pledge kept at the last weekly review, spread across the six drifting columns; the rest are dim. The caption says the same in words ("2 kept at your last review"), shown only once a review has graded the pledges.
 
 ## [2.61.4] - 2026-09-28
 

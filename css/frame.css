@@ -267,6 +267,7 @@ body.menu-open .wordmark a:focus-visible { outline-color: #ffffff; }
 
 /* ------------------------------------------------------------- footer */
 .site-footer {
+  position: relative; /* above the night sky on Home (css/home.css) */
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;

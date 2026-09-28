@@ -156,22 +156,45 @@
   font-weight: 700;
   font-size: max(15px, calc(26 * var(--px)));
 }
+/* The night sky (v127). Not a card: it is the table itself turned to night,
+   so it has no corners of its own and runs under the rounded corners of the
+   cards above and below (the negative margins, and z-index -1 inside the
+   page's own stacking context). A few fixed specks give it depth; the stars
+   drift with the scroll in their six columns. */
+.home { isolation: isolate; }
 .wall {
   position: relative;
+  z-index: -1;
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  height: calc(360 * var(--px));
+  height: calc(420 * var(--px));
+  margin: calc(-1 * var(--panel-r)) 0;
   overflow: hidden;
-  border-radius: var(--panel-r);
-  background: #ffffff;
+  background-color: #1b1b1b;
+  background-image:
+    radial-gradient(1.5px 1.5px at 8% 30%, #6d6552 50%, transparent 51%),
+    radial-gradient(1px 1px at 17% 72%, #57503f 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 29% 46%, #6d6552 50%, transparent 51%),
+    radial-gradient(1px 1px at 43% 20%, #57503f 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 55% 66%, #6d6552 50%, transparent 51%),
+    radial-gradient(1px 1px at 67% 36%, #57503f 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 81% 78%, #6d6552 50%, transparent 51%),
+    radial-gradient(1px 1px at 93% 24%, #57503f 50%, transparent 51%);
 }
-.wall::after { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, 0.5); pointer-events: none; }
-/* Each column starts above the strip by more than it drifts (WALL_DRIFT in
-   views/dashboard.js), so no drift opens a gap at the top. */
-.wall-col { display: flex; flex-direction: column; gap: calc(70 * var(--px)); margin-top: calc(-150 * var(--px)); will-change: transform; }
-.sticker { display: grid; place-items: center; height: calc(300 * var(--px)); }
-.sticker:nth-child(3n + 1) { justify-items: start; padding-left: 14%; }
-.sticker:nth-child(3n + 2) { justify-items: end; padding-right: 10%; }
+/* Each column is taller than the band by more than it drifts (WALL_DRIFT in
+   views/dashboard.js), so no drift empties an edge. */
+/* Last on Home: the sky runs on under the footer card’s rounded top
+   corners (its 24px radius in css/frame.css), which paints above it. */
+.wall:last-child { margin-bottom: -24px; }
+.wall-col { position: relative; margin: calc(-140 * var(--px)) 0; will-change: transform; }
+.sky-star {
+  position: absolute;
+  width: calc(var(--s) * 1.4 * var(--px));
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+}
+.sky-star svg { display: block; width: 100%; height: 100%; overflow: visible; fill: #4a4436; }
+.sky-star.is-lit svg { filter: drop-shadow(0 0 calc(10 * var(--px)) rgba(240, 216, 168, 0.35)); }
 
 /* ------------------------------------------------------------- phones */
 @container (max-width: 900px) {
@@ -234,8 +257,7 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
-  .wall { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .wall-col:nth-child(n + 4) { display: none; }
+  .wall { height: calc(300 * var(--px)); margin: 0; }
 }
 
 /* ------------------------------------------------------------- Thai

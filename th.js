@@ -1327,6 +1327,7 @@ export const TH = {
   "Where to start": "เริ่มจากตรงนี้",
   "Your pledges": "คำมั่นของคุณ",
   "{n} active this week": "ใช้อยู่ {n} คำมั่นในสัปดาห์นี้",
+  "{kept} kept at your last review": "ทำได้ {kept} คำมั่นในการทบทวนครั้งล่าสุด", // v127 draft, awaiting the owner review
   "Done for this week.": "สัปดาห์นี้เสร็จแล้ว",
   "The next one opens {date}.": "ครั้งถัดไปเปิด {date}",
   // The weekly loop (views/aspect.js, review.js, quests.js; redesign R4). The

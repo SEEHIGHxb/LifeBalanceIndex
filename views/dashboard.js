@@ -35,7 +35,7 @@ import { openShareSheet } from "./share.js";
 import { CHAPTERS } from "./journey.js";
 import { SPRITES, onAbort, burst } from "./stage.js";
 import {
-  chapterOf, aspectName, dotDate, shiftSummary, motifIcon, motifThumb, starThumb, newsRow
+  chapterOf, aspectName, dotDate, shiftSummary, motifThumb, starThumb, newsRow
 } from "./news.js";
 import { EVERY_MOTIF, label, renderStagePage } from "./stage-page.js";
 import { writeMotionStyle } from "./motion-mount.js";
@@ -47,12 +47,19 @@ import {
 } from "./helpers.js";
 
 const RECENT_ROWS = 5;
-const WALL_COLUMNS = 6;
-// The wall is a strip about one sticker tall (css/home.css); three per column
-// cover it through the whole drift.
-const WALL_ROWS = 3;
-// Every fourth sticker is the gilt star, as on the prototype's wall.
-const STAR_STICKER_EVERY = 4;
+// The night sky under the pledges (v127, the owner chose it over the sticker
+// wall): six drifting columns of stars, three each. Where each star sits in
+// its column, as [left %, top %, size in prototype px]; fixed, not random, so
+// the sky is the same on every visit and in the tests.
+const SKY = [
+  [[22, 18, 46], [70, 52, 22], [34, 84, 30]],
+  [[64, 10, 26], [26, 44, 54], [72, 78, 20]],
+  [[40, 24, 20], [78, 58, 38], [18, 88, 26]],
+  [[70, 16, 34], [30, 50, 22], [62, 82, 50]],
+  [[28, 12, 24], [66, 40, 48], [36, 76, 20]],
+  [[58, 22, 50], [22, 60, 26], [74, 90, 22]]
+];
+const SKY_STARS = SKY.flat().length;
 // How far a wall column drifts across the wall's pass through the screen, in
 // prototype px (1/2545 of the page's width). Kept under the columns' head
 // start above the strip (.wall-col's margin in css/home.css).
@@ -364,24 +371,31 @@ function newsSection(h) {
     </section>`;
 }
 
-// The pledges as die-cut stickers in six columns. The wall is decoration; the
+// Which of the sky's star slots are lit: one per pledge kept at the last
+// weekly review, spread across the columns rather than bunched at the start.
+export function litSkySlots(kept) {
+  const n = Math.max(0, Math.min(SKY_STARS, kept));
+  return new Set(Array.from({ length: n }, (_, i) => Math.floor(((i + 0.5) * SKY_STARS) / n)));
+}
+
+// The pledges as a night sky: a dark band the cards sit on, with a gilt star
+// lit for each pledge kept and the rest drawn dim. It is decoration; the
 // caption above it says what it shows in words.
 function wallSection(h) {
-  const aspects = h.state.goals.map(g => goalTemplate(g.templateId)?.aspect).filter(a => a && chapterOf(a));
-  if (!aspects.length) return "";
-  const sticker = (aspect, n) => {
-    if (n % STAR_STICKER_EVERY === STAR_STICKER_EVERY - 1) {
-      return `<i class="sticker sticker-star"><svg viewBox="0 0 100 100"><use href="${SPRITES}#star"/></svg></i>`;
-    }
-    return `<i class="sticker" style="--hue: ${chapterOf(aspect).hue};">${motifIcon(aspect)}</i>`;
-  };
-  const cols = Array.from({ length: WALL_COLUMNS }, (_, c) =>
-    `<div class="wall-col">${Array.from({ length: WALL_ROWS }, (_, k) => sticker(aspects[(c + k) % aspects.length], c + k)).join("")}</div>`
-  ).join("");
+  const goals = h.state.goals.filter(g => goalTemplate(g.templateId));
+  if (!goals.length) return "";
+  const reviewed = goals.some(g => g.lastResult);
+  const kept = goals.filter(g => g.lastResult?.met).length;
+  const lit = litSkySlots(kept);
+  const star = ([x, y, size], n) => lit.has(n)
+    ? `<i class="sky-star is-lit" style="left: ${x}%; top: ${y}%; --s: ${size};"><svg viewBox="0 0 100 100"><use href="${SPRITES}#star"/></svg></i>`
+    : `<i class="sky-star" style="left: ${x}%; top: ${y}%; --s: ${Math.round(size * 0.6)};"><svg viewBox="0 0 24 24"><use href="${SPRITES}#star-line"/></svg></i>`;
+  const cols = SKY.map((col, c) => `<div class="wall-col">${col.map((p, k) => star(p, c * col.length + k)).join("")}</div>`).join("");
+  const keptLine = reviewed ? ` · ${escapeHtml(tp("{kept} kept at your last review", { kept }))}` : "";
   return `
     <section class="panel home-pledges"><div class="wrap split">
       ${label(t("Your pledges"))}
-      <p class="pledge-count">${escapeHtml(tp("{n} active this week", { n: h.state.goals.length }))} <a class="pill pill-light" href="#/quests">${escapeHtml(t("Goals"))}</a></p>
+      <p class="pledge-count"><span>${escapeHtml(tp("{n} active this week", { n: goals.length }))}${keptLine}</span> <a class="pill pill-light" href="#/quests">${escapeHtml(t("Goals"))}</a></p>
     </div></section>
     <section class="wall" aria-hidden="true">${cols}</section>`;
 }

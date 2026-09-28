@@ -611,6 +611,16 @@ a.newsrow:hover .newsrow-title { text-decoration: underline; text-underline-offs
     --gutter: calc(40 * var(--px));
   }
   .stage-page .wrap { width: calc(740 * var(--px)); }
+  /* No rounded sheets on a phone (v125, the owner: the corners "look very
+     weird" with nothing behind them). The sections sit flat on the page and
+     a hairline marks where one ends. The white cards inside keep theirs. */
+  .stage-page { background: var(--frame-page); }
+  .stage-page .panel,
+  .hero,
+  .projects { border-radius: 0; }
+  .stage-page .panel + .panel,
+  .hero + .panel { border-top: 1px solid #e6e3de; }
+  .stage-page .notice-panel + .panel { border-top: 0; }
   .stage-page .split { grid-template-columns: minmax(0, 1fr); gap: calc(40 * var(--px)); }
   .stage-page .label { font-size: max(11px, calc(22 * var(--px))); }
   .stage-page .headline { white-space: normal; font-size: calc(46 * var(--px)); }

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `138`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `139`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.72.0] - 2026-09-28 (v139)
+
+### Changed
+- Your star's page opens with a warp: night opens out of the star you tapped, the star spins in on an arc with gold streaks flying out of it, two rings ripple out as it lands, then the page's own ground opens from it like dawn and the regions and switches arrive. Going back runs it in reverse and closes the night onto Home's star.
+
+### Fixed
+- The entrance measured its night and effects while they were hidden, so the night covered the page at once instead of opening from the star.
+- On phones the switches showed through the entrance; each switch group now fades in on its own.
 
 ## [2.71.0] - 2026-09-28 (v138)
 

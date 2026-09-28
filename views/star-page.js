@@ -28,13 +28,18 @@ const THEMES = ["paper", "navy"];
 const LABEL_R = 37;
 // A label whose direction leans this far sideways reads from its point out.
 const SIDEWAYS = 0.3;
+// The warp the page opens with (views/star-zoom.js): its streaks and the
+// rings that ripple out as the star lands.
+const STREAKS = 24;
+const RINGS = 2;
+const WARP_MARKUP = '<i class="sp-streak"></i>'.repeat(STREAKS) + '<i class="sp-ring"></i>'.repeat(RINGS);
 
 const optButton = (group, value, label, active) =>
   `<button type="button" class="sp-opt" data-group="${group}" data-value="${value}" aria-pressed="${active}">${escapeHtml(label)}</button>`;
 
 function optGroup(group, labelText, options, current) {
   const id = `sp-${group}-label`;
-  return `<div class="sp-control sp-control-${group}">
+  return `<div class="sp-control sp-control-${group} sp-fade">
       <span class="sp-control-label" id="${id}">${escapeHtml(labelText)}</span>
       <div class="shape-switch sp-group" role="group" aria-labelledby="${id}">
         ${options.map(([value, label]) => optButton(group, value, label, value === current)).join("")}
@@ -68,7 +73,9 @@ export function starPageMarkup(h, prefs) {
   return `
     <div class="stage-page star-page" data-theme="${prefs.theme}">
       <section class="panel sp-stage">
+        <i class="sp-night" aria-hidden="true"></i>
         <i class="sp-bloom" aria-hidden="true"></i>
+        <div class="sp-fx" aria-hidden="true">${WARP_MARKUP}</div>
         <div class="sp-layout">
           <div class="sp-head sp-fade">
             <a class="pill pill-light sp-back" href="#/dashboard">← ${escapeHtml(t("Overview"))}</a>
@@ -80,8 +87,8 @@ export function starPageMarkup(h, prefs) {
               <ol class="sp-labels" aria-label="${escapeHtml(t("Your eight regions"))}">${starLabelsMarkup(h.state, prefs.detail)}</ol>
             </div>
           </div>
-          <div class="sp-controls sp-fade">
-            <div class="sp-control sp-control-shape">
+          <div class="sp-controls">
+            <div class="sp-control sp-control-shape sp-fade">
               <span class="sp-control-label">${escapeHtml(t("Shape"))}</span>
               ${shapeSwitchMarkup(h.view)}
             </div>
@@ -114,7 +121,10 @@ function bindOptions(container, state, prefs) {
 // The moving parts of the entrance and the exit (views/star-zoom.js).
 const motionParts = (container) => ({
   stage: container.querySelector(".sp-stage"),
+  night: container.querySelector(".sp-night"),
   bloom: container.querySelector(".sp-bloom"),
+  streaks: [...container.querySelectorAll(".sp-streak")],
+  rings: [...container.querySelectorAll(".sp-ring")],
   star: container.querySelector(".sp-mark svg.shape"),
   labels: [...container.querySelectorAll(".sp-label-in")],
   fades: [...container.querySelectorAll(".sp-fade")]

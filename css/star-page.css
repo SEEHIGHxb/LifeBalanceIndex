@@ -23,10 +23,13 @@ body:has(.star-page) .app-container { min-height: 0; }
   color: var(--sp-ink);
   transition: background-color 320ms ease, color 320ms ease;
 }
-/* While the entrance plays, the stage shows Home's paper and the disc of
-   the page's own ground opens over it from the star (views/star-zoom.js). */
+/* The warp in (views/star-zoom.js). While it plays, the stage shows Home's
+   paper; a disc of night opens over it from the tapped star, gold streaks
+   and rings fly out of the star, and a disc of the page's own ground opens
+   over the night from where the star lands. The night and the effects are
+   only there while the stage is blooming. */
 .star-page .sp-stage[data-blooming] { background: var(--frame-page); transition: none; }
-.star-page .sp-bloom {
+.star-page :is(.sp-bloom, .sp-night) {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -37,6 +40,25 @@ body:has(.star-page) .app-container { min-height: 0; }
   background: var(--sp-bg);
   pointer-events: none;
 }
+.star-page .sp-night { background: radial-gradient(circle, #1f2c52 0%, #0d1428 60%); }
+.star-page .sp-fx { position: absolute; inset: 0; pointer-events: none; }
+.star-page .sp-fx > i { position: absolute; left: 0; top: 0; opacity: 0; }
+.star-page .sp-streak {
+  width: 150px;
+  height: 3px;
+  margin-top: -1.5px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(246, 227, 184, 0), #f6e3b8 70%, #ffffff);
+  transform-origin: 0 50%;
+}
+.star-page .sp-ring {
+  width: 120px;
+  height: 120px;
+  box-sizing: border-box;
+  border: 3px solid #e2b866;
+  border-radius: 50%;
+}
+.star-page .sp-stage:not([data-blooming]) :is(.sp-night, .sp-fx) { display: none; }
 
 /* The star is the page (v137): a slim line above it (the way back, the
    title, Share) and a slim line of switches below it, so the star takes the

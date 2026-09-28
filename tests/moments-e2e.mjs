@@ -313,9 +313,17 @@ try {
   const entering = await page.evaluate(() => ({
     star: document.querySelector(".star-page .sp-mark svg.shape").style.transform,
     bloom: document.querySelector(".star-page .sp-bloom").style.transform,
+    night: document.querySelector(".star-page .sp-night").style.transform,
     label: document.querySelector(".star-page .sp-label-in")?.style.opacity
   }));
-  if (!entering.star || !entering.bloom || entering.label !== "0") problems.push(`star page: the entrance did not play (${JSON.stringify(entering)})`);
+  if (!entering.star || !entering.bloom || !entering.night || entering.label !== "0") problems.push(`star page: the entrance did not play (${JSON.stringify(entering)})`);
+  // The warp (v139): the star turns on its way, and gold streaks fly out.
+  await advance(page, 300);
+  const warp = await page.evaluate(() => ({
+    spin: /rotate\(-?[1-9]/.test(document.querySelector(".star-page .sp-mark svg.shape").style.transform),
+    streaks: [...document.querySelectorAll(".star-page .sp-streak")].filter(el => Number(el.style.opacity) > 0).length
+  }));
+  if (!warp.spin || warp.streaks < 6) problems.push(`star page: the warp did not play (${JSON.stringify(warp)})`);
   await advance(page, 2500);
   const moving = ".star-page .sp-mark svg, .star-page .sp-bloom, .star-page .sp-label-in, .star-page .sp-fade";
   const settled = await page.evaluate((sel) => [...document.querySelectorAll(sel)].map(el => el.getAttribute("style")).filter(Boolean)
@@ -591,4 +599,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star blooms into its own page and flies back (and stays still beside the care notice), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi's panel settles and types, and reduced motion moves nothing");
+console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star warps into its own page and flies back (and stays still beside the care notice), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi's panel settles and types, and reduced motion moves nothing");

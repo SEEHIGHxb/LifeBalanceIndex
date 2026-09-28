@@ -38,38 +38,41 @@ body:has(.star-page) .app-container { min-height: 0; }
   pointer-events: none;
 }
 
+/* The star is the page (v137): a slim line above it (the way back, the
+   title, the index, Share) and a slim line of switches below it, so the
+   star takes the middle and all the height between. */
 .star-page .sp-layout {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 460px);
-  grid-template-rows: auto auto auto auto;
-  grid-template-areas: "fig head" "fig index" "fig controls" "fig share";
-  align-content: center;
-  column-gap: clamp(24px, 4vw, 72px);
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas: "head index share" "fig fig fig" "controls controls controls";
+  align-items: center;
+  column-gap: clamp(16px, 3vw, 48px);
   row-gap: var(--sp-gap);
   height: 100%;
   box-sizing: border-box;
   padding: var(--sp-gap) var(--frame-gutter);
 }
-.star-page .sp-head { grid-area: head; display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-gap); }
+.star-page .sp-head { grid-area: head; display: flex; align-items: center; gap: 16px; min-width: 0; }
 .star-page .sp-figure { grid-area: fig; container-type: size; min-width: 0; min-height: 0; height: 100%; display: grid; place-items: center; }
-.star-page .sp-index { grid-area: index; }
-.star-page .sp-controls { grid-area: controls; }
+.star-page .sp-index { grid-area: index; justify-self: end; }
+.star-page .sp-controls { grid-area: controls; justify-self: center; }
 .star-page .sp-share { grid-area: share; margin: 0; }
 
 .star-page .sp-title {
   margin: 0;
   font-family: var(--frame-word);
   font-weight: 400;
-  font-size: clamp(34px, 8vh, 88px);
+  font-size: clamp(26px, 4.5vh, 44px);
   line-height: 1;
+  white-space: nowrap;
   color: var(--sp-ink);
 }
 .star-page .sp-title small {
-  display: block;
-  margin-top: 6px;
+  margin-left: 0.4em;
   font-family: inherit;
-  font-size: 0.4em;
+  font-size: 0.5em;
   letter-spacing: 0.06em;
   color: var(--sp-muted);
 }
@@ -104,13 +107,20 @@ body:has(.star-page) .app-container { min-height: 0; }
 }
 .star-page .sp-value { display: block; color: var(--sp-muted); }
 
-.star-page .sp-index { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin: 0; color: var(--sp-muted); }
-.star-page .sp-index b { font-family: var(--frame-word); font-weight: 400; font-size: clamp(34px, 7vh, 72px); line-height: 1; color: var(--sp-ink); }
+.star-page .sp-index { display: flex; align-items: center; gap: 10px; margin: 0; white-space: nowrap; color: var(--sp-muted); }
+.star-page .sp-index b { font-family: var(--frame-word); font-weight: 400; font-size: clamp(28px, 5vh, 48px); line-height: 1; color: var(--sp-ink); }
 
-.star-page .sp-controls { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-gap); }
-.star-page .sp-control { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
-.star-page .sp-control-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sp-muted); }
-.star-page .sp-group { flex-wrap: wrap; }
+/* The three switches on one line, each with a small name above it. */
+.star-page .sp-controls { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 10px 20px; min-width: 0; }
+/* A narrow laptop: the band's word steps aside so the top line holds. */
+@media (max-width: 1180px) {
+  .star-page .sp-index .balance-band { display: none; }
+  .star-page .sp-controls { column-gap: 12px; }
+}
+.star-page .sp-control { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.star-page .sp-control-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sp-muted); }
+.star-page .sp-group { flex-wrap: nowrap; }
+.star-page :is(.shape-opt, .sp-opt) { min-height: 36px; padding: 0 12px; font-size: 14px; white-space: nowrap; }
 
 /* On the dark ground the switches and the star's guides turn light. */
 .star-page[data-theme="navy"] .shape-switch { background: rgba(255, 255, 255, 0.1); }

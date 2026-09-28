@@ -7,7 +7,7 @@ weekly pledges — no daily
 logging ritual. Pure static HTML/JS/CSS — no build step, no backend; all data lives in
 your browser's localStorage.
 
-> **Live at [lbi.plainpoint.net](https://lbi.plainpoint.net/)**
+> **Live at [asterism.plainpoint.net](https://asterism.plainpoint.net/)** (formerly lbi.plainpoint.net, which now forwards here)
 > (repo [`SEEHIGHxb/LifeBalanceIndex`](https://github.com/SEEHIGHxb/LifeBalanceIndex), formerly *LifeQuest*).
 > Internal storage keys, the export filename prefix, and the `LQ1-` comparison-code
 > prefix keep the legacy `lifequest`/`LQ1` names for backward compatibility.

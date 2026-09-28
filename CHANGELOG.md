@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `132`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `133`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.66.1] - 2026-09-28
+
+### Changed
+- The app now lives at **asterism.plainpoint.net** (v133). `CNAME`, the canonical and Open Graph URLs, the share card`s printed address, the README and comments follow. The old address is served by the new `SEEHIGHxb/lbi-legacy` repo (from `legacy/`), which forwards every page and hands a returning reader`s answers to `moved.js` here.
 
 ## [2.66.0] - 2026-09-28
 

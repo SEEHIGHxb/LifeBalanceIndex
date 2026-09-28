@@ -353,7 +353,7 @@ export function drawStoryCard(ctx, data, opts = {}) {
   ctx.fillText("INDEX", mid, LAYOUT.wordmarkSub);
   ctx.font = font(400, 24, SANS);
   ctx.fillStyle = theme.muted;
-  ctx.fillText("lbi.plainpoint.net", mid, LAYOUT.url);
+  ctx.fillText("asterism.plainpoint.net", mid, LAYOUT.url);
 
   if (data.name) {
     ctx.font = font(700, 48, SERIF);

@@ -1,7 +1,7 @@
 // secure-context.js - what the app needs from a page that may be served over
 // plain http.
 //
-// The site answers on http://lbi.plainpoint.net as well as https, and a page
+// The site answers on http://asterism.plainpoint.net as well as https, and a page
 // there is not a secure context: crypto.randomUUID is missing, so finishing the
 // journey threw, and the service worker never registers. The page is moved to
 // https before anything runs (app.js), and ids come from getRandomValues, which

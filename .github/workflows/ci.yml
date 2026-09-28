@@ -92,7 +92,7 @@ jobs:
           cp index.html privacy.html 404.html index.css manifest.webmanifest *.js _site/
           # The redesign's sheets, one per area (docs/redesign-build-plan.md).
           cp css/*.css _site/css/
-          # CNAME is what tells Pages the site answers on lbi.plainpoint.net.
+          # CNAME is what tells Pages the site answers on asterism.plainpoint.net.
           # Staging is an explicit file list, not a copy of the repo, so this
           # line is load-bearing: without it the artifact ships with no CNAME
           # and the custom domain can be dropped on the next deploy.

@@ -1,6 +1,6 @@
 // secure-context.js: what the app needs from a page that may be served over
 // plain http. crypto.randomUUID exists only in a secure context, and on
-// http://lbi.plainpoint.net finishing the journey threw on it.
+// http://asterism.plainpoint.net finishing the journey threw on it.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
@@ -34,13 +34,13 @@ test("no shipped module calls crypto.randomUUID", () => {
 
 test("a page on plain http is sent to https with its path and hash", () => {
   assert.equal(
-    httpsUpgradeUrl({ protocol: "http:", hostname: "lbi.plainpoint.net", host: "lbi.plainpoint.net", pathname: "/", search: "?a=1", hash: "#/review" }),
-    "https://lbi.plainpoint.net/?a=1#/review"
+    httpsUpgradeUrl({ protocol: "http:", hostname: "asterism.plainpoint.net", host: "asterism.plainpoint.net", pathname: "/", search: "?a=1", hash: "#/review" }),
+    "https://asterism.plainpoint.net/?a=1#/review"
   );
 });
 
 test("https and local development hosts are left alone", () => {
-  assert.equal(httpsUpgradeUrl({ protocol: "https:", hostname: "lbi.plainpoint.net", host: "lbi.plainpoint.net", pathname: "/", search: "", hash: "" }), null);
+  assert.equal(httpsUpgradeUrl({ protocol: "https:", hostname: "asterism.plainpoint.net", host: "asterism.plainpoint.net", pathname: "/", search: "", hash: "" }), null);
   for (const hostname of ["localhost", "127.0.0.1", "[::1]", "app.localhost", "lbi.test"]) {
     assert.equal(httpsUpgradeUrl({ protocol: "http:", hostname, host: `${hostname}:8181`, pathname: "/", search: "", hash: "" }), null, hostname);
   }

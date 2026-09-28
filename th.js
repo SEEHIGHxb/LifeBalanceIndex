@@ -1491,16 +1491,13 @@ export const TH = {
   "Light": "พื้นสว่าง",
   "Dark": "พื้นเข้ม",
   "What to show": "แสดงรายละเอียดแค่ไหน",
-  "Shape only": "เฉพาะรูปทรง",
   // v135 drafts awaiting the owner review: the five label choices.
-  "Names only": "เฉพาะชื่อ",
   "Score": "คะแนน",
   "Character": "ตัวละคร",
-  "Score + character": "คะแนน + ตัวละคร",
   "Save image": "บันทึกรูปภาพ",
   "Close": "ปิด",
-  "This card shows your mental wellbeing alongside the other seven aspects. Choosing “Shape only” or “Names only” keeps the numbers off it.":
-    "การ์ดนี้แสดงด้านจิตใจของคุณรวมอยู่กับอีกเจ็ดด้าน หากเลือก “เฉพาะรูปทรง” หรือ “เฉพาะชื่อ” ตัวเลขจะไม่ปรากฏบนการ์ด",
+  "This card shows your mental wellbeing alongside the other seven aspects. Choosing “Character” shows a character in place of each score where you have one.":
+    "การ์ดนี้แสดงด้านจิตใจของคุณรวมอยู่กับอีกเจ็ดด้าน หากเลือก “ตัวละคร” การ์ดจะแสดงตัวละครแทนคะแนนในด้านที่คุณมีตัวละคร",
   "Instagram cannot accept a post directly from a website. Pick Instagram in the share sheet, or save the image and post it from the app.":
     "อินสตาแกรมไม่รับโพสต์โดยตรงจากเว็บไซต์ กรุณาเลือกอินสตาแกรมในหน้าต่างแชร์ของเครื่อง หรือบันทึกรูปภาพแล้วโพสต์จากแอปโดยตรง",
 

@@ -504,11 +504,7 @@ export function shareStar(h) {
     name: h.profile.name,
     date: new Date(),
     aspects: h.state.aspects,
-    average: AVERAGE_ASPECT_SCORES,
     index: h.index,
-    bandLabel: h.band.label,
-    standing: h.standing,
-    grades: h.grades,
     shape: readShapeView(),
     labels: regionLabels(h.state)
   }, { showMentalNote: isBottomGrade(h.grades.mental) });

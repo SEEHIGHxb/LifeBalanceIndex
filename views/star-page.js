@@ -4,7 +4,8 @@
 // page the contain the star mainly", where the reader can switch what the
 // share window switches, with "Share your star" there too; around the star,
 // region names rather than aspect names, and the choice of a score, your
-// character, both, or names alone.
+// character, both, or names alone. v138 (the owner): the page drops the name
+// and the Balance Index, and the labels show a score or a character.
 //
 // The page's choices are the share window's (views/share.js keeps them), so
 // "Share your star" opens that window already set to what this page shows.
@@ -43,7 +44,6 @@ function optGroup(group, labelText, options, current) {
 
 // One label per region, placed on its ray's direction, reading outward.
 export function starLabelsMarkup(state, detail) {
-  if (detail === "shape") return "";
   const labels = regionLabels(state);
   return CHAPTERS.map((c, i) => {
     const angle = (i * Math.PI) / 4 - Math.PI / 2;
@@ -72,7 +72,7 @@ export function starPageMarkup(h, prefs) {
         <div class="sp-layout">
           <div class="sp-head sp-fade">
             <a class="pill pill-light sp-back" href="#/dashboard">← ${escapeHtml(t("Overview"))}</a>
-            <h1 class="sp-title">${escapeHtml(t("Your star"))}<small>${escapeHtml(h.profile.name || "")}</small></h1>
+            <h1 class="sp-title">${escapeHtml(t("Your star"))}</h1>
           </div>
           <div class="sp-figure">
             <div class="sp-square">
@@ -80,7 +80,6 @@ export function starPageMarkup(h, prefs) {
               <ol class="sp-labels" aria-label="${escapeHtml(t("Your eight regions"))}">${starLabelsMarkup(h.state, prefs.detail)}</ol>
             </div>
           </div>
-          <p class="sp-index sp-fade"><span>${escapeHtml(t("Balance Index"))}</span> <b>${escapeHtml(h.index)}</b> <span class="balance-band band-${h.band.key}">${escapeHtml(t(h.band.label))}</span></p>
           <div class="sp-controls sp-fade">
             <div class="sp-control sp-control-shape">
               <span class="sp-control-label">${escapeHtml(t("Shape"))}</span>

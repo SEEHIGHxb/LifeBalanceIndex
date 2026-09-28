@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `137`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `138`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.71.0] - 2026-09-28 (v138)
+
+### Changed
+- The share card names each region at its own point of the star, with its score or character under it, in place of the list below. Nothing overlaps (a test now checks every line of text against every other).
+- The card drops "Life Balance Index", the balance band and the "You are at or above…" sentence; the Balance Index number stays.
+- "What to show" is now Score or Character, on your star's page and in the share window. Saved choices that no longer exist fall back to Score.
+- Your star's page drops the name and the Balance Index line from its top.
+
+### Fixed
+- A missing backslash in the card's check for a plain score sent every score down the two-line path.
 
 ## [2.70.0] - 2026-09-28 (v137)
 

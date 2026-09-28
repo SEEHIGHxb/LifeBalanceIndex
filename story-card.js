@@ -21,7 +21,7 @@
 // The shape's geometry comes from chart.js (shapeKite, shapeRim), the same as
 // Home's, so the card and the page cannot disagree about where a score sits.
 
-import { t, tp, dateLocale } from "./i18n.js";
+import { t, dateLocale } from "./i18n.js";
 import { radarPoints, shapeKite, shapeRim, asterismStarRadius, SHAPE_VIEWS, RADAR_KEYS, ASPECT_LABELS } from "./chart.js";
 
 export { STAR_VALLEY } from "./chart.js";
@@ -38,21 +38,18 @@ export const SAFE_TOP = 250;
 export const SAFE_BOTTOM = 250;
 export const SAFE_LOW = STORY_H - SAFE_BOTTOM;
 
-// How much of the assessment the card states. The user picks this per share.
-//   shape  the outline only - a viewer sees the pattern but cannot read off
-//          any single aspect, which is what makes the card safe to post
-//   names      region names on, still no numbers
-//   full       names, letter grades and 0-100 scores, matching the dashboard
-//   character  names, and your character in each region (characters.js)
-//   both       names, each score and its character
+// What each region's label says under its name. The user picks this per
+// share (the owner, 2026-09-28: "Score/Character", nothing else):
+//   full       its 0-100 score
+//   character  your character there (characters.js)
 // A region with no character (a side left unanswered) shows its score.
-export const DETAIL_LEVELS = ["shape", "names", "full", "character", "both"];
+export const DETAIL_LEVELS = ["full", "character"];
 
 // THE POSTER (redesign R5; docs/prototype/redesign/social.js posterSvg). The
-// card is the prototype's 9:16 poster: LIFE BALANCE / INDEX in the wordmark
-// face, your star as a die-cut sticker (a white cut edge, lifted on a soft
-// shadow, turned a few degrees), and under it the names in two columns of
-// four. Light is the page's paper; Dark is the menu's navy. Every color is a
+// card is the prototype's 9:16 poster: ASTERISM in the wordmark face, your
+// star as a die-cut sticker (a white cut edge, lifted on a soft shadow,
+// turned a few degrees), each region named at its own point (v138), and the
+// Balance Index under it. Light is the page's paper; Dark is the menu's navy. Every color is a
 // literal: the sticker's are the gilt star's (symbols.md S1).
 export const THEMES = {
   paper: {
@@ -83,7 +80,7 @@ export const THEMES = {
   }
 };
 
-// Each region's hue (views/journey.js CHAPTERS), for the legend's dots. A
+// Each region's hue (views/journey.js CHAPTERS), for the labels' dots. A
 // literal copy for the same reason as the themes; tests/rest-of-map.test.mjs
 // holds the two together.
 export const REGION_HUES = {
@@ -111,28 +108,22 @@ const SANS = "'Inter', 'Sarabun', system-ui, sans-serif";
 // line in it falls through to Sarabun, as it does on the page.
 const WORD = "'Anton', 'Sarabun', Impact, sans-serif";
 
-// Baselines, all inside the safe band. Kept constant across detail levels so
-// the composition cannot drift into the chrome when the names are switched
-// off.
+// Baselines, all inside the safe band. The star is sized so a label at each
+// of its points still fits between it and the card's edge.
 const LAYOUT = {
-  wordmark: 372,
-  wordmarkSub: 448,
-  url: 492,
-  name: 566,
-  date: 612,
+  wordmark: 422,
+  url: 474,
+  name: 562,
+  date: 608,
   starCx: STORY_W / 2,
-  starCy: 905,
-  starR: 280,
-  // The legend: two columns of four under the sticker.
-  legendTop: 1232,
-  legendStep: 60,
-  legendX: [70, 560],
-  legendW: 450,
-  indexLabel: 1470,
-  indexValue: 1550,
-  band: 1594,
-  standing: 1630,
-  standingLine: 28
+  starCy: 990,
+  starR: 210,
+  // How far past the rim each region's label sits, and the least room kept
+  // between a label and the card's edge.
+  labelGap: 50,
+  labelEdge: 40,
+  indexLabel: 1440,
+  indexValue: 1530
 };
 
 // The sticker's cut edge and lift, and how it sits: turned a little, as if
@@ -366,60 +357,63 @@ function drawAsterismView(ctx, scores, tips, pose, { cx, cy, r }) {
   ctx.shadowBlur = 0;
 }
 
-// The names under the sticker, two columns of four in radar order, each with
-// its region's dot. A row names the region (data.labels; the aspect when a
-// caller gives none, as the tests do) and ends with what the detail level
-// shows: the score, the character, or both. In `full` the grade letter
-// follows the name. An aspect with no grade (relationships is unranked by
-// design) simply shows no letter - inventing a placeholder would imply a
-// grade exists.
+// Each region's label: its name, and under it what the detail level shows,
+// the score or your character (a region with no character shows its score).
 export function legendValue(detail, score, character) {
-  if (detail === "full") return String(score);
   if (detail === "character") return character || String(score);
-  if (detail === "both") return character ? `${score} · ${character}` : String(score);
-  return "";
+  return String(score);
 }
 
-function drawNames(ctx, theme, data, detail, grow) {
-  if (detail === "shape") return;
-  const { legendTop, legendStep, legendX, legendW } = LAYOUT;
+// Which way a label reads from its point: out to the right, out to the left,
+// or centred above or below the star.
+const SIDEWAYS = 0.3;
+const labelSide = (cos, sin) => (cos > SIDEWAYS ? "r" : cos < -SIDEWAYS ? "l" : sin < 0 ? "t" : "b");
+// Each side's two baselines (textBaseline middle), from the label's point.
+const LABEL_LINES = { t: [-52, -14], b: [14, 52], r: [-19, 19], l: [-19, 19] };
+const DOT_R = 9;
+const DOT_SPACE = 26;
+const CENTRED_W = 380;
+
+// The regions round the sticker, each just past its own point, in radar order
+// clockwise from the top. They follow the sticker's resting tilt.
+function drawRegionLabels(ctx, theme, data, detail, grow) {
+  const { starCx: cx, starCy: cy, starR, labelGap, labelEdge } = LAYOUT;
+  const rest = stickerPose(1);
   // While the poster assembles, the names arrive last.
   ctx.globalAlpha = clamp01((grow - LABELS_FROM) / (1 - LABELS_FROM));
   ctx.textBaseline = "middle";
   RADAR_KEYS.forEach((key, i) => {
-    const x = legendX[i < 4 ? 0 : 1];
-    const y = legendTop + (i % 4) * legendStep;
+    const angle = (i * Math.PI) / 4 - Math.PI / 2;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    const side = labelSide(cos, sin);
+    const at = place({ x: cx + cos * (starR + labelGap), y: cy + sin * (starR + labelGap) }, rest);
+    const room = side === "r" ? STORY_W - labelEdge - at.x - DOT_SPACE
+      : side === "l" ? at.x - labelEdge - DOT_SPACE : CENTRED_W;
+    const label = (data.labels || {})[key] || {};
+    const score = radarPoints(data.aspects, [key], 0, 0, 1)[0].value;
+    const value = legendValue(detail, score, label.character);
+    const [nameY, valueY] = LABEL_LINES[side].map(dy => at.y + dy);
+
+    ctx.font = font(600, 24, SANS);
+    const name = fitText(ctx, label.region || t(ASPECT_LABELS[key]), room);
+    const nameW = ctx.measureText(name).width;
+    const left = side === "r" ? at.x : side === "l" ? at.x - nameW - DOT_SPACE : at.x - (nameW + DOT_SPACE) / 2;
     ctx.beginPath();
-    ctx.arc(x + 12, y, 12, 0, Math.PI * 2);
+    ctx.arc(left + DOT_R, nameY, DOT_R, 0, Math.PI * 2);
     ctx.fillStyle = REGION_HUES[key];
     ctx.fill();
-
-    const score = radarPoints(data.aspects, [key], 0, 0, 1)[0].value;
-    const label = (data.labels || {})[key] || {};
-    const grade = detail === "full" ? (data.grades || {})[key] : null;
-    const name = (label.region || t(ASPECT_LABELS[key])) + (grade?.grade ? `  ${grade.grade}` : "");
-    const value = legendValue(detail, score, label.character);
     ctx.textAlign = "left";
     ctx.fillStyle = theme.ink;
-    // A character is words: it goes on a second line under the name, so a
-    // long region name and a long character never squeeze each other.
-    if (value && !/^d+$/.test(value)) {
-      ctx.font = font(600, 24, SANS);
-      ctx.fillText(fitText(ctx, name, legendW - 40), x + 40, y - 8);
-      ctx.font = font(400, 21, SANS);
-      ctx.fillStyle = theme.muted;
-      ctx.fillText(fitText(ctx, value, legendW - 40), x + 40, y + 18);
-      return;
-    }
-    // A bare score is a numeral in the display face at the row's end.
-    ctx.font = font(400, 40, WORD);
-    const valueW = value ? ctx.measureText(value).width : 0;
-    ctx.font = font(600, 26, SANS);
-    ctx.fillText(fitText(ctx, name, legendW - 40 - (value ? valueW + 20 : 0)), x + 40, y);
-    if (!value) return;
-    ctx.textAlign = "right";
-    ctx.font = font(400, 40, WORD);
-    ctx.fillText(value, x + legendW, y);
+    ctx.fillText(name, left + DOT_SPACE, nameY);
+
+    // A score is a numeral in the display face; a character is words.
+    const numeral = /^\d+$/.test(value);
+    ctx.font = numeral ? font(400, 32, WORD) : font(400, 22, SANS);
+    ctx.fillStyle = numeral ? theme.ink : theme.muted;
+    ctx.textAlign = side === "r" ? "left" : side === "l" ? "right" : "center";
+    const valueX = side === "r" ? at.x + DOT_SPACE : side === "l" ? at.x : at.x + DOT_SPACE / 2;
+    ctx.fillText(fitText(ctx, value, room), valueX, valueY);
   });
   ctx.globalAlpha = 1;
 }
@@ -432,7 +426,7 @@ function drawNames(ctx, theme, data, detail, grow) {
 export function drawStoryCard(ctx, data, opts = {}) {
   const grow = Number.isFinite(opts.grow) ? clamp01(opts.grow) : 1;
   const theme = THEMES[opts.theme] || THEMES.paper;
-  const detail = DETAIL_LEVELS.includes(opts.detail) ? opts.detail : "shape";
+  const detail = DETAIL_LEVELS.includes(opts.detail) ? opts.detail : "full";
   const maxWidth = STORY_W - SIDE_MARGIN * 2;
   const mid = STORY_W / 2;
 
@@ -452,9 +446,6 @@ export function drawStoryCard(ctx, data, opts = {}) {
   ctx.fillStyle = theme.ink;
   ctx.font = font(400, 112, WORD);
   ctx.fillText("ASTERISM", mid, LAYOUT.wordmark);
-  ctx.font = font(400, 44, WORD);
-  ctx.fillStyle = theme.muted;
-  ctx.fillText("LIFE BALANCE INDEX", mid, LAYOUT.wordmarkSub);
   ctx.font = font(400, 24, SANS);
   ctx.fillStyle = theme.muted;
   ctx.fillText("asterism.plainpoint.net", mid, LAYOUT.url);
@@ -472,7 +463,7 @@ export function drawStoryCard(ctx, data, opts = {}) {
 
   // The sheet's own choice of view wins over the page's, which only seeds it.
   drawSticker(ctx, theme, SHAPE_VIEWS.includes(opts.shape) ? { ...data, shape: opts.shape } : data, grow);
-  drawNames(ctx, theme, data, detail, grow);
+  drawRegionLabels(ctx, theme, data, detail, grow);
 
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
@@ -483,24 +474,6 @@ export function drawStoryCard(ctx, data, opts = {}) {
   ctx.font = font(400, 72, WORD);
   ctx.fillStyle = theme.ink;
   ctx.fillText(String(data.index ?? ""), mid, LAYOUT.indexValue);
-
-  if (data.bandLabel) {
-    ctx.font = font(600, 30, SERIF);
-    ctx.fillStyle = theme.accent;
-    ctx.fillText(fitText(ctx, t(data.bandLabel), maxWidth), mid, LAYOUT.band);
-  }
-
-  if (data.standing) {
-    ctx.font = font(400, 22, SANS);
-    ctx.fillStyle = theme.muted;
-    const sentence = tp(
-      "You are at or above the population average in {count} of {total} aspects.",
-      { count: data.standing.count, total: data.standing.total }
-    );
-    wrapText(ctx, sentence, maxWidth, 2).forEach((line, i) => {
-      ctx.fillText(line, mid, LAYOUT.standing + i * LAYOUT.standingLine);
-    });
-  }
 }
 
 // Each region's name and character, as plain strings, or none at all.
@@ -516,7 +489,7 @@ function cardLabels(labels) {
 // Everything the card needs, assembled from state the dashboard already has.
 // `date` is formatted here rather than by the caller so the card follows the
 // active language's locale (Thai dates on a Thai card).
-export function storyCardData({ name, date, aspects, average, index, bandLabel, standing, grades, shape, labels }) {
+export function storyCardData({ name, date, aspects, index, shape, labels }) {
   const when = date instanceof Date ? date : new Date(date || Date.now());
   return {
     name: name || "",
@@ -524,11 +497,7 @@ export function storyCardData({ name, date, aspects, average, index, bandLabel, 
       day: "numeric", month: "long", year: "numeric"
     }),
     aspects: aspects || {},
-    average: average || null,
     index,
-    bandLabel: bandLabel || "",
-    standing: standing || null,
-    grades: grades || {},
     shape: SHAPE_VIEWS.includes(shape) ? shape : "star",
     labels: cardLabels(labels)
   };

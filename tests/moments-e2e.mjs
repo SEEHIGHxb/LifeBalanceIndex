@@ -362,7 +362,7 @@ try {
   const endCard = await preview();
   if (!midCard || midCard === endCard) problems.push("share card: the preview did not assemble");
   const detail = await page.evaluate(() => document.querySelector('.share-toggle[data-group="detail"][aria-pressed="true"]').dataset.value);
-  const other = detail === "full" ? "names" : "full";
+  const other = detail === "full" ? "character" : "full";
   await page.click(`.share-toggle[data-value="${other}"]`);
   await page.click(`.share-toggle[data-value="${detail}"]`);
   await page.waitForTimeout(100);

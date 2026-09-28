@@ -663,7 +663,7 @@ try {
   // Each control must visibly change the image. waitForFunction doubles as the
   // wait and the assertion, so a control that silently does nothing times out.
   const beforeDetail = await dataUrl();
-  await page.click('.share-toggle[data-value="full"]');
+  await page.click('.share-toggle[data-value="character"]');
   await page.waitForFunction(
     prev => document.getElementById("share-preview").toDataURL("image/png") !== prev,
     beforeDetail, { timeout: 5000 }
@@ -680,8 +680,8 @@ try {
   // and no schema migration was needed to add them.
   const prefs = await page.evaluate(() => localStorage.getItem("lifequest_share_prefs"));
   const parsed = JSON.parse(prefs || "{}");
-  if (parsed.detail !== "full" || parsed.theme !== "navy") {
-    problems.push(`flow4: share prefs stored ${prefs}, expected detail=full theme=navy`);
+  if (parsed.detail !== "character" || parsed.theme !== "navy") {
+    problems.push(`flow4: share prefs stored ${prefs}, expected detail=character theme=navy`);
   }
 
   await page.click("#share-close");

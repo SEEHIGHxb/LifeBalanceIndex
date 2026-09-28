@@ -39,14 +39,14 @@ body:has(.star-page) .app-container { min-height: 0; }
 }
 
 /* The star is the page (v137): a slim line above it (the way back, the
-   title, the index, Share) and a slim line of switches below it, so the
-   star takes the middle and all the height between. */
+   title, Share) and a slim line of switches below it, so the star takes the
+   middle and all the height between. */
 .star-page .sp-layout {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  grid-template-areas: "head index share" "fig fig fig" "controls controls controls";
+  grid-template-areas: "head share" "fig fig" "controls controls";
   align-items: center;
   column-gap: clamp(16px, 3vw, 48px);
   row-gap: var(--sp-gap);
@@ -56,7 +56,6 @@ body:has(.star-page) .app-container { min-height: 0; }
 }
 .star-page .sp-head { grid-area: head; display: flex; align-items: center; gap: 16px; min-width: 0; }
 .star-page .sp-figure { grid-area: fig; container-type: size; min-width: 0; min-height: 0; height: 100%; display: grid; place-items: center; }
-.star-page .sp-index { grid-area: index; justify-self: end; }
 .star-page .sp-controls { grid-area: controls; justify-self: center; }
 .star-page .sp-share { grid-area: share; margin: 0; }
 
@@ -68,13 +67,6 @@ body:has(.star-page) .app-container { min-height: 0; }
   line-height: 1;
   white-space: nowrap;
   color: var(--sp-ink);
-}
-.star-page .sp-title small {
-  margin-left: 0.4em;
-  font-family: inherit;
-  font-size: 0.5em;
-  letter-spacing: 0.06em;
-  color: var(--sp-muted);
 }
 
 /* The square the star and its labels share: as big as the cell allows. */
@@ -107,16 +99,9 @@ body:has(.star-page) .app-container { min-height: 0; }
 }
 .star-page .sp-value { display: block; color: var(--sp-muted); }
 
-.star-page .sp-index { display: flex; align-items: center; gap: 10px; margin: 0; white-space: nowrap; color: var(--sp-muted); }
-.star-page .sp-index b { font-family: var(--frame-word); font-weight: 400; font-size: clamp(28px, 5vh, 48px); line-height: 1; color: var(--sp-ink); }
-
 /* The three switches on one line, each with a small name above it. */
 .star-page .sp-controls { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 10px 20px; min-width: 0; }
-/* A narrow laptop: the band's word steps aside so the top line holds. */
-@media (max-width: 1180px) {
-  .star-page .sp-index .balance-band { display: none; }
-  .star-page .sp-controls { column-gap: 12px; }
-}
+@media (max-width: 1180px) { .star-page .sp-controls { column-gap: 12px; } }
 .star-page .sp-control { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 .star-page .sp-control-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sp-muted); }
 .star-page .sp-group { flex-wrap: nowrap; }
@@ -128,31 +113,25 @@ body:has(.star-page) .app-container { min-height: 0; }
 .star-page[data-theme="navy"] :is(.shape-opt, .sp-opt)[aria-pressed="true"] { background: #ffffff; color: #16213e; }
 .star-page[data-theme="navy"] :is(.shape-opt, .sp-opt):focus-visible { outline-color: #ffffff; }
 .star-page[data-theme="navy"] .shape .sh-grid { stroke: #e2d3b4; }
-.star-page[data-theme="navy"] .balance-band { color: #e6b8c4; border-color: #e6b8c4; }
 .star-page[data-theme="navy"] #sp-share { background: #ffffff; color: #16213e; }
 
-/* A phone, or a tablet held upright: one column. The heading and the index
-   share the top line, the star takes the height left over, its eight labels
-   line up under it in two columns, and under them three lines: the shape,
-   the style beside Share, and the label choices scrolling sideways. The
-   group names stay for screen readers. */
+/* A phone, or a tablet held upright: one column. The way back and the
+   heading on the top line, the star in the height left over with its eight
+   labels in two columns under it, then three lines: the shape, the style
+   beside the label choice, and Share. The group names stay for screen
+   readers. */
 @media (max-width: 767px), (max-width: 1100px) and (orientation: portrait) {
   .star-page { --sp-gap: 10px; }
   .star-page .sp-layout {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr) auto auto auto;
-    grid-template-areas: "head head index" "fig fig fig" "shape shape shape" "theme share share" "detail detail detail";
+    grid-template-areas: "head head" "fig fig" "shape shape" "theme detail" "share share";
     align-content: stretch;
     padding: 12px 16px;
   }
   .star-page .sp-head { flex-direction: row; align-items: center; gap: 10px; min-width: 0; }
   .star-page .sp-back { padding-left: 14px; padding-right: 14px; }
   .star-page .sp-title { font-size: 26px; }
-  .star-page .sp-title small { display: none; }
-  .star-page .sp-index { align-self: center; gap: 6px; }
-  .star-page .sp-index > span:first-child,
-  .star-page .sp-index .balance-band { display: none; }
-  .star-page .sp-index b { font-size: 34px; }
 
   .star-page .sp-figure { container-type: normal; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 10px; place-items: stretch; }
   .star-page .sp-square { display: contents; }
@@ -167,12 +146,11 @@ body:has(.star-page) .app-container { min-height: 0; }
   .star-page .sp-control-shape { grid-area: shape; }
   .star-page .sp-control-theme { grid-area: theme; }
   .star-page .sp-control-detail { grid-area: detail; min-width: 0; }
-  .star-page .sp-share { align-self: center; }
+  .star-page .sp-share { justify-self: stretch; }
   .star-page .sp-control-label {
     position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
   }
   .star-page .sp-group { flex-wrap: nowrap; }
-  .star-page .sp-control-detail .sp-group { flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
   .star-page :is(.shape-opt, .sp-opt) { min-height: 40px; padding: 0 12px; white-space: nowrap; }
   .star-page .sp-share .pill { width: 100%; justify-content: center; }
 }

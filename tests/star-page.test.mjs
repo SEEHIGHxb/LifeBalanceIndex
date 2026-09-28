@@ -43,38 +43,33 @@ const STATE = {
 const labelTexts = (html) => [...html.matchAll(/<li class="sp-label"[^>]*>(.*?)<\/li>/g)].map(m => m[1].replace(/<[^>]+>/g, "").trim());
 
 test("the labels name the eight regions, never the aspects", () => {
-  const texts = labelTexts(starLabelsMarkup(STATE, "names"));
+  const texts = labelTexts(starLabelsMarkup(STATE, "full"));
   assert.equal(texts.length, 8);
-  CHAPTERS.forEach((c, i) => assert.equal(texts[i], c.region));
+  CHAPTERS.forEach((c, i) => assert.ok(texts[i].startsWith(c.region), texts[i]));
   assert.ok(!texts.some(s => /Finance|Mental/.test(s)));
 });
 
-test("each label choice shows what it says, and Shape only shows none", () => {
+test("Score shows each score, and Character each character", () => {
   const labels = regionLabels(STATE);
-  assert.equal(starLabelsMarkup(STATE, "shape"), "");
   const scores = labelTexts(starLabelsMarkup(STATE, "full"));
-  assert.ok(scores[0].endsWith(" 55"), scores[0]);
   const characters = labelTexts(starLabelsMarkup(STATE, "character"));
-  const both = labelTexts(starLabelsMarkup(STATE, "both"));
   CHAPTERS.forEach((c, i) => {
-    const who = labels[c.aspect].character;
-    const score = STATE.aspects[c.aspect];
-    assert.ok(characters[i].endsWith(who || String(score)), characters[i]);
-    assert.ok(both[i].endsWith(who ? `${score} · ${who}` : String(score)), both[i]);
+    const score = String(STATE.aspects[c.aspect]);
+    assert.ok(scores[i].endsWith(` ${score}`), scores[i]);
+    assert.ok(characters[i].endsWith(labels[c.aspect].character || score), characters[i]);
   });
   assert.ok(Object.values(labels).some(l => l.character), "the fixture should earn at least one character");
 });
 
 test("a region with no character falls back to its score", () => {
   assert.equal(legendValue("character", 40, null), "40");
-  assert.equal(legendValue("both", 40, null), "40");
-  assert.equal(legendValue("both", 40, "Stargazer"), "40 · Stargazer");
-  assert.equal(legendValue("names", 40, "Stargazer"), "");
-  assert.equal(legendValue("shape", 40, "Stargazer"), "");
+  assert.equal(legendValue("character", 40, "Stargazer"), "Stargazer");
+  assert.equal(legendValue("full", 40, "Stargazer"), "40");
+  assert.deepEqual(DETAIL_LEVELS, ["full", "character"]);
 });
 
 test("labels sit round the star, each reading outward from its ray", () => {
-  const html = starLabelsMarkup(STATE, "names");
+  const html = starLabelsMarkup(STATE, "full");
   const sides = [...html.matchAll(/data-side="(\w)"/g)].map(m => m[1]);
   assert.deepEqual(sides, ["t", "r", "r", "r", "b", "l", "l", "l"]);
 });
@@ -88,6 +83,7 @@ test("the page draws the star, its switches and Share your star", () => {
   for (const level of DETAIL_LEVELS) assert.match(html, new RegExp(`data-group="detail" data-value="${level}"`));
   assert.match(html, /data-group="theme" data-value="navy"/);
   assert.match(html, /id="sp-share"/);
+  assert.doesNotMatch(html, /sp-index|Balance Index|Fixture/, "the page no longer shows the name or the index");
   assert.match(html, /class="pill pill-light sp-back" href="#\/dashboard"/);
   assert.doesNotMatch(html, /NaN|undefined/);
 });
@@ -103,10 +99,10 @@ test("the card names regions and shows characters when given them", () => {
     set(target, key, value) { target[key] = value; return true; }
   });
   const data = storyCardData({ name: "Fixture", aspects: STATE.aspects, index: 58, labels: regionLabels(STATE) });
-  drawStoryCard(ctx, data, { detail: "both" });
+  drawStoryCard(ctx, data, { detail: "character" });
   for (const c of CHAPTERS) assert.ok(texts.includes(c.region), `the card left out ${c.region}`);
   const who = Object.values(regionLabels(STATE)).find(l => l.character).character;
-  assert.ok(texts.some(s => s.endsWith(`· ${who}`)), "the card left out the characters");
+  assert.ok(texts.includes(who), "the card left out the characters");
 });
 
 test("card labels keep only plain strings", () => {

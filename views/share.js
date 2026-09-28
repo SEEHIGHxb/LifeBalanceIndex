@@ -43,30 +43,27 @@ const PREFS_KEY = "lifequest_share_prefs";
 // How long the preview takes to assemble the map when the sheet opens.
 const ASSEMBLE_MS = 1100;
 
-// The same five choices label the star on its own page (views/star-page.js).
+// The same two choices label the star on its own page (views/star-page.js).
 export const DETAIL_LABELS = () => ({
-  shape: t("Shape only"),
-  names: t("Names only"),
   full: t("Score"),
-  character: t("Character"),
-  both: t("Score + character")
+  character: t("Character")
 });
 
 // The view (star, radar or asterism) is not kept here: it starts from the one
 // the page shows, and a change in the sheet is for this card only. Your star's
 // own page (views/star-page.js) sets the style and labels here too, so the
-// sheet it opens starts from what that page shows. With nothing saved the
-// regions are named, with no numbers.
+// sheet it opens starts from what that page shows. With nothing saved, or a
+// choice this version no longer offers, each region shows its score.
 export function readSharePrefs() {
   try {
     const saved = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}");
     return {
       theme: saved.theme === "navy" ? "navy" : "paper",
-      detail: DETAIL_LEVELS.includes(saved.detail) ? saved.detail : "names",
+      detail: DETAIL_LEVELS.includes(saved.detail) ? saved.detail : "full",
       shape: readShapeView()
     };
   } catch {
-    return { theme: "paper", detail: "names", shape: readShapeView() };
+    return { theme: "paper", detail: "full", shape: readShapeView() };
   }
 }
 
@@ -139,7 +136,7 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
           </span>
         </div>
 
-        ${showMentalNote ? `<p class="share-care">${t("This card shows your mental wellbeing alongside the other seven aspects. Choosing “Shape only” or “Names only” keeps the numbers off it.")}</p>` : ""}
+        ${showMentalNote ? `<p class="share-care">${t("This card shows your mental wellbeing alongside the other seven aspects. Choosing “Character” shows a character in place of each score where you have one.")}</p>` : ""}
 
         <p class="share-note">${t("Instagram cannot accept a post directly from a website. Pick Instagram in the share sheet, or save the image and post it from the app.")}</p>
 

@@ -112,7 +112,7 @@ test("the share card draws every view inside the card, under the ASTERISM wordma
   assert.ok(points.length > 0);
   assert.deepEqual(points.filter(p => !Number.isFinite(p.x) || p.x < 0 || p.x > STORY_W), []);
   assert.ok(texts.includes("ASTERISM"));
-  assert.ok(texts.includes("LIFE BALANCE INDEX"));
+  assert.ok(!texts.includes("LIFE BALANCE INDEX"));
 });
 
 test("an unknown shape on the card falls back to the star", () => {

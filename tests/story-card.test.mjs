@@ -116,42 +116,54 @@ test("no drawn text runs off either edge of the card", () => {
   }
 });
 
-test("the detail level decides what the card states about you", () => {
-  const shape = draw({ detail: "shape" }).texts;
-  const named = draw({ detail: "names" }).texts;
+// The owner, 2026-09-28: each region shows its score or its character.
+test("the detail level decides what each region's label shows", () => {
   const full = draw({ detail: "full" }).texts;
-
-  // "Shape only" must not name a single aspect - that is the whole point of
-  // the level: a viewer sees the outline and can read nothing off it.
-  assert.ok(!shape.some(s => s === "Mental" || s.startsWith("Mental ")), "shape level named Mental");
-  assert.ok(!shape.some(s => s === "Finance" || s.startsWith("Finance ")), "shape level named Finance");
-  assert.ok(!shape.includes("71"), "shape level printed a score");
-
-  // Names on, numbers still off.
-  assert.ok(named.some(s => s.startsWith("Mental")), "names level omitted the aspect labels");
-  assert.ok(!named.includes("71"), "names level printed a score");
-  assert.ok(!named.some(s => s === "Mental  A"), "names level printed a grade");
-
-  // Everything: labels carry the grade letter, and each score is printed.
-  assert.ok(full.some(s => s === "Mental  A"), "full level omitted the grade letter");
-  assert.ok(full.includes("71"), "full level omitted the score");
-  assert.ok(full.includes("30"), "full level omitted a low score");
+  const labels = { mental: { region: "The Still Water", character: "Boatman" } };
+  const character = draw({ detail: "character" }, { labels }).texts;
+  assert.ok(full.includes("The Market") === false && full.some(s => s.startsWith("Mental")), "without labels the aspect is named");
+  assert.ok(full.includes("71") && full.includes("30"), "Score printed every score");
+  assert.ok(character.includes("The Still Water") && character.includes("Boatman"), "Character left out the character");
+  assert.ok(!character.includes("71"), "a region with a character still printed its score");
+  assert.ok(character.includes("30"), "a region with no character should fall back to its score");
 });
 
-test("an ungraded aspect shows no letter rather than a placeholder", () => {
-  // relationships is unranked by design (v39/v43). Inventing a dash or an "N/A"
-  // beside it would imply a grade exists and was merely hidden.
+test("the card prints no grade letters", () => {
   const full = draw({ detail: "full" }).texts;
-  assert.ok(full.some(s => s === "Relationships"), "expected a bare Relationships label");
-  assert.ok(!full.some(s => s.startsWith("Relationships ")), "a grade was invented for an unranked aspect");
+  assert.ok(!full.some(s => /\s{2}[A-F]$/.test(s)), `a grade letter was drawn: ${full.join(" | ")}`);
 });
 
-test("the Balance Index and its band always appear, whatever the detail", () => {
+test("the card keeps the Balance Index and drops the band, the standing line and the old subtitle", () => {
   for (const detail of DETAIL_LEVELS) {
     const texts = draw({ detail }).texts;
     assert.ok(texts.includes("58"), `${detail} dropped the Balance Index`);
-    assert.ok(texts.includes("Steady balance"), `${detail} dropped the band`);
-    assert.ok(texts.some(s => s.includes("5 of 8")), `${detail} dropped the standing line`);
+    assert.ok(!texts.includes("Steady balance"), `${detail} still drew the band`);
+    assert.ok(!texts.some(s => s.includes("5 of 8")), `${detail} still drew the standing line`);
+    assert.ok(!texts.includes("LIFE BALANCE INDEX"), `${detail} still drew the old subtitle`);
+  }
+});
+
+// The labels sit round the star (v138), so none may overlap another, the
+// sticker's rim, or the lines above and below.
+test("no two drawn lines of text overlap", () => {
+  for (const detail of DETAIL_LEVELS) {
+    const lines = draw({ detail }, { labels: { mental: { region: "The Still Water", character: "Boatman" } } }).texts.extents;
+    const clash = [];
+    lines.forEach((a, i) => lines.slice(i + 1).forEach(b => {
+      if (Math.abs(a.y - b.y) < 26 && a.left < b.right && b.left < a.right) clash.push(`${a.s} / ${b.s}`);
+    }));
+    assert.deepEqual(clash, [], `${detail}: overlapping text`);
+  }
+});
+
+test("each region's label sits outside the star, never on it", () => {
+  const ctx = draw({ detail: "full" });
+  const cx = 540, cy = 990, rim = 210 + 18;
+  const names = ctx.texts.extents.filter(e => /^(Finance|Physical|Mental|Relationships|Personal|Social|Environment|Humanity)/.test(e.s));
+  assert.equal(names.length, 8);
+  for (const e of names) {
+    const nearestX = Math.max(e.left, Math.min(cx, e.right));
+    assert.ok(Math.hypot(nearestX - cx, e.y - cy) > rim, `${e.s} sits on the star`);
   }
 });
 
@@ -171,7 +183,7 @@ test("both themes resolve to literal colors, never CSS variables", () => {
 test("an unknown theme or detail falls back rather than drawing nothing", () => {
   const ctx = draw({ theme: "chartreuse", detail: "everything-please" });
   assert.ok(ctx.texts.includes("58"), "a bad option set produced an empty card");
-  assert.ok(!ctx.texts.some(s => s.startsWith("Mental")), "the fallback detail level should be 'shape'");
+  assert.ok(ctx.texts.includes("71"), "the fallback detail level should be Score");
 });
 
 test("radarPoints puts 0 at the centre and 100 on the rim, in chart order", () => {
@@ -209,7 +221,7 @@ test("out-of-range and missing scores are clamped, never escaping the rim", () =
 });
 
 test("a hostile profile name is truncated instead of running off the card", () => {
-  const ctx = draw({ detail: "shape" }, { name: "Jo".repeat(200) });
+  const ctx = draw({ detail: "full" }, { name: "Jo".repeat(200) });
   const drawn = ctx.calls.find(c => c[0] === "fillText" && String(c[1]).startsWith("Jo"));
   assert.ok(drawn, "the name was not drawn at all");
   assert.ok(drawn[1].endsWith("…"), "an over-long name should be ellipsised");
@@ -244,8 +256,8 @@ test("the card is a 9:16 story frame with the reserved bands accounted for", () 
 test("storyCardData formats the date and survives missing fields", () => {
   const bare = storyCardData({});
   assert.equal(bare.name, "");
-  assert.equal(bare.average, null);
-  assert.deepEqual(bare.grades, {});
+  assert.deepEqual(bare.aspects, {});
+  assert.deepEqual(bare.labels, {});
   assert.ok(bare.dateText.length > 0, "a date should always be produced");
 
   const dated = storyCardData({ date: new Date("2026-07-31T00:00:00Z") });
@@ -319,7 +331,7 @@ test("one draw's canvas state never carries into the next (the sheet reuses its 
   const fresh = tracking();
   drawStoryCard(fresh, data, { detail: "full" });
   const reused = tracking();
-  drawStoryCard(reused, data, { detail: "names", grow: 0.8 });
+  drawStoryCard(reused, data, { detail: "character", grow: 0.8 });
   reused.calls.length = 0;
   drawStoryCard(reused, data, { detail: "full" });
   assert.deepEqual(strokes(reused), strokes(fresh), "a second draw on the same context came out different");

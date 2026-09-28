@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `129`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `130`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.64.0] - 2026-09-28
+
+### Changed
+- New app logo (v130). The old icon still read "LQ" from the LifeQuest name. The mark is now the outlined eight-point `#star` from `sprites.svg` (its 8 rays are the 8 life aspects) on the stage pages night `#1b1b1b`, with four faint specks. `assets/logo.svg` is the source; `icon-192.png` and `icon-512.png` are rendered from it, full bleed, every tip inside the maskable safe circle.
+- New `assets/favicon.svg` for browser tabs: the same star without the inner rays and specks, which vanish below ~48px, and with a heavier outline. Linked after the PNG icon in index, privacy and 404, and precached.
 
 ## [2.63.1] - 2026-09-28
 

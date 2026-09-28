@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- The app mark (v130): the outlined #star from sprites.svg, its 8 rays the
+       8 life aspects, on the night of the stage pages. Full bleed so the OS
+       can mask it; every tip stays inside the maskable safe circle (r 40%). -->
+  <rect width="512" height="512" fill="#1b1b1b"/>
+  <g fill="#fff">
+    <circle cx="86" cy="98" r="3" opacity=".45"/>
+    <circle cx="430" cy="76" r="2.4" opacity=".35"/>
+    <circle cx="448" cy="402" r="3" opacity=".4"/>
+    <circle cx="70" cy="420" r="2.4" opacity=".3"/>
+  </g>
+  <g transform="translate(72 72) scale(3.68)">
+    <path d="M50 3 L55.74 36.14 L71.92 28.08 L63.86 44.26 L97 50 L63.86 55.74 L71.92 71.92 L55.74 63.86 L50 97 L44.26 63.86 L28.08 71.92 L36.14 55.74 L3 50 L36.14 44.26 L28.08 28.08 L44.26 36.14Z" fill="#F0D8A8" stroke="#A88752" stroke-width="3.2" stroke-linejoin="round"/>
+    <path d="M50 50L50 3M50 50L71.92 28.08M50 50L97 50M50 50L71.92 71.92M50 50L50 97M50 50L28.08 71.92M50 50L3 50M50 50L28.08 28.08" stroke="#A88752" stroke-width="1.6" stroke-opacity="0.5" stroke-linecap="round"/>
+    <circle cx="50" cy="50" r="6" fill="#FBF8F1" stroke="#6F7D64" stroke-width="2.4"/>
+  </g>
+</svg>

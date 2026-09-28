@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Tab-size mark (v130): logo.svg without the inner rays and specks, which
+       vanish below ~48px, and with a heavier outline so the star holds at 16px. -->
+  <rect width="100" height="100" rx="22" fill="#1b1b1b"/>
+  <g transform="translate(7 7) scale(0.86)">
+    <path d="M50 3 L55.74 36.14 L71.92 28.08 L63.86 44.26 L97 50 L63.86 55.74 L71.92 71.92 L55.74 63.86 L50 97 L44.26 63.86 L28.08 71.92 L36.14 55.74 L3 50 L36.14 44.26 L28.08 28.08 L44.26 36.14Z" fill="#F0D8A8" stroke="#A88752" stroke-width="4.5" stroke-linejoin="round"/>
+    <circle cx="50" cy="50" r="8" fill="#FBF8F1" stroke="#6F7D64" stroke-width="3.5"/>
+  </g>
+</svg>

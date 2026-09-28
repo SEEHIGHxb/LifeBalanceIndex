@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `125`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `126`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.61.4] - 2026-09-28
+
+### Changed
+- Desktop: each section is now a real card. The sheets keep their rounded corners but no longer overlap; a gap (8px or more) of a soft stone table (`#e6e2db`, was `#808080` showing only at the corners) sits between them, and every corner has the same radius. The owner chose this ("B") over flat sections.
 
 ## [2.61.3] - 2026-09-28
 

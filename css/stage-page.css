@@ -11,12 +11,14 @@
 .stage-page {
   --px: calc(100cqw / 2545);
   --panel-r: calc(40 * var(--px));
-  --join-r: calc(30 * var(--px));
   --photo-r: calc(55 * var(--px));
   --card-r: calc(35.5 * var(--px));
   --gutter: calc(136 * var(--px));
-  /* The grey the rounded panels sit on: it shows only at their corners. */
-  background: #808080;
+  /* Each section is a rounded sheet on this table, with a real gap between
+     sheets (v126, the owner chose "real cards"). Until v125 the sheets
+     overlapped on #808080, which showed only as wedges at their corners. */
+  --sheet-gap: max(8px, calc(20 * var(--px)));
+  background: #e6e2db;
   color: var(--frame-ink);
   font-family: var(--font-sans);
   overflow-x: clip;
@@ -26,7 +28,7 @@
   background: var(--frame-page);
   border-radius: var(--panel-r);
   position: relative;
-  margin-top: calc(-2 * var(--px));
+  margin-top: var(--sheet-gap);
 }
 .stage-page .wrap {
   width: calc(2273 * var(--px));
@@ -51,8 +53,9 @@
   position: relative;
   height: calc(1311 * var(--px));
   overflow: hidden;
+  margin-top: var(--sheet-gap);
   background: var(--frame-page);
-  border-radius: var(--panel-r) var(--panel-r) var(--join-r) var(--join-r);
+  border-radius: var(--panel-r);
 }
 .hero-stage { position: absolute; inset: 0; }
 .hero .lockup,
@@ -213,9 +216,9 @@
 /* ------------------------------------------------- the eight regions */
 .projects {
   position: relative;
-  margin-top: calc(-2 * var(--px));
+  margin-top: var(--sheet-gap);
   background: var(--frame-page);
-  border-radius: var(--join-r) var(--join-r) 0 0;
+  border-radius: var(--panel-r);
 }
 .projects .inner { padding: calc(300 * var(--px)) 0 calc(651 * var(--px)); }
 .projects .label { margin: 0 0 calc(19 * var(--px)) calc(136 * var(--px)); }
@@ -617,7 +620,7 @@ a.newsrow:hover .newsrow-title { text-decoration: underline; text-underline-offs
   .stage-page { background: var(--frame-page); }
   .stage-page .panel,
   .hero,
-  .projects { border-radius: 0; }
+  .projects { border-radius: 0; margin-top: 0; }
   .stage-page .panel + .panel,
   .hero + .panel { border-top: 1px solid #e6e3de; }
   .stage-page .notice-panel + .panel { border-top: 0; }

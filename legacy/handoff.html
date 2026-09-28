@@ -1,0 +1,21 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Asterism handoff</title>
+<meta name="robots" content="noindex">
+<!-- The old address's half of the move (moved.js in the app repo). Framed by
+     https://asterism.plainpoint.net, it reads this address's lifequest_* keys
+     and posts them to that origin and no other; any other parent gets nothing. -->
+<script>
+  (function () {
+    var NEW_ORIGIN = "https://asterism.plainpoint.net";
+    if (window.parent === window) { location.replace(NEW_ORIGIN + "/"); return; }
+    var items = {};
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (/^(lifequest_|lbi_reduce_motion$)/.test(key)) items[key] = localStorage.getItem(key);
+      }
+    } catch (err) { /* storage blocked: send nothing to bring */ }
+    window.parent.postMessage({ type: "asterism-handoff", v: 1, items: items }, NEW_ORIGIN);
+  })();
+</script>

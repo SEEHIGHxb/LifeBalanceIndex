@@ -49,7 +49,6 @@ export const TH = {
   "In-depth assessment": "การประเมินเชิงลึก",
   "{view} view": "หน้า {view}",
   // --- App chrome (header, tabs, dialogs) ---
-  "Asterism: Life Balance Index — Personal Wellbeing Assessment": "Asterism: ดัชนีสมดุลชีวิต — แบบประเมินสุขภาวะส่วนบุคคล",
   // Site menu and footer (redesign R1). The Thai follows the approved
   // prototype's copy (docs/prototype/redesign/content.js).
   "Main menu": "เมนูหลัก",

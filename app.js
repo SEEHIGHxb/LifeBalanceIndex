@@ -14,6 +14,7 @@ import { withCarriedScreen } from "./views/lang-carry.js";
 import { readDraft, clearDraft } from "./draft.js";
 import { bindLumi, closeLumi, setLumiAvailable } from "./views/lumi.js";
 import { httpsUpgradeUrl } from "./secure-context.js";
+import { bringAnswers, shouldBringAnswers } from "./moved.js";
 
 const TOAST_DURATION_MS = 1600;
 const TABS = ["dashboard", "review", "quests", "leaderboard"];
@@ -78,13 +79,13 @@ function routeFromHash() {
 // Translate the static header/nav chrome that lives in index.html.
 function applyChromeTranslations() {
   document.documentElement.lang = getLang();
-  document.title = t("Asterism: Life Balance Index — Personal Wellbeing Assessment");
+  document.title = t("Asterism: Life Balance Index");
   const setText = (id, text) => {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
   };
-  // The wordmark reads LIFE BALANCE INDEX in both languages; its accessible
-  // name is the translated app name.
+  // The wordmark reads ASTERISM in both languages; its accessible name is
+  // the translated app name.
   setText("brand-name", t("Asterism: Life Balance Index"));
   setText("skip-link", t("Skip to main content"));
   setText("navpill-dashboard", t("Overview"));
@@ -736,5 +737,7 @@ whenReady("DOMContentLoaded", () => document.readyState !== "loading", () => {
   }
   stateManager.init();
   initializeApp();
+  // A first visit to the new address: bring the answers from the old one.
+  if (shouldBringAnswers(window.location.hostname, localStorage)) bringAnswers();
 });
 export { initializeApp };

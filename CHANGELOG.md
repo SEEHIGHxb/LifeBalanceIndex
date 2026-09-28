@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `131`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `132`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.66.0] - 2026-09-28
+
+### Changed
+- The tab title is just "Asterism: Life Balance Index" (v132; the owner: "No need the content after that").
+
+### Added
+- Groundwork for the move to `asterism.plainpoint.net` (the owner chose a plainpoint.net subdomain). `moved.js`: on a first visit to the new address with nothing saved, the app frames `https://lbi.plainpoint.net/handoff.html`, which posts that address`s `lifequest_*` keys (and `lbi_reduce_motion`) to the new origin only; they are written unless the reader already began here, then the page reloads. Both addresses are the same site, so the frame sees its real storage. CSP gains `frame-src https://lbi.plainpoint.net`. Inert on every other host, so nothing changes until the domain moves.
+- `legacy/`: the whole site the old address will serve from its own repository: a redirect to the same path on the new address, `handoff.html`, and a service worker that clears the old app`s cache and steps aside. Privacy page notes the one-time first-party handoff (Thai line is a draft awaiting the owner review).
 
 ## [2.65.0] - 2026-09-28
 

@@ -8,11 +8,11 @@
        style-src keeps 'unsafe-inline'. Every other directive is 'self' or
        'none': the fonts are vendored, so the app loads nothing off-origin and
        privacy.html's "no third parties" claim is literally true. -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src https://lbi.plainpoint.net; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
   <!-- viewport-fit=cover is required for env(safe-area-inset-*) to resolve, which the
        fixed mobile tab bar uses to clear the iPhone home indicator. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Asterism: Life Balance Index — Personal Wellbeing Assessment</title>
+  <title>Asterism: Life Balance Index</title>
   <meta name="description" content="Assess your wellbeing across eight life aspects against cited Thai and international benchmarks. Local-first: your answers never leave your device, and there is no account.">
   <meta name="theme-color" content="#24344d">
   <link rel="canonical" href="https://lbi.plainpoint.net/">
@@ -34,17 +34,17 @@
        vendored under assets/fonts. Self-hosting removes the round-trip to
        Google on every cold load, makes the PWA genuinely offline-capable,
        and means no visitor IP is disclosed to a third party. -->
-  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=131">
-  <link rel="stylesheet" href="./index.css?v=131">
+  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=132">
+  <link rel="stylesheet" href="./index.css?v=132">
   <!-- The redesign's frame; loaded after index.css so it wins where both
        style the same element. One sheet per redesign area, each under 800
        lines (docs/redesign-build-plan.md §3). -->
-  <link rel="stylesheet" href="./css/frame.css?v=131">
-  <link rel="stylesheet" href="./css/stage-page.css?v=131">
-  <link rel="stylesheet" href="./css/home.css?v=131">
-  <link rel="stylesheet" href="./css/journey.css?v=131">
-  <link rel="stylesheet" href="./css/weekly.css?v=131">
-  <link rel="stylesheet" href="./css/more.css?v=131">
+  <link rel="stylesheet" href="./css/frame.css?v=132">
+  <link rel="stylesheet" href="./css/stage-page.css?v=132">
+  <link rel="stylesheet" href="./css/home.css?v=132">
+  <link rel="stylesheet" href="./css/journey.css?v=132">
+  <link rel="stylesheet" href="./css/weekly.css?v=132">
+  <link rel="stylesheet" href="./css/more.css?v=132">
   <!-- Starts a Thai reader's dictionary with the core (lang-preload.js). -->
   <script async fetchpriority="high" src="./lang-preload.js"></script>
   <!-- The core every screen needs, then the Landing: listed here, they are
@@ -55,6 +55,7 @@
   <link rel="modulepreload" href="./i18n.js">
   <link rel="modulepreload" href="./defaults.js">
   <link rel="modulepreload" href="./secure-context.js">
+  <link rel="modulepreload" href="./moved.js">
   <link rel="modulepreload" href="./benchmarks.js">
   <link rel="modulepreload" href="./scoring.js">
   <link rel="modulepreload" href="./goals.js">
@@ -161,6 +162,6 @@
   </div>
 
   <!-- Core Scripts -->
-  <script type="module" src="./app.js?v=131"></script>
+  <script type="module" src="./app.js?v=132"></script>
 </body>
 </html>

@@ -869,9 +869,9 @@ html {
 
 /* Duty-of-care mental-health support banner (finding #4) */
 .care-banner {
-  border: 1px solid #e6dccb;
+  border: 1px solid #e2ded7;
   border-left: 3px solid var(--color-navy);
-  background: #f5efe4;
+  background: #f3f1ed;
   border-radius: var(--radius);
   padding: 14px 18px;
   margin-bottom: 18px;

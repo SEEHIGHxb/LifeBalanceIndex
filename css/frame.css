@@ -8,7 +8,7 @@
    header and footer rules in index.css until R6 moves it into the frame. */
 
 :root {
-  --frame-page: #faf8f3;      /* warm paper (v123, the owner: "not grey, off-white") */
+  --frame-page: #fbfaf8;      /* soft off-white (v124; v123 #faf8f3 read too yellow, the owner: "not grey, off-white") */
   --frame-card: #ffffff;
   --frame-dark: #1b1b1b;
   --frame-ink: #000000;

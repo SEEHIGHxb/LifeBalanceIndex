@@ -87,6 +87,25 @@ html[data-reduce-motion] .sky-fx { display: none; }
   position: relative;
   margin-top: var(--sheet-gap);
 }
+/* The ends of the stack (v129, the owner: the first and last boxes' outer
+   corners "feel off"). The first card meets the header, the last the footer,
+   both the same paper: square those outer corners and close the gap, so the
+   header runs into the first card and the last card into the footer, and
+   the night shows only between cards. The sky layer (.sky-fx) is put first
+   by views/night-sky.js, hence the two forms of "first". The pledge sky on
+   Home is night itself and keeps running under the footer. */
+.stage-page > :first-child:not(.sky-fx),
+.stage-page > .sky-fx:first-child + * {
+  margin-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.stage-page > :last-child:not(.wall) {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.stage-page.textpage { padding-bottom: 0; }
+
 .stage-page .wrap {
   width: calc(2273 * var(--px));
   margin-inline: auto;
@@ -675,6 +694,7 @@ a.newsrow:hover .newsrow-title { text-decoration: underline; text-underline-offs
      weird" with nothing behind them). The sections sit flat on the page and
      a hairline marks where one ends. The white cards inside keep theirs. */
   .stage-page { background: var(--frame-page); }
+  .stage-page.textpage { padding-bottom: calc(80 * var(--px)); }
   .sky-fx { display: none; }
   .stage-page .panel,
   .hero,

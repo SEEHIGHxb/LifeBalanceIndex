@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `128`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `129`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.63.1] - 2026-09-28
+
+### Changed
+- Desktop: the first card on a page now meets the header with square top corners and no gap, and the last card meets the footer with square bottom corners (the text pages lose the dark strip above the footer). The owner: the outer corners of the first and last boxes "feel off". The night shows only between cards; the pledge sky on Home still runs under the footer.
 
 ## [2.63.0] - 2026-09-28
 

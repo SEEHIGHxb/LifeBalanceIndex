@@ -156,12 +156,12 @@
   font-weight: 700;
   font-size: max(15px, calc(26 * var(--px)));
 }
-/* The night sky (v127). Not a card: it is the table itself turned to night,
-   so it has no corners of its own and runs under the rounded corners of the
-   cards above and below (the negative margins, and z-index -1 inside the
-   page's own stacking context). A few fixed specks give it depth; the stars
-   drift with the scroll in their six columns. */
-.home { isolation: isolate; }
+/* The pledge sky (v127). Not a card: since v128 the whole table is night
+   (css/stage-page.css), and this band is simply a wider gap of it, running
+   under the rounded corners of the cards above and below (the negative
+   margins, and z-index -1 inside the page's stacking context). Its stars
+   drift with the scroll in six columns. On a phone, where the sections sit
+   flat on the page, it keeps a night of its own. */
 .wall {
   position: relative;
   z-index: -1;
@@ -170,16 +170,6 @@
   height: calc(420 * var(--px));
   margin: calc(-1 * var(--panel-r)) 0;
   overflow: hidden;
-  background-color: #1b1b1b;
-  background-image:
-    radial-gradient(1.5px 1.5px at 8% 30%, #6d6552 50%, transparent 51%),
-    radial-gradient(1px 1px at 17% 72%, #57503f 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 29% 46%, #6d6552 50%, transparent 51%),
-    radial-gradient(1px 1px at 43% 20%, #57503f 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 55% 66%, #6d6552 50%, transparent 51%),
-    radial-gradient(1px 1px at 67% 36%, #57503f 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 81% 78%, #6d6552 50%, transparent 51%),
-    radial-gradient(1px 1px at 93% 24%, #57503f 50%, transparent 51%);
 }
 /* Each column is taller than the band by more than it drifts (WALL_DRIFT in
    views/dashboard.js), so no drift empties an edge. */
@@ -194,6 +184,12 @@
   transform: translate(-50%, -50%);
 }
 .sky-star svg { display: block; width: 100%; height: 100%; overflow: visible; fill: #4a4436; }
+/* The dim stars twinkle while the reader scrolls (views/night-sky.js sets
+   .sky-awake), each out of step with its neighbours. */
+.sky-star:not(.is-lit) { animation: twinkle 2.4s ease-in-out infinite paused; }
+.sky-star:nth-child(2) { animation-delay: -0.8s; }
+.sky-star:nth-child(3) { animation-delay: -1.6s; }
+.sky-awake .sky-star:not(.is-lit) { animation-play-state: running; }
 .sky-star.is-lit svg { filter: drop-shadow(0 0 calc(10 * var(--px)) rgba(240, 216, 168, 0.35)); }
 
 /* ------------------------------------------------------------- phones */
@@ -257,7 +253,7 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
-  .wall { height: calc(300 * var(--px)); margin: 0; }
+  .wall { height: calc(300 * var(--px)); margin: 0; background-color: var(--night); background-image: var(--night-specks); }
 }
 
 /* ------------------------------------------------------------- Thai

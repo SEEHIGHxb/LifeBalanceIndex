@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `127`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `128`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.63.0] - 2026-09-28
+
+### Changed
+- Desktop: the night sky is now the background between every card on every stage page (was a stone table). Its specks are fixed to the window, so the cards slide over a still sky. On phones the sections stay flat on the page and the pledge band keeps its own night.
+
+### Added
+- The sky moves while the reader scrolls: specks twinkle, and now and then (at most every 7 s) a shooting star crosses a gap on screen, flat along a thin seam or falling diagonally through the pledge sky. It rests 1.6 s after the last scroll, so nothing moves while someone reads (WCAG 2.2.2). Never shown with reduced motion or beside the care notice. `views/night-sky.js`.
 
 ## [2.62.0] - 2026-09-28
 

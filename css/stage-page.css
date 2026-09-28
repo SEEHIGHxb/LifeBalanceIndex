@@ -14,15 +14,72 @@
   --photo-r: calc(55 * var(--px));
   --card-r: calc(35.5 * var(--px));
   --gutter: calc(136 * var(--px));
-  /* Each section is a rounded sheet on this table, with a real gap between
-     sheets (v126, the owner chose "real cards"). Until v125 the sheets
-     overlapped on #808080, which showed only as wedges at their corners. */
+  /* Each section is a rounded sheet with a real gap between sheets (v126,
+     "real cards"), on a night sky (v128, the owner: the pledges' night band
+     as the background "everywhere that are the space between the box").
+     The specks are fixed to the window, so the cards slide over a still sky;
+     views/night-sky.js adds the twinkle and the shooting stars. */
   --sheet-gap: max(8px, calc(20 * var(--px)));
-  background: #e6e2db;
+  --night: #1b1b1b;
+  --night-specks:
+    radial-gradient(1.5px 1.5px at 8% 30%, #6d6552 50%, transparent 51%),
+    radial-gradient(1px 1px at 17% 72%, #57503f 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 29% 46%, #6d6552 50%, transparent 51%),
+    radial-gradient(1px 1px at 43% 20%, #57503f 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 55% 66%, #6d6552 50%, transparent 51%),
+    radial-gradient(1px 1px at 67% 36%, #57503f 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 81% 78%, #6d6552 50%, transparent 51%),
+    radial-gradient(1px 1px at 93% 24%, #57503f 50%, transparent 51%);
+  position: relative;
+  isolation: isolate;
+  background-color: var(--night);
+  background-image: var(--night-specks);
+  background-size: 720px 460px;
+  background-attachment: fixed;
   color: var(--frame-ink);
   font-family: var(--font-sans);
   overflow-x: clip;
 }
+
+/* The sky's life (views/night-sky.js): specks that twinkle and a shooting
+   star, behind every card (z-index -1 in the page's own stacking context),
+   so they show only in the gaps. They move only while .sky-awake is on,
+   which scrolling sets and a short rest clears. */
+.sky-fx { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.twinkle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #cbb88f;
+  opacity: 0.25;
+  animation: twinkle 2.4s ease-in-out infinite;
+  animation-play-state: paused;
+}
+.twinkle.is-big { width: 3px; height: 3px; box-shadow: 0 0 6px 1px rgba(240, 216, 168, 0.35); }
+.sky-awake .twinkle { animation-play-state: running; }
+@keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+.meteor {
+  position: absolute;
+  width: 140px;
+  height: 1.5px;
+  opacity: 0;
+  background: linear-gradient(90deg, rgba(240, 216, 168, 0), #f0d8a8);
+  border-radius: 2px;
+  --tilt: -24deg;
+  transform: translateY(-50%) rotate(var(--tilt));
+  transform-origin: 100% 50%;
+}
+/* Along a thin seam between two cards it runs flat, so it stays in view. */
+.meteor.seam { --tilt: 0deg; }
+.meteor.fly { animation: meteor 900ms cubic-bezier(.3, 0, .6, 1) forwards; }
+@keyframes meteor {
+  0% { opacity: 0; transform: translateY(-50%) rotate(var(--tilt)) translateX(0); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-50%) rotate(var(--tilt)) translateX(-360px); }
+}
+@media (prefers-reduced-motion: reduce) { .sky-fx { display: none; } }
+html[data-reduce-motion] .sky-fx { display: none; }
 
 .stage-page .panel {
   background: var(--frame-page);
@@ -618,6 +675,7 @@ a.newsrow:hover .newsrow-title { text-decoration: underline; text-underline-offs
      weird" with nothing behind them). The sections sit flat on the page and
      a hairline marks where one ends. The white cards inside keep theirs. */
   .stage-page { background: var(--frame-page); }
+  .sky-fx { display: none; }
   .stage-page .panel,
   .hero,
   .projects { border-radius: 0; margin-top: 0; }

@@ -17,6 +17,7 @@
 //   band      three region photographs that wipe over each other on scroll
 
 import { CHAPTERS } from "./journey.js";
+import { mountSky } from "./night-sky.js";
 import { mountMotion, writeMotionStyle } from "./motion-mount.js";
 import { typedMarkup, typeIn, burst, onAbort } from "./stage.js";
 import { loop, isReduced } from "../motion.js";
@@ -395,6 +396,7 @@ export function renderStagePage(container, markup, { motifs = EVERY_MOTIF, still
     mountTop(root, scope, motifs);
     mountMission(root, scope);
     mountScroll(root, scope);
+    mountSky(root, scope);
     return scope;
   } catch (err) {
     // The page is already finished without its motion; put it back that way.

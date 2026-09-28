@@ -146,7 +146,7 @@
   cursor: pointer;
   transition: background-color 200ms linear, color 200ms linear, transform 120ms ease;
 }
-.journey .radio-option:hover { background: #ececec; }
+.journey .radio-option:hover { background: #efe9dd; }
 .journey .radio-option input[type="radio"] {
   appearance: none;
   flex: none;

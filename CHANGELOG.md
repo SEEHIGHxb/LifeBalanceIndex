@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `122`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `123`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.61.1] - 2026-09-28
+
+### Changed
+- The page background is warm paper (`#faf8f3`) instead of grey (`#f6f6f6`); the owner asked for off-white, not grey. The crisis strip moves from blue-grey to a warm tint (`#f5efe4`), the journey option hover from grey to `#efe9dd`, and the install splash follows the page.
 
 ## [2.61.0] — 2026-09-28 (APP_VERSION 122)
 

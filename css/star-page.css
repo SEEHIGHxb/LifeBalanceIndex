@@ -1,0 +1,106 @@
+/* css/star-page.css - your star on a page of its own (#/star,
+   views/star-page.js, v135). The star is big and centred, its eight regions
+   labelled round it, and the switches under it. Light and Dark are the share
+   card's two styles, so the page previews the card's ground. */
+
+.star-page { --sp-bg: #f4efe4; --sp-ink: #1b1b1b; --sp-muted: #4a4a4a; }
+.star-page[data-theme="navy"] { --sp-bg: #16213e; --sp-ink: #ffffff; --sp-muted: #c9ccd6; }
+
+.star-page .sp-stage {
+  background: var(--sp-bg);
+  color: var(--sp-ink);
+  transition: background-color 320ms ease, color 320ms ease;
+}
+.star-page .sp-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: max(14px, calc(36 * var(--px)));
+  padding: max(16px, calc(50 * var(--px))) 0 max(40px, calc(110 * var(--px)));
+  text-align: center;
+}
+.star-page .sp-top { align-self: flex-start; margin: 0; }
+.star-page .sp-title {
+  margin: 0;
+  font-family: var(--frame-word);
+  font-weight: 400;
+  font-size: max(34px, calc(110 * var(--px)));
+  line-height: 1;
+  color: var(--sp-ink);
+}
+.star-page .sp-title small {
+  display: block;
+  margin-top: 8px;
+  font-family: inherit;
+  font-size: 0.4em;
+  letter-spacing: 0.06em;
+  color: var(--sp-muted);
+}
+
+/* The figure: a square, the star inset so its labels have room around it. */
+.star-page .sp-figure {
+  position: relative;
+  width: min(100%, 760px);
+  aspect-ratio: 1;
+}
+.star-page .sp-mark { position: absolute; inset: 17%; }
+.star-page .sp-labels { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
+.star-page .sp-label {
+  position: absolute;
+  width: max-content;
+  max-width: 30%;
+  font-size: clamp(11px, 1.9vw, 16px);
+  line-height: 1.25;
+  color: var(--sp-ink);
+}
+.star-page .sp-label[data-side="r"] { transform: translate(0, -50%); text-align: left; }
+.star-page .sp-label[data-side="l"] { transform: translate(-100%, -50%); text-align: right; }
+.star-page .sp-label[data-side="t"] { transform: translate(-50%, -100%); text-align: center; }
+.star-page .sp-label[data-side="b"] { transform: translate(-50%, 0); text-align: center; }
+.star-page .sp-region { display: block; font-weight: 700; }
+.star-page .sp-region::before {
+  content: "";
+  display: inline-block;
+  width: 0.62em;
+  height: 0.62em;
+  margin-right: 0.35em;
+  border-radius: 50%;
+  background: var(--hue);
+  vertical-align: 0.02em;
+}
+.star-page .sp-value { display: block; color: var(--sp-muted); }
+
+.star-page .sp-index { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 10px; margin: 0; color: var(--sp-muted); }
+.star-page .sp-index b { font-family: var(--frame-word); font-weight: 400; font-size: max(34px, calc(96 * var(--px))); color: var(--sp-ink); }
+
+.star-page .sp-controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px 36px; }
+.star-page .sp-control { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.star-page .sp-control-label { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sp-muted); }
+.star-page .sp-group { flex-wrap: wrap; justify-content: center; }
+.star-page .sp-share { margin: 0; }
+
+/* On the dark ground the switches and the star's guides turn light. */
+.star-page[data-theme="navy"] .shape-switch { background: rgba(255, 255, 255, 0.1); }
+.star-page[data-theme="navy"] :is(.shape-opt, .sp-opt) { color: #ffffff; }
+.star-page[data-theme="navy"] :is(.shape-opt, .sp-opt)[aria-pressed="true"] { background: #ffffff; color: #16213e; }
+.star-page[data-theme="navy"] :is(.shape-opt, .sp-opt):focus-visible { outline-color: #ffffff; }
+.star-page[data-theme="navy"] .shape .sh-grid { stroke: #e2d3b4; }
+.star-page[data-theme="navy"] .balance-band { color: #e6b8c4; border-color: #e6b8c4; }
+.star-page[data-theme="navy"] #sp-share { background: #ffffff; color: #16213e; }
+
+/* On a phone there is no room round the star: it fills the width and the
+   eight labels line up under it in two columns. */
+@media (max-width: 767px) {
+  .star-page .sp-figure { width: 100%; aspect-ratio: auto; }
+  .star-page .sp-mark { position: relative; inset: auto; width: 88%; aspect-ratio: 1; margin: 0 auto; }
+  .star-page .sp-labels { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin-top: 18px; text-align: left; }
+  .star-page .sp-label,
+  .star-page .sp-label[data-side] { position: static; width: auto; max-width: none; transform: none; text-align: left; font-size: 14px; }
+  .star-page .sp-value { padding-left: 0.97em; }
+  .star-page .sp-controls { flex-direction: column; align-items: stretch; }
+}
+
+html[data-reduce-motion] .star-page .sp-stage { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .star-page .sp-stage { transition: none; }
+}

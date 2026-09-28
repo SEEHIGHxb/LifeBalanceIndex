@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `134`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `135`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.68.0] - 2026-09-28 (v135)
+
+### Added
+- **Your star has its own page** (`#/star`, views/star-page.js). A tap on the
+  star on Overview zooms it into a page where it stands big, its eight regions
+  labelled round it (two columns under it on a phone). The page has the share
+  window's switches: Star / Radar / Asterism, Light / Dark, and what to show.
+  "Share your star" opens the share window already set to the page's choices.
+  The Overview link zooms the star back into its place on Home
+  (views/star-zoom.js). Reduced motion, or the care notice, opens the page
+  without moving.
+- **What to show** now has five choices on the page and the card: Shape only,
+  Names only, Score, Character (your region character; its score where a side
+  is unanswered) and Score + character.
+
+### Changed
+- Labels on the star page and the share card name the **regions** (The Market,
+  The Highlands…) instead of the aspects.
+- With nothing saved, the share window starts on Names only (was Shape only).
+- The Home star no longer bursts; it opens the star page.
+- The share window's title reads "Share your star".
+- The footer wordmark on the app and the privacy page reads ASTERISM (a miss
+  from the v131 rename).
 
 ## [2.67.0] - 2026-09-28
 

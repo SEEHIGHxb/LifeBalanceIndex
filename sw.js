@@ -21,7 +21,7 @@
 // while the version is unchanged.
 const IS_DEV = ["localhost", "127.0.0.1", "[::1]"].includes(self.location.hostname);
 
-const CACHE_NAME = "lifequest-v134";
+const CACHE_NAME = "lifequest-v135";
 
 const APP_SHELL = [
   "./",
@@ -35,6 +35,7 @@ const APP_SHELL = [
   "./css/weekly.css",
   "./css/more.css",
   "./css/shape.css",
+  "./css/star-page.css",
   "./app.js",
   "./version.js",
   "./state.js",
@@ -62,6 +63,8 @@ const APP_SHELL = [
   "./views/landing.js",
   "./views/stage-page.js",
   "./views/shape.js",
+  "./views/star-page.js",
+  "./views/star-zoom.js",
   "./views/night-sky.js",
   "./views/stage.js",
   "./views/news.js",
@@ -92,7 +95,7 @@ const APP_SHELL = [
   "./i18n.js",
   "./th.js",
   "./manifest.webmanifest",
-  "./assets/lumi.png?v=134",
+  "./assets/lumi.png?v=135",
   // The eight region chapter plates. 0.73 MB for the set, which is why they
   // are band-cropped JPEGs and not the 10.3 MB of source PNGs they came from.
   "./assets/regions/market.jpg",

@@ -305,10 +305,20 @@ try {
   await finishJourney(page, { last: ["who5"] });
   if (await page.locator(".care-banner").count()) throw new Error("the calm reader was shown the care notice");
   await page.evaluate(() => window.scrollTo(0, 0));
+  // A tap on your star zooms into its own page (v135), and back out again.
   await page.click(".home .star-hit");
+  await page.waitForSelector(".star-page .sp-mark svg.shape", { timeout: 10000 });
   await advance(page, FRAME_MS * 3);
-  const tapped = await heroState(page);
-  if (tapped.particles !== 16) problems.push(`home: ${tapped.particles} particles burst from your star, not 16`);
+  const zooming = await page.evaluate(() => document.querySelector(".star-page .sp-mark").style.transform);
+  if (!zooming) problems.push("star page: your star did not zoom in from Home");
+  await advance(page, 2500);
+  const settled = await page.evaluate(() => [...document.querySelectorAll(".star-page .sp-mark, .star-page .sp-fade")].map(el => el.getAttribute("style")).filter(Boolean));
+  if (settled.length) problems.push(`star page: not settled after 2.5 s (${settled.join(" | ")})`);
+  await page.click(".star-page .sp-back");
+  await page.waitForSelector(".home .home-star svg", { timeout: 10000 });
+  await advance(page, FRAME_MS * 3);
+  const shrinking = await page.evaluate(() => document.querySelector(".home .home-star-mark").style.transform);
+  if (!shrinking) problems.push("home: your star did not zoom back from its page");
   await advance(page, 2500);
   const home = await heroState(page);
   if (home.particles || home.styled.length) problems.push(`home: your star did not come home (${home.particles} particles, ${home.styled.join(" | ")})`);
@@ -353,20 +363,20 @@ try {
 }
 
 // ...and beside the care notice Home is still: the headline is not parked for
-// typing, and a tap on the star bursts nothing and moves nothing.
+// typing, and a tap on the star opens its page with nothing moving.
 try {
   const { context, page } = await openJourney(browser);
   await finishJourney(page);
   if (!(await page.locator(".care-banner").count())) throw new Error("this reader was meant to see the care notice");
   if ((await heroState(page)).hidden) problems.push("quiet home: text was parked for typing beside the care notice");
   await page.click(".home .star-hit");
+  await page.waitForSelector(".star-page .sp-mark svg.shape", { timeout: 10000 });
   let moved = 0;
   for (let f = 0; f < 120; f++) {
     await advance(page, FRAME_MS);
-    const st = await heroState(page);
-    moved = Math.max(moved, st.particles + st.styled.length);
+    moved += await page.evaluate(() => [...document.querySelectorAll(".star-page .sp-mark, .star-page .sp-fade")].filter(el => el.getAttribute("style")).length);
   }
-  if (moved) problems.push("quiet home: the star moved or burst beside the care notice");
+  if (moved) problems.push("quiet home: your star's page moved beside the care notice");
   await context.close();
 } catch (err) {
   problems.push(`quiet home: ${err.message}`);
@@ -535,10 +545,13 @@ try {
   await goTo(page, "quests");
   await goTo(page, "dashboard");
   await page.waitForSelector(".home .home-star svg", { timeout: 10000 });
+  const parked = await heroState(page);
+  if (parked.hidden) problems.push("reduced: Home parked its headline");
   await page.click(".home .star-hit");
+  await page.waitForSelector(".star-page .sp-mark svg.shape", { timeout: 10000 });
   await advance(page, 400);
-  const still = await heroState(page);
-  if (still.particles || still.styled.length || still.hidden) problems.push("reduced: Home moved (a burst, a pose or a parked headline)");
+  const zoomed = await page.evaluate(() => [...document.querySelectorAll(".star-page .sp-mark, .star-page .sp-fade")].map(el => el.getAttribute("style")).filter(Boolean));
+  if (zoomed.length) problems.push(`reduced: your star zoomed into its page (${zoomed.join(" | ")})`);
   // The review changes screen with no wipe at all.
   await reviewDue(page);
   await openHash(page, "#/review", "#rv-step-0:not(.d-none)");
@@ -568,4 +581,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star bursts and comes home (and stays still beside the care notice), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi's panel settles and types, and reduced motion moves nothing");
+console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star zooms into its own page and back (and stays still beside the care notice), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi's panel settles and types, and reduced motion moves nothing");

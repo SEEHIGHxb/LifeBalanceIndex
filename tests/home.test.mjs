@@ -81,7 +81,7 @@ test("the top names the Balance Index for readers, and the headline names real r
   assert.ok(head, "the headline is missing");
   assert.ok(CHAPTERS.some(c => head[1].includes(c.region)), `no region named in "${head[1]}"`);
   assert.match(head[1], /is asking for more\./);
-  assert.match(html, /class="star-hit" type="button" aria-label="Play with your star"/);
+  assert.match(html, /<a class="star-hit" href="#\/star" aria-label="Open your star">/);
 });
 
 test("every aspect is one row that links to its aspect and shows its average", () => {

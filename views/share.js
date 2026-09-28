@@ -43,28 +43,34 @@ const PREFS_KEY = "lifequest_share_prefs";
 // How long the preview takes to assemble the map when the sheet opens.
 const ASSEMBLE_MS = 1100;
 
-const DETAIL_LABELS = () => ({
+// The same five choices label the star on its own page (views/star-page.js).
+export const DETAIL_LABELS = () => ({
   shape: t("Shape only"),
-  names: t("Aspect names"),
-  full: t("Everything")
+  names: t("Names only"),
+  full: t("Score"),
+  character: t("Character"),
+  both: t("Score + character")
 });
 
 // The view (star, radar or asterism) is not kept here: it starts from the one
-// the page shows, and a change in the sheet is for this card only.
-function readPrefs() {
+// the page shows, and a change in the sheet is for this card only. Your star's
+// own page (views/star-page.js) sets the style and labels here too, so the
+// sheet it opens starts from what that page shows. With nothing saved the
+// regions are named, with no numbers.
+export function readSharePrefs() {
   try {
     const saved = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}");
     return {
       theme: saved.theme === "navy" ? "navy" : "paper",
-      detail: DETAIL_LEVELS.includes(saved.detail) ? saved.detail : "shape",
+      detail: DETAIL_LEVELS.includes(saved.detail) ? saved.detail : "names",
       shape: readShapeView()
     };
   } catch {
-    return { theme: "paper", detail: "shape", shape: readShapeView() };
+    return { theme: "paper", detail: "names", shape: readShapeView() };
   }
 }
 
-function writePrefs({ theme, detail }) {
+export function writeSharePrefs({ theme, detail }) {
   try {
     localStorage.setItem(PREFS_KEY, JSON.stringify({ theme, detail }));
   } catch {
@@ -90,7 +96,7 @@ const fileName = () => `asterism-${new Date().toISOString().slice(0, 10)}.png`;
 // nothing, so the card can never disagree with the page behind it.
 // `showMentalNote` is set by the caller when mental sits in the bottom decile.
 export function openShareSheet(card, { showMentalNote = false } = {}) {
-  const prefs = readPrefs();
+  const prefs = readSharePrefs();
   const data = storyCardData(card);
   const shareable = canShareFiles();
   const labels = DETAIL_LABELS();
@@ -103,7 +109,7 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
   // choices beside, the poster itself on the right. On a phone the poster
   // comes first and the choices follow it.
   const { overlay, close } = openDialog({
-    label: t("Share your radar"),
+    label: t("Share your star"),
     html: `
     <div class="share-sheet">
       <div class="share-stage">
@@ -111,7 +117,7 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
           role="img" aria-label="${t("Preview of your shareable card")}"></canvas>
       </div>
       <div class="share-side">
-        <h2 class="share-title">${t("Share your radar")}</h2>
+        <h2 class="share-title">${t("Share your star")}</h2>
         <div class="share-option" role="group" aria-labelledby="share-style-label">
           <span class="share-option-label" id="share-style-label">${t("Card style")}</span>
           <span class="share-set">
@@ -133,7 +139,7 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
           </span>
         </div>
 
-        ${showMentalNote ? `<p class="share-care">${t("This card shows your mental wellbeing alongside the other seven aspects. Choosing “Shape only” keeps the numbers off it.")}</p>` : ""}
+        ${showMentalNote ? `<p class="share-care">${t("This card shows your mental wellbeing alongside the other seven aspects. Choosing “Shape only” or “Names only” keeps the numbers off it.")}</p>` : ""}
 
         <p class="share-note">${t("Instagram cannot accept a post directly from a website. Pick Instagram in the share sheet, or save the image and post it from the app.")}</p>
 
@@ -200,7 +206,7 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
       const { group, value } = btn.dataset;
       if (prefs[group] === value) return;
       prefs[group] = value;
-      writePrefs(prefs);
+      writeSharePrefs(prefs);
       overlay.querySelectorAll(`.share-toggle[data-group="${group}"]`).forEach(other => {
         other.setAttribute("aria-pressed", String(other.dataset.value === value));
       });

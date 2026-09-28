@@ -2,7 +2,7 @@
 // taken the journey yet, and where the ASTERISM wordmark leads everyone else
 // (redesign R2; docs/prototype/redesign/proto.js landingHTML).
 //
-// Top to bottom: the hero (the gilt star over LIFE BALANCE INDEX), WHY with its
+// Top to bottom: the hero (the gilt star over ASTERISM), WHY with its
 // typed headline, HOW IT WORKS, the eight regions as cards, a photo band and
 // the call to begin. The sections and their motion are the shared stage page
 // (views/stage-page.js); this file is the Landing's copy and its cards.

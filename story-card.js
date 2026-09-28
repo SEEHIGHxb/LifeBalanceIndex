@@ -41,9 +41,12 @@ export const SAFE_LOW = STORY_H - SAFE_BOTTOM;
 // How much of the assessment the card states. The user picks this per share.
 //   shape  the outline only - a viewer sees the pattern but cannot read off
 //          any single aspect, which is what makes the card safe to post
-//   names  axis labels on, still no numbers
-//   full   labels, letter grades and 0-100 scores, matching the dashboard
-export const DETAIL_LEVELS = ["shape", "names", "full"];
+//   names      region names on, still no numbers
+//   full       names, letter grades and 0-100 scores, matching the dashboard
+//   character  names, and your character in each region (characters.js)
+//   both       names, each score and its character
+// A region with no character (a side left unanswered) shows its score.
+export const DETAIL_LEVELS = ["shape", "names", "full", "character", "both"];
 
 // THE POSTER (redesign R5; docs/prototype/redesign/social.js posterSvg). The
 // card is the prototype's 9:16 poster: LIFE BALANCE / INDEX in the wordmark
@@ -121,7 +124,7 @@ const LAYOUT = {
   starCy: 905,
   starR: 280,
   // The legend: two columns of four under the sticker.
-  legendTop: 1216,
+  legendTop: 1232,
   legendStep: 60,
   legendX: [70, 560],
   legendW: 450,
@@ -364,13 +367,21 @@ function drawAsterismView(ctx, scores, tips, pose, { cx, cy, r }) {
 }
 
 // The names under the sticker, two columns of four in radar order, each with
-// its region's dot. In `full` the grade letter follows the name and the score
-// sits at the column's end. An aspect with no grade (relationships is
-// unranked by design) simply shows no letter - inventing a placeholder would
-// imply a grade exists.
+// its region's dot. A row names the region (data.labels; the aspect when a
+// caller gives none, as the tests do) and ends with what the detail level
+// shows: the score, the character, or both. In `full` the grade letter
+// follows the name. An aspect with no grade (relationships is unranked by
+// design) simply shows no letter - inventing a placeholder would imply a
+// grade exists.
+export function legendValue(detail, score, character) {
+  if (detail === "full") return String(score);
+  if (detail === "character") return character || String(score);
+  if (detail === "both") return character ? `${score} · ${character}` : String(score);
+  return "";
+}
+
 function drawNames(ctx, theme, data, detail, grow) {
   if (detail === "shape") return;
-  const full = detail === "full";
   const { legendTop, legendStep, legendX, legendW } = LAYOUT;
   // While the poster assembles, the names arrive last.
   ctx.globalAlpha = clamp01((grow - LABELS_FROM) / (1 - LABELS_FROM));
@@ -384,17 +395,31 @@ function drawNames(ctx, theme, data, detail, grow) {
     ctx.fill();
 
     const score = radarPoints(data.aspects, [key], 0, 0, 1)[0].value;
-    const grade = full ? (data.grades || {})[key] : null;
-    const name = t(ASPECT_LABELS[key]) + (grade?.grade ? `  ${grade.grade}` : "");
+    const label = (data.labels || {})[key] || {};
+    const grade = detail === "full" ? (data.grades || {})[key] : null;
+    const name = (label.region || t(ASPECT_LABELS[key])) + (grade?.grade ? `  ${grade.grade}` : "");
+    const value = legendValue(detail, score, label.character);
     ctx.textAlign = "left";
-    ctx.font = font(600, 26, SANS);
     ctx.fillStyle = theme.ink;
-    const room = legendW - 40 - (full ? 80 : 0);
-    ctx.fillText(fitText(ctx, name, room), x + 40, y);
-    if (!full) return;
+    // A character is words: it goes on a second line under the name, so a
+    // long region name and a long character never squeeze each other.
+    if (value && !/^d+$/.test(value)) {
+      ctx.font = font(600, 24, SANS);
+      ctx.fillText(fitText(ctx, name, legendW - 40), x + 40, y - 8);
+      ctx.font = font(400, 21, SANS);
+      ctx.fillStyle = theme.muted;
+      ctx.fillText(fitText(ctx, value, legendW - 40), x + 40, y + 18);
+      return;
+    }
+    // A bare score is a numeral in the display face at the row's end.
+    ctx.font = font(400, 40, WORD);
+    const valueW = value ? ctx.measureText(value).width : 0;
+    ctx.font = font(600, 26, SANS);
+    ctx.fillText(fitText(ctx, name, legendW - 40 - (value ? valueW + 20 : 0)), x + 40, y);
+    if (!value) return;
     ctx.textAlign = "right";
     ctx.font = font(400, 40, WORD);
-    ctx.fillText(String(score), x + legendW, y);
+    ctx.fillText(value, x + legendW, y);
   });
   ctx.globalAlpha = 1;
 }
@@ -478,10 +503,20 @@ export function drawStoryCard(ctx, data, opts = {}) {
   }
 }
 
+// Each region's name and character, as plain strings, or none at all.
+function cardLabels(labels) {
+  if (!labels || typeof labels !== "object") return {};
+  const text = (v) => (typeof v === "string" && v ? v : null);
+  return Object.fromEntries(RADAR_KEYS.filter(k => labels[k]).map(k => [k, {
+    region: text(labels[k].region),
+    character: text(labels[k].character)
+  }]));
+}
+
 // Everything the card needs, assembled from state the dashboard already has.
 // `date` is formatted here rather than by the caller so the card follows the
 // active language's locale (Thai dates on a Thai card).
-export function storyCardData({ name, date, aspects, average, index, bandLabel, standing, grades, shape }) {
+export function storyCardData({ name, date, aspects, average, index, bandLabel, standing, grades, shape, labels }) {
   const when = date instanceof Date ? date : new Date(date || Date.now());
   return {
     name: name || "",
@@ -494,7 +529,8 @@ export function storyCardData({ name, date, aspects, average, index, bandLabel, 
     bandLabel: bandLabel || "",
     standing: standing || null,
     grades: grades || {},
-    shape: SHAPE_VIEWS.includes(shape) ? shape : "star"
+    shape: SHAPE_VIEWS.includes(shape) ? shape : "star",
+    labels: cardLabels(labels)
   };
 }
 

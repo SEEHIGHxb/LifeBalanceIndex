@@ -15,8 +15,9 @@
 //   recent      reviews, re-assessments and the journey, newest first
 //   pledges     your active pledges as stickers
 //
-// Beside the care notice the whole page is still: the star does not burst
-// and the wall does not drift (the old ceremony's quiet rule, kept).
+// Beside the care notice the whole page is still: the star opens its page
+// without zooming and the wall does not drift (the old ceremony's quiet rule,
+// kept).
 
 import { stateManager } from "../state.js";
 import { AVERAGE_ASPECT_SCORES } from "../averages.js";
@@ -34,11 +35,12 @@ import { seasonPace } from "../season.js";
 import { openShareSheet } from "./share.js";
 import { shapeFigure, shapeSwitchMarkup, bindShapeSwitch, adoptShape, readShapeView } from "./shape.js";
 import { CHAPTERS } from "./journey.js";
-import { SPRITES, onAbort, burst } from "./stage.js";
+import { SPRITES, onAbort } from "./stage.js";
 import {
   chapterOf, aspectName, dotDate, shiftSummary, motifThumb, starThumb, newsRow
 } from "./news.js";
-import { EVERY_MOTIF, label, renderStagePage } from "./stage-page.js";
+import { label, renderStagePage } from "./stage-page.js";
+import { markZoom, takeZoom, zoomFrom } from "./star-zoom.js";
 import { writeMotionStyle } from "./motion-mount.js";
 import { nextReviewDate } from "./review.js";
 import { t, tp } from "../i18n.js";
@@ -107,7 +109,7 @@ const biggestShift = (shifts) => {
 // --- the reading ------------------------------------------------------------
 // Everything the page says, computed once, so the markup and the share card
 // cannot disagree.
-function readHome(state) {
+export function readHome(state) {
   const p = state.profile;
   const benchmarks = getAllBenchmarks(state);
   const index = balanceIndex(state.aspects);
@@ -154,7 +156,7 @@ function noticeSection(h) {
 
 // Your star beside what it adds up to: the Balance Index and its band, where
 // you are strongest and what asks for more, then who you are this year. The
-// star is a button: a tap bursts it (beside the care notice it stays still).
+// star is a link to its own page (views/star-page.js), which it zooms into.
 function topSection(h) {
   const p = h.profile;
   const strong = chapterOf(h.strongest)?.region || "";
@@ -164,13 +166,12 @@ function topSection(h) {
     : tp("Points: {xp} / {possible}", { xp: escapeHtml(h.pace.earned), possible: h.pace.possible });
   return `
     <section class="panel home-top">
-      <div class="burst-layer" aria-hidden="true"></div>
       <div class="wrap home-top-grid">
         <h2 class="sr-only">${escapeHtml(tp("Your star — Balance Index {n}", { n: h.index }))}</h2>
         <div class="home-star-col">
           <div class="home-star">
             <div class="home-star-mark">${shapeFigure({ view: h.view, you: h.scores })}</div>
-            <button class="star-hit" type="button" aria-label="${escapeHtml(t("Play with your star"))}"></button>
+            <a class="star-hit" href="#/star" aria-label="${escapeHtml(t("Open your star"))}"></a>
           </div>
           ${shapeSwitchMarkup(h.view)}
         </div>
@@ -418,14 +419,14 @@ export function homeMarkup(h) {
     </div>`;
 }
 
-// A tap on your star bursts the eight regions' motifs out of it.
-function mountStar(root, scope) {
-  const hit = root.querySelector(".home-top .star-hit");
-  if (!hit) return;
-  const layer = root.querySelector(".home-top .burst-layer");
+// A tap on your star notes where it sits, for its page to zoom out of; back
+// from that page, the star shrinks home into its place here.
+function mountStar(root, scope, from) {
   const mark = root.querySelector(".home-top .home-star-mark");
-  scope.listen(hit, "click", () => burst(layer, mark, { motifs: EVERY_MOTIF, signal: scope.signal })
-    .catch(err => console.error("Home star burst failed:", err)));
+  const hit = root.querySelector(".home-top .star-hit");
+  if (!mark || !hit) return;
+  scope.listen(hit, "click", () => markZoom(mark));
+  zoomFrom(mark, from, scope);
 }
 
 // The wall's columns drift with the scroll, alternate ones up and down. Tied
@@ -454,6 +455,8 @@ export function renderDashboard(containerId, state, onExportBackup) {
   const container = document.getElementById(containerId);
   if (!container) return;
   const h = readHome(state);
+  // Taken before the page draws, so a still page drops it too.
+  const zoom = takeZoom();
   // Beside the care notice nothing moves: the notice never does, and a page
   // bursting with stars around it would be the wrong tone.
   const scope = renderStagePage(container, () => homeMarkup(h), { still: !!h.careNotice });
@@ -462,7 +465,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
   bindShapeSwitch(container, scope);
   if (scope) {
     try {
-      mountStar(container, scope);
+      mountStar(container, scope, zoom);
       mountWall(container, scope);
     } catch (err) {
       console.error("Home motion failed:", err);
@@ -496,7 +499,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
 // The share card is handed the readings this render already computed, so it
 // cannot disagree with the page behind it. A bottom-decile mental grade adds
 // one informational line to the sheet; it never blocks the share.
-function shareStar(h) {
+export function shareStar(h) {
   openShareSheet({
     name: h.profile.name,
     date: new Date(),
@@ -506,8 +509,19 @@ function shareStar(h) {
     bandLabel: h.band.label,
     standing: h.standing,
     grades: h.grades,
-    shape: readShapeView()
+    shape: readShapeView(),
+    labels: regionLabels(h.state)
   }, { showMentalNote: isBottomGrade(h.grades.mental) });
+}
+
+// Each region's name and your character there (null where a side is still
+// unanswered), for the labels on your star's page and on the card.
+export function regionLabels(state) {
+  return Object.fromEntries(CHAPTERS.map(c => [c.aspect, {
+    region: c.region,
+    hue: c.hue,
+    character: characterFor(state, c.aspect)?.name || null
+  }]));
 }
 
 // The same card from another page (Side by Side), read the way Home reads it.

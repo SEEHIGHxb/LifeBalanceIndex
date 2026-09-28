@@ -31,6 +31,9 @@ export const TH = {
   "Show your eight aspects as": "แสดง 8 ด้านของคุณเป็น",
   "Shape": "รูปทรง",
   "Open your star": "เปิดดาวของคุณ",
+  // v135 drafts awaiting the owner review: your star's own page.
+  "Your star": "ดาวของคุณ",
+  "Your eight regions": "แปดดินแดนของคุณ",
   "Pick whose shape lies over yours: yours is gold and theirs is dark, or pale blue in the asterism. The dashed line is the population average.": "เลือกคนที่จะวางรูปทรงทับของคุณ: ของคุณเป็นสีทอง ของเขาเป็นสีเข้ม หรือสีฟ้าอ่อนในมุมมองกลุ่มดาว เส้นประคือค่าเฉลี่ยของประชากร",
   "Lv.": "Lv.",
   // Recovery banner + storage-error toast (findings #1/#2, now translated)
@@ -1320,7 +1323,6 @@ export const TH = {
   // the line (hWeek, hWeekHead, hAspects, hScoreOf, hRecent, hCheck,
   // hCheckHead, hCheckCta); the rest is new and awaits the owner's review.
   "Your star — Balance Index {n}": "ดาวของคุณ — ดัชนีสมดุล {n}",
-  "Play with your star": "เล่นกับดาวของคุณ",
   "Strongest in {strong}.": "จุดแข็งที่สุดคือ{strong}",
   "{weak} is asking for more.": "{weak}ยังรอให้คุณใส่ใจอีกนิด",
   "Share your star": "แชร์ดาวของคุณ",
@@ -1484,19 +1486,21 @@ export const TH = {
   // already defined above, so only the sheet's own controls need new entries
   // here.
   "Share": "แชร์",
-  "Share your radar": "แชร์เรดาร์ของคุณ",
   "Preview of your shareable card": "ตัวอย่างการ์ดที่จะแชร์",
   "Card style": "รูปแบบการ์ด",
   "Light": "พื้นสว่าง",
   "Dark": "พื้นเข้ม",
   "What to show": "แสดงรายละเอียดแค่ไหน",
   "Shape only": "เฉพาะรูปทรง",
-  "Aspect names": "ใส่ชื่อด้าน",
-  "Everything": "ทั้งหมด",
+  // v135 drafts awaiting the owner review: the five label choices.
+  "Names only": "เฉพาะชื่อ",
+  "Score": "คะแนน",
+  "Character": "ตัวละคร",
+  "Score + character": "คะแนน + ตัวละคร",
   "Save image": "บันทึกรูปภาพ",
   "Close": "ปิด",
-  "This card shows your mental wellbeing alongside the other seven aspects. Choosing “Shape only” keeps the numbers off it.":
-    "การ์ดนี้แสดงด้านจิตใจของคุณรวมอยู่กับอีกเจ็ดด้าน หากเลือก “เฉพาะรูปทรง” ตัวเลขจะไม่ปรากฏบนการ์ด",
+  "This card shows your mental wellbeing alongside the other seven aspects. Choosing “Shape only” or “Names only” keeps the numbers off it.":
+    "การ์ดนี้แสดงด้านจิตใจของคุณรวมอยู่กับอีกเจ็ดด้าน หากเลือก “เฉพาะรูปทรง” หรือ “เฉพาะชื่อ” ตัวเลขจะไม่ปรากฏบนการ์ด",
   "Instagram cannot accept a post directly from a website. Pick Instagram in the share sheet, or save the image and post it from the app.":
     "อินสตาแกรมไม่รับโพสต์โดยตรงจากเว็บไซต์ กรุณาเลือกอินสตาแกรมในหน้าต่างแชร์ของเครื่อง หรือบันทึกรูปภาพแล้วโพสต์จากแอปโดยตรง",
 

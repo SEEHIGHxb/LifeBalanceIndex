@@ -31,6 +31,7 @@ const views = createViewLoader({
   assessments: () => import("./views/assessments.js"),
   methodology: () => import("./views/methodology.js"),
   year: () => import("./views/yearreview.js"),
+  star: () => import("./views/star-page.js"),
   profile: () => import("./views/profile.js"),
   review: () => import("./views/review.js"),
   quests: () => import("./views/quests.js"),
@@ -69,6 +70,10 @@ function routeFromHash() {
   // Not a tab: the level-year screen is occasional (one birthday a year, plus
   // the one-off birthday question), so it is reached from the status card
   // rather than taking a permanent fifth slot in a four-wide mobile tab grid.
+  // Your star on a page of its own, zoomed into from Home's (v135).
+  if (path === "star") {
+    return { type: "star" };
+  }
   if (path === "year") {
     return { type: "year" };
   }
@@ -322,6 +327,7 @@ function screenFor(route, activeTab, state) {
     case "methodology": return ["methodology", m => m.renderMethodology(main, state)];
     case "welcome": return ["landing", m => m.renderLanding(main, { returning: true })];
     case "year": return ["year", m => m.renderYearReview(main, state, renderActiveTab)];
+    case "star": return ["star", m => m.renderStarPage(main, state)];
     case "profile": return ["profile", m => {
       m.renderProfile(main, state, handleProfileSaved);
       // The Export/Import/Reset controls live on this page now, so bind them
@@ -355,6 +361,7 @@ function announceRoute(route) {
   else if (route.type === "deep") label = t("In-depth assessment");
   else if (route.type === "methodology") label = t("Methodology");
   else if (route.type === "year") label = t("Your year");
+  else if (route.type === "star") label = t("Your star");
   else if (route.type === "profile") label = t("Profile");
   else if (route.type === "welcome") label = "Asterism";
   else label = t(tabNames[route.tab] || "Overview");

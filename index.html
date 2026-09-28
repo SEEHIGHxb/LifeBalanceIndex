@@ -34,18 +34,19 @@
        vendored under assets/fonts. Self-hosting removes the round-trip to
        Google on every cold load, makes the PWA genuinely offline-capable,
        and means no visitor IP is disclosed to a third party. -->
-  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=134">
-  <link rel="stylesheet" href="./index.css?v=134">
+  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=135">
+  <link rel="stylesheet" href="./index.css?v=135">
   <!-- The redesign's frame; loaded after index.css so it wins where both
        style the same element. One sheet per redesign area, each under 800
        lines (docs/redesign-build-plan.md §3). -->
-  <link rel="stylesheet" href="./css/frame.css?v=134">
-  <link rel="stylesheet" href="./css/stage-page.css?v=134">
-  <link rel="stylesheet" href="./css/home.css?v=134">
-  <link rel="stylesheet" href="./css/journey.css?v=134">
-  <link rel="stylesheet" href="./css/weekly.css?v=134">
-  <link rel="stylesheet" href="./css/more.css?v=134">
-  <link rel="stylesheet" href="./css/shape.css?v=134">
+  <link rel="stylesheet" href="./css/frame.css?v=135">
+  <link rel="stylesheet" href="./css/stage-page.css?v=135">
+  <link rel="stylesheet" href="./css/home.css?v=135">
+  <link rel="stylesheet" href="./css/journey.css?v=135">
+  <link rel="stylesheet" href="./css/weekly.css?v=135">
+  <link rel="stylesheet" href="./css/more.css?v=135">
+  <link rel="stylesheet" href="./css/shape.css?v=135">
+  <link rel="stylesheet" href="./css/star-page.css?v=135">
   <!-- Starts a Thai reader's dictionary with the core (lang-preload.js). -->
   <script async fetchpriority="high" src="./lang-preload.js"></script>
   <!-- The core every screen needs, then the Landing: listed here, they are
@@ -105,7 +106,7 @@
        it stays usable while the menu is open and the page behind it is inert. -->
   <header id="site-header" class="site-header">
     <button id="btn-menu" class="burger" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu"><span></span><span></span><span></span></button>
-    <!-- The wordmark is a mark: LIFE BALANCE INDEX in both languages. Its
+    <!-- The wordmark is a mark: ASTERISM in both languages. Its
          accessible name is the translated app name, which app.js writes. -->
     <h1 class="wordmark"><a id="brand-home" href="#/dashboard"><span class="wordmark-mark" aria-hidden="true">ASTERISM</span><span class="sr-only" id="brand-name">Asterism: Life Balance Index</span></a></h1>
     <nav id="navpill" class="navpill d-none" aria-label="Sections">
@@ -151,7 +152,7 @@
            prototype's footer. Decorative: the links carry the meaning. -->
       <div class="footer-mark" aria-hidden="true">
         <svg class="brand-star" viewBox="0 0 100 100" width="56" height="56" focusable="false"><use href="./assets/sprites.svg#star"/></svg>
-        <span>LIFE BALANCE<br>INDEX</span>
+        <span>ASTERISM</span>
       </div>
       <nav class="footer-links" aria-label="Footer">
         <a id="footer-privacy" href="./privacy.html">Privacy &amp; Data</a>
@@ -163,6 +164,6 @@
   </div>
 
   <!-- Core Scripts -->
-  <script type="module" src="./app.js?v=134"></script>
+  <script type="module" src="./app.js?v=135"></script>
 </body>
 </html>

@@ -106,7 +106,7 @@ jobs:
           # no change to this line.
           cp assets/regions/*.jpg _site/assets/regions/
           # The Phase 4 art set: the sprite sheet and the region emblems.
-          cp assets/sprites.svg _site/assets/
+          cp assets/sprites.svg assets/favicon.svg _site/assets/
           cp assets/emblems/*.webp _site/assets/emblems/
 
       # The service worker precaches APP_SHELL with cache.addAll, which is

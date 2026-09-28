@@ -106,7 +106,7 @@ async function walkReview(fill = {}) {
   await page.waitForSelector("#rv-done-head", { timeout: 5000 });
 }
 
-const ONBOARDED = '#brand-home[href="#/dashboard"]';
+const ONBOARDED = '#brand-home[href="#/welcome"]';
 
 const readState = () => page.evaluate(() =>
   JSON.parse(localStorage.getItem("lifequest_state") || "null"));

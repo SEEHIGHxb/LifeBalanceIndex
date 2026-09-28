@@ -1,4 +1,5 @@
-// views/landing.js - the Landing, for anyone who has not taken the journey yet
+// views/landing.js - the Landing: the first screen for anyone who has not
+// taken the journey yet, and where the ASTERISM wordmark leads everyone else
 // (redesign R2; docs/prototype/redesign/proto.js landingHTML).
 //
 // Top to bottom: the hero (the gilt star over LIFE BALANCE INDEX), WHY with its
@@ -30,8 +31,11 @@ function cardMarkup(chapter) {
     </div>`;
 }
 
-export function landingMarkup({ resume = false } = {}) {
-  const cta = resume ? t("Continue the journey") : t("Start the journey");
+// `returning` is someone who has taken the journey and came back by the
+// wordmark (the owner, 2026-09-28): every call leads to their Home instead.
+export function landingMarkup({ resume = false, returning = false } = {}) {
+  const cta = returning ? t("Open your star") : resume ? t("Continue the journey") : t("Start the journey");
+  const go = returning ? "#/dashboard" : "#/journey";
   const how = [
     t("A journey through eight places, from The Market to The Lookout. Each one asks about one part of your life."),
     t("Your answers are compared with cited Thai and international benchmarks."),
@@ -47,7 +51,7 @@ export function landingMarkup({ resume = false } = {}) {
         tapLabel: t("Play with the star"),
         // On the first screen (the owner, 2026-09-26): the page's two lower
         // calls to begin were three sections down.
-        cta: `<a class="pill pill-xl" href="#/journey">${escapeHtml(cta)}</a>`
+        cta: `<a class="pill pill-xl" href="${go}">${escapeHtml(cta)}</a>`
       })}
       ${missionMarkup(t("Why"), [t("Eight parts of one life,"), t("measured against the evidence.")])}
       <section class="panel statement"><div class="wrap split">
@@ -59,7 +63,7 @@ export function landingMarkup({ resume = false } = {}) {
           ${label(t("The eight aspects"))}
           <div class="cardblock">
             ${CHAPTERS.map(cardMarkup).join("")}
-            <p class="allprojects"><a class="pill pill-xl" href="#/journey">${escapeHtml(cta)}</a></p>
+            <p class="allprojects"><a class="pill pill-xl" href="${go}">${escapeHtml(cta)}</a></p>
           </div>
         </div>
       </section>
@@ -69,9 +73,9 @@ export function landingMarkup({ resume = false } = {}) {
         <div class="careers-row">
           <p class="careers-head">${escapeHtml(t("Eight chapters."))}<br>${escapeHtml(t("One star at the end."))}</p>
           <div class="careers-actions">
-            <a class="pill" href="#/journey">${escapeHtml(cta)}</a>
+            <a class="pill" href="${go}">${escapeHtml(cta)}</a>${returning ? "" : `
             <button type="button" id="btn-restore-backup" class="linkbtn">${escapeHtml(t("Restore from a backup"))}</button>
-            <input type="file" id="restore-file-input" accept="application/json,.json" class="d-none" aria-hidden="true" tabindex="-1">
+            <input type="file" id="restore-file-input" accept="application/json,.json" class="d-none" aria-hidden="true" tabindex="-1">`}
           </div>
         </div>
       </div></section>
@@ -80,8 +84,8 @@ export function landingMarkup({ resume = false } = {}) {
 
 // Draws the Landing into the container. `resume` names the call to action
 // "Continue the journey" when a draft of it is saved on this device.
-export function renderLanding(containerId, { resume = false } = {}) {
+export function renderLanding(containerId, { resume = false, returning = false } = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
-  renderStagePage(container, () => landingMarkup({ resume }));
+  renderStagePage(container, () => landingMarkup({ resume, returning }));
 }

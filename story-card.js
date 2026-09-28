@@ -18,11 +18,11 @@
 // websites cannot use it. This module produces the image; views/share.js hands
 // it to navigator.share() so the user picks Instagram themselves.
 //
-// The star's geometry comes from chart.js (starOutline, starRay), the same as
+// The shape's geometry comes from chart.js (shapeKite, shapeRim), the same as
 // Home's, so the card and the page cannot disagree about where a score sits.
 
 import { t, tp, dateLocale } from "./i18n.js";
-import { radarPoints, starOutline, starRay, RADAR_KEYS, ASPECT_LABELS } from "./chart.js";
+import { radarPoints, shapeKite, shapeRim, asterismStarRadius, SHAPE_VIEWS, RADAR_KEYS, ASPECT_LABELS } from "./chart.js";
 
 export { STAR_VALLEY } from "./chart.js";
 
@@ -235,21 +235,39 @@ function tracePath(ctx, pts) {
   ctx.closePath();
 }
 
-// Your star as a die-cut sticker: the white cut edge on its shadow, then the
-// star's ground, each ray filled to its score, the outline and the core, all
-// turned to the sticker's pose.
+// The asterism's night and its light (css/shape.css), the same in both themes:
+// the sky is the sticker, and a star reads best on it whatever sits behind.
+const SKY = { night: "#1b1b1b", speck: "rgba(255, 255, 255, 0.55)", line: "rgba(240, 216, 168, 0.75)", star: "#f6e3b8", glow: "#f0d8a8" };
+// Fixed specks on the sky, as fractions of the radius from the centre.
+const SKY_SPECKS = [[-0.56, -0.42], [0.5, -0.66], [0.7, 0.3], [-0.4, 0.62], [0.16, 0.8], [-0.8, 0.1], [0.34, -0.2], [-0.2, -0.72], [0.84, -0.16], [-0.66, 0.46]];
+const RINGS = [0.25, 0.5, 0.75];
+// The star's tips only reach the rim at a perfect score, but the asterism's
+// disc is round and full width: drawn at the star's size it would cover the
+// date above it. So the whole sky is drawn a little smaller.
+const SKY_SCALE = 0.86;
+const circle = (cx, cy, r, n = 72) => Array.from({ length: n }, (_, i) => ({ x: cx + Math.cos((i / n) * Math.PI * 2) * r, y: cy + Math.sin((i / n) * Math.PI * 2) * r }));
+
+// Your shape as a die-cut sticker, in the view you picked (views/shape.js):
+// the white cut edge on its shadow, then the ground, the eight kites and the
+// view's own marks, all turned to the sticker's pose. The star is the star's
+// outline; the radar sits in its octagon; the asterism is a disc of night.
 function drawSticker(ctx, theme, data, grow) {
-  const { starCx: cx, starCy: cy, starR: r } = LAYOUT;
+  const view = SHAPE_VIEWS.includes(data.shape) ? data.shape : "star";
+  const { starCx: cx, starCy: cy } = LAYOUT;
+  const r = LAYOUT.starR * (view === "asterism" ? SKY_SCALE : 1);
   const pose = stickerPose(grow);
-  const star = starOutline(cx, cy, r).map(pt => place(pt, pose));
-  const rays = RADAR_KEYS.map((key, i) => starRay(i, (data.aspects || {})[key], cx, cy, r).map(pt => place(pt, pose)));
+  const at = (pts) => pts.map(pt => place(pt, pose));
+  const scores = RADAR_KEYS.map(key => (data.aspects || {})[key]);
+  const rim = at(view === "asterism" ? circle(cx, cy, r * 1.04) : shapeRim(view, cx, cy, r));
+  const kites = scores.map((_, i) => at(shapeKite(view, i, scores, cx, cy, r)));
+  const tips = kites.map(k => k[2]);
   const centre = place({ x: cx, y: cy }, pose);
 
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
-  // The cut edge: the same outline stroked wide in white, lifted on a shadow
-  // that is switched off again before anything else is drawn.
-  tracePath(ctx, star);
+  // The cut edge: the rim stroked wide in white, lifted on a shadow that is
+  // switched off again before anything else is drawn.
+  tracePath(ctx, rim);
   ctx.shadowColor = theme.lift;
   ctx.shadowBlur = LIFT.blur;
   ctx.shadowOffsetY = LIFT.dy;
@@ -262,27 +280,87 @@ function drawSticker(ctx, theme, data, grow) {
   ctx.shadowBlur = 0;
   ctx.shadowOffsetY = 0;
 
-  tracePath(ctx, star);
-  ctx.fillStyle = theme.starGround;
+  tracePath(ctx, rim);
+  ctx.fillStyle = view === "asterism" ? SKY.night : theme.starGround;
   ctx.fill();
+
+  if (view === "star") drawStarView(ctx, theme, kites, rim, pose);
+  else if (view === "radar") drawRadarView(ctx, theme, tips, pose, { cx, cy, r, at });
+  else drawAsterismView(ctx, scores, tips, pose, { cx, cy, r });
+
+  if (view !== "asterism") {
+    ctx.beginPath();
+    ctx.arc(centre.x, centre.y, CORE_R * pose.scale * (view === "radar" ? 0.5 : 1), 0, Math.PI * 2);
+    ctx.fillStyle = theme.core;
+    ctx.fill();
+    ctx.strokeStyle = theme.coreLine;
+    ctx.lineWidth = (view === "radar" ? 6 : 12) * pose.scale;
+    ctx.stroke();
+  }
+  ctx.lineCap = "butt";
+}
+
+function drawStarView(ctx, theme, kites, rim, pose) {
   ctx.fillStyle = theme.star;
-  rays.forEach(ray => {
-    tracePath(ctx, ray);
+  kites.forEach(kite => {
+    tracePath(ctx, kite);
     ctx.fill();
   });
-  tracePath(ctx, star);
+  tracePath(ctx, rim);
   ctx.strokeStyle = theme.starLine;
   ctx.lineWidth = 12 * pose.scale;
   ctx.stroke();
+}
 
-  ctx.beginPath();
-  ctx.arc(centre.x, centre.y, CORE_R * pose.scale, 0, Math.PI * 2);
-  ctx.fillStyle = theme.core;
+function drawRadarView(ctx, theme, tips, pose, { cx, cy, r, at }) {
+  ctx.strokeStyle = theme.starLine;
+  ctx.globalAlpha = 0.45;
+  ctx.lineWidth = 3 * pose.scale;
+  RINGS.forEach(f => {
+    tracePath(ctx, at(shapeRim("radar", cx, cy, r, f)));
+    ctx.stroke();
+  });
+  at(shapeRim("radar", cx, cy, r)).forEach(pt => {
+    const c = place({ x: cx, y: cy }, pose);
+    ctx.beginPath();
+    ctx.moveTo(c.x, c.y);
+    ctx.lineTo(pt.x, pt.y);
+    ctx.stroke();
+  });
+  ctx.globalAlpha = 0.75;
+  tracePath(ctx, tips);
+  ctx.fillStyle = theme.star;
   ctx.fill();
-  ctx.strokeStyle = theme.coreLine;
-  ctx.lineWidth = 12 * pose.scale;
+  ctx.globalAlpha = 1;
+  ctx.lineWidth = 8 * pose.scale;
   ctx.stroke();
-  ctx.lineCap = "butt";
+  tracePath(ctx, at(shapeRim("radar", cx, cy, r)));
+  ctx.lineWidth = 10 * pose.scale;
+  ctx.stroke();
+}
+
+function drawAsterismView(ctx, scores, tips, pose, { cx, cy, r }) {
+  ctx.fillStyle = SKY.speck;
+  SKY_SPECKS.forEach(([fx, fy]) => {
+    const pt = place({ x: cx + fx * r, y: cy + fy * r }, pose);
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, 2.6 * pose.scale, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  tracePath(ctx, tips);
+  ctx.strokeStyle = SKY.line;
+  ctx.lineWidth = 3 * pose.scale;
+  ctx.stroke();
+  ctx.fillStyle = SKY.star;
+  ctx.shadowColor = SKY.glow;
+  ctx.shadowBlur = 24 * pose.scale;
+  tips.forEach((pt, i) => {
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, asterismStarRadius(scores[i]) * r * pose.scale, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.shadowColor = "rgba(0, 0, 0, 0)";
+  ctx.shadowBlur = 0;
 }
 
 // The names under the sticker, two columns of four in radar order, each with
@@ -348,9 +426,10 @@ export function drawStoryCard(ctx, data, opts = {}) {
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = theme.ink;
   ctx.font = font(400, 112, WORD);
-  ctx.fillText("LIFE BALANCE", mid, LAYOUT.wordmark);
-  ctx.font = font(400, 68, WORD);
-  ctx.fillText("INDEX", mid, LAYOUT.wordmarkSub);
+  ctx.fillText("ASTERISM", mid, LAYOUT.wordmark);
+  ctx.font = font(400, 44, WORD);
+  ctx.fillStyle = theme.muted;
+  ctx.fillText("LIFE BALANCE INDEX", mid, LAYOUT.wordmarkSub);
   ctx.font = font(400, 24, SANS);
   ctx.fillStyle = theme.muted;
   ctx.fillText("asterism.plainpoint.net", mid, LAYOUT.url);
@@ -366,7 +445,8 @@ export function drawStoryCard(ctx, data, opts = {}) {
     ctx.fillText(fitText(ctx, data.dateText, maxWidth), mid, LAYOUT.date);
   }
 
-  drawSticker(ctx, theme, data, grow);
+  // The sheet's own choice of view wins over the page's, which only seeds it.
+  drawSticker(ctx, theme, SHAPE_VIEWS.includes(opts.shape) ? { ...data, shape: opts.shape } : data, grow);
   drawNames(ctx, theme, data, detail, grow);
 
   ctx.textAlign = "center";
@@ -401,7 +481,7 @@ export function drawStoryCard(ctx, data, opts = {}) {
 // Everything the card needs, assembled from state the dashboard already has.
 // `date` is formatted here rather than by the caller so the card follows the
 // active language's locale (Thai dates on a Thai card).
-export function storyCardData({ name, date, aspects, average, index, bandLabel, standing, grades }) {
+export function storyCardData({ name, date, aspects, average, index, bandLabel, standing, grades, shape }) {
   const when = date instanceof Date ? date : new Date(date || Date.now());
   return {
     name: name || "",
@@ -413,7 +493,8 @@ export function storyCardData({ name, date, aspects, average, index, bandLabel, 
     index,
     bandLabel: bandLabel || "",
     standing: standing || null,
-    grades: grades || {}
+    grades: grades || {},
+    shape: SHAPE_VIEWS.includes(shape) ? shape : "star"
   };
 }
 

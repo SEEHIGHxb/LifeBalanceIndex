@@ -85,3 +85,51 @@ export function starRay(i, value, cx, cy, r, half = "both") {
   if (half === "end") return [centre, tip, after];
   return [centre, before, tip, after];
 }
+
+// --- the three views ------------------------------------------------------
+// Your eight scores can be drawn three ways (the owner, 2026-09-28): the star
+// above, the radar the app had before the redesign, and "your asterism", the
+// radar's points as stars on a night sky, joined by faint lines. Every view is
+// eight kites of four points (centre, before, tip, after), so one view morphs
+// into another point by point. The tip is the same in all three (the score on
+// its axis); only the side points differ: the star's sit at its valley depth,
+// the radar's halfway to the neighbouring tips, so the kites tile the polygon.
+export const SHAPE_VIEWS = ["star", "radar", "asterism"];
+
+const tipOf = (i, scores, cx, cy, r) => {
+  const n = RADAR_KEYS.length;
+  const k = ((i % n) + n) % n;
+  return polar(cx, cy, r * (clampScore(scores[k]) / 100), tipAngle(k));
+};
+const midway = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+
+// Kite i of `view` for `scores` (0-100, RADAR_KEYS order), always four points.
+// A star half ("start"/"end", two readings in one star) repeats its tip, so it
+// morphs with a whole kite; the radar and the asterism have no halves.
+export function shapeKite(view, i, scores, cx, cy, r, half = "both") {
+  if (view === "star") {
+    const [centre, before, tip, after] = starRay(i, scores[i], cx, cy, r);
+    if (half === "start") return [centre, before, tip, tip];
+    if (half === "end") return [centre, tip, tip, after];
+    return [centre, before, tip, after];
+  }
+  const tip = tipOf(i, scores, cx, cy, r);
+  return [
+    { x: cx, y: cy },
+    midway(tipOf(i - 1, scores, cx, cy, r), tip),
+    tip,
+    midway(tip, tipOf(i + 1, scores, cx, cy, r))
+  ];
+}
+
+// The rim a view sits in: the star's outline, the radar's octagon, or none
+// (the asterism's sky is a circle).
+export function shapeRim(view, cx, cy, r, scale = 1) {
+  if (view === "star") return starOutline(cx, cy, r * scale);
+  if (view === "radar") return RADAR_KEYS.map((_, i) => polar(cx, cy, r * scale, tipAngle(i)));
+  return [];
+}
+
+// A point's star in the asterism, as a fraction of the figure's radius: its
+// size follows the score, and a zero score is still a faint star.
+export const asterismStarRadius = (score) => (0.9 + 2.4 * (clampScore(score) / 100)) / 47;

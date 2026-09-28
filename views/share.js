@@ -34,6 +34,7 @@ import { animate, linear, isReduced } from "../motion.js";
 import {
   renderStoryCard, drawStoryCard, storyCardData, DETAIL_LEVELS, STORY_W, STORY_H
 } from "../story-card.js";
+import { readShapeView, SHAPE_VIEWS } from "./shape.js";
 
 // Kept OUT of the app's state schema, in its own key, for the same reason
 // `lifequest_lang` is: these are display preferences, not assessment data, so
@@ -48,21 +49,24 @@ const DETAIL_LABELS = () => ({
   full: t("Everything")
 });
 
+// The view (star, radar or asterism) is not kept here: it starts from the one
+// the page shows, and a change in the sheet is for this card only.
 function readPrefs() {
   try {
     const saved = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}");
     return {
       theme: saved.theme === "navy" ? "navy" : "paper",
-      detail: DETAIL_LEVELS.includes(saved.detail) ? saved.detail : "shape"
+      detail: DETAIL_LEVELS.includes(saved.detail) ? saved.detail : "shape",
+      shape: readShapeView()
     };
   } catch {
-    return { theme: "paper", detail: "shape" };
+    return { theme: "paper", detail: "shape", shape: readShapeView() };
   }
 }
 
-function writePrefs(prefs) {
+function writePrefs({ theme, detail }) {
   try {
-    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+    localStorage.setItem(PREFS_KEY, JSON.stringify({ theme, detail }));
   } catch {
     // A full or blocked storage quota must not stop someone sharing.
   }
@@ -80,7 +84,7 @@ function canShareFiles() {
   }
 }
 
-const fileName = () => `life-balance-index-${new Date().toISOString().slice(0, 10)}.png`;
+const fileName = () => `asterism-${new Date().toISOString().slice(0, 10)}.png`;
 
 // `card` is the already-computed dashboard reading; the sheet recomputes
 // nothing, so the card can never disagree with the page behind it.
@@ -90,6 +94,7 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
   const data = storyCardData(card);
   const shareable = canShareFiles();
   const labels = DETAIL_LABELS();
+  const shapeNames = { star: t("Star"), radar: t("Radar"), asterism: t("Asterism") };
 
   const toggle = (group, value, label, active) =>
     `<button type="button" class="pill pill-light share-toggle" data-group="${group}" data-value="${value}" aria-pressed="${active}">${label}</button>`;
@@ -112,6 +117,12 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
           <span class="share-set">
             ${toggle("theme", "paper", t("Light"), prefs.theme === "paper")}
             ${toggle("theme", "navy", t("Dark"), prefs.theme === "navy")}
+          </span>
+        </div>
+        <div class="share-option" role="group" aria-labelledby="share-shape-label">
+          <span class="share-option-label" id="share-shape-label">${t("Shape")}</span>
+          <span class="share-set">
+            ${SHAPE_VIEWS.map(v => toggle("shape", v, shapeNames[v], prefs.shape === v)).join("")}
           </span>
         </div>
         <div class="share-option" role="group" aria-labelledby="share-show-label">

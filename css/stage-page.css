@@ -177,6 +177,9 @@ html[data-reduce-motion] .sky-fx { display: none; }
 }
 .hero .word { top: calc(740 * var(--px)); font-size: calc(170 * var(--px)); }
 .hero .inc { top: calc(910 * var(--px)); font-size: calc(124 * var(--px)); }
+/* On the Landing the second line is only a descriptor: small, spaced and
+   quiet under ASTERISM, so the name is what the eye lands on (v134). */
+.landing .hero .inc { top: calc(925 * var(--px)); font-size: calc(58 * var(--px)); letter-spacing: 0.14em; color: #736e66; }
 /* The Landing's call to begin, under the lockup on the first screen. Above
    the star's tap target, which covers only the star. */
 .hero-cta {
@@ -716,6 +719,7 @@ a.newsrow:hover .newsrow-title { text-decoration: underline; text-underline-offs
   .hero .part-mark { transform-origin: calc(410 * var(--px)) calc(370 * var(--px)); }
   .hero .word { top: calc(580 * var(--px)); font-size: calc(118 * var(--px)); }
   .hero .inc { top: calc(716 * var(--px)); font-size: calc(84 * var(--px)); }
+  .landing .hero .inc { top: calc(716 * var(--px)); font-size: calc(46 * var(--px)); }
   .page-top { padding: calc(80 * var(--px)) 0; }
   .page-top-grid { grid-template-columns: calc(170 * var(--px)) minmax(0, 1fr); gap: calc(30 * var(--px)) calc(40 * var(--px)); }
   .page-top-word { font-size: max(30px, calc(84 * var(--px))); margin: 0; }

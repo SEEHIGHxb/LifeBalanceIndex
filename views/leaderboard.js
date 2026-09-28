@@ -32,13 +32,10 @@ import { t, tp } from "../i18n.js";
 import { escapeHtml, aspectLabel } from "./helpers.js";
 import { CHAPTERS } from "./journey.js";
 import { topMarkup, label, renderStagePage } from "./stage-page.js";
-import { yourStarSvg, starOutlineAttr, starRayAttr, starLevelPath, openShareFor } from "./dashboard.js";
+import { openShareFor } from "./dashboard.js";
+import { shapeFigure, shapeSwitchMarkup, bindShapeSwitch, adoptShape, morphShape, readShapeView } from "./shape.js";
 import { aspectName } from "./news.js";
-import { animate, easeStar } from "../motion.js";
 
-// The other person's side of each ray slides to its new level in this long,
-// whoever is picked.
-const MORPH_MS = 480;
 const COPIED_MS = 1500;
 
 const scoresOf = (aspects) => CHAPTERS.map(c => Number((aspects || {})[c.aspect]) || 0);
@@ -90,26 +87,16 @@ function codesSection(myCode, folded) {
     </div></section>`;
 }
 
-// One star shared by two: each ray is split down its middle, your side filled
-// in gold to your score and theirs in ink to theirs, with the population
-// average dashed across every ray. The outline is the same symmetric star as
-// Home's, so only the fills differ.
-const raySides = (scores, half) => scores.map((s, i) => `<polygon points="${starRayAttr(i, s, half)}"/>`).join("");
-
-function duoFigure(state, them) {
+// One figure shared by two (views/shape.js): in the star each ray is split
+// down its middle, your side in gold and theirs in ink; in the radar and the
+// asterism the two shapes lie over each other. The population average is
+// dashed in every view, and the eight regions' dots mark the rim.
+function duoFigure(state, them, view) {
   const dots = CHAPTERS.map((c, i) => {
     const a = -Math.PI / 2 + i * Math.PI / 4;
     return `<circle cx="${(50 + 49 * Math.cos(a)).toFixed(2)}" cy="${(50 + 49 * Math.sin(a)).toFixed(2)}" r="1.3" fill="${c.hue}"/>`;
   }).join("");
-  return `
-    <div class="duo-fig"><svg viewBox="0 0 100 100" aria-hidden="true">
-      <polygon class="duo-ground" points="${starOutlineAttr()}"/>
-      <g class="duo-you">${raySides(scoresOf(state.aspects), "start")}</g>
-      <g class="duo-them">${raySides(scoresOf(them.aspects), "end")}</g>
-      <path class="duo-avg" d="${starLevelPath(AVERAGES)}"/>
-      <polygon class="duo-edge" points="${starOutlineAttr()}"/>
-      ${dots}
-    </svg></div>`;
+  return `<div class="duo-fig">${shapeFigure({ view, you: scoresOf(state.aspects), them: scoresOf(them.aspects), avg: AVERAGES, extra: dots })}</div>`;
 }
 
 // Everyone added, in the order they were added. Each can be picked to lie over
@@ -137,7 +124,7 @@ function peopleMarkup(friends, pick, confirm) {
     <div class="people-rm">${removes}</div>`;
 }
 
-function duoSection(state, friends, pick, confirm) {
+function duoSection(state, friends, pick, confirm, view) {
   const you = tp("{name} (You)", { name: escapeHtml(state.profile.name) });
   const them = friends[pick];
   const body = !them
@@ -149,12 +136,13 @@ function duoSection(state, friends, pick, confirm) {
         <li><i class="lg-avg"></i>${t("Population average")}</li>
       </ul>
       ${peopleMarkup(friends, pick, confirm)}
-      ${duoFigure(state, them)}`;
+      ${duoFigure(state, them, view)}
+      <p class="duo-switch">${shapeSwitchMarkup(view)}</p>`;
   return `
     <section class="panel statement duo"><div class="wrap split">
       <div>
         ${label(t("Ray by ray"))}
-        <p class="duo-note">${them ? t("Pick whose star shares yours: in each ray your side is gold and theirs is dark. The dashed line is the population average.") : t("Not a ranking. Each column is one person's eight aspects, marked against the population average — so you can see where you differ, not who is ahead.")}</p>
+        <p class="duo-note">${them ? t("Pick whose shape lies over yours: yours is gold and theirs is dark, or pale blue in the asterism. The dashed line is the population average.") : t("Not a ranking. Each column is one person's eight aspects, marked against the population average — so you can see where you differ, not who is ahead.")}</p>
         <p class="duo-share"><button type="button" id="btn-share-radar" class="pill pill-light">${escapeHtml(t("Share your star"))}</button></p>
       </div>
       <div>${body}</div>
@@ -198,17 +186,18 @@ export function compareMarkup(state, { pick = 0, confirm = null } = {}) {
   const learn = friends.map(f => complementLine(f, state.aspects)).join("");
   const count = tp("You + {n}", { n: friends.length });
   const anyone = friends.length > 0;
+  const view = readShapeView();
   return `
     <div class="stage-page compare">
       ${topMarkup({
-        mark: yourStarSvg(scoresOf(state.aspects)),
+        mark: shapeFigure({ view, you: scoresOf(state.aspects) }),
         word: t("Side by Side"),
         inc: count,
         tapLabel: t("Play with the star"),
         body: `<p class="page-top-lead">${t("Not a ranking.")} ${t("Where you differ, not who is ahead.")}</p>`
       })}
       ${anyone ? "" : codesSection(myCode, false)}
-      ${duoSection(state, friends, Math.min(pick, Math.max(0, friends.length - 1)), confirm)}
+      ${duoSection(state, friends, Math.min(pick, Math.max(0, friends.length - 1)), confirm, view)}
       ${anyone ? `
       <section class="panel statement compare-aspects"><div class="wrap">
         ${label(t("Eight aspects, side by side"))}
@@ -225,19 +214,6 @@ export function compareMarkup(state, { pick = 0, confirm = null } = {}) {
 
 // --- the view -----------------------------------------------------------------
 
-// Slides the picked person's side of every ray to its new level. Without
-// motion it is simply redrawn at the new levels.
-function morphTo(group, from, to, scope) {
-  const sides = group ? [...group.querySelectorAll("polygon")] : [];
-  if (!sides.length) return;
-  const draw = (p) => sides.forEach((side, i) => side.setAttribute("points", starRayAttr(i, from[i] + (to[i] - from[i]) * p, "end")));
-  if (!scope) {
-    draw(1);
-    return;
-  }
-  animate({ duration: MORPH_MS, ease: easeStar, update: draw, signal: scope.signal, reduced: "end" })
-    .catch(err => console.error("Side by Side morph failed:", err));
-}
 
 // `view` is the page's own redraw: who is picked, who is asking to be removed,
 // where focus goes and what to say about it.
@@ -250,6 +226,14 @@ export function renderLeaderboard(containerId, state, onRefresh, view = {}) {
   const scope = renderStagePage(container, () => compareMarkup(state, { pick, confirm }));
   const redraw = (next) => renderLeaderboard(containerId, state, onRefresh, { pick, ...next });
   const root = container.querySelector?.(".compare");
+
+  // Every figure knows what it shows, so the switch and a new pick can morph it.
+  root?.querySelectorAll("svg.shape").forEach(svg => adoptShape(svg, {
+    view: svg.dataset.view,
+    you: scoresOf(state.aspects),
+    them: svg.classList.contains("shape-duo") && friends[pick] ? scoresOf(friends[pick].aspects) : null
+  }));
+  bindShapeSwitch(root, scope);
 
   if (root && focus) root.querySelector(focus)?.focus();
   const announcer = document.getElementById("route-announcer");
@@ -317,7 +301,6 @@ export function renderLeaderboard(containerId, state, onRefresh, view = {}) {
 
   const pickTo = (k) => {
     if (k === pick || !friends[k]) return;
-    const from = scoresOf(friends[pick].aspects);
     pick = k;
     root.querySelectorAll(".people [data-pick]").forEach((b, j) => {
       b.setAttribute("aria-checked", String(j === k));
@@ -325,7 +308,7 @@ export function renderLeaderboard(containerId, state, onRefresh, view = {}) {
     });
     const name = root.querySelector("#duo-them-name");
     if (name) name.textContent = friends[k].name;
-    morphTo(root.querySelector(".duo-them"), from, scoresOf(friends[k].aspects), scope);
+    morphShape(root.querySelector(".duo-fig svg.shape"), { them: scoresOf(friends[k].aspects) }, scope);
   };
 
   root.addEventListener("click", (e) => {

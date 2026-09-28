@@ -1,0 +1,186 @@
+// views/shape.js - your eight scores as a star, a radar or your asterism
+// (v134; the owner, 2026-09-28: bring back the radar, swap between them, and
+// a third view that fits the name).
+//
+// One figure, three views. Every view is eight kites (chart.js shapeKite), so
+// a switch morphs the same eight polygons point by point: star to radar moves
+// only the valleys out to the radar's edges, and radar to asterism keeps the
+// points, fades the fill and lights a star on each one over a night disc. The
+// guides (the star's ground and outline, the radar's rings, the night) are
+// layers the figure's data-view shows and hides in CSS (css/shape.css).
+//
+// The choice is a display preference kept in its own key, like the language:
+// it survives an erase and follows the reader to Home, Side by Side and the
+// share card.
+import { shapeKite, shapeRim, asterismStarRadius, SHAPE_VIEWS } from "../chart.js";
+import { animate, easeStar } from "../motion.js";
+import { t } from "../i18n.js";
+import { escapeHtml } from "./helpers.js";
+
+export { SHAPE_VIEWS };
+const VIEW_KEY = "lifequest_shape_view";
+const MORPH_MS = 620;
+const C = 50;
+export const SHAPE_R = 47;
+const RINGS = [0.25, 0.5, 0.75, 1];
+// The sky behind the asterism: fixed specks, the same on every visit.
+const SPECKS = [[22, 30], [74, 18], [83, 64], [30, 80], [58, 88], [12, 55], [66, 40], [40, 16], [90, 42], [18, 72], [48, 60], [79, 84]];
+
+export function readShapeView() {
+  try {
+    const saved = localStorage.getItem(VIEW_KEY);
+    return SHAPE_VIEWS.includes(saved) ? saved : "star";
+  } catch {
+    return "star";
+  }
+}
+
+export function saveShapeView(view) {
+  try {
+    localStorage.setItem(VIEW_KEY, view);
+  } catch {
+    // Blocked storage only means the choice is not remembered.
+  }
+}
+
+const fmt = (n) => n.toFixed(2);
+const attr = (pts) => pts.map(p => `${fmt(p.x)} ${fmt(p.y)}`).join(" ");
+const lerpPt = (a, b, p) => ({ x: a.x + (b.x - a.x) * p, y: a.y + (b.y - a.y) * p });
+// Scores as numbers in 0..100: a missing one reads as 0, as the star draws it.
+const norm = (scores) => (scores ? scores.map(v => Math.max(0, Math.min(100, Number(v) || 0))) : null);
+
+const starRadius = (score) => asterismStarRadius(score) * SHAPE_R;
+
+// One reading's layer: its eight kites, the line through its tips and a star
+// on each tip. Which of the three shows is the view's business (CSS).
+function personMarkup(cls, view, scores, half) {
+  const kites = scores.map((_, i) => shapeKite(view, i, scores, C, C, SHAPE_R, half));
+  const tips = kites.map(k => k[2]);
+  return `<g class="sh-person ${cls}">` +
+    `<g class="sh-fill">${kites.map(k => `<polygon points="${attr(k)}"/>`).join("")}</g>` +
+    `<polygon class="sh-line" points="${attr(tips)}"/>` +
+    `<g class="sh-stars">${tips.map((p, i) => `<circle cx="${fmt(p.x)}" cy="${fmt(p.y)}" r="${fmt(starRadius(scores[i]))}"/>`).join("")}</g>` +
+    `</g>`;
+}
+
+function guidesMarkup() {
+  const rings = RINGS.map(f => `<polygon points="${attr(shapeRim("radar", C, C, SHAPE_R, f))}"/>`).join("");
+  const spokes = shapeRim("radar", C, C, SHAPE_R).map(p => `<line x1="${C}" y1="${C}" x2="${fmt(p.x)}" y2="${fmt(p.y)}"/>`).join("");
+  const specks = SPECKS.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="0.45"/>`).join("");
+  return `<circle class="sh-night" cx="${C}" cy="${C}" r="49"/>` +
+    `<g class="sh-specks">${specks}</g>` +
+    `<polygon class="sh-ground" points="${attr(shapeRim("star", C, C, SHAPE_R))}"/>` +
+    `<g class="sh-grid">${rings}${spokes}</g>`;
+}
+
+// Each ray's average as an open chevron (valley, tip, valley).
+function avgLevels(avg) {
+  return avg.map((_, i) => {
+    const [, a, tip, b] = shapeKite("star", i, avg, C, C, SHAPE_R);
+    return `M${fmt(a.x)} ${fmt(a.y)}L${fmt(tip.x)} ${fmt(tip.y)}L${fmt(b.x)} ${fmt(b.y)}`;
+  }).join("");
+}
+
+// The figure. `you` and `them` are eight scores in RADAR_KEYS order; with
+// `them`, the star view splits every ray between the two ("start" is yours).
+// `avg` dashes the population average, as a level on each ray in the star and
+// as a ring through the average points in the other two.
+export function shapeFigure({ view = readShapeView(), you, them = null, avg = null, extra = "" } = {}) {
+  you = norm(you);
+  them = norm(them);
+  const duo = !!them;
+  const avgMarkup = avg
+    ? `<path class="sh-avg sh-avg-star" d="${avgLevels(avg)}"/>` +
+      `<polygon class="sh-avg sh-avg-ring" points="${attr(avg.map((_, i) => shapeKite("radar", i, avg, C, C, SHAPE_R)[2]))}"/>`
+    : "";
+  return `<svg class="shape${duo ? " shape-duo" : ""}" data-view="${view}" viewBox="0 0 100 100" aria-hidden="true">` +
+    guidesMarkup() +
+    personMarkup("sh-you", view, you, duo ? "start" : "both") +
+    (duo ? personMarkup("sh-them", view, them, "end") : "") +
+    avgMarkup +
+    `<polygon class="sh-edge" points="${attr(shapeRim("star", C, C, SHAPE_R))}"/>` +
+    `<circle class="sh-hub" cx="${C}" cy="${C}" r="6"/>` +
+    extra +
+    `</svg>`;
+}
+
+// Redraws one reading part way (p, 0..1) from one view and set of scores to
+// another. Tips and star sizes follow the scores; the kites follow both.
+function drawPerson(layer, half, from, to, p) {
+  if (!layer) return;
+  const polys = layer.querySelectorAll(".sh-fill polygon");
+  const stars = layer.querySelectorAll(".sh-stars circle");
+  const tips = [];
+  polys.forEach((poly, i) => {
+    const a = shapeKite(from.view, i, from.scores, C, C, SHAPE_R, half);
+    const b = shapeKite(to.view, i, to.scores, C, C, SHAPE_R, half);
+    const kite = a.map((pt, k) => lerpPt(pt, b[k], p));
+    poly.setAttribute("points", attr(kite));
+    tips.push(kite[2]);
+    const star = stars[i];
+    if (star) {
+      star.setAttribute("cx", fmt(kite[2].x));
+      star.setAttribute("cy", fmt(kite[2].y));
+      star.setAttribute("r", fmt(starRadius(from.scores[i] + (to.scores[i] - from.scores[i]) * p)));
+    }
+  });
+  layer.querySelector(".sh-line")?.setAttribute("points", attr(tips));
+}
+
+// Records what a freshly drawn figure shows, so the first morph knows.
+export function adoptShape(svg, { view, you, them = null }) {
+  if (svg) svg.__shape = { view, you: norm(you), them: norm(them) };
+}
+
+// Moves a figure to a new view and/or new scores. With a live motion scope it
+// morphs; without one (a still page, reduced motion) it lands at once. The
+// figure remembers where it is going, so a second switch mid-way starts from
+// the new target rather than jumping back.
+export function morphShape(svg, next, scope = null) {
+  if (!svg?.__shape) return Promise.resolve(false);
+  const from = svg.__shape;
+  const to = { view: next.view ?? from.view, you: norm(next.you) ?? from.you, them: norm(next.them) ?? from.them };
+  svg.__shape = to;
+  svg.dataset.view = to.view;
+  const duo = svg.classList.contains("shape-duo");
+  const draw = (p) => {
+    drawPerson(svg.querySelector(".sh-you"), duo ? "start" : "both", { view: from.view, scores: from.you }, { view: to.view, scores: to.you }, p);
+    if (duo) drawPerson(svg.querySelector(".sh-them"), "end", { view: from.view, scores: from.them }, { view: to.view, scores: to.them }, p);
+  };
+  if (!scope) {
+    draw(1);
+    return Promise.resolve(true);
+  }
+  return animate({ duration: MORPH_MS, ease: easeStar, update: draw, signal: scope.signal, reduced: "end" })
+    .catch(err => {
+      console.error("Shape morph failed:", err);
+      draw(1);
+    });
+}
+
+export function shapeSwitchMarkup(view = readShapeView()) {
+  const names = { star: t("Star"), radar: t("Radar"), asterism: t("Asterism") };
+  return `<div class="shape-switch" role="group" aria-label="${escapeHtml(t("Show your eight aspects as"))}">` +
+    SHAPE_VIEWS.map(v => `<button type="button" class="shape-opt" data-shape="${v}" aria-pressed="${v === view}">${escapeHtml(names[v])}</button>`).join("") +
+    `</div>`;
+}
+
+// Wires every switch under `root`: the choice is saved and every figure under
+// `root` moves to it, so a page with two figures keeps them in step. `scope`
+// is the page's motion scope, or null on a still page. The listeners sit on
+// the switches themselves, which each render draws afresh, so a redraw never
+// stacks a second one.
+export function bindShapeSwitch(root, scope) {
+  if (!root) return;
+  const choose = (view) => {
+    saveShapeView(view);
+    root.querySelectorAll(".shape-opt").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.shape === view)));
+    root.querySelectorAll("svg.shape").forEach(svg => {
+      if (svg.dataset.view !== view) morphShape(svg, { view }, scope);
+    });
+  };
+  root.querySelectorAll(".shape-switch").forEach(group => group.addEventListener("click", (e) => {
+    const view = e.target.closest(".shape-opt")?.dataset.shape;
+    if (SHAPE_VIEWS.includes(view)) choose(view);
+  }));
+}

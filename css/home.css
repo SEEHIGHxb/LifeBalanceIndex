@@ -20,6 +20,9 @@
   gap: calc(144 * var(--px));
   align-items: center;
 }
+/* The star and its switch (star / radar / asterism, views/shape.js). */
+.home-star-col { display: flex; flex-direction: column; align-items: center; gap: calc(44 * var(--px)); }
+.home-star-col .home-star { width: 100%; }
 .home-star { position: relative; aspect-ratio: 1; }
 .home-star-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .star-hit {
@@ -201,6 +204,9 @@
   .home-top { padding: calc(80 * var(--px)) 0; }
   /* The star beside the index; the rest runs the full width under them. */
   .home-top-grid { grid-template-columns: calc(230 * var(--px)) minmax(0, 1fr); gap: calc(30 * var(--px)) calc(40 * var(--px)); align-items: center; }
+  /* The star column is too narrow for the switch: it takes its own row under the reading. */
+  .home-star-col { display: contents; }
+  .home-top .shape-switch { grid-column: 1 / -1; order: 1; justify-self: start; }
   .home-reading { display: contents; }
   .home-top .balance-index { flex-direction: column; gap: calc(10 * var(--px)); margin: 0; }
   .home-top .balance-index-caption { display: none; }

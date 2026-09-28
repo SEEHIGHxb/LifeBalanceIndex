@@ -111,11 +111,7 @@
 .stage-page .people-ask p { flex-basis: 100%; max-width: none; margin: 0; font-weight: 700; font-size: 15px; line-height: 1.6; }
 .duo-fig { width: min(100%, calc(760 * var(--px))); aspect-ratio: 1; }
 .duo-fig svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.duo-ground { fill: #fbf3e2; }
-.duo-you { fill: #e2b866; }
-.duo-them { fill: rgba(27, 27, 27, 0.6); }
-.duo-avg { fill: none; stroke: var(--frame-ink); stroke-width: 0.5; stroke-dasharray: 1.6 1.2; stroke-linejoin: round; opacity: 0.7; }
-.duo-edge { fill: none; stroke: #a88752; stroke-width: 0.9; stroke-linejoin: round; }
+.stage-page .duo .duo-switch { margin: calc(30 * var(--px)) 0 0; }
 
 /* The eight aspects as one table (2026-09-26; it was a card each). Many
    people scroll the table sideways, never the page. */

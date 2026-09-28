@@ -61,6 +61,11 @@ function routeFromHash() {
   if (path === "methodology") {
     return { type: "methodology" };
   }
+  // The Landing again, for someone who has taken the journey: where the
+  // ASTERISM wordmark leads (the owner, 2026-09-28).
+  if (path === "welcome") {
+    return { type: "welcome" };
+  }
   // Not a tab: the level-year screen is occasional (one birthday a year, plus
   // the one-off birthday question), so it is reached from the status card
   // rather than taking a permanent fifth slot in a four-wide mobile tab grid.
@@ -203,7 +208,7 @@ function initializeApp() {
     document.getElementById("navpill").classList.remove("d-none");
     document.getElementById("journey-progress").classList.add("d-none");
     document.body.classList.remove("on-journey");
-    document.getElementById("brand-home").setAttribute("href", "#/dashboard");
+    document.getElementById("brand-home").setAttribute("href", "#/welcome");
     document.getElementById("footer-methodology").classList.remove("d-none");
     renderActiveTab();
   }
@@ -315,6 +320,7 @@ function screenFor(route, activeTab, state) {
     // as the Profile page's own save does.
     case "deep": return ["assessments", m => m.renderDeepAssessment(main, state, handleDeepComplete, handleProfileSaved)];
     case "methodology": return ["methodology", m => m.renderMethodology(main, state)];
+    case "welcome": return ["landing", m => m.renderLanding(main, { returning: true })];
     case "year": return ["year", m => m.renderYearReview(main, state, renderActiveTab)];
     case "profile": return ["profile", m => {
       m.renderProfile(main, state, handleProfileSaved);
@@ -350,6 +356,7 @@ function announceRoute(route) {
   else if (route.type === "methodology") label = t("Methodology");
   else if (route.type === "year") label = t("Your year");
   else if (route.type === "profile") label = t("Profile");
+  else if (route.type === "welcome") label = "Asterism";
   else label = t(tabNames[route.tab] || "Overview");
   el.textContent = tp("{view} view", { view: label });
 }

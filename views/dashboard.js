@@ -32,6 +32,7 @@ import {
 import { goalTemplate } from "../goals.js";
 import { seasonPace } from "../season.js";
 import { openShareSheet } from "./share.js";
+import { shapeFigure, shapeSwitchMarkup, bindShapeSwitch, adoptShape, readShapeView } from "./shape.js";
 import { CHAPTERS } from "./journey.js";
 import { SPRITES, onAbort, burst } from "./stage.js";
 import {
@@ -128,6 +129,8 @@ function readHome(state) {
     strongest: ASPECT_KEYS.reduce((a, b) => (rel(b) > rel(a) ? b : a)),
     standing: aspectsAtOrAboveAverage(state.aspects),
     scores: CHAPTERS.map(c => state.aspects[c.aspect]),
+    // Star, radar or asterism (views/shape.js): the reader's last choice.
+    view: readShapeView(),
     suggestions: getTopSuggestions(state, 3),
     reviewDue: stateManager.isWeeklyReviewDue(),
     checkinDue: stateManager.isCheckinDue(),
@@ -164,9 +167,12 @@ function topSection(h) {
       <div class="burst-layer" aria-hidden="true"></div>
       <div class="wrap home-top-grid">
         <h2 class="sr-only">${escapeHtml(tp("Your star — Balance Index {n}", { n: h.index }))}</h2>
-        <div class="home-star">
-          <div class="home-star-mark">${yourStarSvg(h.scores)}</div>
-          <button class="star-hit" type="button" aria-label="${escapeHtml(t("Play with your star"))}"></button>
+        <div class="home-star-col">
+          <div class="home-star">
+            <div class="home-star-mark">${shapeFigure({ view: h.view, you: h.scores })}</div>
+            <button class="star-hit" type="button" aria-label="${escapeHtml(t("Play with your star"))}"></button>
+          </div>
+          ${shapeSwitchMarkup(h.view)}
         </div>
         <div class="home-reading">
           ${balanceIndexBlock(h.index, h.band, h.weakest, h.standing)}
@@ -451,6 +457,9 @@ export function renderDashboard(containerId, state, onExportBackup) {
   // Beside the care notice nothing moves: the notice never does, and a page
   // bursting with stars around it would be the wrong tone.
   const scope = renderStagePage(container, () => homeMarkup(h), { still: !!h.careNotice });
+  // The switch works on a still page too; there it redraws without moving.
+  adoptShape(container.querySelector(".home-star-mark svg.shape"), { view: h.view, you: h.scores });
+  bindShapeSwitch(container, scope);
   if (scope) {
     try {
       mountStar(container, scope);
@@ -496,7 +505,8 @@ function shareStar(h) {
     index: h.index,
     bandLabel: h.band.label,
     standing: h.standing,
-    grades: h.grades
+    grades: h.grades,
+    shape: readShapeView()
   }, { showMentalNote: isBottomGrade(h.grades.mental) });
 }
 

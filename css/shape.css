@@ -1,0 +1,77 @@
+/* css/shape.css - your eight scores as a star, a radar or your asterism
+   (views/shape.js, v134). The figure's data-view says which layers show; they
+   fade while the kites morph (the kites are moved in JS, frame by frame). */
+
+.shape { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.shape .sh-night { fill: #1b1b1b; }
+.shape .sh-specks circle { fill: #ffffff; opacity: 0.55; }
+.shape .sh-ground { fill: #fbf3e2; }
+.shape .sh-grid { fill: none; stroke: #a88752; stroke-width: 0.35; stroke-opacity: 0.5; }
+.shape .sh-edge { fill: none; stroke: #a88752; stroke-width: 2.8; stroke-linejoin: round; }
+.shape .sh-hub { fill: #fbf8f1; stroke: #6f7d64; stroke-width: 2.4; }
+.shape .sh-fill { fill: #e2b866; }
+.shape .sh-line { fill: none; stroke: #a88752; stroke-width: 1.4; stroke-linejoin: round; }
+.shape .sh-stars circle { fill: #f6e3b8; }
+.shape .sh-avg { fill: none; stroke: var(--frame-ink); stroke-width: 0.5; stroke-dasharray: 1.6 1.2; stroke-linejoin: round; }
+
+/* Every view-specific layer starts hidden; each view lights its own. */
+.shape :is(.sh-night, .sh-specks, .sh-ground, .sh-grid, .sh-edge, .sh-hub, .sh-line, .sh-stars, .sh-avg) { opacity: 0; }
+.shape :is(.sh-night, .sh-specks, .sh-ground, .sh-grid, .sh-edge, .sh-hub, .sh-fill, .sh-line, .sh-stars, .sh-avg) {
+  transition: opacity 420ms ease, fill-opacity 420ms ease, stroke 420ms ease, fill 420ms ease;
+}
+
+.shape[data-view="star"] :is(.sh-ground, .sh-edge, .sh-hub) { opacity: 1; }
+.shape[data-view="star"] .sh-avg-star { opacity: 0.7; }
+
+.shape[data-view="radar"] :is(.sh-grid, .sh-line) { opacity: 1; }
+.shape[data-view="radar"] .sh-fill { fill-opacity: 0.55; }
+.shape[data-view="radar"] .sh-avg-ring { opacity: 0.7; }
+
+.shape[data-view="asterism"] :is(.sh-night, .sh-specks, .sh-stars) { opacity: 1; }
+.shape[data-view="asterism"] .sh-fill { fill: #f0d8a8; fill-opacity: 0.07; }
+.shape[data-view="asterism"] .sh-line { opacity: 0.75; stroke: #f0d8a8; stroke-width: 0.5; }
+.shape[data-view="asterism"] .sh-stars circle { filter: drop-shadow(0 0 1.4px #f0d8a8); }
+.shape[data-view="asterism"] .sh-avg-ring { opacity: 0.45; stroke: #ffffff; }
+
+/* Two readings (Side by Side): yours gold, theirs ink, and in the sky a
+   paler, bluer star so the two constellations stay apart. */
+.shape-duo .sh-edge { stroke-width: 0.9; }
+.shape-duo[data-view="star"] .sh-hub { opacity: 0; }
+.shape-duo .sh-them .sh-fill { fill: #1b1b1b; fill-opacity: 0.6; }
+.shape-duo .sh-them .sh-line { stroke: #1b1b1b; }
+.shape-duo[data-view="radar"] .sh-them .sh-fill { fill-opacity: 0.22; }
+.shape-duo[data-view="asterism"] .sh-them .sh-fill { fill-opacity: 0; }
+.shape-duo[data-view="asterism"] .sh-them .sh-line { stroke: #b8c8f0; }
+.shape-duo[data-view="asterism"] .sh-them .sh-stars circle { fill: #dfe7ff; filter: drop-shadow(0 0 1.4px #b8c8f0); }
+
+/* The switch under a figure. */
+.shape-switch {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(27, 27, 27, 0.06);
+}
+.shape-opt {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--frame-ink);
+  cursor: pointer;
+  transition: background-color 160ms linear, color 160ms linear;
+}
+.shape-opt[aria-pressed="true"] { background: var(--frame-ink); color: #ffffff; }
+.shape-opt:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
+
+html[data-reduce-motion] .shape *,
+html[data-reduce-motion] .shape-opt { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .shape *,
+  .shape-opt { transition: none; }
+}

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `133`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `134`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.67.0] - 2026-09-28
+
+### Added
+- **Star, Radar, Asterism** (v134). Your eight scores can be drawn three ways, switched under the figure on Home and Side by Side and in the share sheet: the star, the radar the app had before the redesign, and "your asterism": the radar`s points as stars on a night disc, sized by score and joined by faint lines. `chart.js shapeKite` draws every view as eight four-point kites, so a switch morphs the same polygons point by point (star to radar moves only the valleys; radar to asterism fades the fill and lights the points) while CSS fades each view`s guides (`css/shape.css`). The choice is remembered in `lifequest_shape_view` and seeds the share card, which draws a matching sticker (octagon for the radar, a disc of night for the asterism). Side by Side overlays the two shapes in the radar and asterism; the star keeps its split rays. Reduced motion and still pages switch without moving.
+- The ASTERISM wordmark now leads everyone to the Landing (`#/welcome` once the journey is done), whose calls read "Open your star" and lead Home; the restore-from-backup link is only offered before the journey.
+
+### Changed
+- On the Landing, LIFE BALANCE INDEX under ASTERISM is small, spaced and grey, so the name leads.
+- The share card`s wordmark reads ASTERISM over a small LIFE BALANCE INDEX (it still read LIFE BALANCE / INDEX), and the saved image is `asterism-DATE.png`.
+- Thai drafts for the switch, "Open your star" and the Side by Side note await the owner review.
 
 ## [2.66.1] - 2026-09-28
 

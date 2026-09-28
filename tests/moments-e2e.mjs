@@ -486,8 +486,8 @@ try {
     localStorage.setItem("lifequest_state", JSON.stringify(s));
   });
   await page.reload({ waitUntil: "networkidle" });
-  await openHash(page, "#/leaderboard", ".compare .duo-them");
-  const shape = () => page.evaluate(() => [...document.querySelectorAll(".duo-them polygon")].map(p => p.getAttribute("points")).join(" | "));
+  await openHash(page, "#/leaderboard", ".compare .duo-fig .sh-them");
+  const shape = () => page.evaluate(() => [...document.querySelectorAll(".duo-fig .sh-them .sh-fill polygon")].map(p => p.getAttribute("points")).join(" | "));
   const from = await shape();
   await page.click('.people [data-pick="1"]');
   await advance(page, 200);
@@ -531,7 +531,7 @@ try {
   while ((await page.locator(".survey-page:not(.d-none) .btn-onb-next").count()) && walked++ < 60) await next(page);
   await page.click('#onboarding-form button[type="submit"]');
   // Onboarded: the wordmark becomes a link home only once there is a home.
-  await page.waitForSelector('#brand-home[href="#/dashboard"]', { state: "attached", timeout: 10000 });
+  await page.waitForSelector('#brand-home[href="#/welcome"]', { state: "attached", timeout: 10000 });
   await goTo(page, "quests");
   await goTo(page, "dashboard");
   await page.waitForSelector(".home .home-star svg", { timeout: 10000 });

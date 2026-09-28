@@ -24,6 +24,14 @@ export const TH = {
   "Grit {g}/5 — the onboarding measure is the perseverance facet only (4 of the 8 Grit-S items), so this is indicative, not an exact match to the ~3.4 reference.": "ความมุ่งมั่น {g}/5 — แบบวัดตอนเริ่มต้นครอบคลุมเฉพาะด้านความเพียร (4 จาก 8 ข้อของ Grit-S) จึงเป็นเพียงค่าชี้บ่ง ไม่ใช่การเทียบตรงกับค่าอ้างอิง ~3.4",
   // --- Core-surface i18n leaks fixed (finding #10) ---
   "Asterism: Life Balance Index": "Asterism: ดัชนีสมดุลชีวิต", // v131 rename, awaiting the owner review
+  // v134 drafts, awaiting the owner review: the star / radar / asterism switch.
+  "Star": "ดาว",
+  "Radar": "เรดาร์",
+  "Asterism": "กลุ่มดาว",
+  "Show your eight aspects as": "แสดง 8 ด้านของคุณเป็น",
+  "Shape": "รูปทรง",
+  "Open your star": "เปิดดาวของคุณ",
+  "Pick whose shape lies over yours: yours is gold and theirs is dark, or pale blue in the asterism. The dashed line is the population average.": "เลือกคนที่จะวางรูปทรงทับของคุณ: ของคุณเป็นสีทอง ของเขาเป็นสีเข้ม หรือสีฟ้าอ่อนในมุมมองกลุ่มดาว เส้นประคือค่าเฉลี่ยของประชากร",
   "Lv.": "Lv.",
   // Recovery banner + storage-error toast (findings #1/#2, now translated)
   "We found earlier data we couldn't open after an update. Download it before it's replaced.": "เราพบข้อมูลเก่าที่เปิดไม่ได้หลังการอัปเดต ดาวน์โหลดเก็บไว้ก่อนที่จะถูกแทนที่",
@@ -1354,7 +1362,6 @@ export const TH = {
   "Not a ranking.": "ไม่ใช่การจัดอันดับ",
   "Where you differ, not who is ahead.": "ดูว่าต่างกันตรงไหน ไม่ใช่ใครนำใคร",
   "Ray by ray": "ทีละแฉก",
-  "Pick whose star shares yours: in each ray your side is gold and theirs is dark. The dashed line is the population average.": "เลือกว่าจะให้ดาวของใครอยู่คู่กับดาวของคุณ ในแต่ละแฉก ฝั่งสีทองคือคุณ ฝั่งสีเข้มคือเขา เส้นประคือค่าเฉลี่ยของประชากร",
   "Whose star shares yours": "ดาวของใครที่จะอยู่คู่กับดาวของคุณ",
   "Eight aspects, side by side": "แปดด้าน เทียบเคียงกัน",
   "What they have cleared": "ด้านที่เขาทำได้ถึงแล้ว",

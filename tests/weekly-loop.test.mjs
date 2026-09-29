@@ -58,6 +58,10 @@ test("the review renders every screen, shows only the first, and submits from th
   assert.equal((out.match(/type="submit"/g) || []).length, 1);
   assert.ok(out.lastIndexOf("rv-next") < out.indexOf('type="submit"'), "a Next button follows the submit");
   for (const field of REVIEW_FIELDS) assert.match(out, new RegExp(`id="rev-${field}"`));
+  // v144, the owner's cut list: a one-line intro, and no section heading
+  // under a question that already says it.
+  assert.match(out, /Last week(&#39;|')s answers are filled in\. Change only what(&#39;|')s different\./);
+  assert.doesNotMatch(out, /Report a rough weekly average|Activity this week|Daily habits \(weekly average\)|Monthly habits \(update/);
 });
 
 test("a review done for the week lists the past reviews newest first", () => {
@@ -77,6 +81,12 @@ test("a review done for the week lists the past reviews newest first", () => {
   const dates = [...html().matchAll(/class="newsrow-date">([^<]*)</g)].map(m => m[1]);
   assert.deepEqual(dates, ["2026.09.08", "2026.09.01"]);
   assert.match(html(), /id="rv-done-head"/);
+  // v144: a week with no pledges shows its points alone, not "0/0 pledges met";
+  // the next date in one line; the way out is named as the menu names it.
+  assert.doesNotMatch(html(), /0\/0 pledges met/);
+  assert.match(html(), /1\/1 pledges met · \+75 points/);
+  assert.match(html(), /class="rv-done-note">Next review opens [^<]+\.</);
+  assert.match(html(), /<a class="pill" href="#\/dashboard">Overview<\/a>/);
 });
 
 // The journey counts as the first week's measurement, so the review is not due

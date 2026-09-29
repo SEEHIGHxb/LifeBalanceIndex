@@ -23,11 +23,11 @@ export function dotDate(iso) {
   return `${d.getFullYear()}.${two(d.getMonth() + 1)}.${two(d.getDate())}`;
 }
 
-// "Body +2 · Environment -1", or "scores steady". Text: the caller escapes.
+// "Body +2 · Environment -1", or "Scores steady". Text: the caller escapes.
 export function shiftSummary(shifts) {
   const parts = Object.entries(shifts || {})
     .map(([key, v]) => `${aspectName(key)} ${v > 0 ? "+" : ""}${v}`);
-  return parts.length ? parts.join(" · ") : t("scores steady");
+  return parts.length ? parts.join(" · ") : t("Scores steady");
 }
 
 export const motifIcon = (aspect) =>

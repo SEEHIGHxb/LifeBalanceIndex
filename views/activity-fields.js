@@ -184,7 +184,7 @@ export function learningMarkup(id, current = null) {
     question: t("How much of your week goes to learning something on purpose?"),
     steps: LEARNING_STEPS.map(s => ({ value: s.hours, label: s.label })),
     hint: (n) => tp("about {n} h", { n }),
-    last: (n) => tp("About {n} h — your last answer", { n })
+    last: (n) => tp("About {n} h · your last answer", { n })
   }, current);
 }
 
@@ -195,7 +195,7 @@ export function donationMarkup(id, current = null) {
     question: t("What does your giving look like in a usual month?"),
     steps: DONATION_STEPS,
     hint: (n) => tp("about {amount} baht", { amount: baht(n) }),
-    last: (n) => tp("{amount} baht — your last answer", { amount: baht(n) })
+    last: (n) => tp("{amount} baht · your last answer", { amount: baht(n) })
   }, current);
 }
 
@@ -204,7 +204,7 @@ export function volunteerMarkup(id, current = null) {
     question: t("How much time do you give to helping others, unpaid, in a usual month?"),
     steps: VOLUNTEER_STEPS,
     hint: (n) => tp("about {n} h a month", { n }),
-    last: (n) => tp("{n} h a month — your last answer", { n })
+    last: (n) => tp("{n} h a month · your last answer", { n })
   }, current);
 }
 
@@ -242,7 +242,7 @@ export function tallyMarkup(id, current = null) {
   const kept = carried ? `
         <label class="tally-item">
           <input type="checkbox" name="${id}-last" value="${carried}" checked>
-          <span>${tp("{n} pieces a day — your last answer", { n: carried })}</span>
+          <span>${tp("{n} pieces a day · your last answer", { n: carried })}</span>
         </label>` : "";
   return `
     <div class="easy-field tally" data-easy="tally" data-out="${id}">
@@ -314,7 +314,7 @@ export function weekMarkup(prefix, ids, current = null, note = "") {
   return `
     <div class="easy-field wk" data-easy="week">
       ${note ? `<p class="field-note">${note}</p>` : ""}
-      <p class="wk-how">${t("Tap a day, or drag across several. One day can hold more than one kind.")}</p>
+      <p class="wk-how">${t("Tap or drag across days. A day can hold more than one kind.")}</p>
       <div class="wk-grid">${rows}
       </div>
       <label class="wk-none">

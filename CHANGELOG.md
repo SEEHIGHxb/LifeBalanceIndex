@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `143`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `144`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.76.0] - 2026-09-29 (v144)
+
+The weekly review trimmed with the owner's cut list.
+
+- The intro is one line: "Last week's answers are filled in. Change only what's different." The connected-apps notice and the resume notice are one line each (the resume notice on onboarding and the in-depth page too).
+- The section headings under the questions ("Activity this week", "Daily habits (weekly average)", "Monthly habits (update when they change)") are gone.
+- The painted week's hint is shorter; "your last answer" and the connected-app notes take a middle dot instead of a dash.
+- "Scores steady" is capitalised (Overview's record too).
+- The done page: "Next review opens {date}.", "Your monthly re-assessment is due.", and an "Overview" button in place of "See Home" (the in-depth page's too). A review with no pledges shows its points alone, not "0/0 pledges met", here and on Overview (`pledgesAndPoints`).
+- The v143 Thai is approved; 6 new drafts and 7 punctuation-only changes to approved Thai.
 
 ## [2.75.0] - 2026-09-29 (v143)
 

@@ -237,7 +237,7 @@ export function renderOnboarding(containerId, onComplete) {
     <div class="journey">
       <p class="sr-only" id="journey-status" role="status" aria-live="polite"></p>
       <div id="onb-resume" class="onb-resume d-none">
-        <span>${t("Picked up where you left off. Your answers were saved on this device.")}</span>
+        <span>${t("Picked up where you left off.")}</span>
         <button type="button" class="btn btn-sm" id="onb-resume-clear">${t("Start over")}</button>
       </div>
       <form id="onboarding-form" novalidate>

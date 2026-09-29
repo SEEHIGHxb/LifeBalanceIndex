@@ -57,7 +57,7 @@ export function renderCheckin(containerId, state, onComplete) {
     container.innerHTML = `
       <div class="stage-page textpage assess checkin-view">
         ${pageHead(t("Re-assessment"), [escapeHtml(line)])}
-        <p class="rv-done-links"><a class="pill" href="#/dashboard">${t("See Home")}</a></p>
+        <p class="rv-done-links"><a class="pill" href="#/dashboard">${t("Overview")}</a></p>
       </div>`;
     return;
   }
@@ -84,7 +84,7 @@ export function renderCheckin(containerId, state, onComplete) {
       ])}
       <div class="journey assess-journey">
         <div id="checkin-resume" class="onb-resume d-none">
-          <span>${t("Picked up where you left off. Your answers were saved on this device.")}</span>
+          <span>${t("Picked up where you left off.")}</span>
         </div>
         <form id="checkin-form">
           ${groups.map(([aspect, keys], i) => assessPanel(aspect, `

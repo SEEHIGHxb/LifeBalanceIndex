@@ -40,7 +40,7 @@ import {
 import { label, renderStagePage } from "./stage-page.js";
 import { markZoom, takeZoom, zoomFrom } from "./star-zoom.js";
 import { writeMotionStyle } from "./motion-mount.js";
-import { nextReviewDate } from "./review.js";
+import { nextReviewDate, pledgesAndPoints } from "./review.js";
 import { t, tp } from "../i18n.js";
 import {
   escapeHtml, aspectLabel, estimatedAspects, mentalHealthNotice, isCareNoticeClosed, closeCareNotice,
@@ -350,7 +350,7 @@ function recentRecords(h) {
       kind: t("Weekly Review"),
       aspect: biggestShift(r.shifts),
       title: shiftSummary(r.shifts),
-      sub: `${tp("{met}/{total} pledges met", { met: r.goals.filter(g => g.met).length, total: r.goals.length })} · ${tp("+{xp} points", { xp: r.xp })}`
+      sub: pledgesAndPoints(r)
     })),
     ...(state.checkins || []).map(c => ({
       date: c.date, kind: t("Re-assessment"), aspect: biggestShift(c.shifts), title: shiftSummary(c.shifts)

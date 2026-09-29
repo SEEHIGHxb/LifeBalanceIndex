@@ -71,19 +71,20 @@ const FIELD_IDS = {
 
 // The screens, one region each, and every field above on exactly one of them
 // (tests/weekly-loop.test.mjs holds that). `title` replaces the region question
-// where a region has two screens; `sub` is the old form's section heading.
+// where a region has two screens. The old form's section headings went in
+// v144: each only repeated the question above it (the owner's cut list).
 export const REVIEW_STEPS = Object.freeze([
   { aspect: "finance", fields: ["monthlySavings"] },
   {
-    aspect: "physical", sub: "Activity this week",
+    aspect: "physical",
     fields: ["weeklyVigorousDays", "weeklyVigorousMins", "weeklyModerateDays", "weeklyModerateMins", "weeklyWalkingDays", "weeklyWalkingMins"]
   },
   {
-    aspect: "physical", title: "And day to day: sleep, water, vegetables.", sub: "Daily habits (weekly average)",
+    aspect: "physical", title: "And day to day: sleep, water, vegetables.",
     fields: ["sleepHours", "waterLiters", "vegetablePortions"]
   },
   { aspect: "personalGoals", fields: ["weeklyLearningHours"] },
-  { aspect: "socialContribution", sub: "Monthly habits (update when they change)", fields: ["monthlyDonations", "volunteeringHours"] },
+  { aspect: "socialContribution", fields: ["monthlyDonations", "volunteeringHours"] },
   { aspect: "environment", fields: ["singleUsePlastics"] }
 ]);
 const STEPS = REVIEW_STEPS;
@@ -146,8 +147,8 @@ function prefillNote(pre) {
   const from = connectionDate(pre.window.from);
   const to = connectionDate(pre.window.to);
   return pre.source === "runaway"
-    ? tp("From {app} — your runs for {from} – {to}. Add anything it couldn't see.", { app, from, to })
-    : tp("From {app} — a typical month, measured over {from} – {to}.", { app, from, to });
+    ? tp("From {app} · your runs for {from} – {to}. Add anything it couldn't see.", { app, from, to })
+    : tp("From {app} · a typical month, measured over {from} – {to}.", { app, from, to });
 }
 
 // Read every source once. The form needs both the values (to pre-fill) and the
@@ -169,7 +170,7 @@ function readConnections(now) {
 function connectionBanner(conn, profile) {
   const lines = [];
   if (Object.keys(conn.prefills).length) {
-    lines.push(t("Some boxes are filled in from your connected apps. Check them, change whatever is wrong, then submit — the answer you send is still yours."));
+    lines.push(t("Some answers come from your connected apps. Check them before you finish."));
   }
   for (const app of conn.idle) {
     lines.push(tp("{app} has nothing current to share, so its boxes keep your last answer.", { app }));
@@ -274,7 +275,6 @@ function stepMarkup(step, i, box, intro) {
         <div class="q-main">
           <h3 class="q-title" tabindex="-1">${typedMarkup(title)}</h3>
           ${i === 0 ? intro : ""}
-          ${step.sub ? `<p class="onb-why">${t(step.sub)}</p>` : ""}
           <div class="rv-fields">${step.fields.map(box).join("")}</div>
           <div class="onb-nav">
             ${i > 0 ? `<button type="button" class="btn btn-onb-prev rv-back">${t("Back")}</button>` : "<span></span>"}
@@ -295,12 +295,12 @@ function formMarkup(state) {
   const conn = readConnections(new Date());
   const box = field => reviewField(field, state.profile, conn.prefills);
   const intro = `
-    <p class="onb-why">${t("Report a rough weekly average for each habit — no daily logging needed. Every value is prefilled with last week's answer, so only touch what changed. Takes about two minutes.")}</p>
+    <p class="onb-why">${t("Last week's answers are filled in. Change only what's different.")}</p>
     ${connectionBanner(conn, state.profile)}`;
   return `
     <div class="journey review">
       <div id="rv-resume" class="onb-resume d-none">
-        <span>${t("Picked up where you left off. Your answers were saved on this device.")}</span>
+        <span>${t("Picked up where you left off.")}</span>
       </div>
       <form id="weekly-review-form" novalidate>
         ${STEPS.map((step, i) => stepMarkup(step, i, box, intro)).join("")}
@@ -311,6 +311,14 @@ function formMarkup(state) {
     </div>`;
 }
 
+// A past review's pledges met and points, the pledges only when there were
+// some: "0/0 pledges met" says nothing (the owner's cut list, v144).
+export function pledgesAndPoints(r) {
+  const points = tp("+{xp} points", { xp: r.xp });
+  if (!r.goals.length) return points;
+  return `${tp("{met}/{total} pledges met", { met: r.goals.filter(g => g.met).length, total: r.goals.length })} · ${points}`;
+}
+
 // The review is done for the week: the past reviews as a dated list.
 function doneMarkup(state) {
   const rows = (state.reviews || []).slice(-PAST_ROWS).reverse().map(r => newsRow({
@@ -318,10 +326,10 @@ function doneMarkup(state) {
     kind: t("Weekly Review"),
     thumb: starThumb(),
     title: shiftSummary(r.shifts),
-    sub: `${tp("{met}/{total} pledges met", { met: r.goals.filter(g => g.met).length, total: r.goals.length })} · ${tp("+{xp} points", { xp: r.xp })}`
+    sub: pledgesAndPoints(r)
   })).join("");
   const checkin = stateManager.isCheckinDue() ? `
-    <p class="rv-done-note">${t("One thing while you're here: the monthly re-assessment is due.")}
+    <p class="rv-done-note">${t("Your monthly re-assessment is due.")}
       <a href="#/checkin">${t("Start Re-assessment")}</a></p>` : "";
   // No reviews yet: the journey was this week's measurement, and the first
   // review opens next Monday. "Reviewed this week." over an empty list said
@@ -332,7 +340,7 @@ function doneMarkup(state) {
     : t("Reviewed this week.");
   const note = first
     ? ""
-    : `<p class="rv-done-note">${tp("Nothing to do here until {date} — live your week; the app can wait.", { date: nextReviewDate() })}</p>`;
+    : `<p class="rv-done-note">${tp("Next review opens {date}.", { date: nextReviewDate() })}</p>`;
   return `
     <div class="stage-page review-done">
       <section class="panel news rv-done">
@@ -343,7 +351,7 @@ function doneMarkup(state) {
             ${note}
             ${checkin}
             ${rows ? `<ul class="newslist">${rows}</ul>` : ""}
-            <p class="rv-done-links"><a class="pill" href="#/dashboard">${t("See Home")}</a></p>
+            <p class="rv-done-links"><a class="pill" href="#/dashboard">${t("Overview")}</a></p>
           </div>
         </div>
       </section>

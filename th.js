@@ -7,7 +7,24 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
-  // v143 drafts, awaiting the owner review: the runway removed.
+  // v144 drafts, awaiting the owner review: the weekly review trimmed.
+  "Last week's answers are filled in. Change only what's different.": "คำตอบของสัปดาห์ที่แล้วกรอกไว้ให้แล้ว เปลี่ยนเฉพาะข้อที่ต่างไป",
+  "Some answers come from your connected apps. Check them before you finish.": "คำตอบบางข้อมาจากแอปที่เชื่อมต่อไว้ ตรวจดูก่อนส่ง",
+  "Picked up where you left off.": "กลับมาต่อจากที่ค้างไว้",
+  "Tap or drag across days. A day can hold more than one kind.": "แตะหรือลากผ่านวัน วันเดียวเลือกได้มากกว่าหนึ่งแบบ",
+  "Next review opens {date}.": "การทบทวนครั้งถัดไปเปิดวันที่ {date}",
+  "Your monthly re-assessment is due.": "ถึงกำหนดประเมินซ้ำประจำเดือนแล้ว",
+
+  // v144, punctuation only (a middle dot, a capital) on approved Thai.
+  "About {n} h · your last answer": "ประมาณ {n} ชม. · คำตอบครั้งก่อน",
+  "{amount} baht · your last answer": "{amount} บาท · คำตอบครั้งก่อนของคุณ",
+  "{n} h a month · your last answer": "เดือนละ {n} ชม. · คำตอบครั้งก่อนของคุณ",
+  "{n} pieces a day · your last answer": "วันละ {n} ชิ้น · คำตอบครั้งก่อนของคุณ",
+  "From {app} · your runs for {from} – {to}. Add anything it couldn't see.": "จาก {app} · การวิ่งของคุณระหว่าง {from} – {to} เพิ่มส่วนที่แอปมองไม่เห็นได้",
+  "From {app} · a typical month, measured over {from} – {to}.": "จาก {app} · เดือนโดยทั่วไป วัดจากช่วง {from} – {to}",
+  "Scores steady": "คะแนนคงที่",
+
+  // v143, approved by the owner 2026-09-29: the runway removed.
   "Leave this blank or enter 0 if you send nothing.": "เว้นว่างหรือใส่ 0 หากไม่ได้ส่ง",
   "Shown on your Social Contribution page as giving. It changes nothing about your score.": "แสดงในหน้าการช่วยเหลือสังคมในฐานะการให้ และไม่มีผลต่อคะแนนของคุณ",
 
@@ -190,7 +207,6 @@ export const TH = {
   // round 9 established it never should. Its three Thai keys go with it;
   // leaving them here would fail tests/i18n-orphans.test.mjs.
   "Back": "ย้อนกลับ",
-  "Picked up where you left off. Your answers were saved on this device.": "กลับมาต่อจากที่ค้างไว้ คำตอบของคุณถูกบันทึกไว้ในเครื่องนี้",
   "Start over": "เริ่มใหม่",
   "Next": "ถัดไป",
   "Complete Assessment": "ทำแบบประเมินให้เสร็จ",
@@ -538,28 +554,15 @@ export const TH = {
   // --- Weekly review (#/review) ---
   "Weekly Review": "ทบทวนรายสัปดาห์",
   "Reviewed this week.": "ทบทวนสัปดาห์นี้แล้ว",
-  "Nothing to do here until {date} — live your week; the app can wait.": "ไม่มีอะไรต้องทำจนถึงวันที่ {date} — ใช้ชีวิตของคุณไปเลย แอปรอได้",
-  "One thing while you're here: the monthly re-assessment is due.": "อีกหนึ่งอย่างระหว่างที่อยู่ตรงนี้: ถึงกำหนดการประเมินซ้ำประจำเดือนแล้ว",
-  "Report a rough weekly average for each habit — no daily logging needed. Every value is prefilled with last week's answer, so only touch what changed. Takes about two minutes.": "รายงานค่าเฉลี่ยคร่าว ๆ ของแต่ละพฤติกรรมในสัปดาห์นี้ — ไม่ต้องบันทึกรายวัน ทุกช่องเติมคำตอบของสัปดาห์ก่อนไว้ให้แล้ว แก้เฉพาะที่เปลี่ยนไปก็พอ ใช้เวลาราวสองนาที",
   // Weekly Review pre-fill from a connected app. {app} is always a proper noun
   // ("Midori", "Runaway") supplied untranslated by connections.js.
-  "Some boxes are filled in from your connected apps. Check them, change whatever is wrong, then submit — the answer you send is still yours.":
-    "บางช่องถูกกรอกไว้จากแอปที่เชื่อมต่อ ตรวจสอบและแก้ไขส่วนที่ไม่ถูกต้อง แล้วจึงส่ง — คำตอบที่ส่งยังคงเป็นของคุณ",
   "{app} has nothing current to share, so its boxes keep your last answer.":
     "{app} ไม่มีข้อมูลล่าสุดให้แบ่งปัน ช่องของแอปนั้นจึงคงคำตอบครั้งก่อนของคุณไว้",
-  "From {app} — your runs for {from} – {to}. Add anything it couldn't see.":
-    "จาก {app} — การวิ่งของคุณระหว่าง {from} – {to} เพิ่มส่วนที่แอปมองไม่เห็นได้",
-  "From {app} — a typical month, measured over {from} – {to}.":
-    "จาก {app} — เดือนโดยทั่วไป วัดจากช่วง {from} – {to}",
   "{app} measures your income at about {bridge} THB a month; your profile says {profile} THB, so the savings rate derived here will be off.":
     "{app} วัดรายได้ของคุณได้ประมาณ {bridge} บาทต่อเดือน แต่โปรไฟล์ระบุ {profile} บาท อัตราการออมที่คำนวณตรงนี้จึงคลาดเคลื่อน",
   "Update it on the Profile page": "แก้ไขได้ที่หน้าโปรไฟล์",
-  "Activity this week": "กิจกรรมทางกายสัปดาห์นี้",
-  "Daily habits (weekly average)": "พฤติกรรมประจำวัน (ค่าเฉลี่ยรายสัปดาห์)",
-  "Monthly habits (update when they change)": "พฤติกรรมรายเดือน (แก้ไขเมื่อเปลี่ยนแปลง)",
   "Complete Weekly Review": "ส่งการทบทวนรายสัปดาห์",
   "Past Reviews": "การทบทวนที่ผ่านมา",
-  "scores steady": "คะแนนคงที่",
   "{met}/{total} pledges met": "ทำได้ {met}/{total} คำมั่น",
   "+{xp} points": "+{xp} คะแนน",
   "Weekly review open.": "การทบทวนรายสัปดาห์เปิดแล้ว",
@@ -1309,7 +1312,6 @@ export const TH = {
   "How was {region} this week?": "สัปดาห์นี้{region}เป็นอย่างไรบ้าง",
   "Weekly Review · {i} / {n}": "ทบทวนรายสัปดาห์ · {i} / {n}",
   "And day to day: sleep, water, vegetables.": "และในแต่ละวัน: การนอน น้ำดื่ม และผัก",
-  "See Home": "ไปหน้าหลัก",
   "{n} active": "{n} รายการ",
   "Added": "เพิ่มแล้ว",
   "Removed": "ลบแล้ว",
@@ -1638,10 +1640,7 @@ export const TH = {
   "A class plus some practice": "เรียนหนึ่งคลาสและฝึกเพิ่มเติม",
   "Like a part-time course, or more": "เท่ากับเรียนคอร์สพาร์ตไทม์ หรือมากกว่านั้น",
   "about {n} h": "ประมาณ {n} ชม.",
-  "About {n} h — your last answer": "ประมาณ {n} ชม. — คำตอบครั้งก่อน",
   "Paint the days you move in a normal week.": "ระบายวันที่คุณได้ขยับร่างกายในสัปดาห์ปกติ",
-  "Tap a day, or drag across several. One day can hold more than one kind.":
-    "แตะที่วัน หรือลากผ่านหลายวัน วันเดียวเลือกได้มากกว่าหนึ่งแบบ",
   "Hard exercise": "ออกกำลังหนัก",
   "You breathe hard and can't chat: running, football, fast cycling, a gym workout.":
     "หายใจแรงจนคุยไม่ถนัด เช่น วิ่ง เตะฟุตบอล ปั่นจักรยานเร็ว เล่นเวทในยิม",
@@ -1668,7 +1667,6 @@ export const TH = {
   "Supporting a cause I care about every month": "สนับสนุนเรื่องที่ใส่ใจทุกเดือน",
   "A big gift, like sponsoring a child's schooling": "ให้ก้อนใหญ่ เช่น ทุนเรียนให้เด็กหนึ่งคน",
   "about {amount} baht": "ประมาณ {amount} บาท",
-  "{amount} baht — your last answer": "{amount} บาท — คำตอบครั้งก่อนของคุณ",
   "How much time do you give to helping others, unpaid, in a usual month?": "เดือนปกติ คุณใช้เวลาช่วยเหลือผู้อื่นโดยไม่รับค่าตอบแทนประมาณไหน",
   "None this month": "เดือนนี้ไม่ได้ทำ",
   "A small favour for a group, about an hour": "ช่วยงานกลุ่มเล็กน้อย ราวหนึ่งชั่วโมง",
@@ -1677,7 +1675,6 @@ export const TH = {
   "A few hours every week": "ทุกสัปดาห์ สัปดาห์ละไม่กี่ชั่วโมง",
   "Most weekends, or more": "เกือบทุกสุดสัปดาห์ หรือมากกว่านั้น",
   "about {n} h a month": "ประมาณเดือนละ {n} ชม.",
-  "{n} h a month — your last answer": "เดือนละ {n} ชม. — คำตอบครั้งก่อนของคุณ",
   "Which of these does a usual day bring you? Tick each one you use once and throw away.": "วันปกติของคุณมีสิ่งไหนบ้าง ติ๊กทุกอย่างที่ใช้ครั้งเดียวแล้วทิ้ง",
   "A shopping bag": "ถุงหิ้วใส่ของ",
   "A bag for food to go (curry, soup, ice)": "ถุงใส่อาหาร (ถุงแกง ถุงน้ำซุป ถุงน้ำแข็ง)",
@@ -1689,7 +1686,6 @@ export const TH = {
   "A snack or sauce wrapper": "ซองขนมหรือซองซอส",
   "None of these on a usual day": "วันปกติไม่มีสิ่งเหล่านี้เลย",
   "{n} pieces a day": "วันละ {n} ชิ้น",
-  "{n} pieces a day — your last answer": "วันละ {n} ชิ้น — คำตอบครั้งก่อนของคุณ",
 
   // v122, the region characters (characters.js). Drafts awaiting the owner review.
   "Your character": "ตัวละครของคุณ",

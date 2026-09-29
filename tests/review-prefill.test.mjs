@@ -262,12 +262,12 @@ test("every pre-filled box says which app filled it, and over what dates", () =>
   // reader rather than being decoration only.
   assert.ok(html.includes('aria-describedby="rev-monthlySavings-note"'));
   assert.ok(html.includes('id="rev-monthlySavings-note"'));
-  assert.ok(html.includes("From Midori — a typical month"));
-  assert.ok(html.includes("From Runaway — your runs for"));
+  assert.ok(html.includes("From Midori · a typical month"));
+  assert.ok(html.includes("From Runaway · your runs for"));
   assert.ok(/Jul/.test(html) && /Aug/.test(html), "the window dates are named");
 
-  // And the standing instruction that this is a draft, not a verdict.
-  assert.ok(html.includes("the answer you send is still yours"));
+  // And the standing instruction to check them before sending (v144 wording).
+  assert.ok(html.includes("Some answers come from your connected apps. Check them before you finish."));
 });
 
 test("a box no app fills keeps the user's own last answer, unchipped", () => {

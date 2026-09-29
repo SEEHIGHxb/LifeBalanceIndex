@@ -169,6 +169,28 @@ test("Profile is a text page that keeps every field and control", () => {
   }
 });
 
+// v150, the owner's cut list: plain labels on the page, the explanations as
+// numbered notes at its end.
+test("Profile shows plain labels and keeps its explanations in notes", () => {
+  renderProfile(MAIN, STATE, () => {});
+  const out = html();
+  for (const [id, text] of [["pf-gender", "Gender"], ["pf-region", "Where you live"], ["pf-employment", "Work"],
+    ["pf-relationship", "Relationship"], ["pf-income", "Monthly income after tax (baht)"],
+    ["pf-family", "Sent to family a month (baht)"]]) {
+    assert.match(out, new RegExp(`<label for="${id}">${text.replace(/[()]/g, "\\$&")}</label>`), `#${id} is not labelled "${text}"`);
+  }
+  assert.match(out, /class="pagehead-word">Profile</);
+  assert.match(out, /id="pf-save" class="pill">Save</);
+  assert.match(out, /id="btn-reset-data" class="pill pill-danger">Reset</);
+  assert.doesNotMatch(out, /class="profile-note">(?!Stored only)/, "an explanation is still on the page, not in a note");
+  assert.doesNotMatch(out, /conn-fills|field-note/);
+  for (const id of ["about", "birthday", "life", "money", "apps", "motion"]) {
+    assert.match(out, new RegExp(`href="#fn-${id}"`), `no note mark for ${id}`);
+    assert.match(out, new RegExp(`<li id="fn-${id}"`), `no note ${id} at the page's end`);
+  }
+  assert.match(out, /<li id="fn-apps"[\s\S]*?Pre-fills: /);
+});
+
 test("Methodology is a text page with its full text", () => {
   renderMethodology(MAIN, { checkins: [] });
   const out = html();

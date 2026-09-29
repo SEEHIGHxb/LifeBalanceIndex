@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `149`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `150`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.81.0] - 2026-09-29 (v150)
+
+Profile trimmed with the owner's cut list.
+
+- Plain labels, the same as onboarding: "Gender", "Where you live", "Work", "Relationship", "Monthly income after tax (baht)", "Sent to family a month (baht)", "Birthday (optional)". The page is "Profile", Identity is "About you", Data & Backup is "Your data"; the buttons read "Save" and "Reset".
+- Every explanation moves to six numbered notes at the page end: what the page is for, the birthday, what region, work and relationship change, money sent to family, what the connected apps share and pre-fill, and what Reduce motion does. Only the locked-switch line stays under Reduce motion, as it explains a control that cannot be cleared.
+- The weekly review uses the onboarding labels for sleep, water, vegetables and savings; onboarding asks "Relationship".
+- 7 new Thai drafts await the owner's review; 5 keys carry approved Thai (a dash made a colon, or a prefix dropped).
 
 ## [2.80.0] - 2026-09-29 (v149)
 

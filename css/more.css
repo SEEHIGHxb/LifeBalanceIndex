@@ -23,7 +23,8 @@
 
 /* Fields on a stage page: the journey's boxes. */
 .stage-page .form-group { margin: 0 0 20px; }
-.stage-page .form-group label {
+.stage-page .form-group label,
+.textpage .profile-field-head {
   display: block;
   margin-bottom: 8px;
   font-size: 15px;
@@ -263,10 +264,8 @@
   border-radius: 0;
 }
 .textpage .conn-name { font-family: var(--font-sans); font-size: 18px; }
-.textpage .conn-role,
-.textpage .conn-fills { font-size: 14px; color: #444444; }
-.textpage .conn-status,
-.textpage .conn-fills { margin: 8px 0 0; }
+.textpage .conn-role { font-size: 14px; color: #444444; }
+.textpage .conn-status { margin: 8px 0 0; }
 .textpage .component-row { padding: calc(44 * var(--px)) 0; border-bottom: 1px dashed rgba(0, 0, 0, 0.25); }
 .textpage .component-row:first-child { padding-top: 0; }
 .textpage .component-head { font-weight: 700; font-size: max(16px, calc(28 * var(--px))); }

@@ -402,13 +402,16 @@ async function renderMotionCard() {
   return { box, handlers, html, input };
 }
 
-test("Profile: the switch starts off, labelled and described, and turns reduction on", async () => {
+// v150: what the switch does is a note at the page's end; only the locked
+// state keeps a line under the switch, because it explains a dead control.
+test("Profile: the switch starts off, labelled, its explanation a note, and turns reduction on", async () => {
   const { box, handlers, html, input } = await renderMotionCard();
   assert.doesNotMatch(input, /\bchecked\b/);
   assert.doesNotMatch(input, /\bdisabled\b/);
-  assert.match(input, /aria-describedby="pf-reduce-motion-note"/);
+  assert.doesNotMatch(input, /aria-describedby/, "the switch points at a line that is not there");
+  assert.doesNotMatch(html, /id="pf-reduce-motion-note"/);
   assert.match(html, /<label class="conn-switch">\s*<input[^>]*id="pf-reduce-motion"[\s\S]*?Reduce motion<\/span>\s*<\/label>/);
-  assert.match(html, /id="pf-reduce-motion-note">Keeps animations/);
+  assert.match(html, /<li id="fn-motion"[\s\S]*?Keeps animations/);
   box.checked = true;
   handlers.change();
   assert.equal(localStorage.getItem(REDUCE_MOTION_KEY), "1");
@@ -423,7 +426,8 @@ test("Profile: with the device reducing, the switch is checked, locked, and says
   const { html, input } = await renderMotionCard();
   assert.match(input, /\bchecked\b/);
   assert.match(input, /\bdisabled\b/);
-  assert.match(html, /Your device already asks for less motion/);
+  assert.match(input, /aria-describedby="pf-reduce-motion-note"/);
+  assert.match(html, /id="pf-reduce-motion-note">Your device already asks for less motion/);
 });
 
 test("Profile: a switch already on renders checked but still clearable", async () => {

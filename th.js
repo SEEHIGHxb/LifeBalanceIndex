@@ -7,6 +7,22 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
+  // v150 drafts, awaiting the owner review: Profile trimmed.
+  "About you": "เกี่ยวกับคุณ",
+  "Birthday (optional)": "วันเกิด (ไม่บังคับ)",
+  "Change your relationship and your recommendations update now; your relationship score refines at your next monthly check-in.": "เปลี่ยนสถานะความสัมพันธ์แล้วคำแนะนำจะอัปเดตทันที ส่วนคะแนนความสัมพันธ์จะปรับให้แม่นยำขึ้นในการทบทวนรายเดือนครั้งถัดไป",
+  "Money sent to family: leave it blank or enter 0 if you send nothing.": "เงินที่ส่งให้ครอบครัว: เว้นว่างหรือใส่ 0 หากไม่ได้ส่ง",
+  "Sent to family a month (baht)": "ส่งให้ครอบครัวต่อเดือน (บาท)",
+  "Your data": "ข้อมูลของคุณ",
+  "Stored only in this browser. Export a backup now and then.": "เก็บไว้ในเบราว์เซอร์นี้เท่านั้น ส่งออกสำรองข้อมูลไว้เป็นระยะ",
+
+  // v150, approved Thai carried to a new key (a dash made a colon, or a prefix dropped).
+  "Gender and employment guide your benchmarks and recommendations: they don't change your scores.": "เพศและสถานะการงานใช้เลือกเกณฑ์เทียบและคำแนะนำ: ไม่ได้เปลี่ยนคะแนนของคุณ",
+  "If you use these apps on this device, they can hand their numbers to your Weekly Review so you type less. Everything stays in this browser: nothing is uploaded, and no account is involved.": "ถ้าคุณใช้แอปเหล่านี้บนอุปกรณ์นี้ แอปเหล่านั้นสามารถส่งตัวเลขให้แบบทบทวนประจำสัปดาห์ของคุณได้ คุณจะได้พิมพ์น้อยลง ทุกอย่างอยู่ในเบราว์เซอร์นี้: ไม่มีการอัปโหลด และไม่ต้องใช้บัญชีใด ๆ",
+  "Relationship": "สถานะความสัมพันธ์",
+  "Reset": "ล้างข้อมูล",
+  "Month and day only, so the app knows when your year turns.": "ระบุเพียงเดือนและวันที่ เพื่อให้แอปรู้ว่าปีของคุณเปลี่ยนวันไหน",
+
   // v149 drafts, awaiting the owner review: onboarding trimmed.
   "Used to compare you with people like you. Nothing here is scored.": "ใช้เพื่อเทียบคุณกับคนที่คล้ายกับคุณ ข้อมูลส่วนนี้ไม่นำไปคิดคะแนน",
   "Gender": "เพศ",
@@ -109,7 +125,6 @@ export const TH = {
   "Scores steady": "คะแนนคงที่",
 
   // v143, approved by the owner 2026-09-29: the runway removed.
-  "Leave this blank or enter 0 if you send nothing.": "เว้นว่างหรือใส่ 0 หากไม่ได้ส่ง",
   "Shown on your Social Contribution page as giving. It changes nothing about your score.": "แสดงในหน้าการช่วยเหลือสังคมในฐานะการให้ และไม่มีผลต่อคะแนนของคุณ",
 
   // v142, approved by the owner 2026-09-29: the aspect pages trimmed.
@@ -194,7 +209,6 @@ export const TH = {
   "Stored only in this browser": "เก็บไว้ในเบราว์เซอร์นี้เท่านั้น",
   "Export": "ส่งออก",
   "Import": "นำเข้า",
-  "Reset Data": "ล้างข้อมูล",
   "Overview": "ภาพรวม",
   "Goals": "เป้าหมาย",
   "Importing a backup replaces ALL current data. Continue?": "การนำเข้าข้อมูลสำรองจะแทนที่ข้อมูลปัจจุบันทั้งหมด ดำเนินการต่อหรือไม่?",
@@ -246,23 +260,17 @@ export const TH = {
   "points": "คะแนน",
   "Name": "ชื่อ",
   "Guest": "ผู้มาเยือน",
-  "Gender (for benchmark norms)": "เพศ (ใช้เทียบเกณฑ์มาตรฐาน)",
   "Prefer not to say": "ไม่ระบุ",
   "Male": "ชาย",
   "Female": "หญิง",
-  "Primary Region (Cost of Living Mapping)": "ภูมิภาคหลัก (ใช้เทียบค่าครองชีพ)",
   "Provinces / Upcountry Thailand": "ต่างจังหวัด",
   "Bangkok & Vicinity": "กรุงเทพฯ และปริมณฑล",
-  "Employment Status": "สถานะการทำงาน",
   "Office Worker / Salary Employee": "พนักงานออฟฟิศ / พนักงานประจำ",
   "Freelancer / Independent": "ฟรีแลนซ์ / อาชีพอิสระ",
   "Business Owner / Entrepreneur": "เจ้าของธุรกิจ / ผู้ประกอบการ",
   "Unemployed / Looking for Work": "ว่างงาน / กำลังหางาน",
   "Student": "นักเรียน/นักศึกษา",
-  "Relationship Status": "สถานะความสัมพันธ์",
   "In a Relationship / Married": "มีแฟน / แต่งงานแล้ว",
-  "Monthly Individual Income (Net THB)": "รายได้ส่วนตัวต่อเดือน (บาทสุทธิ)",
-  "Monthly Savings (THB)": "เงินออมต่อเดือน (บาท)",
   "e.g. 3,000": "เช่น 3,000",
   // --- RUNWAY (v70): asked in onboarding and on the Profile page, shown on the
   // Finance aspect page, scored nowhere. ---
@@ -270,7 +278,6 @@ export const TH = {
   // says so first. The definition of "committed outflow" that used to open
   // this paragraph moved into that field's own note -- it said "the second
   // box", and .grid-2 is one column on a phone.
-  "Money You Send to Family (THB/month)": "เงินที่คุณส่งให้ครอบครัว (บาท/เดือน)",
   // v80: the three runway boxes left onboarding for the in-depth assessment,
   // where they are a separate block with its own save. The heading says what
   // they are and what they are not, because on that page everything around
@@ -281,9 +288,6 @@ export const TH = {
   // Shown in the runway row's place while its two inputs are not on file.
   "Height (cm)": "ส่วนสูง (ซม.)",
   "Weight (kg)": "น้ำหนัก (กก.)",
-  "Average Nightly Sleep (Hours)": "ชั่วโมงนอนเฉลี่ยต่อคืน",
-  "Vegetable Portions per Day": "ผักต่อวัน (ส่วน)",
-  "Water Intake per Day (Liters)": "น้ำดื่มต่อวัน (ลิตร)",
   "Weekly Physical Activity (IPAQ)": "กิจกรรมทางกายรายสัปดาห์ (IPAQ)",
   // The pension question was retired in v68 — it scored nothing anywhere, and
   // round 9 established it never should. Its three Thai keys go with it;
@@ -540,8 +544,6 @@ export const TH = {
   "Not now": "ไว้ก่อน",
   "Your level is simply your age — a fact about you, not a score you earned. Tell the app which day your year turns and it can close each year and open the next one for you.":
     "เลเวลของคุณคืออายุ — เป็นข้อเท็จจริงเกี่ยวกับตัวคุณ ไม่ใช่คะแนนที่ต้องไขว่คว้า บอกแอปว่าปีของคุณเปลี่ยนวันไหน แล้วแอปจะปิดปีเก่าและเปิดปีใหม่ให้คุณ",
-  "Optional — month and day only, so the app knows when your year turns.":
-    "ไม่บังคับ — ระบุเพียงเดือนและวันที่ เพื่อให้แอปรู้ว่าปีของคุณเปลี่ยนวันไหน",
   "Year {level}": "ปีอายุ {level}",
   "This year closes today.": "ปีนี้ปิดวันนี้",
   "Closes on {date} — {days} days from now.": "ปิดวันที่ {date} — อีก {days} วัน",
@@ -1296,20 +1298,10 @@ export const TH = {
     "เพราะงานประจำวันของฉันให้ผลลัพธ์ที่ชัดเจน มันจึงสำคัญกับฉันมากกว่าสิ่งที่ให้ผลในระยะไกล",
   // --- Profile & Data page (#/profile) ---
   "Profile": "โปรไฟล์",
-  "Your Profile": "โปรไฟล์ของคุณ",
   "Update the slower-moving facts about you. Day-to-day quantities like sleep, water, and activity live in the Weekly Review.":
     "อัปเดตข้อมูลที่เปลี่ยนแปลงช้าเกี่ยวกับตัวคุณ ปริมาณรายวัน เช่น การนอน น้ำ และการออกกำลังกาย อยู่ในแบบทบทวนประจำสัปดาห์",
-  "Identity": "ข้อมูลส่วนตัว",
   "Life Context": "บริบทชีวิต",
-  "Change this and your recommendations update now; your relationship score refines at your next monthly check-in.":
-    "เปลี่ยนค่านี้แล้วคำแนะนำจะอัปเดตทันที ส่วนคะแนนความสัมพันธ์จะปรับให้แม่นยำขึ้นในการทบทวนรายเดือนครั้งถัดไป",
-  "Gender and employment guide your benchmarks and recommendations — they don't change your scores.":
-    "เพศและสถานะการงานใช้เลือกเกณฑ์เทียบและคำแนะนำ — ไม่ได้เปลี่ยนคะแนนของคุณ",
   "Finance & Body": "การเงินและร่างกาย",
-  "Save changes": "บันทึกการเปลี่ยนแปลง",
-  "Data & Backup": "ข้อมูลและการสำรอง",
-  "Your data lives only in this browser. Export a backup regularly — clearing site data erases it.":
-    "ข้อมูลของคุณอยู่ในเบราว์เซอร์นี้เท่านั้น ควรส่งออกสำรองข้อมูลเป็นประจำ — การล้างข้อมูลเว็บไซต์จะลบข้อมูลทิ้ง",
   // The Landing (views/landing.js, redesign R2). The copy is the approved
   // prototype's (docs/prototype/redesign/content.js), Thai included.
   "Play with the star": "เล่นกับดาว",
@@ -1396,8 +1388,6 @@ export const TH = {
   // Weekly Review. App names ("Midori", "Runaway") are proper nouns and are
   // deliberately not translated.
   "Connected apps": "แอปที่เชื่อมต่อ",
-  "If you use these apps on this device, they can hand their numbers to your Weekly Review so you type less. Everything stays in this browser — nothing is uploaded, and no account is involved.":
-    "ถ้าคุณใช้แอปเหล่านี้บนอุปกรณ์นี้ แอปเหล่านั้นสามารถส่งตัวเลขให้แบบทบทวนประจำสัปดาห์ของคุณได้ คุณจะได้พิมพ์น้อยลง ทุกอย่างอยู่ในเบราว์เซอร์นี้ — ไม่มีการอัปโหลด และไม่ต้องใช้บัญชีใด ๆ",
   "Each app has its own sharing switch too. Turning one on here only means this app may read what that app chose to share.":
     "แต่ละแอปมีสวิตช์แบ่งปันข้อมูลของตัวเองด้วย การเปิดที่นี่หมายความเพียงว่าแอปนี้อ่านสิ่งที่แอปนั้นเลือกแบ่งปันได้เท่านั้น",
   "Your ledger": "สมุดบัญชีของคุณ",

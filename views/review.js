@@ -102,10 +102,10 @@ const WEEK_KINDS = {
 };
 
 const FIELD_LABELS = {
-  sleepHours: "Average Nightly Sleep (Hours)",
-  waterLiters: "Water Intake per Day (Liters)",
-  vegetablePortions: "Vegetable Portions per Day",
-  monthlySavings: "Monthly Savings (THB)"
+  sleepHours: "Sleep a night (hours)",
+  waterLiters: "Water a day (litres)",
+  vegetablePortions: "Vegetable portions a day",
+  monthlySavings: "Monthly savings (baht)"
 };
 
 const FIELD_STEPS = { sleepHours: 0.5, waterLiters: 0.1 };

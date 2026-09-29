@@ -26,7 +26,7 @@
 
 import { stateManager } from "../state.js";
 import { numberField, markField } from "./instrument-forms.js";
-import { birthdayFields, escapeHtml } from "./helpers.js";
+import { birthdayFields, escapeHtml, noteBook, footnoteList, bindFootnotes } from "./helpers.js";
 import { validateProfile } from "../validation.js";
 import { sanitizeBirthday } from "../sanitize.js";
 import {
@@ -36,7 +36,7 @@ import {
 import { isoWeekKey } from "../season.js";
 import { t, tp, dateLocale } from "../i18n.js";
 import { deviceReducesMotion, isReduced, setReduceMotionPref } from "../motion.js";
-import { textSection, pageHead } from "./stage-page.js";
+import { textSection, pageHead, label } from "./stage-page.js";
 
 const AGE_MIN = 15;
 const AGE_MAX = 100;
@@ -138,27 +138,34 @@ function connectionRow(source, meta, enabled, read) {
         </label>
       </div>
       <p class="conn-status" id="conn-${source}-status" aria-live="polite">${escapeHtml(status)}</p>
-      <p class="conn-fills">${tp("Pre-fills: {fields}", { fields: meta.fills })}</p>
     </div>`;
+}
+
+// A section whose label carries a note mark (the owner, v150: what the page
+// explains moves to numbered notes at its end).
+function notedSection(labelText, ref, inner) {
+  return `
+    <section class="panel statement textsec"><div class="wrap split">
+      <h2 class="label">(${escapeHtml(labelText)})${ref}</h2>
+      <div>${inner}</div>
+    </div></section>`;
 }
 
 // --- MOTION ---
 
 // The in-app Reduce motion switch (plan decision 7). It can only ADD
 // reduction: when the device already asks for less motion the box shows
-// checked and cannot be cleared, and the note says why rather than leaving a
-// dead control unexplained.
-function motionCard() {
+// checked and cannot be cleared, and the line under it says why rather than
+// leaving a dead control unexplained. What the switch does is a note.
+function motionCard(book) {
   const device = deviceReducesMotion();
-  const note = device
-    ? t("Your device already asks for less motion, so it stays reduced everywhere in this app.")
-    : t("Keeps animations to quick fades and finished states. It can only reduce motion; your device's own setting always applies.");
-  return textSection(t("Motion"), `
+  const ref = book.ref("motion", `<p>${t("Keeps animations to quick fades and finished states. It can only reduce motion; your device's own setting always applies.")}</p>`);
+  return notedSection(t("Motion"), ref, `
         <label class="conn-switch">
-          <input type="checkbox" id="pf-reduce-motion"${isReduced() ? " checked" : ""}${device ? " disabled" : ""} aria-describedby="pf-reduce-motion-note">
+          <input type="checkbox" id="pf-reduce-motion"${isReduced() ? " checked" : ""}${device ? ' disabled aria-describedby="pf-reduce-motion-note"' : ""}>
           <span>${t("Reduce motion")}</span>
         </label>
-        <p class="profile-note" id="pf-reduce-motion-note">${note}</p>`);
+        ${device ? `<p class="profile-note" id="pf-reduce-motion-note">${t("Your device already asks for less motion, so it stays reduced everywhere in this app.")}</p>` : ""}`);
 }
 
 export function renderProfile(containerId, state, onSaved) {
@@ -195,63 +202,68 @@ export function renderProfile(containerId, state, onSaved) {
     { value: "Single", label: t("Single") },
     { value: "Coupled", label: t("In a Relationship / Married") }
   ];
+  // The owner's cut list (v150): plain labels on the page, the explanations
+  // as numbered notes at its end.
+  const book = noteBook();
+  const aboutRef = book.ref("about", `<p>${t("Update the slower-moving facts about you. Day-to-day quantities like sleep, water, and activity live in the Weekly Review.")}</p>`);
+  // The birth year is never asked for: Age plus today's date gives it to
+  // within twelve months, so the note says only why the field exists.
+  const birthdayRef = book.ref("birthday", `<p>${t("Month and day only, so the app knows when your year turns.")}</p>`);
+  const lifeRef = book.ref("life", `<p>${t("Change your relationship and your recommendations update now; your relationship score refines at your next monthly check-in.")}</p><p>${t("Gender and employment guide your benchmarks and recommendations: they don't change your scores.")}</p>`);
+  const moneyRef = book.ref("money", `<p>${t("Money sent to family: leave it blank or enter 0 if you send nothing.")} ${t("Shown on your Social Contribution page as giving. It changes nothing about your score.")}</p>`);
+  const appsRef = book.ref("apps", `<p>${t("If you use these apps on this device, they can hand their numbers to your Weekly Review so you type less. Everything stays in this browser: nothing is uploaded, and no account is involved.")}</p><p>${t("Each app has its own sharing switch too. Turning one on here only means this app may read what that app chose to share.")}</p>${CONNECTION_SOURCES.map(s => `<p>${escapeHtml(meta[s].name)}. ${tp("Pre-fills: {fields}", { fields: meta[s].fills })}</p>`).join("")}`);
+  const motion = motionCard(book);
+
   container.innerHTML = `
     <div class="stage-page textpage profile-view">
-      ${pageHead(t("Your Profile"), [t("Update the slower-moving facts about you. Day-to-day quantities like sleep, water, and activity live in the Weekly Review.")])}
+      ${pageHead(t("Profile"), [])}
 
-      ${textSection(t("Identity"), `
+      ${notedSection(t("About you"), aboutRef, `
         ${textField("pf-name", t("Name"), p.name, 'maxlength="40"')}
         <div class="grid-2">
           ${numberField("pf-age", t("Age"), p.age, `min="${AGE_MIN}" max="${AGE_MAX}"`)}
-          ${selectField("pf-gender", t("Gender (for benchmark norms)"), genderOpts, p.gender)}
+          ${selectField("pf-gender", t("Gender"), genderOpts, p.gender)}
         </div>
+        <p class="profile-field-head">${t("Birthday (optional)")}${birthdayRef}</p>
         ${birthdayFields({ idPrefix: "pf-birthday", month: p.birthMonth, day: p.birthDay })}
-        <span class="field-error d-none" id="pf-birthday-err" aria-live="polite"></span>
-        <!-- The "your birth year is never asked for and never stored" clause used
-             to close this line. It was dropped app-wide: Age is collected five
-             lines above, and age plus today's date gives the birth year to
-             within twelve months, so the reassurance was spent before it was
-             offered. What remains is the part that earns its space — why the
-             field exists at all. -->
-        <p class="profile-note">${t("Optional — month and day only, so the app knows when your year turns.")}</p>`)}
+        <span class="field-error d-none" id="pf-birthday-err" aria-live="polite"></span>`)}
 
-      ${textSection(t("Life Context"), `
-        ${selectField("pf-region", t("Primary Region (Cost of Living Mapping)"), regionOpts, p.region)}
-        ${selectField("pf-employment", t("Employment Status"), employmentOpts, p.employment)}
-        ${selectField("pf-relationship", t("Relationship Status"), relationshipOpts, p.relationshipStatus)}
-        <p class="profile-note">${t("Change this and your recommendations update now; your relationship score refines at your next monthly check-in.")}</p>
-        <p class="profile-note">${t("Gender and employment guide your benchmarks and recommendations — they don't change your scores.")}</p>`)}
+      ${notedSection(t("Life Context"), lifeRef, `
+        ${selectField("pf-region", t("Where you live"), regionOpts, p.region)}
+        ${selectField("pf-employment", t("Work"), employmentOpts, p.employment)}
+        ${selectField("pf-relationship", t("Relationship"), relationshipOpts, p.relationshipStatus)}`)}
 
-      ${textSection(t("Finance & Body"), `
-        ${numberField("pf-income", t("Monthly Individual Income (Net THB)"), p.income, 'min="0"')}
+      ${notedSection(t("Finance & Body"), moneyRef, `
+        ${numberField("pf-income", t("Monthly income after tax (baht)"), p.income, 'min="0"')}
         <div class="grid-2">
           ${numberField("pf-height", t("Height (cm)"), p.height, 'min="100" max="250"')}
           ${numberField("pf-weight", t("Weight (kg)"), p.weight, 'min="25" max="300"')}
         </div>
-        ${numberField("pf-family", t("Money You Send to Family (THB/month)"), p.familySupport, 'min="0"', {
-          note: t("Leave this blank or enter 0 if you send nothing.")
-        })}
-        <p class="profile-note">${t("Shown on your Social Contribution page as giving. It changes nothing about your score.")}</p>
+        ${numberField("pf-family", t("Sent to family a month (baht)"), p.familySupport, 'min="0"')}
         <p id="profile-error" class="profile-error d-none" role="alert"></p>
-        <p class="actions"><button type="button" id="pf-save" class="pill">${t("Save changes")}</button></p>`)}
+        <p class="actions"><button type="button" id="pf-save" class="pill">${t("Save")}</button></p>`)}
 
-      ${textSection(t("Connected apps"), `
-        <p class="profile-note">${t("If you use these apps on this device, they can hand their numbers to your Weekly Review so you type less. Everything stays in this browser — nothing is uploaded, and no account is involved.")}</p>
-        ${CONNECTION_SOURCES.map(s => connectionRow(s, meta[s], prefs[s], reads[s])).join("")}
-        <p class="profile-note">${t("Each app has its own sharing switch too. Turning one on here only means this app may read what that app chose to share.")}</p>`)}
+      ${notedSection(t("Connected apps"), appsRef, `
+        ${CONNECTION_SOURCES.map(s => connectionRow(s, meta[s], prefs[s], reads[s])).join("")}`)}
 
-      ${motionCard()}
+      ${motion}
 
-      ${textSection(t("Data & Backup"), `
-        <p class="profile-note">${t("Your data lives only in this browser. Export a backup regularly — clearing site data erases it.")}</p>
+      ${textSection(t("Your data"), `
+        <p class="profile-note">${t("Stored only in this browser. Export a backup now and then.")}</p>
         <p class="actions profile-data-actions">
           <button type="button" id="btn-export-data" class="pill">${t("Export")}</button>
           <button type="button" id="btn-import-data" class="pill">${t("Import")}</button>
-          <button type="button" id="btn-reset-data" class="pill pill-danger">${t("Reset Data")}</button>
+          <button type="button" id="btn-reset-data" class="pill pill-danger">${t("Reset")}</button>
           <input type="file" id="import-file-input" accept="application/json,.json" class="d-none">
         </p>`)}
+
+      <section class="panel statement textsec profile-notes"><div class="wrap split">
+        ${label(t("Notes and sources"))}
+        <div>${footnoteList(book.notes)}</div>
+      </div></section>
     </div>
   `;
+  bindFootnotes(container);
 
   // A toggle redraws its OWN status line and nothing else: the form above can
   // be holding unsaved edits, and re-rendering the page would throw them away.

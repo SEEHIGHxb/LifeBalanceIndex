@@ -81,7 +81,7 @@ const buildPrologue = () => fieldsScreen(
       { v: "Unemployed", l: "Unemployed / Looking for Work" },
       { v: "Student", l: "Student" }
     ])}
-    ${selectField("onb-relationship", t("Relationship Status"), [
+    ${selectField("onb-relationship", t("Relationship"), [
       { v: "Single", l: "Single" },
       { v: "Coupled", l: "In a Relationship / Married" }
     ])}`

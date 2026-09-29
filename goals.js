@@ -14,7 +14,11 @@ import { shortId } from "./secure-context.js";
 // field: the profile field graded, or an "@derived" metric computed below.
 // cmp:   "gte" (reach at least the target) or "lte" (stay at or under it).
 // def/min/max/step bound the user-set target in the pledge form.
-// label: the target box's name; note: a source, shown as a numbered note.
+// label: the target box's name. note/source: the published guideline behind the
+// suggested target (a SOURCES key in benchmarks.js), shown as a numbered note.
+// Only three pledges have one: water's 2 L is a convention (EFSA's figure is
+// total water, food included; see criteria.js), and the other defaults rest
+// on no guideline, so they get no note rather than an invented one.
 export const GOAL_TEMPLATES = {
   water: {
     field: "waterLiters", cmp: "gte", unit: "L/day",
@@ -26,7 +30,9 @@ export const GOAL_TEMPLATES = {
     field: "sleepHours", cmp: "gte", unit: "hours/night",
     def: 7, min: 5, max: 10, step: 0.5, aspect: "physical", xp: 25,
     title: "Sleep", label: "Hours a night",
-    desc: "Average at least {target} hours of sleep per night."
+    desc: "Average at least {target} hours of sleep per night.",
+    note: "The National Sleep Foundation recommends 7 to 9 hours a night for adults.",
+    source: "nsfSleep"
   },
   // Default is 5, not 3: WHO recommends at least 400 g of fruit and vegetables
   // a day, and a WHO portion is 80 g. A default of 3 quietly set the bar below
@@ -37,7 +43,8 @@ export const GOAL_TEMPLATES = {
     def: 5, min: 1, max: 10, step: 0.5, aspect: "physical", xp: 25,
     title: "Vegetables", label: "Portions a day",
     desc: "Average at least {target} vegetable portions per day.",
-    note: "WHO recommends at least 400 g of fruit and vegetables a day, about 5 portions."
+    note: "WHO recommends at least 400 g of fruit and vegetables a day, about 5 portions.",
+    source: "whoDiet"
   },
   exerciseDays: {
     field: "@exerciseDays", cmp: "gte", unit: "days/week",
@@ -50,7 +57,8 @@ export const GOAL_TEMPLATES = {
     def: 600, min: 300, max: 3000, step: 50, aspect: "physical", xp: 40,
     title: "Activity volume", label: "MET-minutes a week",
     desc: "Reach at least {target} MET-minutes of activity this week.",
-    note: "600 MET-minutes a week meets the WHO guideline for physical activity."
+    note: "600 MET-minutes a week meets the WHO guideline for physical activity.",
+    source: "whoActivity2020"
   },
   learning: {
     field: "weeklyLearningHours", cmp: "gte", unit: "hours/week",

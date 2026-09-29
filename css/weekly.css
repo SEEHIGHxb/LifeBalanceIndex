@@ -145,19 +145,30 @@
    so the tilt survives the motion ending. */
 .pledge-sticker { display: inline-block; line-height: 0; }
 .pledge-sticker i { display: block; will-change: transform; }
-.goals .statement .pledge-aspect,
-.pledge-aspect {
-  margin: 0 0 calc(10 * var(--px));
-  font-size: max(11px, calc(16 * var(--px)));
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
 .goals .statement .pledge-result { font-weight: 700; }
 .pledge-met { color: #1d6b3a; }
 .pledge-missed { color: #8a1c1c; }
 .goals .statement .pledge-meta { color: #444444; font-size: max(13px, calc(20 * var(--px))); }
 .pledge-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: calc(14 * var(--px)); }
+/* Remove is rarely used, so it is the smallest button on the page (the
+   owner, v146); 36px still clears the 24px target minimum. */
+.goals .pledge-remove {
+  min-height: 36px;
+  height: 36px;
+  padding: 0 16px;
+  gap: 8px;
+  font-size: 11px;
+}
+.goals .pledge-remove::after { width: 5px; }
+/* Add is a round "+" (the owner, v146); its name is in aria-label. */
+.goals .cat-add {
+  width: max(48px, calc(88 * var(--px)));
+  padding: 0;
+  font-size: max(24px, calc(36 * var(--px)));
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.goals .cat-add::after { content: none; }
 .pledge-ask { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .goals .statement .pledge-ask p { flex-basis: 100%; margin: 0; font-weight: 700; }
 
@@ -174,7 +185,6 @@
 .cat:first-child { padding-top: 0; }
 .cat:last-child { border-bottom: 0; }
 .goals .statement .cat p { max-width: none; margin: 0; font-size: max(14px, calc(21 * var(--px))); line-height: 1.6; }
-.goals .statement .cat .pledge-aspect { margin-bottom: 4px; font-size: max(11px, calc(16 * var(--px))); }
 .cat .card-title { margin: 0; font-size: max(15px, calc(26 * var(--px))); }
 .cat-form { display: grid; gap: 6px; }
 .cat-row { display: flex; gap: 10px; align-items: center; }
@@ -345,7 +355,6 @@
 /* ================================================================= Thai
    No tracking for Thai, and the wordmark face has no Thai, so those headings
    fall back to Sarabun at a heavier weight. */
-html[lang="th"] .pledge-aspect,
 html[lang="th"] .rv-continue { letter-spacing: normal; }
 html[lang="th"] .rv-ending h2,
 html[lang="th"] .rv-done-head,
@@ -381,6 +390,8 @@ html[lang="th"] .rv-wipe-window span { font-weight: 700; }
 .aspect-page .statement .fn-list > li,
 .goals .statement .fn-list > li { max-width: calc(1400 * var(--px)); margin: 0; font-size: inherit; line-height: inherit; }
 .aspect-page .statement .fn-body p,
-.aspect-page .statement .fn-body li { max-width: none; margin: 0 0 8px; font-size: inherit; line-height: inherit; }
+.aspect-page .statement .fn-body li,
+.goals .statement .fn-body p,
+.goals .statement .fn-body li { max-width: none; margin: 0 0 8px; font-size: inherit; line-height: inherit; }
 .fn-points { margin: 0 0 8px; padding-left: 1.2em; }
 html[lang="th"] .aspect-page .statement .character-name { letter-spacing: 0; text-transform: none; line-height: 1.4; }

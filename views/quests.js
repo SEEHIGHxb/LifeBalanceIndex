@@ -20,7 +20,8 @@ import { GOAL_TEMPLATES, goalTemplate, PLEDGE_LIMIT, clampPledgeTarget } from ".
 import { getAllBenchmarks } from "../benchmarks.js";
 import { gradeAllAspects } from "../grades.js";
 import { rankPledgesByGrade } from "../suggestions.js";
-import { escapeHtml, aspectLabel, noteBook, footnoteList, bindFootnotes } from "./helpers.js";
+import { SOURCES } from "../benchmarks.js";
+import { escapeHtml, noteBook, footnoteList, sourceList, bindFootnotes } from "./helpers.js";
 import { SPRITES, onAbort } from "./stage.js";
 import { topMarkup, label, renderStagePage } from "./stage-page.js";
 import { chapterOf, motifIcon } from "./news.js";
@@ -51,9 +52,14 @@ function resultLine(goal, tmpl) {
     : `<p class="pledge-result pledge-missed">✗ ${tp("Missed last week · {value} {unit}", words)}</p>`;
 }
 
-// A pledge's source (the WHO figure behind a target) is a numbered note at the
-// page's end, not a bracket in its line (v145).
-const noteRef = (book, templateId, tmpl) => book.ref(`goal-${templateId}`, tmpl.note ? escapeHtml(t(tmpl.note)) : "");
+// A pledge's source (the guideline behind its suggested target) is a numbered
+// note at the page's end, not a bracket in its line (v145), and links to the
+// guideline itself (v146). A pledge with no published guideline has no note.
+function noteRef(book, templateId, tmpl) {
+  if (!tmpl.note) return "";
+  const src = SOURCES[tmpl.source];
+  return book.ref(`goal-${templateId}`, `<p>${escapeHtml(t(tmpl.note))}</p>${src ? sourceList([src]) : ""}`);
+}
 
 function pledgeCard(goal, k, confirming, book) {
   const tmpl = goalTemplate(goal.templateId);
@@ -71,17 +77,15 @@ function pledgeCard(goal, k, confirming, book) {
     <article class="pledge" data-pledge="${id}">
       ${sticker(tmpl.aspect, k)}
       <div class="pledge-body">
-        <p class="pledge-aspect">${aspectLabel(tmpl.aspect)}</p>
         <h3 class="card-title" tabindex="-1">${title}</h3>
         <p class="pledge-desc">${tp(tmpl.desc, { target: escapeHtml(goal.target) })}${noteRef(book, goal.templateId, tmpl)}</p>
         ${resultLine(goal, tmpl)}
-        <p class="pledge-meta">${goal.streak >= 2 ? `${tp("{n}-week streak", { n: escapeHtml(goal.streak) })} · ` : ""}${tp("+{xp} points a week", { xp: tmpl.xp })}</p>
+        ${goal.streak >= 2 ? `<p class="pledge-meta">${tp("{n}-week streak", { n: escapeHtml(goal.streak) })}</p>` : ""}
         <div class="pledge-actions">${actions}</div>
       </div>
     </article>`;
 }
 
-// One row per pledge type you do not have yet: what it is, its target box and
 // What is wrong with a typed target, or "" when nothing is. A blank box used
 // to become the template's default and an out-of-range one its nearest bound,
 // both without a word; now the reader is told and picks the number.
@@ -93,8 +97,9 @@ function targetProblem(id, value) {
   return "";
 }
 
-// Add. A full list leaves every row there but disabled, so the reader can
-// still see what there is.
+// One row per pledge type you do not have yet: what it is, its target box and
+// a "+" to add it. A full list leaves every row there but disabled, so the
+// reader can still see what there is.
 function catalogRow(id, k, full, book) {
   const tmpl = goalTemplate(id);
   const off = full ? " disabled" : "";
@@ -103,7 +108,6 @@ function catalogRow(id, k, full, book) {
     <li class="cat" data-template="${id}">
       ${sticker(tmpl.aspect, k)}
       <div class="cat-text">
-        <p class="pledge-aspect">${aspectLabel(tmpl.aspect)}</p>
         <h3 class="card-title">${title}</h3>
         <p class="card-desc"><span id="cat-desc-${id}">${tp(tmpl.desc, { target: tmpl.def })}</span>${noteRef(book, id, tmpl)}</p>
       </div>
@@ -111,7 +115,7 @@ function catalogRow(id, k, full, book) {
         <label for="cat-${id}">${t(tmpl.label)}</label>
         <div class="cat-row">
           <input type="number" id="cat-${id}" class="form-control" min="${tmpl.min}" max="${tmpl.max}" step="${tmpl.step}" value="${tmpl.def}"${off}>
-          <button type="button" class="pill" data-add="${id}" aria-label="${escapeHtml(`${t("Add")} · ${title}`)}"${off}>${t("Add")}</button>
+          <button type="button" class="pill cat-add" data-add="${id}" aria-label="${escapeHtml(`${t("Add")} · ${title}`)}"${off}><span aria-hidden="true">+</span></button>
         </div>
         <p class="cat-error d-none" id="cat-err-${id}" role="alert"></p>
       </div>

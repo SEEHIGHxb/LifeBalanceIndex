@@ -7,10 +7,12 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
-  // v145 drafts, awaiting the owner review: the Goals page trimmed.
+  // v146 drafts, awaiting the owner review: the Goals page's sources.
+  "The National Sleep Foundation recommends 7 to 9 hours a night for adults.": "มูลนิธิการนอนหลับแห่งชาติ (National Sleep Foundation) แนะนำให้ผู้ใหญ่นอนคืนละ 7 ถึง 9 ชั่วโมง",
+
+  // v145, approved by the owner 2026-09-29: the Goals page trimmed.
   "Your weekly review checks each pledge for you.": "การทบทวนรายสัปดาห์จะตรวจทุกคำมั่นให้คุณ",
   "No pledges yet.": "ยังไม่มีคำมั่น",
-  "+{xp} points a week": "+{xp} คะแนนต่อสัปดาห์",
   "Water": "ดื่มน้ำ",
   "Vegetables": "กินผัก",
   "Exercise days": "วันออกกำลังกาย",
@@ -30,7 +32,7 @@ export const TH = {
   "WHO recommends at least 400 g of fruit and vegetables a day, about 5 portions.": "WHO แนะนำให้กินผักและผลไม้อย่างน้อยวันละ 400 กรัม ราว 5 ส่วน",
   "600 MET-minutes a week meets the WHO guideline for physical activity.": "600 MET-นาทีต่อสัปดาห์ถือว่าผ่านเกณฑ์กิจกรรมทางกายของ WHO",
 
-  // v145, cut from approved Thai (a note moved out, a middle dot).
+  // v145, cut from approved Thai (a note moved out, a middle dot); approved 2026-09-29.
   "Met last week · {value} {unit}": "สัปดาห์ที่แล้วทำได้ · {value} {unit}",
   "Missed last week · {value} {unit}": "สัปดาห์ที่แล้วพลาด · {value} {unit}",
   "Average at least {target} vegetable portions per day.": "กินผักเฉลี่ยอย่างน้อยวันละ {target} ส่วน",

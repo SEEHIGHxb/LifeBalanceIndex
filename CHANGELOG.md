@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `145`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `146`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.78.0] - 2026-09-29 (v146)
+
+The owner's review of the trimmed Goals page.
+
+- Pledges and catalog rows drop the aspect name (the sticker already shows it) and the "+N points a week" line; a streak of two weeks or more still shows.
+- Remove is a small 36px button; Add is a round "+" whose name ("Add · Sleep") is in its aria-label.
+- The pledges whose suggested target rests on a published guideline cite it in their note, with a link: sleep (National Sleep Foundation, 7 to 9 hours), vegetables (WHO healthy diet) and activity volume (WHO 2020). Water's 2 L is a convention, not a guideline (see criteria.js), and the other defaults have none, so they get no note.
+- The v145 Thai is approved; one new draft (the sleep note).
 
 ## [2.77.0] - 2026-09-29 (v145)
 

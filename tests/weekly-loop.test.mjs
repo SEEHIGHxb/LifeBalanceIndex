@@ -208,7 +208,7 @@ test("the catalog offers every pledge type you do not have yet, one row each", (
   // The one you have is under "Your pledges", not offered again.
   assert.doesNotMatch(out, /data-add="water"/);
   assert.match(out, /data-pledge="g1"/);
-  assert.match(out, /<button type="button" class="pill" data-add="sleep" aria-label="Add · Sleep">Add<\/button>/);
+  assert.match(out, /<button type="button" class="pill cat-add" data-add="sleep" aria-label="Add · Sleep"><span aria-hidden="true">\+<\/span><\/button>/);
 });
 
 test("Goals keeps to the pledge: short words, the unit as the label, the WHO figure as a note", () => {
@@ -221,16 +221,21 @@ test("Goals keeps to the pledge: short words, the unit as the label, the WHO fig
   assert.match(out, /Your weekly review checks each pledge for you\./);
   assert.match(out, /<h3 class="card-title" tabindex="-1">Sleep<\/h3>/);
   assert.match(out, /✓ Met last week · 7\.2 hours\/night/);
-  assert.match(out, /3-week streak · \+25 points a week/);
-  // An ungraded pledge says nothing about grading yet.
-  assert.doesNotMatch(out, /Graded at your next|listed first|Weekly target| pledge<\/h3>|Add Pledge/);
+  assert.match(out, /<p class="pledge-meta">3-week streak<\/p>/);
+  // An ungraded pledge says nothing about grading yet; no aspect name, no
+  // points (the owner, v146).
+  assert.doesNotMatch(out, /Graded at your next|listed first|Weekly target| pledge<\/h3>|Add Pledge|pledge-aspect|points a week/);
   assert.match(out, /<label for="cat-veg">Portions a day<\/label>/);
   assert.match(out, /<label for="cat-donations">Baht a month<\/label>/);
   // The WHO figures leave the line and become numbered notes, in page order.
   assert.doesNotMatch(out, /\(WHO:|\(600 meets/);
   assert.match(out, /<span id="cat-desc-veg">Average at least 5 vegetable portions per day\.<\/span><sup class="fn-ref"><a id="fnref-goal-veg"/);
-  assert.match(out, /<li id="fn-goal-veg"[^>]*>[\s\S]*WHO recommends at least 400 g/);
-  assert.match(out, /<li id="fn-goal-metMinutes"[^>]*>[\s\S]*600 MET-minutes a week/);
+  assert.match(out, /<li id="fn-goal-veg"[^>]*>[\s\S]*WHO recommends at least 400 g[\s\S]*href="https:\/\/www\.who\.int\/news-room\/fact-sheets\/detail\/healthy-diet"/);
+  assert.match(out, /<li id="fn-goal-metMinutes"[^>]*>[\s\S]*600 MET-minutes a week[\s\S]*NBK566046/);
+  // Sleep's suggested 7 hours cites its guideline too; water's 2 L is a
+  // convention and plastics has no guideline, so neither gets a note.
+  assert.match(out, /<li id="fn-goal-sleep"[^>]*>[\s\S]*7 to 9 hours[\s\S]*pubmed\.ncbi\.nlm\.nih\.gov\/29073412/);
+  assert.doesNotMatch(out, /fn-goal-water|fn-goal-plastics/);
   const before = (a, b) => out.indexOf(a) < out.indexOf(b);
   assert.equal(before('id="fn-goal-veg"', 'id="fn-goal-metMinutes"'), before("fnref-goal-veg", "fnref-goal-metMinutes"));
 });

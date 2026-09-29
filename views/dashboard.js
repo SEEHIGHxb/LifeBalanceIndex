@@ -44,7 +44,7 @@ import { nextReviewDate } from "./review.js";
 import { t, tp } from "../i18n.js";
 import {
   escapeHtml, aspectLabel, estimatedAspects, mentalHealthNotice, isCareNoticeClosed, closeCareNotice,
-  footnoteRef, footnoteList, bindFootnotes, CHECKIN_ASPECTS
+  footnoteRef, footnoteList, bindFootnotes, sourceList, CHECKIN_ASPECTS
 } from "./helpers.js";
 
 const RECENT_ROWS = 5;
@@ -318,7 +318,7 @@ function aspectsSection(h) {
 // every surface showing the Balance Index says it is the app's own figure.
 function notesSection(h) {
   const canDeepen = h.estimated.some(k => CHECKIN_ASPECTS.includes(k));
-  const sources = `<ul class="fn-sources">${h.sources.map(src => `<li><a href="${escapeHtml(src.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(src.label)}</a></li>`).join("")}</ul>`;
+  const sources = sourceList(h.sources);
   const notes = [
     { id: "index", mark: "1", body: `<p>${t("A harmonic mean of how your eight aspects compare with the population — 50 is the average person, and it rises fastest when your weakest aspect rises. This is this app's own summary figure, not a published measure.")}</p>` },
     { id: "average", mark: "2", body: `<p>${t("Each average is the score of a reference person built from published population statistics and scored the same way as you. Where no statistic exists, a reasonable default stands in.")}</p>${sources}` }

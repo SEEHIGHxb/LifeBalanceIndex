@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `141`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `142`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.74.0] - 2026-09-29 (v142)
+
+The aspect pages trimmed with the owner's cut list, as Overview was in v141.
+
+- Top: the "Bottom 25%" chip is gone; the grade carries note 1 (what the aspect covers and why this grade).
+- Your character: the research and the made-up disclaimer are a note on the name.
+- How you compare (was Standing vs Society): the gauge and its percentile, with the range, method, definition, benchmark notes and sources as a note. The "How this is worked out" fold is gone. The guideline checks are open; their caption and sources are a note (`criteriaNote`, `sourceList` in helpers.js).
+- What it's made of (was Component Breakdown): no "out of 100" under the scores (kept for screen readers); Measured, Not Scored shows each fact and value, the reasons in a note.
+- Trend: hidden until there are two weeks.
+- Where to start (was Suggested Focus): no component figures; "Updated by your weekly review." / "Updated at the monthly re-assessment."
+- Notes and sources close the page, numbered in reading order, jumping down and back without changing the route.
+- 15 orphaned Thai entries removed; 5 new drafts await the owner's review. The v141 Thai is approved.
 
 ## [2.73.0] - 2026-09-29 (v141)
 

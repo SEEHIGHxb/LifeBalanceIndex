@@ -791,13 +791,6 @@ html {
 /* Guideline checks (criterion-referenced card on aspect pages).
    Visually quieter than the grade badge on purpose: a guideline check is
    secondary to the cited population comparison, never a competing verdict. */
-.criteria-caption {
-  margin: 0 0 12px;
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  line-height: 1.5;
-}
-
 .criteria-list {
   margin: 0;
   padding: 0;

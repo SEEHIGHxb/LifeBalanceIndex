@@ -14,7 +14,6 @@
 /* Under the photograph: the grade and score beside where they stand. */
 .aspect-top-read { display: flex; align-items: center; gap: calc(50 * var(--px)); }
 .aspect-top-lines { display: grid; gap: 8px; min-width: 0; }
-.aspect-page .aspect-standing .percentile-band { margin-left: 6px; vertical-align: 1px; }
 
 /* The long sections carry prose and small print, not one statement each: a
    tighter measure than the Landing's. */
@@ -36,59 +35,16 @@
 .aspect-page .aspect-theme { font-style: italic; }
 .aspect-page .benchmark-detail { margin: 12px 0 0; font-size: max(14px, calc(22 * var(--px))); color: #444444; }
 .aspect-page .grade-explainer { margin: calc(30 * var(--px)) 0 calc(30 * var(--px)); }
-.aspect-page .grade-explainer-note,
-.aspect-page .gauge-note,
-.aspect-page .gauge-summary { color: #444444; }
+.aspect-page .grade-explainer p { margin: 0; }
 .aspect-page .aspect-note { padding-left: calc(30 * var(--px)); border-left: 3px solid var(--frame-ink); }
 .aspect-page .aspect-note strong { color: inherit; }
-/* The guideline checks: a fold like the others, with their verdicts showing
-   on it while it is closed. No boxed card. */
-.aspect-page .criteria-card {
-  margin: calc(40 * var(--px)) 0 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-}
-.aspect-page .criteria-card > summary {
-  display: list-item;
-  padding: 10px 0;
-  cursor: pointer;
-  line-height: 1.9;
-}
-.aspect-page .criteria-card > summary:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
-.aspect-page .criteria-card[open] > summary { margin-bottom: calc(24 * var(--px)); }
-.aspect-page .criteria-card .card-header {
-  display: inline;
-  margin: 0 8px 0 0;
-  padding: 0;
-  border: 0;
-  font-family: inherit;
-  font-weight: 700;
-  font-size: max(15px, calc(24 * var(--px)));
-  color: var(--frame-ink);
-}
-.aspect-page .criteria-card > summary .criterion-chip { display: inline-block; vertical-align: 1px; }
+/* The guideline checks: open, under a heading with its note mark. */
+.aspect-page .criteria-card { margin: calc(40 * var(--px)) 0 0; }
+.aspect-page .criteria-card .card-header { display: inline; margin: 0; padding: 0; border: 0; font: inherit; color: var(--frame-ink); }
+.aspect-page .statement .criteria-head,
+.aspect-page .statement .facts-head { margin: 0 0 calc(12 * var(--px)); font-weight: 700; font-size: max(15px, calc(24 * var(--px))); }
 .aspect-society .gauge-track { max-width: calc(1400 * var(--px)); }
-.aspect-page .criteria-card details { margin-top: calc(40 * var(--px)); font-size: max(14px, calc(22 * var(--px))); }
-/* The long explanations, one click away. */
-.aspect-more { margin-top: calc(40 * var(--px)); }
-.criteria-card + .aspect-more { margin-top: 0; }
-.aspect-more summary {
-  display: list-item;
-  min-height: 44px;
-  box-sizing: border-box;
-  padding: 10px 0;
-  font-weight: 700;
-  font-size: max(15px, calc(24 * var(--px)));
-  cursor: pointer;
-}
-.aspect-more summary:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
-.aspect-more[open] summary { margin-bottom: calc(24 * var(--px)); }
-.aspect-page .statement .aspect-more p,
-.aspect-page .statement .aspect-more li { font-size: max(14px, calc(21 * var(--px))); margin-bottom: calc(20 * var(--px)); }
-.aspect-sources { padding-left: 1.2em; }
+.aspect-page .facts { margin-top: calc(40 * var(--px)); }
 
 /* One row per component: name, score, a meter in the region's hue, and what
    it is made of. */
@@ -106,7 +62,6 @@
 .pr-name .card-title { margin: 0; font-size: max(15px, calc(26 * var(--px))); }
 .aspect-page .statement .pr-score { display: flex; align-items: baseline; gap: 8px; margin: 0; }
 .pr-score b { font-family: var(--frame-word); font-weight: 400; font-size: max(30px, calc(70 * var(--px))); line-height: 1; }
-.pr-score small { font-size: max(11px, calc(15 * var(--px))); font-weight: 700; }
 .part-row .meter { width: 100%; max-width: none; margin: 0; }
 .aspect-page .statement .pr-desc { grid-column: 1 / -1; margin: 0; font-size: max(14px, calc(20 * var(--px))); color: #444444; }
 .fact-list { margin: 0; padding: 0; list-style: none; }
@@ -150,7 +105,6 @@
 .aspect-page .focus-row:first-child { padding-top: 0; }
 .aspect-page .focus-row p { margin: 0; }
 .aspect-page .focus-title { font-weight: 700; }
-.aspect-page .focus-meta { font-size: max(13px, calc(19 * var(--px))); color: #444444; }
 .careers-note { margin: 0; font-weight: 600; font-size: max(14px, calc(22 * var(--px))); }
 
 /* ================================================================= goals */
@@ -362,7 +316,6 @@
   .part-row .meter { grid-column: 1 / -1; }
   .pr-score b { font-size: max(26px, calc(64 * var(--px))); }
   .aspect-page .statement .pr-desc { font-size: max(13px, calc(25 * var(--px))); line-height: 1.5; }
-  .aspect-more { margin-top: calc(24 * var(--px)); }
   .trend-strip { gap: calc(14 * var(--px)); }
   .aspect-page .statement .trend-cell { padding: calc(18 * var(--px)); }
   .trend-date { font-size: 10.5px; letter-spacing: 0; }
@@ -415,6 +368,10 @@ html[lang="th"] .rv-wipe-window span { font-weight: 700; }
   color: var(--frame-muted);
 }
 .character-cast li[aria-current="true"] { border-color: var(--frame-ink); background: var(--frame-ink); color: #ffffff; font-weight: 700; }
-.character-research { margin: 0 0 calc(20 * var(--px)); padding-left: 1.2em; }
-.aspect-page .statement .character-research li { font-size: max(14px, calc(20 * var(--px))); line-height: 1.6; margin-bottom: 6px; }
+/* The notes at the page's end (views/helpers.js footnoteList), in the small
+   print of the section they close rather than the statement size. */
+.aspect-page .statement .fn-list > li { max-width: calc(1400 * var(--px)); margin: 0; font-size: inherit; line-height: inherit; }
+.aspect-page .statement .fn-body p,
+.aspect-page .statement .fn-body li { max-width: none; margin: 0 0 8px; font-size: inherit; line-height: inherit; }
+.fn-points { margin: 0 0 8px; padding-left: 1.2em; }
 html[lang="th"] .aspect-page .statement .character-name { letter-spacing: 0; text-transform: none; line-height: 1.4; }

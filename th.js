@@ -7,7 +7,14 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
-  // v141 drafts, awaiting the owner review: Overview trimmed, notes and sources.
+  // v142 drafts, awaiting the owner review: the aspect pages trimmed.
+  "{pct} percentile": "เปอร์เซ็นไทล์{pct}",
+  "How you compare": "เทียบกับคนอื่น",
+  "What it's made of": "มาจากอะไรบ้าง",
+  "Updated by your weekly review.": "อัปเดตจากการทบทวนรายสัปดาห์",
+  "Updated at the monthly re-assessment.": "อัปเดตในการประเมินซ้ำประจำเดือน",
+
+  // v141, approved by the owner 2026-09-29: Overview trimmed, notes and sources.
   "Note {n}": "หมายเหตุ {n}",
   "Back to the text": "กลับไปที่เนื้อหา",
   "About two minutes.": "ใช้เวลาราวสองนาที",
@@ -484,18 +491,11 @@ export const TH = {
   "estimate": "ค่าประมาณ",
 
   // --- Aspect pages ---
-  "Standing vs Society": "สถานะเทียบกับสังคม",
   "Percentile vs society": "เปอร์เซ็นไทล์เทียบสังคม",
-  "Sources": "แหล่งอ้างอิง",
-  "How this is worked out": "ที่มาของผลนี้",
   "No baseline data for this comparison yet — re-run the onboarding sync to unlock it.": "ยังไม่มีข้อมูลพื้นฐานสำหรับการเทียบนี้ — ทำแบบประเมินเริ่มต้นใหม่เพื่อปลดล็อก",
-  "Component Breakdown": "องค์ประกอบย่อย",
   "Baseline survey data needed for this breakdown.": "ต้องมีข้อมูลแบบประเมินพื้นฐานจึงจะแสดงส่วนนี้ได้",
-  "Suggested Focus": "จุดที่ควรโฟกัส",
-  "No snapshots yet — trends appear after your first weekly sync.": "ยังไม่มีภาพรวม — แนวโน้มจะแสดงหลังซิงก์รายสัปดาห์ครั้งแรก",
 
   // --- Confidence & completeness (Phase 2) ---
-  "High": "สูง",
   "Partial": "บางส่วน",
   "Estimated": "ประมาณการ",
   "These are scored from default answers: {aspects}. Re-run your assessment or submit a Weekly Review to confirm them.":
@@ -639,14 +639,7 @@ export const TH = {
   "hours/month": "ชั่วโมง/เดือน",
   // --- Aspect page: measured-weekly card ---
   "Measured Weekly": "วัดรายสัปดาห์",
-  "Your weekly review re-measures this aspect from: {fields}.": "การทบทวนรายสัปดาห์วัดด้านนี้ใหม่จาก: {fields}",
-  "Savings rate": "อัตราการออม",
-  "Exercise days and minutes, sleep, water, vegetables": "จำนวนวันและนาทีที่ออกกำลังกาย การนอน น้ำ ผัก",
-  "Learning hours": "ชั่วโมงการเรียนรู้",
-  "Donations and volunteering hours": "เงินบริจาคและชั่วโมงจิตอาสา",
-  "Single-use plastic items": "พลาสติกใช้ครั้งเดียว",
   "Reviewed this week — the next review opens next week.": "ทบทวนสัปดาห์นี้แล้ว — ครั้งถัดไปเปิดสัปดาห์หน้า",
-  "This aspect is measured by its questionnaires rather than weekly quantities — update it at the monthly re-assessment.": "ด้านนี้วัดด้วยแบบสอบถาม ไม่ใช่ปริมาณรายสัปดาห์ — อัปเดตได้ที่การประเมินซ้ำประจำเดือน",
   'Comparison codes start with "{prefix}".': 'รหัสเปรียบเทียบต้องขึ้นต้นด้วย "{prefix}"',
   "That code is damaged — ask the participant to copy it again.": "รหัสนี้เสียหาย — ให้ผู้เข้าร่วมคัดลอกส่งมาใหม่อีกครั้ง",
   "Unsupported comparison code version.": "เวอร์ชันรหัสเปรียบเทียบไม่รองรับ",
@@ -823,7 +816,6 @@ export const TH = {
   "Below guideline": "ต่ำกว่าเกณฑ์แนะนำ",
   "Not measured": "ยังไม่ได้วัด",
   "Guideline checks": "การตรวจตามเกณฑ์แนะนำ",
-  "Guideline sources": "แหล่งอ้างอิงเกณฑ์แนะนำ",
   "These compare you with published health guidelines, not with a population. A guideline states what a body needs, so it applies regardless of country — which is why these checks exist for aspects where no representative Thai norm does. They do not affect your score, grade or Balance Index.":
     "ส่วนนี้เทียบคุณกับเกณฑ์แนะนำด้านสุขภาพที่มีการเผยแพร่ ไม่ใช่เทียบกับกลุ่มประชากร เกณฑ์แนะนำระบุสิ่งที่ร่างกายต้องการ จึงใช้ได้ไม่ว่าอยู่ประเทศใด — นี่คือเหตุผลที่การตรวจแบบนี้มีอยู่ในด้านที่ยังไม่มีเกณฑ์ประชากรไทยที่เป็นตัวแทน ส่วนนี้ไม่มีผลต่อคะแนน เกรด หรือดัชนีสมดุลของคุณ",
 

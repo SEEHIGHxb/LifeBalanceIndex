@@ -240,7 +240,11 @@ export function benchmarkStanding(b, { compact = false } = {}) {
 // Returns "" for aspects with no criteria, so callers can drop it in
 // unconditionally. Nothing here feeds a grade; see the additive contract at the
 // top of criteria.js.
-export function criteriaCard(criteria) {
+//
+// Open since v142 (the owner, 2026-09-29): the checks show, and what they are
+// and where they come from is a note at the page's end (criteriaNote), reached
+// by `ref`, the footnote mark beside the heading.
+export function criteriaCard(criteria, ref = "") {
   if (!criteria || criteria.length === 0) return "";
   const labels = CRITERION_STATUS_LABELS();
   const rows = criteria.map(c => `
@@ -251,37 +255,31 @@ export function criteriaCard(criteria) {
         <span class="criterion-detail">${escapeHtml(c.detail)}</span>
       </span>
     </li>`).join("");
+  return `
+    <div class="criteria-card">
+      <p class="criteria-head"><span class="card-header">${t("Guideline checks")}</span>${ref}</p>
+      <ul class="criteria-list">${rows}</ul>
+    </div>`;
+}
 
-  // Unique sources, in first-appearance order — several criteria share the WHO
-  // 2020 activity guideline and listing it three times would read as padding.
+// The note behind the checks: that they are guidelines, not a rank, and the
+// guidelines they cite. Unique sources, in first-appearance order: several
+// criteria share the WHO 2020 activity guideline, and listing it three times
+// would read as padding.
+export function criteriaNote(criteria) {
+  if (!criteria || criteria.length === 0) return "";
   const seen = new Set();
   const sources = criteria
     .map(c => c.source)
     .filter(src => src && !seen.has(src.url) && seen.add(src.url));
+  return `<p>${t("These compare you with published health guidelines, not with a population. A guideline states what a body needs, so it applies regardless of country — which is why these checks exist for aspects where no representative Thai norm does. They do not affect your score, grade or Balance Index.")}</p>
+    ${sourceList(sources)}`;
+}
 
-  // Folded (the owner, 2026-09-26: the caption alone ran six lines on a
-  // phone). The verdicts stay on the closed fold, beside the heading that
-  // says they are guideline checks, so a chip is not read as a rank. One chip
-  // per verdict with its count, in first-appearance order: five bare chips
-  // would repeat themselves without saying which check is which.
-  const counts = new Map();
-  for (const c of criteria) counts.set(c.status, (counts.get(c.status) || 0) + 1);
-  const verdicts = [...counts].map(([status, n]) =>
-    `<span class="criterion-chip criterion-chip-${escapeHtml(status)}">${escapeHtml(labels[status] || status)}${n > 1 ? ` ×${n}` : ""}</span>`).join(" ");
-  return `
-    <details class="card criteria-card">
-      <summary><span class="card-header">${t("Guideline checks")}</span> ${verdicts}</summary>
-      <p class="criteria-caption">${t("These compare you with published health guidelines, not with a population. A guideline states what a body needs, so it applies regardless of country — which is why these checks exist for aspects where no representative Thai norm does. They do not affect your score, grade or Balance Index.")}</p>
-      <ul class="criteria-list">${rows}</ul>
-      <div class="benchmark-sources">
-        <details>
-          <summary>${t("Guideline sources")}</summary>
-          <ul>
-            ${sources.map(src => `<li><a href="${escapeHtml(src.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(src.label)}</a></li>`).join("")}
-          </ul>
-        </details>
-      </div>
-    </details>`;
+// Links to sources, for a note.
+export function sourceList(sources) {
+  if (!sources || !sources.length) return "";
+  return `<ul class="fn-sources">${sources.map(src => `<li><a href="${escapeHtml(src.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(src.label)}</a></li>`).join("")}</ul>`;
 }
 
 // Localized method tag for a benchmark ("vs published norms", …). Was a

@@ -112,7 +112,7 @@ test("the trend is one strip of the last four weeks, oldest to newest, each agai
   assert.match(out, /class="sr-only">Score 62, Same as the week before</);
 });
 
-test("an aspect page is compact: the emblem on the region's photograph, rows, and the reasoning folded", () => {
+test("an aspect page is compact: the emblem on the region's photograph, rows, and the reasoning in notes at the end", () => {
   renderAspectPage(MAIN, STATE, "finance");
   const out = html();
   assert.doesNotMatch(out, /class="hero"|class="panel mission"|region-card/);
@@ -124,25 +124,50 @@ test("an aspect page is compact: the emblem on the region's photograph, rows, an
   assert.ok(out.indexOf("page-top") < out.indexOf("aspect-society"));
   // Where it stands is said once, in the top, not again under the gauge.
   assert.equal((out.match(/Ahead of about/g) || []).length, 1);
-  assert.match(out, /<details class="aspect-more"><summary>How this is worked out<\/summary><p class="aspect-blurb">/);
-  assert.ok(out.indexOf("aspect-more") < out.indexOf("aspect-parts"), "the sources fold inside the standing section");
   assert.match(out, /class="part-row"/);
-  assert.match(out, /<details class="aspect-more facts">\s*<summary>Measured, Not Scored<\/summary>/);
+  assert.match(out, /<p class="facts-head">Measured, Not Scored<sup class="fn-ref">/);
   assert.match(out, /class="careers-row aspect-measured"/);
 });
 
-test("the guideline checks fold, with their verdicts showing while closed", () => {
-  renderAspectPage(MAIN, STATE, "mental");
+// v142, the owner's cut list: the page keeps what a first-time reader needs;
+// the reasoning, the research and the sources are numbered notes at its end.
+test("an aspect page's explanations are numbered notes at its end, in reading order", () => {
+  renderAspectPage(MAIN, STATE, "physical");
   const out = html();
-  assert.match(out, /<details class="card criteria-card">\s*<summary><span class="card-header">Guideline checks<\/span> <span class="criterion-chip criterion-chip-[a-z-]+">[^<]+<\/span>/);
-  assert.doesNotMatch(out, /<details class="card criteria-card" open/);
-  assert.ok(out.indexOf("criteria-caption") > out.indexOf("</summary>", out.indexOf("criteria-card")), "the caption is inside the fold");
+  for (const gone of ["<details", "percentile-band", "focus-meta", "How this is worked out", "· typical range", "Standing vs Society", "Component Breakdown", "Suggested Focus", "re-measures this aspect from"]) {
+    assert.ok(!out.split('class="panel statement aspect-notes"')[0].includes(gone), `${gone} is still in the page's main view`);
+  }
+  for (const heading of ["How you compare", "What it(&#39;|')s made of", "Where to start", "Notes and sources"]) assert.match(out, new RegExp(heading));
+  const marks = [...out.matchAll(/<a id="fnref-([a-z]+)" href="#fn-\1" data-jump="fn-\1" aria-label="Note (\d)">\2<\/a>/g)].map(m => [m[1], m[2]]);
+  assert.deepEqual(marks, [["grade", "1"], ["character", "2"], ["compare", "3"], ["guidelines", "4"]]);
+  const notes = out.slice(out.indexOf('class="panel statement aspect-notes"'));
+  assert.deepEqual([...notes.matchAll(/<li id="fn-([a-z]+)"/g)].map(m => m[1]), ["grade", "character", "compare", "guidelines"]);
+  assert.match(notes, /made up for fun/, "the character's disclaimer is kept");
+  assert.match(notes, /“Percentile” = the share of people you're ahead of/);
+  assert.match(notes, /class="fn-sources"><li><a href="https:/, "the sources are listed");
+  assert.ok(out.lastIndexOf("aspect-focus") < out.indexOf("aspect-notes"), "the notes come last");
 });
 
-test("an aspect with no grade keeps the reason open, not folded", () => {
+test("the guideline checks show open, their explanation a note", () => {
+  renderAspectPage(MAIN, STATE, "mental");
+  const out = html();
+  assert.match(out, /<div class="criteria-card">\s*<p class="criteria-head"><span class="card-header">Guideline checks<\/span><sup class="fn-ref"><a id="fnref-guidelines"/);
+  assert.match(out, /<li id="fn-guidelines"[^>]*><span class="fn-mark">\d<\/span><div class="fn-body"><p>These compare you with published health guidelines/);
+});
+
+test("an aspect with no grade keeps the reason open, its explanation a note", () => {
   renderAspectPage(MAIN, STATE, "relationships");
-  const open = html().split('<details class="aspect-more">')[0];
-  assert.match(open, /class="grade-explainer"><p><strong>Not ranked — on purpose\.<\/strong>/);
+  const out = html();
+  assert.match(out, /class="grade-explainer"><p><strong>Not ranked — on purpose\.<\/strong><sup class="fn-ref"><a id="fnref-grade"/);
+  assert.match(out, /<li id="fn-grade"[^>]*>[\s\S]*A grade is a rank against a population/);
+});
+
+test("the trend waits for a second week rather than repeat the score", () => {
+  const snap = (v, d) => ({ date: `2026-09-0${d}T00:00:00.000Z`, aspects: { ...STATE.aspects, physical: v } });
+  renderAspectPage(MAIN, { ...STATE, snapshots: [snap(60, 1)] }, "physical");
+  assert.doesNotMatch(html(), /aspect-trend/);
+  renderAspectPage(MAIN, { ...STATE, snapshots: [snap(60, 1), snap(62, 8)] }, "physical");
+  assert.match(html(), /class="trend-strip"/);
 });
 
 test("a quiet region's page says it is still on purpose, and a loud one does not", () => {

@@ -103,11 +103,11 @@ export function emblemImg(chapter, cls) {
   return `<img class="${cls}" src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async">`;
 }
 
-// The panel's left column: which region, where in the journey, and on the
-// chapter's FIRST screen only, its theme line (an arrival beat; repeated on
-// every screen of a chapter it stops being one). The prologue is outside the
-// eight regions, so it carries the gilt star instead of an emblem.
-function sideMarkup(chapter, index, showTheme) {
+// The panel's left column: which region, and its emblem. No "Region n of 8"
+// (the header's star counts) and no theme line (the ending carries it): the
+// owner, v149. The prologue is outside the eight regions, so it carries the
+// gilt star instead of an emblem.
+function sideMarkup(chapter) {
   if (!chapter) {
     return `
       <div class="q-side">
@@ -119,8 +119,6 @@ function sideMarkup(chapter, index, showTheme) {
     <div class="q-side">
       <p class="label">(${escapeHtml(chapter.region)})</p>
       ${emblemImg(chapter, "q-emblem")}
-      <p class="q-count">${tp("Region {n} of {total}", { n: index + 1, total: CHAPTERS.length })}</p>
-      ${showTheme ? `<p class="q-theme">${escapeHtml(chapter.theme)}</p>` : ""}
     </div>`;
 }
 
@@ -144,10 +142,7 @@ function endingMarkup(chapterIndex, nav) {
     </div>
     <div class="burst-layer" aria-hidden="true"></div>
     <div class="q-split">
-      <div class="q-side">
-        <p class="label">(${escapeHtml(t("Region complete"))})</p>
-        <p class="q-count">${tp("Region {n} of {total}", { n: chapterIndex + 1, total: CHAPTERS.length })}</p>
-      </div>
+      <div class="q-side"></div>
       <div class="q-main">
         <h2 class="ending-region">${escapeHtml(chapter.region)}</h2>
         <p class="ending-theme">${escapeHtml(chapter.theme)}</p>
@@ -186,7 +181,7 @@ export function renderOnboarding(containerId, onComplete) {
         ${i > 0 ? `<button type="button" class="btn btn-onb-prev" data-screen="${i}">${t("Back")}</button>` : `<span></span>`}
         <div class="onb-nav-right">
           ${isLast
-            ? `<button type="submit" class="btn btn-primary">${t("Complete Assessment")}</button>`
+            ? `<button type="submit" class="btn btn-primary">${t("Finish")}</button>`
             : `<button type="button" class="btn btn-primary btn-onb-next" data-screen="${i}">${screen.kind === "ending" ? t("Travel on") : t("Next")}</button>`}
         </div>
       </div>`;
@@ -215,10 +210,11 @@ export function renderOnboarding(containerId, onComplete) {
         ${screen.instrument ? `data-instrument="${screen.instrument}"` : ""}
         ${screen.conditional ? `data-conditional="${screen.conditional}"` : ""}>
         <div class="q-split">
-          ${sideMarkup(chapter, screen.chapter, screen.startsChapter)}
+          ${sideMarkup(chapter)}
           <div class="q-main">
             <h2 class="q-title">${typedMarkup(screen.title)}</h2>
-            <p class="onb-why">${escapeHtml(screen.stem)}</p>
+            ${screen.source ? `<p class="onb-source">${escapeHtml(tp("Questionnaire: {name}", { name: screen.source }))}</p>` : ""}
+            ${screen.stem ? `<p class="onb-why">${escapeHtml(screen.stem)}</p>` : ""}
             ${body}
             ${nav}
           </div>

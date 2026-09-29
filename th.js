@@ -7,7 +7,53 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
-  // v148 drafts, awaiting the owner review: Side by Side trimmed.
+  // v149 drafts, awaiting the owner review: onboarding trimmed.
+  "Used to compare you with people like you. Nothing here is scored.": "ใช้เพื่อเทียบคุณกับคนที่คล้ายกับคุณ ข้อมูลส่วนนี้ไม่นำไปคิดคะแนน",
+  "Gender": "เพศ",
+  "Where you live": "ที่อยู่อาศัย",
+  "Work": "การทำงาน",
+  "Round numbers are fine.": "ใส่ตัวเลขคร่าว ๆ ได้",
+  "Monthly income after tax (baht)": "รายได้ต่อเดือนหลังหักภาษี (บาท)",
+  "Monthly savings (baht)": "เงินออมต่อเดือน (บาท)",
+  "A typical day.": "วันธรรมดาทั่วไป",
+  "Sleep a night (hours)": "นอนคืนละ (ชั่วโมง)",
+  "Vegetable portions a day": "ผักต่อวัน (ส่วน)",
+  "One portion is about a handful. Vegetables only, not fruit.": "หนึ่งส่วนประมาณหนึ่งกำมือ นับเฉพาะผัก ไม่รวมผลไม้",
+  "Water a day (litres)": "น้ำต่อวัน (ลิตร)",
+  "Time spent learning": "เวลาที่ใช้เรียนรู้",
+  "Both can be zero.": "ใส่ศูนย์ได้ทั้งสองช่อง",
+  "Single-use items": "ของใช้ครั้งเดียวทิ้ง",
+  "How you move": "การเคลื่อนไหวของคุณ",
+  "How money feels": "ความรู้สึกเรื่องเงิน",
+  "How you sleep": "การนอนของคุณ",
+  "The past month.": "ในช่วงเดือนที่ผ่านมา",
+  "Stress": "ความเครียด",
+  "The past 2 to 4 weeks. Nothing here is a diagnosis.": "ในช่วง 2 ถึง 4 สัปดาห์ที่ผ่านมา ส่วนนี้ไม่ใช่การวินิจฉัยโรค",
+  "Well-being": "ความเป็นอยู่ที่ดี",
+  "The past 2 weeks.": "ในช่วง 2 สัปดาห์ที่ผ่านมา",
+  "The people around you": "คนรอบตัวคุณ",
+  "Three about family, three about friends.": "สามข้อเรื่องครอบครัว สามข้อเรื่องเพื่อน",
+  "Loneliness": "ความเหงา",
+  "Asked of everyone, including people with plenty of company.": "ถามทุกคน รวมถึงคนที่มีเพื่อนมากมาย",
+  "Your relationship": "ความสัมพันธ์ของคุณ",
+  "Asked because you said you are in a relationship.": "ถามเพราะคุณบอกว่ามีคู่",
+  "Handling difficulty": "การรับมือกับความยาก",
+  "Finishing things": "การทำสิ่งต่าง ๆ ให้สำเร็จ",
+  "Learning things": "การเรียนรู้สิ่งใหม่",
+  "Sticking with things": "การทำสิ่งใดอย่างต่อเนื่อง",
+  "Helping others": "การช่วยเหลือผู้อื่น",
+  "A typical month.": "เดือนทั่วไป",
+  "Everyday green habits": "นิสัยรักษ์โลกในชีวิตประจำวัน",
+  "Looking ahead": "การมองไปข้างหน้า",
+  "Select": "เลือก",
+  "Finish": "เสร็จสิ้น",
+  "Questionnaire: {name}": "แบบสอบถาม: {name}",
+
+  // v149, a dash made a colon on approved Thai.
+  "Any deliberate learning counts: a course, a language, a craft, a manual.": "การเรียนรู้อย่างตั้งใจนับได้ทั้งหมด ไม่ว่าจะเป็นคอร์ส ภาษา งานฝีมือ หรือคู่มือสักเล่ม",
+  "Bags, straws, cups, cutlery, bottles: anything used once and thrown away.": "ถุง หลอด แก้ว ช้อนส้อม ขวด อะไรก็ตามที่ใช้ครั้งเดียวแล้วทิ้ง",
+
+  // v148, approved by the owner 2026-09-29: Side by Side trimmed.
   "{name} is above average in {aspects}, where you are not yet.": "{name} อยู่เหนือค่าเฉลี่ยในด้าน{aspects} ซึ่งคุณยังไปไม่ถึง",
   "Send your code to someone, and paste theirs below.": "ส่งรหัสของคุณให้อีกฝ่าย แล้วนำรหัสของเขามาวางด้านล่าง",
   "A code carries only a name and the eight aspect scores: no age, no points, nothing else. Paste a newer code any time to update someone.": "รหัสมีแค่ชื่อและคะแนนรายด้านทั้งแปด ไม่มีอายุ ไม่มีคะแนนสะสม ไม่มีอย่างอื่น วางรหัสใหม่ได้ทุกเมื่อเพื่ออัปเดตข้อมูลของแต่ละคน",
@@ -237,7 +283,6 @@ export const TH = {
   "Weight (kg)": "น้ำหนัก (กก.)",
   "Average Nightly Sleep (Hours)": "ชั่วโมงนอนเฉลี่ยต่อคืน",
   "Vegetable Portions per Day": "ผักต่อวัน (ส่วน)",
-  "One portion ≈ 80 g — about one handful, or half a plate of cooked greens. Vegetables only: the guideline check behind this field counts vegetables, not fruit.": "หนึ่งส่วน ≈ 80 กรัม ประมาณหนึ่งกำมือ หรือครึ่งจานของผักสุก นับเฉพาะผัก เกณฑ์ที่ใช้ตรวจสอบข้อนี้นับเฉพาะผัก ไม่รวมผลไม้",
   "Water Intake per Day (Liters)": "น้ำดื่มต่อวัน (ลิตร)",
   "Weekly Physical Activity (IPAQ)": "กิจกรรมทางกายรายสัปดาห์ (IPAQ)",
   // The pension question was retired in v68 — it scored nothing anywhere, and
@@ -246,7 +291,6 @@ export const TH = {
   "Back": "ย้อนกลับ",
   "Start over": "เริ่มใหม่",
   "Next": "ถัดไป",
-  "Complete Assessment": "ทำแบบประเมินให้เสร็จ",
   "Assessment Error: ": "แบบประเมินผิดพลาด: ",
 
   // --- Survey option scales ---
@@ -1377,7 +1421,6 @@ export const TH = {
   "That isn't a real date — check the day for that month.": "วันที่นี้ไม่ถูกต้อง — ตรวจสอบวันของเดือนนั้นอีกครั้ง",
   "Profile updated.": "อัปเดตโปรไฟล์แล้ว",
   "Profile updated — {parts}": "อัปเดตโปรไฟล์แล้ว — {parts}",
-  "— Select —": "— เลือก —",
   "Required.": "จำเป็นต้องกรอก",
   "Please answer every question before submitting.": "กรุณาตอบทุกคำถามก่อนส่ง",
 
@@ -1476,18 +1519,12 @@ export const TH = {
     "เดินทางครบแล้ว",
   "Before you set out":
     "ก่อนออกเดินทาง",
-  "Six quick things, so the rest of the journey can compare you with people in a similar situation. Nothing here is scored.":
-    "หกข้อสั้น ๆ เพื่อให้ส่วนที่เหลือของการเดินทางเทียบคุณกับคนที่อยู่ในสถานการณ์ใกล้เคียงกันได้ ข้อมูลตรงนี้ไม่ถูกนำไปให้คะแนน",
   "The Market":
     "ตลาด",
   "Where what you have meets what it costs.":
     "ที่ซึ่งสิ่งที่คุณมีมาเจอกับราคาที่ต้องจ่าย",
   "What comes in, what stays":
     "เข้ามาเท่าไร เหลืออยู่เท่าไร",
-  "Two numbers. Round them — nothing here needs to be exact.":
-    "สองตัวเลข ปัดเศษได้ ไม่มีอะไรตรงนี้ที่ต้องเป๊ะ",
-  "Now how money feels, which is a different question from how much of it there is.":
-    "ต่อไปคือความรู้สึกเรื่องเงิน ซึ่งเป็นคนละคำถามกับว่ามีเงินเท่าไร",
   "Of the {income} baht that comes in each month, you set aside {amount}.":
     "จาก {income} บาทที่เข้ามาในแต่ละเดือน คุณเก็บไว้ {amount} บาท",
   "Over a year, that is about {annual} baht.":
@@ -1506,10 +1543,6 @@ export const TH = {
     "ใช้สำหรับคำนวณช่วงค่า BMI เท่านั้น และไม่ถูกแสดงให้ใครเห็น",
   "An ordinary day":
     "วันธรรมดาวันหนึ่ง",
-  "Not your best day and not your worst — the one that repeats.":
-    "ไม่ใช่วันที่ดีที่สุดและไม่ใช่วันที่แย่ที่สุด แต่เป็นวันที่เกิดซ้ำ ๆ",
-  "Four questions about how the sleep actually went, which the hours alone do not tell us.":
-    "สี่คำถามว่าการนอนเป็นอย่างไรจริง ๆ ซึ่งจำนวนชั่วโมงอย่างเดียวบอกไม่ได้",
   "{hours} hours a night — around {annual} hours of sleep a year.":
     "คืนละ {hours} ชั่วโมง คิดเป็นการนอนราว {annual} ชั่วโมงต่อปี",
   "You move for about {mins} minutes in a normal week.":
@@ -1522,10 +1555,6 @@ export const TH = {
     "ผืนน้ำนิ่ง",
   "Where the surface tells you something about what is underneath.":
     "ที่ซึ่งผิวน้ำบอกบางอย่างเกี่ยวกับสิ่งที่อยู่ข้างใต้",
-  "Five questions about the last few weeks. There is no right answer and nothing here is a diagnosis.":
-    "ห้าคำถามเกี่ยวกับไม่กี่สัปดาห์ที่ผ่านมา ไม่มีคำตอบที่ถูก และไม่มีอะไรตรงนี้ที่เป็นการวินิจฉัย",
-  "Five more, about the same stretch of time — this time asking what was good rather than what was hard.":
-    "อีกห้าคำถามในช่วงเวลาเดียวกัน ครั้งนี้ถามถึงสิ่งที่ดี ไม่ใช่สิ่งที่ยาก",
   "You answered {n} questions about the past few weeks.":
     "คุณตอบคำถามเกี่ยวกับไม่กี่สัปดาห์ที่ผ่านมาไปแล้ว {n} ข้อ",
   "In {n} of the five well-being questions, you said that was true of you most of the time or more.":
@@ -1538,12 +1567,6 @@ export const TH = {
     "ลานกลางเมือง",
   "The people you would call, and the people who would call you.":
     "คนที่คุณจะโทรหา และคนที่จะโทรหาคุณ",
-  "Six questions about the people around you — three about family, three about friends.":
-    "หกคำถามเกี่ยวกับคนรอบตัวคุณ สามข้อเรื่องครอบครัว สามข้อเรื่องเพื่อน",
-  "Three questions about the gaps. They are asked of everyone, including people with plenty of company.":
-    "สามคำถามเกี่ยวกับช่องว่าง ถามทุกคน รวมถึงคนที่มีผู้คนรายล้อมอยู่มากมาย",
-  "Three last questions, asked only because you said you are in a relationship.":
-    "สามคำถามสุดท้าย ถามเพราะคุณระบุว่ากำลังมีความสัมพันธ์อยู่",
   "Across the six network questions your answers add up to {n}.":
     "จากหกคำถามเรื่องเครือข่ายผู้คน คำตอบของคุณรวมได้ {n}",
   "None of the three loneliness questions described you often.":
@@ -1556,18 +1579,6 @@ export const TH = {
     "โรงช่าง",
   "What you are building, and whether you believe you can finish it.":
     "สิ่งที่คุณกำลังสร้าง และความเชื่อว่าคุณจะทำมันจนจบได้",
-  "Six statements about how you handle difficulty.":
-    "หกข้อความเกี่ยวกับวิธีที่คุณรับมือกับความยากลำบาก",
-  "Three about finishing things.":
-    "สามข้อเกี่ยวกับการทำสิ่งต่าง ๆ ให้สำเร็จ",
-  "Three about learning things.":
-    "สามข้อเกี่ยวกับการเรียนรู้สิ่งใหม่",
-  "Four about staying with something once the novelty wears off.":
-    "สี่ข้อเกี่ยวกับการอยู่กับบางสิ่งต่อไปเมื่อความแปลกใหม่จางลง",
-  "Time at the bench":
-    "เวลาที่โต๊ะทำงาน",
-  "Any deliberate learning counts — a course, a language, a craft, a manual.":
-    "การเรียนรู้อย่างตั้งใจนับได้ทั้งหมด ไม่ว่าจะเป็นคอร์ส ภาษา งานฝีมือ หรือคู่มือสักเล่ม",
   "{hours} hours a week of deliberate learning — about {annual} hours a year.":
     "เรียนรู้อย่างตั้งใจสัปดาห์ละ {hours} ชั่วโมง คิดเป็นราว {annual} ชั่วโมงต่อปี",
   "No hours set aside for learning this week. It is a week, not a verdict.":
@@ -1580,12 +1591,8 @@ export const TH = {
     "ทางแยก",
   "What you hand to people you will never meet again.":
     "สิ่งที่คุณส่งต่อให้คนที่คุณจะไม่ได้พบอีก",
-  "Five questions about a typical month, not an exceptional one.":
-    "ห้าคำถามเกี่ยวกับเดือนธรรมดา ไม่ใช่เดือนพิเศษ",
   "Money and hours":
     "เงินและเวลา",
-  "Both can be zero. Giving is not the only way to contribute and this app does not pretend otherwise.":
-    "ทั้งสองข้อเป็นศูนย์ได้ การให้ไม่ใช่ทางเดียวในการมีส่วนร่วม และแอปนี้ไม่แสร้งว่าเป็นเช่นนั้น",
   "{amount} baht a month is about {annual} baht a year passed on.":
     "เดือนละ {amount} บาท คิดเป็นราว {annual} บาทต่อปีที่ส่งต่อออกไป",
   "{hours} hours a month adds up to roughly {annual} hours a year given to other people.":
@@ -1600,10 +1607,6 @@ export const TH = {
     "ร่องรอยที่วันธรรมดาเพียงวันเดียวทิ้งไว้",
   "Six everyday habits. Answer for what you actually do, not what you mean to.":
     "หกพฤติกรรมประจำวัน ตอบตามที่คุณทำจริง ไม่ใช่ตามที่ตั้งใจจะทำ",
-  "One last count":
-    "นับอีกครั้งเป็นครั้งสุดท้าย",
-  "Bags, straws, cups, cutlery, bottles — anything used once and thrown away.":
-    "ถุง หลอด แก้ว ช้อนส้อม ขวด อะไรก็ตามที่ใช้ครั้งเดียวแล้วทิ้ง",
   "{n} single-use items a day is about {annual} in a year.":
     "ของใช้ครั้งเดียวทิ้ง {n} ชิ้นต่อวัน คิดเป็นราว {annual} ชิ้นต่อปี",
   "Nothing single-use on an ordinary day.":
@@ -1616,17 +1619,12 @@ export const TH = {
     "จุดชมวิว",
   "How far ahead you are looking, and who is standing there with you.":
     "คุณมองไปข้างหน้าไกลแค่ไหน และมีใครยืนอยู่ตรงนั้นกับคุณ",
-  "Six last questions. The furthest ahead this whole journey asks you to look.":
-    "หกคำถามสุดท้าย ไกลที่สุดเท่าที่การเดินทางทั้งหมดนี้ขอให้คุณมอง",
   "Of six questions about the long term, {n} described something you do often.":
     "จากหกคำถามเรื่องระยะยาว มี {n} ข้อที่ตรงกับสิ่งที่คุณทำบ่อย",
   "That is the last of them. Every region on the ring is lit.":
     "นั่นคือข้อสุดท้าย ทุกดินแดนบนวงแหวนสว่างครบแล้ว",
   "In 2015, 10.3% of Thailand's population was 65 or older. By 2024 it was 15.4%. The country the long term belongs to is not the one that exists now.":
     "ในปี 2558 ประชากรไทย 10.3% มีอายุ 65 ปีขึ้นไป พอถึงปี 2567 ตัวเลขนี้เป็น 15.4% ประเทศที่ระยะยาวเป็นของมัน ไม่ใช่ประเทศที่มีอยู่ตอนนี้",
-  "Region {n} of {total}": "ดินแดนที่ {n} จาก {total}",
-  "Region complete":
-    "ดินแดนนี้ครบแล้ว",
   "Meanwhile, in the world":
     "ขณะเดียวกันในโลกใบนี้",
   "Where this comes from":

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `148`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `149`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.80.0] - 2026-09-29 (v149)
+
+Onboarding trimmed with the owner's cut list.
+
+- Every questionnaire screen has a plain title ("How money feels", "Stress", "Looking ahead"), with the questionnaire's official name kept as a small note under it ("Questionnaire: CFPB Financial Well-Being Assessment"). The activity screen is "How you move", noted as IPAQ.
+- The lines under the titles are cut to what the reader needs ("The past 2 weeks.", "A typical day."); the field labels are plain ("Where you live", "Work", "Water a day (litres)").
+- The side column shows the region and its emblem only: no "Region n of 8", no theme line. The last button reads "Finish"; select boxes read "Select".
+- Profile and the weekly review keep the old field labels for now, to be aligned in the Profile pass.
+- 40 new Thai drafts await the owner's review.
 
 ## [2.79.0] - 2026-09-29 (v148)
 

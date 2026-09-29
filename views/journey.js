@@ -27,22 +27,23 @@ import { t, tp, onLangChange } from "../i18n.js";
 // A fields screen shows its inputs together, because three numbers about sleep
 // and water are read at a glance and revealing them one by one would be
 // ceremony without information.
-function instrumentScreen(key, stem) {
+// The title is plain words (the owner, v149); the questionnaire's official
+// name is kept as a small note under it (`source`). t() on both because the
+// engine escapes but does not translate.
+function instrumentScreen(key, title, stem = "") {
   return {
     id: `instr-${key}`,
     instrument: key,
-    // t() here because this string is rendered as the screen's <h2> by the
-    // engine, which escapes but does not translate. Untranslated, every Thai
-    // instrument screen headlined an English acronym.
-    title: t(INSTRUMENTS[key].title),
+    title,
+    source: t(INSTRUMENTS[key].title),
     stem,
     // heading: false -- the engine prints the title above; see instrumentBlock.
     body: instrumentBlock(key, { heading: false })
   };
 }
 
-function fieldsScreen(id, title, stem, body) {
-  return { id: `fields-${id}`, instrument: null, title, stem, body };
+function fieldsScreen(id, title, stem, body, source = "") {
+  return { id: `fields-${id}`, instrument: null, title, stem, body, source };
 }
 
 // --- THE PROLOGUE --------------------------------------------------------
@@ -55,7 +56,7 @@ function fieldsScreen(id, title, stem, body) {
 const buildPrologue = () => fieldsScreen(
   "prologue",
   t("Before you set out"),
-  t("Six quick things, so the rest of the journey can compare you with people in a similar situation. Nothing here is scored."),
+  t("Used to compare you with people like you. Nothing here is scored."),
   `
     <div class="form-group">
       <label for="onb-name">${t("Name")}</label>
@@ -63,17 +64,17 @@ const buildPrologue = () => fieldsScreen(
     </div>
     <div class="grid-2">
       ${numberField("onb-age", t("Age"), "", 'min="15" max="100"', { required: true, placeholder: "15–100" })}
-      ${selectField("onb-gender", t("Gender (for benchmark norms)"), [
+      ${selectField("onb-gender", t("Gender"), [
         { v: "unspecified", l: "Prefer not to say" },
         { v: "male", l: "Male" },
         { v: "female", l: "Female" }
       ])}
     </div>
-    ${selectField("onb-region", t("Primary Region (Cost of Living Mapping)"), [
+    ${selectField("onb-region", t("Where you live"), [
       { v: "Provinces", l: "Provinces / Upcountry Thailand" },
       { v: "Bangkok", l: "Bangkok & Vicinity" }
     ])}
-    ${selectField("onb-employment", t("Employment Status"), [
+    ${selectField("onb-employment", t("Work"), [
       { v: "Office Worker", l: "Office Worker / Salary Employee" },
       { v: "Freelancer", l: "Freelancer / Independent" },
       { v: "Business Owner", l: "Business Owner / Entrepreneur" },
@@ -137,12 +138,12 @@ const buildChapters = () => [
       fieldsScreen(
         "money",
         t("What comes in, what stays"),
-        t("Two numbers. Round them — nothing here needs to be exact."),
+        t("Round numbers are fine."),
         `
-          ${numberField("onb-income", t("Monthly Individual Income (Net THB)"), "", 'min="0"', { required: true, field: "income" })}
-          ${numberField("onb-savings", t("Monthly Savings (THB)"), "", 'min="0"', { required: true, field: "monthlySavings", placeholder: t("e.g. 3,000") })}`
+          ${numberField("onb-income", t("Monthly income after tax (baht)"), "", 'min="0"', { required: true, field: "income" })}
+          ${numberField("onb-savings", t("Monthly savings (baht)"), "", 'min="0"', { required: true, field: "monthlySavings", placeholder: t("e.g. 3,000") })}`
       ),
-      instrumentScreen("cfpb", t("Now how money feels, which is a different question from how much of it there is."))
+      instrumentScreen("cfpb", t("How money feels"))
     ],
     recap(read) {
       const lines = [];
@@ -191,17 +192,17 @@ const buildChapters = () => [
       fieldsScreen(
         "daily",
         t("An ordinary day"),
-        t("Not your best day and not your worst — the one that repeats."),
+        t("A typical day."),
         `
           <div class="grid-2">
-            ${numberField("onb-sleep", t("Average Nightly Sleep (Hours)"), "", 'min="0" max="16" step="0.5"', { required: true, field: "sleepHours", placeholder: "0–16" })}
-            ${numberField("onb-veg", t("Vegetable Portions per Day"), "", 'min="0" max="15"', { required: true, field: "vegetablePortions", placeholder: "0–15", note: t("One portion ≈ 80 g — about one handful, or half a plate of cooked greens. Vegetables only: the guideline check behind this field counts vegetables, not fruit.") })}
+            ${numberField("onb-sleep", t("Sleep a night (hours)"), "", 'min="0" max="16" step="0.5"', { required: true, field: "sleepHours", placeholder: "0–16" })}
+            ${numberField("onb-veg", t("Vegetable portions a day"), "", 'min="0" max="15"', { required: true, field: "vegetablePortions", placeholder: "0–15", note: t("One portion is about a handful. Vegetables only, not fruit.") })}
           </div>
-          ${numberField("onb-water", t("Water Intake per Day (Liters)"), "", 'min="0" max="10" step="0.1"', { required: true, field: "waterLiters", placeholder: "0–10" })}`
+          ${numberField("onb-water", t("Water a day (litres)"), "", 'min="0" max="10" step="0.1"', { required: true, field: "waterLiters", placeholder: "0–10" })}`
       ),
       fieldsScreen(
         "activity",
-        t("Weekly Physical Activity (IPAQ)"),
+        t("How you move"),
         // Painted, not typed (the owner, 2026-09-27): nobody measures their
         // exercise in days and minutes, but everyone knows which days they run.
         t("Paint the days you move in a normal week."),
@@ -209,9 +210,10 @@ const buildChapters = () => [
           vig: { days: "onb-vig-days", mins: "onb-vig-mins" },
           mod: { days: "onb-mod-days", mins: "onb-mod-mins" },
           walk: { days: "onb-walk-days", mins: "onb-walk-mins" }
-        })
+        }),
+        t("Weekly Physical Activity (IPAQ)")
       ),
-      instrumentScreen("jss", t("Four questions about how the sleep actually went, which the hours alone do not tell us."))
+      instrumentScreen("jss", t("How you sleep"), t("The past month."))
     ],
     recap(read) {
       const lines = [];
@@ -262,8 +264,8 @@ const buildChapters = () => [
     wash: "#dde8f8",
     motif: "M2 11a10 5 0 0 1 20 0 M5 15a7 3.5 0 0 1 14 0 M8 19a4 2 0 0 1 8 0",
     screens: [
-      instrumentScreen("st5", t("Five questions about the last few weeks. There is no right answer and nothing here is a diagnosis.")),
-      instrumentScreen("who5", t("Five more, about the same stretch of time — this time asking what was good rather than what was hard."))
+      instrumentScreen("st5", t("Stress"), t("The past 2 to 4 weeks. Nothing here is a diagnosis.")),
+      instrumentScreen("who5", t("Well-being"), t("The past 2 weeks."))
     ],
     recap(read) {
       const lines = [];
@@ -297,10 +299,10 @@ const buildChapters = () => [
     wash: "#f7dfe6",
     motif: "M8 9a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5 M16 9a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5 M3 20c0-3.5 2.2-6 5-6s5 2.5 5 6 M11 20c0-3.5 2.2-6 5-6s5 2.5 5 6",
     screens: [
-      instrumentScreen("lsns", t("Six questions about the people around you — three about family, three about friends.")),
-      instrumentScreen("ucla", t("Three questions about the gaps. They are asked of everyone, including people with plenty of company.")),
+      instrumentScreen("lsns", t("The people around you"), t("Three about family, three about friends.")),
+      instrumentScreen("ucla", t("Loneliness"), t("Asked of everyone, including people with plenty of company.")),
       {
-        ...instrumentScreen("ras", t("Three last questions, asked only because you said you are in a relationship.")),
+        ...instrumentScreen("ras", t("Your relationship"), t("Asked because you said you are in a relationship.")),
         conditional: "couple"
       }
     ],
@@ -334,14 +336,14 @@ const buildChapters = () => [
     wash: "#f8e4cf",
     motif: "M8 3 L8 21 M16 3 L16 21 M8 8 L16 8 M8 13 L16 13 M8 18 L16 18",
     screens: [
-      instrumentScreen("gse", t("Six statements about how you handle difficulty.")),
-      instrumentScreen("citacc", t("Three about finishing things.")),
-      instrumentScreen("citlearn", t("Three about learning things.")),
-      instrumentScreen("grit", t("Four about staying with something once the novelty wears off.")),
+      instrumentScreen("gse", t("Handling difficulty")),
+      instrumentScreen("citacc", t("Finishing things")),
+      instrumentScreen("citlearn", t("Learning things")),
+      instrumentScreen("grit", t("Sticking with things")),
       fieldsScreen(
         "learning",
-        t("Time at the bench"),
-        t("Any deliberate learning counts — a course, a language, a craft, a manual."),
+        t("Time spent learning"),
+        t("Any deliberate learning counts: a course, a language, a craft, a manual."),
         learningMarkup("onb-learning")
       )
     ],
@@ -377,11 +379,11 @@ const buildChapters = () => [
     wash: "#e6dff8",
     motif: "M12 21 L12 4 M12 6 L19 6 L17 8.5 L12 8.5 M12 12 L5 12 L7 14.5 L12 14.5",
     screens: [
-      instrumentScreen("ptm", t("Five questions about a typical month, not an exceptional one.")),
+      instrumentScreen("ptm", t("Helping others"), t("A typical month.")),
       fieldsScreen(
         "giving",
         t("Money and hours"),
-        t("Both can be zero. Giving is not the only way to contribute and this app does not pretend otherwise."),
+        t("Both can be zero."),
         donationMarkup("onb-donations") + volunteerMarkup("onb-volunteer")
       )
     ],
@@ -426,11 +428,11 @@ const buildChapters = () => [
     wash: "#d8eddf",
     motif: "M12 21 L12 16 M5 16 L12 5 L19 16 Z M8 11 L16 11",
     screens: [
-      instrumentScreen("geb", t("Six everyday habits. Answer for what you actually do, not what you mean to.")),
+      instrumentScreen("geb", t("Everyday green habits"), t("Six everyday habits. Answer for what you actually do, not what you mean to.")),
       fieldsScreen(
         "plastics",
-        t("One last count"),
-        t("Bags, straws, cups, cutlery, bottles — anything used once and thrown away."),
+        t("Single-use items"),
+        t("Bags, straws, cups, cutlery, bottles: anything used once and thrown away."),
         tallyMarkup("onb-plastics")
       )
     ],
@@ -466,7 +468,7 @@ const buildChapters = () => [
     wash: "#e0e2f5",
     motif: "M2 20 L22 20 M12 3 L13.8 8.2 L19 8.2 L14.8 11.6 L16.4 17 L12 13.8 L7.6 17 L9.2 11.6 L5 8.2 L10.2 8.2 Z",
     screens: [
-      instrumentScreen("lfis", t("Six last questions. The furthest ahead this whole journey asks you to look."))
+      instrumentScreen("lfis", t("Looking ahead"))
     ],
     recap(read) {
       const longTerm = highCount(read.answers("lfis"));

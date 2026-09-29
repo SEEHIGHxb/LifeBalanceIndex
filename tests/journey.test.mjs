@@ -380,10 +380,10 @@ test("an instrument screen names its instrument exactly once, translated", () =>
   // t() is invisible — which is exactly how this shipped.
   const src = readFileSync(new URL("../views/journey.js", import.meta.url), "utf8");
   assert.match(
-    src, /title: t\(INSTRUMENTS\[key\]\.title\)/,
-    "the instrument screen's title is no longer wrapped in t(). It is rendered " +
-    "as the screen's <h2> by an engine that escapes but does not translate, so " +
-    "without t() every Thai instrument screen headlines an English acronym."
+    src, /source: t\(INSTRUMENTS\[key\]\.title\)/,
+    "the instrument screen's questionnaire note is no longer wrapped in t(). " +
+    "The engine escapes but does not translate, so without t() every Thai " +
+    "instrument screen names its questionnaire in English."
   );
 
   // The check-in still needs the paragraph: it stacks these blocks with no

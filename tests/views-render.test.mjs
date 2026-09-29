@@ -158,6 +158,30 @@ test("onboarding asks every instrument the app scores", async () => {
   }
 });
 
+// v149, the owner's cut list: plain titles, the questionnaire's official name
+// kept as a small note, no "Region n of 8" or theme line, "Finish" to submit,
+// and "Select" on the select boxes.
+test("onboarding titles are plain words, with the questionnaire named in a note", async () => {
+  const { renderOnboarding } = await import("../views/onboarding.js");
+  const { INSTRUMENTS } = await import("../surveys.js");
+  const html = render(() => renderOnboarding(MAIN, () => {}));
+
+  const titles = [...html.matchAll(/<h2 class="q-title"[^>]*>([\s\S]*?)<\/h2>/g)].map(m => m[1]);
+  for (const { title } of Object.values(INSTRUMENTS)) {
+    assert.ok(
+      html.includes(`Questionnaire: ${title}`.replace(/&/g, "&amp;")),
+      `"${title}" is not named in a questionnaire note`
+    );
+    assert.ok(!titles.some(h => h.includes(title)), `"${title}" is still a screen heading`);
+  }
+  assert.ok(html.includes("Questionnaire: Weekly Physical Activity (IPAQ)"), "the activity screen lost its IPAQ note");
+  assert.doesNotMatch(html, /Region \d+ of \d+|Region complete/, "the side column still counts regions");
+  assert.doesNotMatch(html, /class="q-theme"/, "the side column still carries the theme line");
+  assert.match(html, /<button type="submit"[^>]*>Finish<\/button>/, "the last button does not read Finish");
+  assert.doesNotMatch(html, /Complete Assessment|— Select —/);
+  assert.match(html, />Select<\/option>/, "the select placeholder is not Select");
+});
+
 test("onboarding asks every question of every instrument, not just the first", async () => {
   // A truncated block is the quieter failure: the form still looks right, the
   // sum is just short, and the score is wrong by a defensible-looking amount.

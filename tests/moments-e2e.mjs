@@ -463,6 +463,18 @@ try {
   await advance(page, 3000);
   const stuck = await pieceState(page, ".goals");
   if (stuck.styled.length) problems.push(`goals: stickers left mid-motion: ${stuck.styled.slice(0, 3).join(" | ")}`);
+  // The round "+" has no dot, before a hover and after it: the hover wraps
+  // the label in .pill__in, which draws a dot of its own (the owner, v147).
+  const addDot = () => page.evaluate(() => {
+    const b = document.querySelector(".goals .cat-add");
+    const inner = b.querySelector(".pill__in");
+    return [getComputedStyle(b, "::after").content, inner ? getComputedStyle(inner, "::after").content : "none"];
+  });
+  if ((await addDot()).some(c => c !== "none")) problems.push("goals: the + button shows a dot");
+  await page.hover(".goals .cat-add");
+  await advance(page, 300);
+  const hovered = await addDot();
+  if (hovered.some(c => c !== "none")) problems.push(`goals: the + button shows a dot after a hover (${hovered.join(", ")})`);
 
   // The Weekly Review: the next region's photograph wipes over and away.
   await reviewDue(page);

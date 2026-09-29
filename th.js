@@ -7,7 +7,7 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
-  // v146 drafts, awaiting the owner review: the Goals page's sources.
+  // v146, approved by the owner 2026-09-29: the Goals page's sources.
   "The National Sleep Foundation recommends 7 to 9 hours a night for adults.": "มูลนิธิการนอนหลับแห่งชาติ (National Sleep Foundation) แนะนำให้ผู้ใหญ่นอนคืนละ 7 ถึง 9 ชั่วโมง",
 
   // v145, approved by the owner 2026-09-29: the Goals page trimmed.

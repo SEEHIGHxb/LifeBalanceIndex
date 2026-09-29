@@ -159,7 +159,10 @@
   gap: 8px;
   font-size: 11px;
 }
-.goals .pledge-remove::after { width: 5px; }
+/* The first hover wraps the label in .pill__in (views/magnet.js), which then
+   draws the dot instead of the pill, so each rule names both. */
+.goals .pledge-remove::after,
+.goals .pledge-remove .pill__in::after { width: 5px; }
 /* Add is a round "+" (the owner, v146); its name is in aria-label. */
 .goals .cat-add {
   width: max(48px, calc(88 * var(--px)));
@@ -168,7 +171,8 @@
   font-weight: 400;
   letter-spacing: 0;
 }
-.goals .cat-add::after { content: none; }
+.goals .cat-add::after,
+.goals .cat-add .pill__in::after { content: none; }
 .pledge-ask { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .goals .statement .pledge-ask p { flex-basis: 100%; margin: 0; font-weight: 700; }
 

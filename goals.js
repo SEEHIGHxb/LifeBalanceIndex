@@ -14,17 +14,18 @@ import { shortId } from "./secure-context.js";
 // field: the profile field graded, or an "@derived" metric computed below.
 // cmp:   "gte" (reach at least the target) or "lte" (stay at or under it).
 // def/min/max/step bound the user-set target in the pledge form.
+// label: the target box's name; note: a source, shown as a numbered note.
 export const GOAL_TEMPLATES = {
   water: {
     field: "waterLiters", cmp: "gte", unit: "L/day",
     def: 2, min: 0.5, max: 5, step: 0.1, aspect: "physical", xp: 25,
-    title: "Hydration pledge",
+    title: "Water", label: "Litres a day",
     desc: "Average at least {target} L of water per day."
   },
   sleep: {
     field: "sleepHours", cmp: "gte", unit: "hours/night",
     def: 7, min: 5, max: 10, step: 0.5, aspect: "physical", xp: 25,
-    title: "Sleep pledge",
+    title: "Sleep", label: "Hours a night",
     desc: "Average at least {target} hours of sleep per night."
   },
   // Default is 5, not 3: WHO recommends at least 400 g of fruit and vegetables
@@ -34,49 +35,51 @@ export const GOAL_TEMPLATES = {
   veg: {
     field: "vegetablePortions", cmp: "gte", unit: "portions/day",
     def: 5, min: 1, max: 10, step: 0.5, aspect: "physical", xp: 25,
-    title: "Vegetables pledge",
-    desc: "Average at least {target} vegetable portions per day (WHO: 400 g of fruit and vegetables, about 5 portions)."
+    title: "Vegetables", label: "Portions a day",
+    desc: "Average at least {target} vegetable portions per day.",
+    note: "WHO recommends at least 400 g of fruit and vegetables a day, about 5 portions."
   },
   exerciseDays: {
     field: "@exerciseDays", cmp: "gte", unit: "days/week",
     def: 3, min: 1, max: 7, step: 1, aspect: "physical", xp: 30,
-    title: "Exercise days pledge",
+    title: "Exercise days", label: "Days a week",
     desc: "Exercise (vigorous or moderate) on at least {target} days this week."
   },
   metMinutes: {
     field: "@metMinutes", cmp: "gte", unit: "MET-min/week",
     def: 600, min: 300, max: 3000, step: 50, aspect: "physical", xp: 40,
-    title: "Activity volume pledge",
-    desc: "Reach at least {target} MET-minutes of activity this week (600 meets the WHO guideline)."
+    title: "Activity volume", label: "MET-minutes a week",
+    desc: "Reach at least {target} MET-minutes of activity this week.",
+    note: "600 MET-minutes a week meets the WHO guideline for physical activity."
   },
   learning: {
     field: "weeklyLearningHours", cmp: "gte", unit: "hours/week",
     def: 3, min: 1, max: 40, step: 0.5, aspect: "personalGoals", xp: 25,
-    title: "Learning pledge",
+    title: "Learning", label: "Hours a week",
     desc: "Spend at least {target} hours on active learning this week."
   },
   plastics: {
     field: "singleUsePlastics", cmp: "lte", unit: "pieces/day",
     def: 2, min: 0, max: 10, step: 1, aspect: "environment", xp: 25,
-    title: "Plastics pledge",
+    title: "Plastics", label: "Pieces a day",
     desc: "Keep single-use plastics to at most {target} pieces per day."
   },
   savings: {
     field: "savingsRate", cmp: "gte", unit: "% of income",
     def: 10, min: 1, max: 80, step: 1, aspect: "finance", xp: 25,
-    title: "Savings pledge",
+    title: "Savings", label: "% of income",
     desc: "Keep your savings rate at or above {target}% of income."
   },
   donations: {
     field: "monthlyDonations", cmp: "gte", unit: "THB/month",
     def: 100, min: 20, max: 100000, step: 10, aspect: "socialContribution", xp: 25,
-    title: "Giving pledge",
+    title: "Giving", label: "Baht a month",
     desc: "Donate at least {target} THB this month."
   },
   volunteering: {
     field: "volunteeringHours", cmp: "gte", unit: "hours/month",
     def: 2, min: 1, max: 60, step: 0.5, aspect: "socialContribution", xp: 30,
-    title: "Volunteering pledge",
+    title: "Volunteering", label: "Hours a month",
     desc: "Volunteer at least {target} hours this month."
   }
 };

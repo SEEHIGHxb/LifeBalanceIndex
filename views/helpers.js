@@ -138,6 +138,21 @@ export function gradeBadge(grade, unrankedReason = null) {
 // The links jump by script, not by their href: the router reads the hash, so
 // following "#fn-index" would send the reader to Overview's default route
 // (the skip link in app.js does the same for the same reason).
+// A page's notes, numbered in the order their marks are written, which is
+// the order the page reads in. A note with no body gets no mark.
+export function noteBook() {
+  const notes = [];
+  return {
+    notes,
+    ref(id, body) {
+      if (!body) return "";
+      const mark = String(notes.length + 1);
+      notes.push({ id, mark, body });
+      return footnoteRef(id, mark);
+    }
+  };
+}
+
 export function footnoteRef(id, mark, anchor = true) {
   return `<sup class="fn-ref"><a${anchor ? ` id="fnref-${id}"` : ""} href="#fn-${id}" data-jump="fn-${id}" aria-label="${escapeHtml(tp("Note {n}", { n: mark }))}">${escapeHtml(mark)}</a></sup>`;
 }

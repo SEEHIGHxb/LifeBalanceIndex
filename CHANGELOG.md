@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `144`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `145`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.77.0] - 2026-09-29 (v145)
+
+The Goals page trimmed with the owner's cut list.
+
+- The intro is one line: "Your weekly review checks each pledge for you."
+- Pledge titles drop the word "pledge" ("Sleep", "Water", ...). A pledge not yet graded shows no grading line; a graded one reads "✓ Met last week · 7.2 hours/night"; points read "+25 points a week". An empty list says "No pledges yet."
+- The catalog loses its order note. Each target box is labelled by its unit ("Portions a day", "Baht a month") instead of "Weekly target (...)", and the button reads "Add".
+- The WHO figures behind the vegetables and activity pledges move from brackets in the line to numbered notes at the page end. `noteBook()` moves from the aspect page to `views/helpers.js` so both pages share it.
+- Giving and Volunteering stay monthly, as the owner asked.
+- The v144 Thai is approved; 21 new drafts and 4 changes cut from approved Thai.
 
 ## [2.76.0] - 2026-09-29 (v144)
 

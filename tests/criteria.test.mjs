@@ -254,7 +254,7 @@ test("the BMI benchmark note reports the Asia-Pacific line, not the global 25", 
 
 test("the vegetable pledge default matches the WHO guideline it cites", () => {
   assert.equal(GOAL_TEMPLATES.veg.def, 5);
-  assert.match(GOAL_TEMPLATES.veg.desc, /400 g/);
+  assert.match(GOAL_TEMPLATES.veg.note, /400 g/);
   // min must still admit every previously-valid stored target so no saved
   // pledge is invalidated by the change.
   assert.ok(GOAL_TEMPLATES.veg.min <= 3);

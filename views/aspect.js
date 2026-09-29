@@ -42,7 +42,7 @@ import { topMarkup, label, renderStagePage } from "./stage-page.js";
 import { dotDate } from "./news.js";
 import {
   escapeHtml, gradeBadge, percentilePhrase, methodTag, mentalHealthNotice,
-  criteriaCard, criteriaNote, sourceList, footnoteRef, footnoteList, bindFootnotes,
+  criteriaCard, criteriaNote, sourceList, noteBook, footnoteList, bindFootnotes,
   CHECKIN_ASPECTS
 } from "./helpers.js";
 
@@ -86,21 +86,6 @@ function readAspect(state, key) {
 }
 
 const ranked = (b) => !!b && Number.isFinite(b.percentile);
-
-// The page's notes, numbered in the order their marks are written, which is
-// the order the page reads in. A note with no body gets no mark.
-function noteBook() {
-  const notes = [];
-  return {
-    notes,
-    ref(id, body) {
-      if (!body) return "";
-      const mark = String(notes.length + 1);
-      notes.push({ id, mark, body });
-      return footnoteRef(id, mark);
-    }
-  };
-}
 
 // Where the score stands, in words.
 function standingLine(a) {

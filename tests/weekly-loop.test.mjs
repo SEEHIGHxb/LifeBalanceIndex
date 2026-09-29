@@ -208,7 +208,36 @@ test("the catalog offers every pledge type you do not have yet, one row each", (
   // The one you have is under "Your pledges", not offered again.
   assert.doesNotMatch(out, /data-add="water"/);
   assert.match(out, /data-pledge="g1"/);
-  assert.match(out, /<button type="button" class="pill" data-add="sleep">Add Pledge<\/button>/);
+  assert.match(out, /<button type="button" class="pill" data-add="sleep" aria-label="Add · Sleep">Add<\/button>/);
+});
+
+test("Goals keeps to the pledge: short words, the unit as the label, the WHO figure as a note", () => {
+  const goals = [
+    { id: "g1", templateId: "sleep", target: 7, streak: 3, lastResult: { met: true, value: 7.2 } },
+    { id: "g2", templateId: "water", target: 2, streak: 0, lastResult: null }
+  ];
+  renderQuests(MAIN, { ...STATE, goals });
+  const out = html();
+  assert.match(out, /Your weekly review checks each pledge for you\./);
+  assert.match(out, /<h3 class="card-title" tabindex="-1">Sleep<\/h3>/);
+  assert.match(out, /✓ Met last week · 7\.2 hours\/night/);
+  assert.match(out, /3-week streak · \+25 points a week/);
+  // An ungraded pledge says nothing about grading yet.
+  assert.doesNotMatch(out, /Graded at your next|listed first|Weekly target| pledge<\/h3>|Add Pledge/);
+  assert.match(out, /<label for="cat-veg">Portions a day<\/label>/);
+  assert.match(out, /<label for="cat-donations">Baht a month<\/label>/);
+  // The WHO figures leave the line and become numbered notes, in page order.
+  assert.doesNotMatch(out, /\(WHO:|\(600 meets/);
+  assert.match(out, /<span id="cat-desc-veg">Average at least 5 vegetable portions per day\.<\/span><sup class="fn-ref"><a id="fnref-goal-veg"/);
+  assert.match(out, /<li id="fn-goal-veg"[^>]*>[\s\S]*WHO recommends at least 400 g/);
+  assert.match(out, /<li id="fn-goal-metMinutes"[^>]*>[\s\S]*600 MET-minutes a week/);
+  const before = (a, b) => out.indexOf(a) < out.indexOf(b);
+  assert.equal(before('id="fn-goal-veg"', 'id="fn-goal-metMinutes"'), before("fnref-goal-veg", "fnref-goal-metMinutes"));
+});
+
+test("an empty pledge list says only that", () => {
+  renderQuests(MAIN, STATE);
+  assert.match(html(), /<p class="goals-none">No pledges yet\.<\/p>/);
 });
 
 test("Goals opens on a short top with the review button, not a full-screen hero", () => {
@@ -224,7 +253,7 @@ test("a full pledge list says so and disables every card", () => {
   renderQuests(MAIN, { ...STATE, goals: ids.map((id, i) => ({ id: `g${i}`, templateId: id, target: 1, streak: 0, lastResult: null })) });
   const out = html();
   assert.match(out, /Pledge list is full/);
-  assert.doesNotMatch(out, /data-add="[^"]+">/, "an Add button stayed live on a full list");
+  assert.doesNotMatch(out, /data-add="[^"]+" aria-label="[^"]*">/, "an Add button stayed live on a full list");
 });
 
 test("removing a pledge asks on the page first", () => {

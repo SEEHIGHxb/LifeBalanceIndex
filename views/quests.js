@@ -19,8 +19,8 @@ import { t, tp } from "../i18n.js";
 import { GOAL_TEMPLATES, goalTemplate, PLEDGE_LIMIT, clampPledgeTarget } from "../goals.js";
 import { getAllBenchmarks } from "../benchmarks.js";
 import { gradeAllAspects } from "../grades.js";
-import { rankPledgesByGrade, isPriorityPledge } from "../suggestions.js";
-import { escapeHtml, aspectLabel } from "./helpers.js";
+import { rankPledgesByGrade } from "../suggestions.js";
+import { escapeHtml, aspectLabel, noteBook, footnoteList, bindFootnotes } from "./helpers.js";
 import { SPRITES, onAbort } from "./stage.js";
 import { topMarkup, label, renderStagePage } from "./stage-page.js";
 import { chapterOf, motifIcon } from "./news.js";
@@ -41,16 +41,21 @@ function sticker(aspect, k) {
   return `<span class="pledge-sticker diecut" style="--hue: ${hue}; transform: rotate(${tiltOf(k)}deg);" aria-hidden="true"><i>${motifIcon(aspect)}</i></span>`;
 }
 
+// Nothing until the first review has graded it (the owner, v145).
 function resultLine(goal, tmpl) {
   const last = goal.lastResult;
-  if (!last) return `<p class="pledge-result">${t("Graded at your next weekly review.")}</p>`;
+  if (!last) return "";
   const words = { value: escapeHtml(last.value), unit: t(tmpl.unit) };
   return last.met
-    ? `<p class="pledge-result pledge-met">✓ ${tp("Met last week ({value} {unit})", words)}</p>`
-    : `<p class="pledge-result pledge-missed">✗ ${tp("Missed last week ({value} {unit})", words)}</p>`;
+    ? `<p class="pledge-result pledge-met">✓ ${tp("Met last week · {value} {unit}", words)}</p>`
+    : `<p class="pledge-result pledge-missed">✗ ${tp("Missed last week · {value} {unit}", words)}</p>`;
 }
 
-function pledgeCard(goal, k, confirming) {
+// A pledge's source (the WHO figure behind a target) is a numbered note at the
+// page's end, not a bracket in its line (v145).
+const noteRef = (book, templateId, tmpl) => book.ref(`goal-${templateId}`, tmpl.note ? escapeHtml(t(tmpl.note)) : "");
+
+function pledgeCard(goal, k, confirming, book) {
   const tmpl = goalTemplate(goal.templateId);
   if (!tmpl) return "";
   const id = escapeHtml(goal.id);
@@ -61,16 +66,16 @@ function pledgeCard(goal, k, confirming) {
         <button type="button" class="pill" data-confirm-remove="${id}">${t("Remove")}</button>
         <button type="button" class="pill pill-light" data-cancel-remove="${id}">${t("Cancel")}</button>
       </div>`
-    : `<button type="button" class="pill pill-light pledge-remove" data-pledge-id="${id}" aria-label="${escapeHtml(`${t("Remove")} — ${title}`)}">${t("Remove")}</button>`;
+    : `<button type="button" class="pill pill-light pledge-remove" data-pledge-id="${id}" aria-label="${escapeHtml(`${t("Remove")} · ${title}`)}">${t("Remove")}</button>`;
   return `
     <article class="pledge" data-pledge="${id}">
       ${sticker(tmpl.aspect, k)}
       <div class="pledge-body">
         <p class="pledge-aspect">${aspectLabel(tmpl.aspect)}</p>
         <h3 class="card-title" tabindex="-1">${title}</h3>
-        <p class="pledge-desc">${tp(tmpl.desc, { target: escapeHtml(goal.target) })}</p>
+        <p class="pledge-desc">${tp(tmpl.desc, { target: escapeHtml(goal.target) })}${noteRef(book, goal.templateId, tmpl)}</p>
         ${resultLine(goal, tmpl)}
-        <p class="pledge-meta">${goal.streak >= 2 ? `${tp("{n}-week streak", { n: escapeHtml(goal.streak) })} · ` : ""}${tp("+{xp} points each week it's met", { xp: tmpl.xp })}</p>
+        <p class="pledge-meta">${goal.streak >= 2 ? `${tp("{n}-week streak", { n: escapeHtml(goal.streak) })} · ` : ""}${tp("+{xp} points a week", { xp: tmpl.xp })}</p>
         <div class="pledge-actions">${actions}</div>
       </div>
     </article>`;
@@ -90,22 +95,23 @@ function targetProblem(id, value) {
 
 // Add. A full list leaves every row there but disabled, so the reader can
 // still see what there is.
-function catalogRow(id, k, full) {
+function catalogRow(id, k, full, book) {
   const tmpl = goalTemplate(id);
   const off = full ? " disabled" : "";
+  const title = t(tmpl.title);
   return `
     <li class="cat" data-template="${id}">
       ${sticker(tmpl.aspect, k)}
       <div class="cat-text">
         <p class="pledge-aspect">${aspectLabel(tmpl.aspect)}</p>
-        <h3 class="card-title">${t(tmpl.title)}</h3>
-        <p class="card-desc" id="cat-desc-${id}">${tp(tmpl.desc, { target: tmpl.def })}</p>
+        <h3 class="card-title">${title}</h3>
+        <p class="card-desc"><span id="cat-desc-${id}">${tp(tmpl.desc, { target: tmpl.def })}</span>${noteRef(book, id, tmpl)}</p>
       </div>
       <div class="cat-form">
-        <label for="cat-${id}">${t("Weekly target")} (${t(tmpl.unit)})</label>
+        <label for="cat-${id}">${t(tmpl.label)}</label>
         <div class="cat-row">
           <input type="number" id="cat-${id}" class="form-control" min="${tmpl.min}" max="${tmpl.max}" step="${tmpl.step}" value="${tmpl.def}"${off}>
-          <button type="button" class="pill" data-add="${id}"${off}>${t("Add Pledge")}</button>
+          <button type="button" class="pill" data-add="${id}" aria-label="${escapeHtml(`${t("Add")} · ${title}`)}"${off}>${t("Add")}</button>
         </div>
         <p class="cat-error d-none" id="cat-err-${id}" role="alert"></p>
       </div>
@@ -121,15 +127,16 @@ export function goalsMarkup(state, { confirm = null } = {}) {
   const taken = new Set(pledges.map(g => g.templateId));
   const ids = rankPledgesByGrade(Object.keys(GOAL_TEMPLATES), grades);
   const full = pledges.length >= PLEDGE_LIMIT;
-  const hasPriority = !full && ids.some(id => !taken.has(id) && isPriorityPledge(id, grades));
   const active = tp("{n} active", { n: pledges.length });
-  const catalogNote = full
-    ? tp("Pledge list is full (max {max}).", { max: PLEDGE_LIMIT })
-    : hasPriority ? t("Pledges for the aspects you're graded lowest on are listed first.") : "";
+  const catalogNote = full ? tp("Pledge list is full (max {max}).", { max: PLEDGE_LIMIT }) : "";
   const due = stateManager.isWeeklyReviewDue();
   // A pledge you already have is under "Your pledges"; the catalog offers only
   // the rest (the owner's map, 2026-09-26).
   const offered = ids.filter(id => !taken.has(id));
+  // Built in reading order, so the notes number the way the page reads.
+  const book = noteBook();
+  const mine = pledges.map((g, k) => pledgeCard(g, k, confirm === g.id, book)).join("");
+  const catalog = offered.map((id, k) => catalogRow(id, k, full, book)).join("");
   return `
     <div class="stage-page goals">
       ${topMarkup({
@@ -138,16 +145,14 @@ export function goalsMarkup(state, { confirm = null } = {}) {
         inc: active,
         tapLabel: t("Play with the star"),
         body: `
-          <p class="goals-intro">${t("A pledge is a weekly quantity target. Your weekly review grades every pledge automatically — nothing to log day to day.")}</p>
+          <p class="goals-intro">${t("Your weekly review checks each pledge for you.")}</p>
           <p class="page-top-actions"><a class="pill" href="#/review">${due ? t("Start Weekly Review") : t("Weekly Review")}</a></p>`
       })}
       <section class="panel statement goals-mine"><div class="wrap split">
         <h2 class="label" id="pledges-label" tabindex="-1">(${escapeHtml(t("Your pledges"))})</h2>
         <div>
           <div class="pledge-list">
-            ${pledges.length
-              ? pledges.map((g, k) => pledgeCard(g, k, confirm === g.id)).join("")
-              : `<p class="goals-none">${t("No pledges yet — add one from the catalog.")}</p>`}
+            ${mine || `<p class="goals-none">${t("No pledges yet.")}</p>`}
           </div>
           <p class="sr-only" id="goals-live" aria-live="polite"></p>
         </div>
@@ -157,8 +162,13 @@ export function goalsMarkup(state, { confirm = null } = {}) {
         ${label(t("Add a Pledge"))}
         <div>
           ${catalogNote ? `<p class="goals-note">${catalogNote}</p>` : ""}
-          <ul class="cat-list">${offered.map((id, k) => catalogRow(id, k, full)).join("")}</ul>
+          <ul class="cat-list">${catalog}</ul>
         </div>
+      </div></section>` : ""}
+      ${book.notes.length ? `
+      <section class="panel statement goals-notes"><div class="wrap split">
+        ${label(t("Notes and sources"))}
+        <div>${footnoteList(book.notes)}</div>
       </div></section>` : ""}
     </div>`;
 }
@@ -232,6 +242,7 @@ export function renderQuests(containerId, state, view = {}) {
       console.error("Goals motion failed:", err);
     }
   }
+  bindFootnotes(root);
   if (focus) root.querySelector(focus)?.focus();
   const liveEl = root.querySelector("#goals-live");
   if (live && liveEl) liveEl.textContent = live;
@@ -264,7 +275,7 @@ export function renderQuests(containerId, state, view = {}) {
         return;
       }
       const id = result.pledge.id;
-      redraw({ fresh: id, focus: pledgeFocus(id, ".card-title"), live: `${t(goalTemplate(add).title)} — ${t("Added")}` });
+      redraw({ fresh: id, focus: pledgeFocus(id, ".card-title"), live: `${t(goalTemplate(add).title)} · ${t("Added")}` });
     } else if (pledgeId) {
       redraw({ confirm: pledgeId, focus: pledgeFocus(pledgeId, "[data-cancel-remove]") });
     } else if (cancelRemove) {
@@ -273,7 +284,7 @@ export function renderQuests(containerId, state, view = {}) {
       const goal = (state.goals || []).find(g => g.id === confirmRemove);
       const title = goal ? t(goalTemplate(goal.templateId)?.title || "") : "";
       stateManager.removePledge(confirmRemove);
-      redraw({ focus: "#pledges-label", live: `${title} — ${t("Removed")}` });
+      redraw({ focus: "#pledges-label", live: `${title} · ${t("Removed")}` });
     }
   });
 }

@@ -406,11 +406,15 @@ try {
   }
   // Home: the top is the reader's own star, and every aspect
   // row carries the population average the old radar drew as a dashed line.
+  // Waited for: the onboarded flag lands before Home has drawn, and on a slow
+  // runner the check below used to read the page in between.
+  await page.waitForSelector(".home .home-star svg polygon", { state: "attached", timeout: 10000 }).catch(() => {});
   const home = await page.evaluate(() => ({
     star: !!document.querySelector(".home .home-star svg polygon"),
-    averages: document.querySelectorAll(".home .ar-meter .meter em").length
+    averages: document.querySelectorAll(".home .ar-meter .meter em").length,
+    where: `${location.hash} ${document.querySelector("#main-view > *")?.className || "(empty)"}`
   }));
-  if (!home.star) problems.push("flow1: Home is missing your star");
+  if (!home.star) problems.push(`flow1: Home is missing your star (at ${home.where})`);
   if (home.averages !== 8) problems.push(`flow1: ${home.averages} aspect rows tick the average, not 8`);
   // A footnote mark (v141) jumps to its note at the end and back, and never
   // changes the route: the router reads the hash.

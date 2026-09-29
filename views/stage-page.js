@@ -45,9 +45,6 @@ const HERO = {
 const SPRING_STEP_S = 1 / 240;
 const MAX_DT_S = 0.05;
 
-// V5_REVIEW slab entry: a card starts SLAB.x to the right and eases home as it
-// rises SLAB.span up the screen.
-const SLAB = { from: 18, span: 525, pow: 3.5, x: 158, alpha: 0.2 };
 // V5_REVIEW #16: where the band's second and third photographs wipe in.
 const WIPES = [{ from: 167, to: -320 }, { from: -327, to: -565 }];
 const TYPE_MS_PER_CHAR = 55;
@@ -320,13 +317,14 @@ function mountMission(root, scope) {
   io.observe(typed.closest(".mission-head"));
 }
 
-// --- the cards slide in and the band wipes, both driven by scroll ----------
+// --- the band wipes, driven by scroll ------------------------------------
+// The region cards used to slide in here, each half on its own, so the two
+// halves of one region drifted apart (the owner, v151). They now pin and
+// stack in CSS alone (css/stage-page.css), which reduced motion turns off.
 function mountScroll(root, scope) {
-  const cards = [...root.querySelectorAll(".region-card .lcard")].map(el => ({ el, x: 0, tx: 0 }));
   const band = root.querySelector(".photoband");
   const layers = band ? [...band.querySelectorAll("i")].slice(1).map(el => ({ el, img: el.firstElementChild })) : [];
   const px = () => (root.clientWidth || 1) / (isPhone() ? MOBILE_REF : DESKTOP_REF);
-  let running = false;
 
   const paintBand = () => {
     if (!band) return;
@@ -344,37 +342,11 @@ function mountScroll(root, scope) {
       writeMotionStyle(layer.img, { transform: k ? `translateY(${(-k * h).toFixed(1)}px)` : "" });
     });
   };
-  const step = (_now, dtMs) => {
-    const a = 1 - (1 - SLAB.alpha) ** (dtMs / (1000 / 60));
-    const p = px();
-    let moving = false;
-    for (const c of cards) {
-      const d = c.tx - c.x;
-      if (Math.abs(d) < 0.05) c.x = c.tx;
-      else { c.x += d * a; moving = true; }
-      writeMotionStyle(c.el, { transform: c.x ? `translateX(${(c.x * p).toFixed(1)}px)` : "" });
-    }
-    return moving;
-  };
   const frame = () => {
-    const p = px();
-    const vh = innerHeight / p;
-    for (const c of cards) {
-      const top = c.el.getBoundingClientRect().top / p;
-      const u = clamp01((vh - SLAB.from - top) / SLAB.span);
-      c.tx = SLAB.x * (1 - u) ** SLAB.pow;
-    }
-    paintBand();
-    if (running || scope.signal.aborted) return;
-    running = true;
-    loop({ step, signal: scope.signal, reduced: "end" })
-      .catch(err => console.error("Scroll motion failed:", err))
-      .finally(() => { running = false; });
+    if (!scope.signal.aborted) paintBand();
   };
   onAbort(scope.signal, () => {
-    for (const el of [...cards.map(c => c.el), ...layers.flatMap(l => [l.el, l.img])]) {
-      writeMotionStyle(el, { transform: "" });
-    }
+    for (const el of layers.flatMap(l => [l.el, l.img])) writeMotionStyle(el, { transform: "" });
   });
   scope.listen(window, "scroll", frame, { passive: true });
   scope.listen(window, "resize", frame, { passive: true });

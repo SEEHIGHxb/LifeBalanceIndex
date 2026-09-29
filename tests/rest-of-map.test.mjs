@@ -157,6 +157,32 @@ test("the Landing offers to restore a backup before the journey", async () => {
   assert.match(out, /<input type="file" id="restore-file-input" accept="application\/json,\.json" class="d-none"/);
 });
 
+// v151, the owner: each region's picture and words were two cards that slid in
+// separately and drifted apart. Now one card each, pinning and stacking in CSS,
+// beside a rail of the eight emblems.
+test("the Landing's eight regions are one card each, with a rail to jump between them", async () => {
+  const { landingMarkup } = await import("../views/landing.js");
+  const out = landingMarkup();
+  const cards = out.match(/<article class="region-card"/g) || [];
+  assert.equal(cards.length, 8);
+  assert.doesNotMatch(out, /class="lcard|brand-visual|brand-logo|brand-photo/, "a region is split into two cards again");
+  CHAPTERS.forEach((c, i) => {
+    const card = out.split('<article class="region-card"')[i + 1];
+    assert.match(card, new RegExp(`id="region-${i}"[^>]*aria-labelledby="region-${i}-name"`));
+    assert.match(card, new RegExp(`--i: ${i}; --wash: ${c.wash.replace(/[()]/g, "\\$&")}`));
+    assert.ok(card.includes(`regions/${c.art}.jpg`) && card.includes(`emblems/${c.art}.webp`), `${c.region}: its photo and emblem are not in one card`);
+  });
+  const stops = out.match(/<button type="button" class="rail-stop" data-region="\d"/g) || [];
+  assert.equal(stops.length, 8, "the rail does not name all eight regions");
+  assert.equal((out.match(/aria-current="true"/g) || []).length, 1, "the rail starts on more or fewer than one region");
+
+  const css = read("css/stage-page.css");
+  assert.match(css, /\.region-card \{\s*position: sticky;/, "the cards no longer pin");
+  assert.match(css, /prefers-reduced-motion: reduce\) \{\s*\.region-card \{ position: static; \}/, "reduced motion still pins the cards");
+  assert.match(css, /:root\[data-reduce-motion\] \.region-card \{ position: static; \}/, "the in-app switch still pins the cards");
+  assert.doesNotMatch(read("views/stage-page.js"), /region-card|SLAB/, "the cards are driven by script again");
+});
+
 test("Profile is a text page that keeps every field and control", () => {
   renderProfile(MAIN, STATE, () => {});
   const out = html();

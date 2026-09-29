@@ -7,7 +7,7 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
-  // v150 drafts, awaiting the owner review: Profile trimmed.
+  // v150, approved by the owner: Profile trimmed.
   "About you": "เกี่ยวกับคุณ",
   "Birthday (optional)": "วันเกิด (ไม่บังคับ)",
   "Change your relationship and your recommendations update now; your relationship score refines at your next monthly check-in.": "เปลี่ยนสถานะความสัมพันธ์แล้วคำแนะนำจะอัปเดตทันที ส่วนคะแนนความสัมพันธ์จะปรับให้แม่นยำขึ้นในการทบทวนรายเดือนครั้งถัดไป",
@@ -23,7 +23,7 @@ export const TH = {
   "Reset": "ล้างข้อมูล",
   "Month and day only, so the app knows when your year turns.": "ระบุเพียงเดือนและวันที่ เพื่อให้แอปรู้ว่าปีของคุณเปลี่ยนวันไหน",
 
-  // v149 drafts, awaiting the owner review: onboarding trimmed.
+  // v149, approved by the owner: onboarding trimmed.
   "Used to compare you with people like you. Nothing here is scored.": "ใช้เพื่อเทียบคุณกับคนที่คล้ายกับคุณ ข้อมูลส่วนนี้ไม่นำไปคิดคะแนน",
   "Gender": "เพศ",
   "Where you live": "ที่อยู่อาศัย",

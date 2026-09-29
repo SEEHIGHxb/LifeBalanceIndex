@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `150`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `151`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.82.0] - 2026-09-29 (v151)
+
+The Landing's eight aspects redesigned with the owner.
+
+- One card per region, tinted in its wash: the photograph on top with an even margin and matching corners, the emblem overlapping its corner, and the name, aspect and line on one grid beneath. Before, each region was two cards that slid in separately and drifted up to 89 px apart (70 px past a phone's edge), with a seam between them and a square-edged colour panel.
+- The cards pin under the header and stack like the pages of a travel journal, each a little lower than the last. Pure CSS; reduced motion (the device or the in-app switch) turns it into a plain list. The script slide-in is gone.
+- A rail of the eight emblems follows you down the section (the left margin on desktop, across the top on a phone). The region you are in is lit in its hue; tapping one jumps to it and moves focus to its card.
+- The block is centred. No new text; the v149 and v150 Thai are approved.
 
 ## [2.81.0] - 2026-09-29 (v150)
 

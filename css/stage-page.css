@@ -292,63 +292,72 @@ html[data-reduce-motion] .sky-fx { display: none; }
 }
 .statement p:last-child { margin-bottom: 0; }
 
-/* ------------------------------------------------- the eight regions */
+/* ------------------------------------------------- the eight regions
+   The owner, v151: one card per region, tinted in its wash, pinning under
+   the header and stacking like the pages of a travel journal; each pins a
+   little lower than the last (--i), so the ones beneath peek out. A rail of
+   the eight emblems stays beside them. */
 .projects {
   position: relative;
   margin-top: var(--sheet-gap);
   background: var(--frame-page);
   border-radius: var(--panel-r);
+  --rc-pad: max(14px, calc(40 * var(--px)));
+  --rc-emblem: max(72px, calc(190 * var(--px)));
+  --rc-pin: calc(var(--frame-header-h) + max(16px, calc(40 * var(--px))));
 }
 .projects .inner { padding: calc(300 * var(--px)) 0 calc(651 * var(--px)); }
-.projects .label { margin: 0 0 calc(19 * var(--px)) calc(136 * var(--px)); }
+.projects .label { margin: 0 0 calc(19 * var(--px)) calc(216.5 * var(--px)); }
+.regions { position: relative; }
 .cardblock {
   width: calc(2112 * var(--px));
-  margin-left: calc(135 * var(--px));
+  margin: 0 auto;
 }
-.lcard {
-  position: relative;
-  background: var(--frame-card);
+.region-card {
+  position: sticky;
+  top: calc(var(--rc-pin) + var(--i) * max(8px, calc(22 * var(--px))));
+  display: grid;
+  gap: var(--rc-pad);
+  padding: var(--rc-pad);
+  background: var(--wash);
   border-radius: var(--card-r);
-  will-change: transform;
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.06);
+  scroll-margin-top: var(--rc-pin);
 }
-.region-card + .region-card { margin-top: calc(40 * var(--px)); }
-.brand-visual {
-  height: calc(768 * var(--px));
+.region-card:focus { outline: none; }
+.region-card:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 4px; }
+.region-card + .region-card { margin-top: calc(60 * var(--px)); }
+/* The photograph's corners follow the card's, less the padding between. */
+.rc-photo {
   overflow: hidden;
-}
-.brand-logo {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: calc(938 * var(--px));
-  display: grid;
-  place-items: center;
-}
-.brand-logo img {
-  display: block;
-  width: calc(300 * var(--px));
-  height: auto;
-  border-radius: 18%;
-  box-shadow: 0 calc(10 * var(--px)) calc(30 * var(--px)) rgba(0, 0, 0, 0.08);
-}
-.brand-photo {
-  position: absolute;
-  left: calc(938 * var(--px));
-  right: calc(72 * var(--px));
-  top: calc(74 * var(--px));
-  bottom: calc(74 * var(--px));
-  border-radius: calc(20 * var(--px));
+  aspect-ratio: 12 / 5;
+  max-height: calc(100svh - var(--rc-pin) - 7 * max(8px, calc(22 * var(--px))) - var(--rc-emblem) - 3 * var(--rc-pad));
+  width: 100%;
+  border-radius: max(6px, calc(var(--card-r) - var(--rc-pad) / 2));
   background-color: #dddddd;
-  background-size: cover;
-  background-position: center;
 }
-.info {
+.rc-info {
   display: grid;
-  grid-template-columns: calc(634 * var(--px)) minmax(0, 1fr) auto;
+  grid-template-columns: var(--rc-emblem) minmax(0, 0.8fr) minmax(0, 1.2fr);
+  column-gap: max(16px, calc(56 * var(--px)));
   align-items: start;
-  min-height: calc(236 * var(--px));
-  padding: calc(70 * var(--px)) calc(71 * var(--px));
+}
+/* The emblem rises into the photograph's corner, ringed in the wash so it
+   reads as sitting on the card rather than cut out of the picture. */
+.rc-emblem {
+  display: block;
+  width: var(--rc-emblem);
+  height: auto;
+  margin: calc(var(--rc-emblem) * -0.5 - var(--rc-pad) + 8px) 0 0 max(12px, calc(40 * var(--px)));
+  border: max(3px, calc(8 * var(--px))) solid var(--wash);
+  border-radius: 22%;
+  box-shadow: 0 calc(10 * var(--px)) calc(30 * var(--px)) rgba(0, 0, 0, 0.1);
+}
+.rc-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: max(10px, calc(24 * var(--px)));
 }
 .card-title {
   margin: 0;
@@ -365,7 +374,65 @@ html[data-reduce-motion] .sky-fx { display: none; }
   line-height: 1.8;
   color: #111111;
 }
-.info-links { display: flex; align-items: center; align-self: center; margin: 0; }
+.region-card .card-desc { padding-top: max(2px, calc(6 * var(--px))); }
+.region-card .tag { border-color: var(--hue); background: rgba(255, 255, 255, 0.6); }
+.allprojects { position: relative; }
+
+/* The rail sits in the left margin and follows you down the section. */
+.region-rail {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: calc(216.5 * var(--px));
+}
+.region-rail ol {
+  position: sticky;
+  top: calc(50svh - 4 * max(48px, calc(92 * var(--px))) + var(--frame-header-h) / 2);
+  display: grid;
+  justify-items: center;
+  gap: max(6px, calc(14 * var(--px)));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rail-stop {
+  display: grid;
+  place-items: center;
+  width: max(44px, calc(78 * var(--px)));
+  height: max(44px, calc(78 * var(--px)));
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+.rail-stop img {
+  display: block;
+  width: max(30px, calc(58 * var(--px)));
+  height: auto;
+  border-radius: 24%;
+  box-shadow: 0 0 0 2px transparent;
+  opacity: 0.6;
+  filter: saturate(0.5);
+  transition: opacity 0.3s ease, filter 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+.rail-stop:hover img { opacity: 0.8; }
+.rail-stop[aria-current="true"] img {
+  opacity: 1;
+  filter: none;
+  transform: scale(1.12);
+  box-shadow: 0 0 0 2px var(--hue);
+}
+.rail-stop:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
+
+/* Reduced motion: a plain list, no pinning, nothing easing. */
+@media (prefers-reduced-motion: reduce) {
+  .region-card { position: static; }
+  .rail-stop img { transition: none; }
+}
+:root[data-reduce-motion] .region-card { position: static; }
+:root[data-reduce-motion] .rail-stop img { transition: none; }
 /* The aspect's name in ink, ringed in its hue: several hues are too light to
    carry small text on white themselves. */
 .tag {
@@ -461,7 +528,7 @@ html[data-reduce-motion] .sky-fx { display: none; }
 }
 /* The photographs are lazy <img>s, not backgrounds, so they load only near
    the screen (tests/load-speed.test.mjs); they fill their frame the same way. */
-.brand-photo img,
+.rc-photo img,
 .photoband b img {
   display: block;
   width: 100%;
@@ -470,7 +537,6 @@ html[data-reduce-motion] .sky-fx { display: none; }
   object-position: center;
 }
 .photoband b img { position: absolute; inset: 0; }
-.brand-photo { overflow: hidden; }
 .photoband span {
   position: absolute;
   left: var(--gutter);
@@ -735,19 +801,34 @@ a.newsrow:hover .newsrow-title { text-decoration: underline; text-underline-offs
   .goals .statement,
   .compare .statement,
   .aspect-page .statement { padding: calc(90 * var(--px)) 0 calc(80 * var(--px)); }
+  /* On a phone the rail runs across the top, under the header, and the
+     cards pin just below it. */
+  .projects {
+    --rc-pad: max(12px, calc(30 * var(--px)));
+    --rc-emblem: max(64px, calc(150 * var(--px)));
+    --rc-pin: calc(var(--frame-header-h) + 60px);
+  }
   .cardblock { width: auto; margin: 0 calc(20 * var(--px)); }
   .projects .inner { padding-top: calc(200 * var(--px)); }
   .projects .label { margin-left: calc(20 * var(--px)); }
-  .brand-visual { height: auto; display: grid; }
-  .brand-logo,
-  .brand-photo { position: static; width: auto; }
-  .brand-logo { height: calc(360 * var(--px)); }
-  .brand-logo img { width: calc(240 * var(--px)); }
-  .brand-photo { height: calc(420 * var(--px)); margin: 0 calc(30 * var(--px)) calc(30 * var(--px)); }
+  .region-rail {
+    position: sticky;
+    top: var(--frame-header-h);
+    z-index: 2;
+    width: auto;
+    margin: 0 0 12px;
+    padding: 6px calc(20 * var(--px));
+    background: var(--frame-page);
+  }
+  .region-rail ol { position: static; grid-auto-flow: column; justify-content: space-between; gap: 0; }
+  .rail-stop { width: 44px; height: 44px; }
+  .rail-stop img { width: 30px; }
+  .rc-photo { aspect-ratio: 4 / 3; }
+  .rc-info { grid-template-columns: var(--rc-emblem) minmax(0, 1fr); row-gap: 10px; }
+  .rc-emblem { margin-left: 8px; }
+  .region-card .card-desc { grid-column: 1 / -1; padding-top: 0; }
   .card-title { font-size: max(16px, calc(40 * var(--px))); }
   .card-desc { font-size: max(14px, calc(28 * var(--px))); }
-  .info { grid-template-columns: minmax(0, 1fr); gap: calc(24 * var(--px)); padding: calc(50 * var(--px)); }
-  .info-links { align-self: start; }
   .careers { padding: calc(120 * var(--px)) 0; }
   .careers-row { flex-direction: column; gap: calc(40 * var(--px)); }
   .careers-head { font-size: calc(44 * var(--px)); }

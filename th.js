@@ -7,6 +7,19 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
+  // v141 drafts, awaiting the owner review: Overview trimmed, notes and sources.
+  "Note {n}": "หมายเหตุ {n}",
+  "Back to the text": "กลับไปที่เนื้อหา",
+  "About two minutes.": "ใช้เวลาราวสองนาที",
+  "A few short questions, once a month.": "คำถามสั้น ๆ ไม่กี่ข้อ เดือนละครั้ง",
+  "Your data lives only in this browser.": "ข้อมูลของคุณอยู่ในเบราว์เซอร์นี้เท่านั้น",
+  "Last backup {days} days ago.": "สำรองข้อมูลล่าสุดเมื่อ {days} วันก่อน",
+  "Month and day only.": "เฉพาะวันและเดือนเท่านั้น",
+  "Want sharper scores?": "อยากได้คะแนนที่แม่นยำขึ้นไหม",
+  "The tick on each bar is the average.": "ขีดบนแต่ละแถบคือค่าเฉลี่ย",
+  "† An estimate for now.": "† เป็นค่าประมาณในตอนนี้",
+  "Each average is the score of a reference person built from published population statistics and scored the same way as you. Where no statistic exists, a reasonable default stands in.": "ค่าเฉลี่ยแต่ละค่าคือคะแนนของบุคคลอ้างอิงที่สร้างจากสถิติประชากรที่เผยแพร่แล้ว และคิดคะแนนด้วยวิธีเดียวกับของคุณ หากไม่มีสถิติ จะใช้ค่าตั้งต้นที่สมเหตุสมผลแทน",
+  "Notes and sources": "หมายเหตุและแหล่งอ้างอิง",
   // --- Duty-of-care mental-health support (finding #4) ---
   "If things feel heavy, you don't have to face it alone": "ถ้ารู้สึกหนักใจ คุณไม่จำเป็นต้องเผชิญมันเพียงลำพัง",
   "Your recent well-being and stress answers suggest you may be going through a difficult time. This is a self-check, not a diagnosis — talking to a professional can help.": "คำตอบเรื่องสุขภาวะและความเครียดล่าสุดของคุณ บ่งชี้ว่าคุณอาจกำลังเผชิญช่วงเวลาที่ยากลำบาก นี่เป็นเพียงการประเมินตนเอง ไม่ใช่การวินิจฉัย การพูดคุยกับผู้เชี่ยวชาญสามารถช่วยได้",
@@ -119,8 +132,6 @@ export const TH = {
   "Coupled": "มีคู่",
 
   // --- Onboarding ---
-  "Quick-start results.": "ผลลัพธ์แบบเริ่มเร็ว",
-  "Aspects beyond your first sections use baseline estimates. Submit a Weekly Review to shape them, and monthly re-assessments refine your survey scores over time.": "ด้านที่อยู่นอกเหนือช่วงแรกใช้ค่าประมาณพื้นฐาน ส่งการทบทวนรายสัปดาห์เพื่อปรับให้ตรงขึ้น และการประเมินซ้ำรายเดือนจะปรับคะแนนแบบสอบถามของคุณให้แม่นยำขึ้นเมื่อเวลาผ่านไป",
   "points": "คะแนน",
   "Name": "ชื่อ",
   "Guest": "ผู้มาเยือน",
@@ -430,19 +441,13 @@ export const TH = {
   "Download a backup, then erase": "ดาวน์โหลดไฟล์สำรอง แล้วจึงลบ",
   "Erase without a backup": "ลบโดยไม่สำรองข้อมูล",
   "Back up your data.": "สำรองข้อมูลของคุณ",
-  "Everything here is stored only in this browser. Clearing site data, or the browser reclaiming space, would erase it with no way back.": "ข้อมูลทั้งหมดถูกเก็บไว้ในเบราว์เซอร์นี้เท่านั้น หากล้างข้อมูลเว็บไซต์หรือเบราว์เซอร์เรียกคืนพื้นที่ ข้อมูลจะถูกลบโดยกู้คืนไม่ได้",
-  "Your last backup was {days} days ago. Everything here is stored only in this browser, so a cleared cache would erase it.": "คุณสำรองข้อมูลครั้งล่าสุดเมื่อ {days} วันที่แล้ว ข้อมูลทั้งหมดถูกเก็บไว้ในเบราว์เซอร์นี้เท่านั้น การล้างแคชจะลบข้อมูลทิ้ง",
   "Monthly re-assessment due.": "ถึงเวลาประเมินซ้ำประจำเดือนแล้ว",
-  "Re-run the short well-being instruments so your scores track your real standing, not last month's.":
-    "ทำแบบประเมินชุดสั้นอีกครั้ง เพื่อให้คะแนนสะท้อนสถานะจริงของคุณ ไม่ใช่ของเดือนที่แล้ว",
   "Start Re-assessment": "เริ่มประเมินซ้ำ",
   "This year's points": "คะแนนปีนี้",
-  "{xp} points this year": "{xp} คะแนนในปีนี้",
   // The visible caption under the points bar, with the level badge just above
   // it: says the two are unrelated clocks — level is age, the bar is this
   // year's points.
   "Your level is your age, not points earned": "เลเวลของคุณคืออายุ ไม่ใช่คะแนนที่สะสมได้",
-  "Points: {xp} / {possible}": "คะแนน: {xp} / {possible}",
 
   // --- Level-year screen (#/year) + the birthday question ---
   "Your year": "ปีของคุณ",
@@ -450,8 +455,6 @@ export const TH = {
   "Day of month": "วันที่",
   "Save": "บันทึก",
   "When does your year turn?": "ปีของคุณเปลี่ยนวันไหน?",
-  "Your level is your age. Tell the app the day and it can close each year and open the next — month and day only.":
-    "เลเวลของคุณคืออายุ บอกวันให้แอปรู้ แล้วแอปจะปิดปีเก่าและเปิดปีใหม่ให้ — ระบุเพียงเดือนและวันที่",
   "Answer": "ตอบคำถาม",
   "Not now": "ไว้ก่อน",
   "Your level is simply your age — a fact about you, not a score you earned. Tell the app which day your year turns and it can close each year and open the next one for you.":
@@ -474,15 +477,11 @@ export const TH = {
     "ยังไม่มีปีที่บันทึกไว้ — ปีแรกของคุณจะปิดในวันเกิดครั้งถัดไป",
   "{xp} / {possible} points": "{xp} / {possible} คะแนน",
   "That date doesn't exist — check the day of the month.": "ไม่มีวันที่นี้จริง — โปรดตรวจสอบวันที่ของเดือน",
-  "Targeting your weakest measured components — tap one to open that aspect.": "เจาะจงองค์ประกอบที่อ่อนที่สุดของคุณ — แตะเพื่อเปิดด้านนั้น",
   "Open {aspect} details": "เปิดรายละเอียดด้าน{aspect}",
   "vs published norms": "เทียบเกณฑ์ที่ตีพิมพ์",
   "vs a published percentile table": "เทียบตารางเปอร์เซ็นไทล์ที่ตีพิมพ์",
   "vs participation rates": "เทียบอัตราการมีส่วนร่วม",
   "estimate": "ค่าประมาณ",
-  "Benchmark sources & methodology": "แหล่งอ้างอิงและวิธีการเทียบ",
-  'Percentiles compare your baseline answers with published population statistics — they are honest approximations, not exact ranks. "Estimate" marks curves calibrated to a published anchor point.':
-    'เปอร์เซ็นไทล์เทียบคำตอบพื้นฐานของคุณกับสถิติประชากรที่ตีพิมพ์ — เป็นค่าประมาณอย่างตรงไปตรงมา ไม่ใช่อันดับที่แน่นอน ป้าย "ค่าประมาณ" หมายถึงเส้นโค้งที่ปรับเทียบกับจุดอ้างอิงที่ตีพิมพ์',
 
   // --- Aspect pages ---
   "Standing vs Society": "สถานะเทียบกับสังคม",
@@ -499,7 +498,6 @@ export const TH = {
   "High": "สูง",
   "Partial": "บางส่วน",
   "Estimated": "ประมาณการ",
-  "Some scores are estimates.": "บางคะแนนเป็นค่าประมาณ",
   "These are scored from default answers: {aspects}. Re-run your assessment or submit a Weekly Review to confirm them.":
     "คะแนนเหล่านี้คิดจากคำตอบเริ่มต้น: {aspects} ทำแบบประเมินใหม่หรือส่งการทบทวนรายสัปดาห์เพื่อยืนยัน",
   "Estimated score.": "คะแนนประมาณการ",
@@ -588,7 +586,6 @@ export const TH = {
   "{met}/{total} pledges met": "ทำได้ {met}/{total} คำมั่น",
   "+{xp} points": "+{xp} คะแนน",
   "Weekly review open.": "การทบทวนรายสัปดาห์เปิดแล้ว",
-  "Two minutes of rough weekly numbers keep every score measured — no daily logging.": "ตัวเลขคร่าว ๆ รายสัปดาห์เพียงสองนาทีช่วยให้ทุกคะแนนมาจากการวัดจริง — ไม่ต้องบันทึกรายวัน",
   "Start Weekly Review": "เริ่มทบทวนรายสัปดาห์",
   "No weekly reviews yet — your first one opens the week after onboarding.": "ยังไม่มีการทบทวนรายสัปดาห์ — ครั้งแรกจะเปิดในสัปดาห์ถัดจากการประเมินเริ่มต้น",
   "This week's review is already recorded — come back next week.": "บันทึกการทบทวนของสัปดาห์นี้ไปแล้ว — กลับมาใหม่สัปดาห์หน้า",
@@ -989,10 +986,6 @@ export const TH = {
   "“Percentile” = the share of people you're ahead of, so higher is better. The range shows how precise this estimate is, not a statistical confidence interval.":
     "“เปอร์เซ็นไทล์” = สัดส่วนของคนที่คุณนำหน้า ยิ่งสูงยิ่งดี ส่วนช่วงบอกว่าค่าประมาณนี้แม่นแค่ไหน ไม่ใช่ช่วงความเชื่อมั่นทางสถิติ",
 
-  "Go deeper for more accurate scores.": "ทำแบบประเมินเชิงลึกเพื่อคะแนนที่แม่นยำขึ้น",
-  "An optional in-depth assessment uses the full-length validated questionnaires to sharpen your estimates and tighten each percentile band.":
-    "แบบประเมินเชิงลึก (ไม่บังคับ) ใช้แบบสอบถามฉบับเต็มที่ผ่านการตรวจสอบ เพื่อให้ค่าประมาณคมขึ้นและช่วงเปอร์เซ็นไทล์แคบลง",
-  "In-depth sections completed: {done}/{total}": "ทำแบบประเมินเชิงลึกแล้ว: {done}/{total} หมวด",
   "Continue in-depth": "ทำเชิงลึกต่อ",
   "Start in-depth assessment": "เริ่มแบบประเมินเชิงลึก",
   "Optional • full-length validated questionnaires • one section at a time":
@@ -1045,9 +1038,6 @@ export const TH = {
     "ตอบแบบสอบถามของด้านนี้เพื่อปลดล็อกเกรด",
   "A harmonic mean of how your eight aspects compare with the population — 50 is the average person, and it rises fastest when your weakest aspect rises. This is this app's own summary figure, not a published measure.":
     "ค่าเฉลี่ยฮาร์มอนิกของการเปรียบเทียบทั้งแปดด้านของคุณกับประชากร — 50 คือคนทั่วไปโดยเฉลี่ย และจะขยับขึ้นเร็วที่สุดเมื่อด้านที่อ่อนที่สุดของคุณดีขึ้น นี่เป็นตัวเลขสรุปที่แอปนี้สร้างขึ้นเอง ไม่ใช่มาตรวัดที่มีการเผยแพร่",
-  "You are at or above the population average in {count} of {total} aspects.":
-    "คุณอยู่ในระดับเท่ากับหรือสูงกว่าค่าเฉลี่ยของประชากร {count} จาก {total} ด้าน",
-  "Lifting {aspect} would move it most.": "การยกระดับด้าน{aspect}จะทำให้ค่านี้ขยับมากที่สุด",
   "A letter grade (A-F) comes from an aspect's population percentile rather than its 0-100 score: A is the top 10%, B the top 30%, C the typical middle (30th-69th), D below typical, and F the bottom 10%. The percentile is the part of an aspect that compares you with published data, so it is normally the only part worth grading. Finance is the one exception: its percentile is your income standing and nothing else, so grading on it would grade your income alone — a person on a small income with no debt and no money worry was being shown an F. Finance is therefore graded on its whole score, which weights the financial well-being questions far more heavily than income. Your income percentile is still shown on the card. An aspect whose questionnaires you have not answered is shown as “not graded” — never as an F, because missing data is not a failing result.":
     "เกรด (A-F) มาจากเปอร์เซ็นไทล์เทียบประชากรของแต่ละด้าน มากกว่าจะมาจากคะแนน 0-100 โดยตรง: A คือ 10% แรก, B คือ 30% แรก, C คือช่วงกลางทั่วไป (30-69), D คือต่ำกว่าทั่วไป และ F คือ 10% ท้าย เปอร์เซ็นไทล์คือส่วนที่เทียบคุณกับข้อมูลที่มีการเผยแพร่ จึงเป็นส่วนที่ควรให้เกรดตามปกติ ด้านการเงินเป็นข้อยกเว้นเดียว เพราะเปอร์เซ็นไทล์ของด้านนี้คือระดับรายได้ของคุณเพียงอย่างเดียว การให้เกรดจากมันจึงเท่ากับให้เกรดจากรายได้ล้วน ๆ คนที่มีรายได้น้อยแต่ไม่มีหนี้และไม่มีความกังวลเรื่องเงินเคยได้รับเกรด F ด้านการเงินจึงให้เกรดจากคะแนนรวมทั้งหมด ซึ่งให้น้ำหนักกับคำถามความอยู่ดีมีสุขทางการเงินมากกว่ารายได้มาก เปอร์เซ็นไทล์รายได้ของคุณยังคงแสดงอยู่บนการ์ด ส่วนด้านที่คุณยังไม่ได้ทำแบบสอบถามจะแสดงว่า “ยังไม่ให้เกรด” ไม่ใช่ F เพราะการไม่มีข้อมูลไม่ใช่ผลลัพธ์ที่ล้มเหลว",
   "The Balance Index is this app's own summary figure, not a published or validated measure — unlike the eight aspect scores and their percentiles, no research proposes it and nothing outside this app uses it. Before they are combined, each aspect is rescaled against its population average so that being typical scores 50, whether that aspect's average sits at 32 or 70 — the same population comparison the grades use. That way an aspect the whole population scores low on (like social contribution) no longer anchors your balance down for being merely average. The index is then the harmonic mean of those eight relative standings, so your weakest one pulls it down hardest: eight standings of 50 give an index of 50, while seven near 57 with one collapsed give a far lower number, even though both average 50. That is deliberate — a single number that rewarded a high average would reward neglecting an aspect entirely, and this app is about balance.":
@@ -1329,7 +1319,6 @@ export const TH = {
   "To do": "สิ่งที่ต้องทำ",
   "Your eight aspects": "แปดด้านของคุณ",
   "out of 100": "จาก 100",
-  "Average {n}": "ค่าเฉลี่ย {n}",
   "Journey": "การเดินทาง",
   "All eight regions": "ครบทั้งแปดแห่ง",
   "Recent": "ล่าสุด",

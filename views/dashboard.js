@@ -27,11 +27,9 @@ import { ASPECT_KEYS, isAspectDeepVerified } from "../aspects.js";
 import { getTopSuggestions, getMentalHealthNotice } from "../suggestions.js";
 import { characterFor } from "../characters.js";
 import {
-  balanceIndex, balanceBand, weakestAspect, gradeAllAspects, aspectsAtOrAboveAverage,
-  isBottomGrade, relativeToPopulation
+  balanceIndex, weakestAspect, gradeAllAspects, isBottomGrade, relativeToPopulation
 } from "../grades.js";
 import { goalTemplate } from "../goals.js";
-import { seasonPace } from "../season.js";
 import { openShareSheet } from "./share.js";
 import { shapeFigure, shapeSwitchMarkup, bindShapeSwitch, adoptShape, readShapeView } from "./shape.js";
 import { CHAPTERS } from "./journey.js";
@@ -45,8 +43,8 @@ import { writeMotionStyle } from "./motion-mount.js";
 import { nextReviewDate } from "./review.js";
 import { t, tp } from "../i18n.js";
 import {
-  escapeHtml, aspectLabel, benchmarkStanding, estimatedAspects,
-  mentalHealthNotice, isCareNoticeClosed, closeCareNotice, gradeBadge, balanceIndexBlock, CHECKIN_ASPECTS
+  escapeHtml, aspectLabel, estimatedAspects, mentalHealthNotice, isCareNoticeClosed, closeCareNotice,
+  footnoteRef, footnoteList, bindFootnotes, CHECKIN_ASPECTS
 } from "./helpers.js";
 
 const RECENT_ROWS = 5;
@@ -117,7 +115,6 @@ export function readHome(state) {
   return {
     state,
     profile: p,
-    pace: seasonPace(p.season),
     careNotice: isCareNoticeClosed() ? null : getMentalHealthNotice(state),
     benchmarks,
     sources: collectSources(benchmarks),
@@ -125,11 +122,11 @@ export function readHome(state) {
     // not off its income percentile (see gradeForFinance).
     grades: gradeAllAspects(benchmarks, state.aspects),
     index,
-    band: balanceBand(index),
     weakest: weakestAspect(state.aspects),
     // Measured the same way as the weakest: against the population average.
     strongest: ASPECT_KEYS.reduce((a, b) => (rel(b) > rel(a) ? b : a)),
-    standing: aspectsAtOrAboveAverage(state.aspects),
+    // Scored from default answers so far: marked † and explained in the notes.
+    estimated: estimatedAspects(state),
     scores: CHAPTERS.map(c => state.aspects[c.aspect]),
     // Star, radar or asterism (views/shape.js): the reader's last choice.
     view: readShapeView(),
@@ -154,16 +151,15 @@ function noticeSection(h) {
   return `<section class="panel notice-panel"><div class="wrap">${mentalHealthNotice(h.careNotice, { closable: true })}</div></section>`;
 }
 
-// Your star beside what it adds up to: the Balance Index and its band, where
-// you are strongest and what asks for more, then who you are this year. The
-// star is a link to its own page (views/star-page.js), which it zooms into.
+// Your star beside what it adds up to: the Balance Index, where you are
+// strongest and what asks for more, then your name and level. How the index
+// is worked out is note 1 (v141, the owner: a first-time reader gets the
+// number and the plain reading, the method is one tap away). The star is a
+// link to its own page (views/star-page.js), which it zooms into.
 function topSection(h) {
   const p = h.profile;
   const strong = chapterOf(h.strongest)?.region || "";
   const weak = chapterOf(h.weakest?.aspect)?.region || "";
-  const points = h.pace.ratio === null
-    ? tp("{xp} points this year", { xp: escapeHtml(h.pace.earned) })
-    : tp("Points: {xp} / {possible}", { xp: escapeHtml(h.pace.earned), possible: h.pace.possible });
   return `
     <section class="panel home-top">
       <div class="wrap home-top-grid">
@@ -176,11 +172,16 @@ function topSection(h) {
           ${shapeSwitchMarkup(h.view)}
         </div>
         <div class="home-reading">
-          ${balanceIndexBlock(h.index, h.band, h.weakest, h.standing)}
+          <div class="balance-index">
+            <div class="balance-index-figure">
+              <span class="balance-index-value">${escapeHtml(h.index)}</span>
+              <span class="balance-index-max">/100</span>
+            </div>
+            <p class="balance-index-title">${t("Balance Index")}${footnoteRef("index", "1")}</p>
+          </div>
           <p class="home-headline">${escapeHtml(tp("Strongest in {strong}.", { strong }))} ${escapeHtml(tp("{weak} is asking for more.", { weak }))}</p>
           <div class="home-identity">
-            <p class="home-facts"><strong class="home-name">${escapeHtml(p.name)}</strong> · ${escapeHtml(t(p.employment))} (${escapeHtml(t(p.region))}) · ${t("Lv.")}${escapeHtml(p.level)} · ${points}</p>
-            <p class="level-note">${t("Your level is your age, not points earned")}</p>
+            <p class="home-facts"><strong class="home-name">${escapeHtml(p.name)}</strong> · ${t("Lv.")}${escapeHtml(p.level)}</p>
             <p class="home-links">
               <a class="pill" href="#/year">${escapeHtml(t("Your year"))}</a>
               <button type="button" id="btn-share-radar" class="pill pill-light">${escapeHtml(t("Share your star"))}</button>
@@ -211,14 +212,14 @@ function todoSection(h) {
   if (h.reviewDue) {
     rows.push(todoRow({
       title: t("Weekly review open."),
-      body: t("Two minutes of rough weekly numbers keep every score measured — no daily logging."),
+      body: t("About two minutes."),
       actions: `<a href="#/review" class="pill">${t("Start Weekly Review")}</a>`
     }));
   }
   if (h.checkinDue) {
     rows.push(todoRow({
       title: t("Monthly re-assessment due."),
-      body: t("Re-run the short well-being instruments so your scores track your real standing, not last month's."),
+      body: t("A few short questions, once a month."),
       actions: `<a href="#/checkin" class="pill">${t("Start Re-assessment")}</a>`
     }));
   }
@@ -226,27 +227,20 @@ function todoSection(h) {
     rows.push(todoRow({
       title: t("Back up your data."),
       body: h.daysSinceExport === null
-        ? t("Everything here is stored only in this browser. Clearing site data, or the browser reclaiming space, would erase it with no way back.")
-        : tp("Your last backup was {days} days ago. Everything here is stored only in this browser, so a cleared cache would erase it.", { days: h.daysSinceExport }),
+        ? t("Your data lives only in this browser.")
+        : tp("Last backup {days} days ago.", { days: h.daysSinceExport }),
       actions: `<button type="button" id="backup-nudge-export" class="pill">${t("Export")}</button>`
     }));
   }
   if (h.askBirthday) {
     rows.push(todoRow({
       title: t("When does your year turn?"),
-      body: t("Your level is your age. Tell the app the day and it can close each year and open the next — month and day only."),
+      body: t("Month and day only."),
       actions: `<a href="#/year" class="pill">${t("Answer")}</a>
                 <button type="button" id="birthday-prompt-dismiss" class="pill pill-light">${t("Not now")}</button>`
     }));
   }
-  if (h.profile.assessmentComplete === false) {
-    rows.push(todoRow({
-      cls: "quickstart-note",
-      title: t("Quick-start results."),
-      body: t("Aspects beyond your first sections use baseline estimates. Submit a Weekly Review to shape them, and monthly re-assessments refine your survey scores over time."),
-      actions: ""
-    }));
-  }
+  // A quick-start save's estimated scores are marked † on their rows instead.
   if (!h.reviewDue) {
     rows.push(todoRow({
       cls: "todo-done",
@@ -263,66 +257,83 @@ function todoSection(h) {
 }
 
 // One aspect as a row: its emblem, region and aspect, the score on a bar with
-// the population average ticked, the standing, and the grade. The row opens
-// the aspect page, which keeps the full card.
+// the population average ticked, and your character there. The standing, the
+// band and the grade are on the aspect page the row opens (v141, the owner:
+// Overview keeps to what reads at a glance).
 function aspectRow(h, chapter, i) {
   const key = chapter.aspect;
   const score = h.scores[i];
   const avg = AVERAGE_ASPECT_SCORES[key];
-  const b = h.benchmarks[key];
-  // Your character here (characters.js), beside the aspect's name.
+  // A score from default answers is marked; the notes say what that means.
+  // A plain mark, not a footnote link: the whole row is already a link.
+  const estimate = h.estimated.includes(key)
+    ? `<span class="ar-est" aria-hidden="true">†</span><span class="sr-only"> (${escapeHtml(t("estimate"))})</span>`
+    : "";
+  // Your character here (characters.js).
   const who = characterFor(h.state, key);
-  const character = who ? ` · <span class="ar-character">${escapeHtml(who.name)}</span>` : "";
   return `
     <li><a class="aspect-row" href="#/aspect/${key}" aria-label="${escapeHtml(tp("Open {aspect} details", { aspect: aspectName(key) }))}" style="--hue: ${chapter.hue}; --wash: ${chapter.wash};">
       <span class="ar-emblem"><img src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async"></span>
-      <span class="ar-name"><b>${escapeHtml(chapter.region)}</b><small>${escapeHtml(aspectName(key))}${character}</small></span>
-      <span class="ar-score">${escapeHtml(score)}</span>
-      <span class="ar-meter">
-        <span class="meter" aria-hidden="true"><i style="width: ${Number(score) || 0}%;"></i><em style="left: ${Number(avg) || 0}%;"></em></span>
-        <small class="score-average">${escapeHtml(tp("Average {n}", { n: avg }))}</small>
-      </span>
-      <span class="ar-standing">${b ? benchmarkStanding(b, { compact: true }) : ""}</span>
-      <span class="ar-badges">
-        ${gradeBadge(h.grades[key], b && !h.grades[key] ? b.unranked : null)}
-      </span>
+      <span class="ar-name"><b>${escapeHtml(chapter.region)}</b><small>${escapeHtml(aspectName(key))}</small></span>
+      <span class="ar-score">${escapeHtml(score)}${estimate}</span>
+      <span class="ar-meter"><span class="meter" aria-hidden="true"><i style="width: ${Number(score) || 0}%;"></i><em style="left: ${Number(avg) || 0}%;"></em></span></span>
+      <span class="ar-character">${who ? escapeHtml(who.name) : ""}</span>
     </a></li>`;
 }
 
-// The in-depth offer, one row under the scores while it is unfinished.
+// The in-depth offer, one line under the scores while it is unfinished.
 function deepOffer(h) {
-  const total = ASPECT_KEYS.length;
-  if (h.deepDone >= total) return "";
-  const progress = h.deepDone > 0
-    ? ` <span class="deep-progress">${tp("In-depth sections completed: {done}/{total}", { done: h.deepDone, total })}</span>`
-    : "";
+  if (h.deepDone >= ASPECT_KEYS.length) return "";
   return `
     <div class="todo deep-offer">
-      <p class="todo-text"><strong class="todo-title">${t("Go deeper for more accurate scores.")}</strong> <span class="todo-body">${t("An optional in-depth assessment uses the full-length validated questionnaires to sharpen your estimates and tighten each percentile band.")}${progress}</span></p>
+      <p class="todo-text"><strong class="todo-title">${t("Want sharper scores?")}</strong></p>
       <span class="todo-actions"><a href="#/deep" class="pill pill-light">${h.deepDone > 0 ? t("Continue in-depth") : t("Start in-depth assessment")}</a></span>
     </div>`;
 }
 
+// Under the rows, one line saying what the tick is, and what † is when a
+// score carries it; each leads to its note.
+function aspectsKey(h) {
+  const tick = `<span>${t("The tick on each bar is the average.")}${footnoteRef("average", "2")}</span>`;
+  const est = h.estimated.length
+    ? ` <span>${t("† An estimate for now.")}${footnoteRef("estimate", "†")}</span>`
+    : "";
+  return `<p class="aspects-key">${tick}${est}</p>`;
+}
+
 function aspectsSection(h) {
-  const estimated = estimatedAspects(h.state);
-  const canDeepen = estimated.some(k => CHECKIN_ASPECTS.includes(k));
-  const estimateNote = estimated.length === 0 ? "" : `
-    <p class="home-note completeness-note"><strong>${t("Some scores are estimates.")}</strong> ${tp("These are scored from default answers: {aspects}. Re-run your assessment or submit a Weekly Review to confirm them.", { aspects: estimated.map(aspectLabel).join(", ") })}${canDeepen ? ` <a href="#/checkin">${t("Deepen my survey scores")}</a>` : ""}</p>`;
   return `
     <section class="panel home-aspects"><div class="wrap split">
       ${label(t("Your eight aspects"))}
       <div>
         <ul class="aspect-rows">${CHAPTERS.map((c, i) => aspectRow(h, c, i)).join("")}</ul>
-        ${estimateNote}
+        ${aspectsKey(h)}
         ${deepOffer(h)}
-        <details class="home-sources">
-          <summary>${t("Benchmark sources & methodology")}</summary>
-          <p>${t('Percentiles compare your baseline answers with published population statistics — they are honest approximations, not exact ranks. "Estimate" marks curves calibrated to a published anchor point.')}</p>
-          <ul>
-            ${h.sources.map(src => `<li><a href="${escapeHtml(src.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(src.label)}</a></li>`).join("")}
-          </ul>
-        </details>
       </div>
+    </div></section>`;
+}
+
+// Notes and sources, last on the page (v141): the method and the sources the
+// page no longer spells out beside the numbers. Note 1 keeps the promise that
+// every surface showing the Balance Index says it is the app's own figure.
+function notesSection(h) {
+  const canDeepen = h.estimated.some(k => CHECKIN_ASPECTS.includes(k));
+  const sources = `<ul class="fn-sources">${h.sources.map(src => `<li><a href="${escapeHtml(src.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(src.label)}</a></li>`).join("")}</ul>`;
+  const notes = [
+    { id: "index", mark: "1", body: `<p>${t("A harmonic mean of how your eight aspects compare with the population — 50 is the average person, and it rises fastest when your weakest aspect rises. This is this app's own summary figure, not a published measure.")}</p>` },
+    { id: "average", mark: "2", body: `<p>${t("Each average is the score of a reference person built from published population statistics and scored the same way as you. Where no statistic exists, a reasonable default stands in.")}</p>${sources}` }
+  ];
+  if (h.estimated.length) {
+    notes.push({
+      id: "estimate",
+      mark: "†",
+      body: `<p>${tp("These are scored from default answers: {aspects}. Re-run your assessment or submit a Weekly Review to confirm them.", { aspects: h.estimated.map(aspectLabel).join(", ") })}${canDeepen ? ` <a href="#/checkin">${t("Deepen my survey scores")}</a>` : ""}</p>`
+    });
+  }
+  return `
+    <section class="panel statement home-notes"><div class="wrap split">
+      ${label(t("Notes and sources"))}
+      ${footnoteList(notes)}
     </div></section>`;
 }
 
@@ -362,10 +373,10 @@ function newsSection(h) {
     : `<li class="newsrow newsrow-empty">${escapeHtml(t("No weekly reviews yet — your first one opens the week after onboarding."))}</li>`;
   const start = h.suggestions.length ? `
     <div class="wrap split news-block">
-      <div class="news-side">${label(t("Where to start"))}<p class="news-note">${escapeHtml(t("Targeting your weakest measured components — tap one to open that aspect."))}</p></div>
+      <div class="news-side">${label(t("Where to start"))}</div>
       <ul class="newslist">${h.suggestions.map(s => newsRow({
         kind: s.aspectLabel, thumb: thumbFor(s.aspect, h), title: s.title,
-        sub: `${s.text} · ${s.componentLabel}: ${s.componentValue}/100`, href: `#/aspect/${s.aspect}`
+        sub: s.text, href: `#/aspect/${s.aspect}`
       })).join("")}</ul>
     </div>` : "";
   return `
@@ -416,6 +427,7 @@ export function homeMarkup(h) {
       ${aspectsSection(h)}
       ${newsSection(h)}
       ${wallSection(h)}
+      ${notesSection(h)}
     </div>`;
 }
 
@@ -465,6 +477,7 @@ export function renderDashboard(containerId, state, onExportBackup) {
   // The switch works on a still page too; there it redraws without moving.
   adoptShape(container.querySelector(".home-star-mark svg.shape"), { view: h.view, you: h.scores });
   bindShapeSwitch(container, scope);
+  bindFootnotes(container);
   if (scope) {
     try {
       mountStar(container, scope, zoom);

@@ -408,10 +408,19 @@ try {
   // row carries the population average the old radar drew as a dashed line.
   const home = await page.evaluate(() => ({
     star: !!document.querySelector(".home .home-star svg polygon"),
-    averages: document.querySelectorAll(".home .score-average").length
+    averages: document.querySelectorAll(".home .ar-meter .meter em").length
   }));
   if (!home.star) problems.push("flow1: Home is missing your star");
-  if (home.averages !== 8) problems.push(`flow1: ${home.averages} aspect rows show the average, not 8`);
+  if (home.averages !== 8) problems.push(`flow1: ${home.averages} aspect rows tick the average, not 8`);
+  // A footnote mark (v141) jumps to its note at the end and back, and never
+  // changes the route: the router reads the hash.
+  const route = await page.evaluate(() => location.hash);
+  await page.click("#fnref-index");
+  const jumped = await page.evaluate(() => ({ focused: document.activeElement?.id, hash: location.hash }));
+  if (jumped.focused !== "fn-index" || jumped.hash !== route) problems.push(`flow1: the Balance Index footnote did not jump to its note (${JSON.stringify(jumped)})`);
+  await page.click("#fn-index .fn-back");
+  const back = await page.evaluate(() => ({ focused: document.activeElement?.id, hash: location.hash }));
+  if (back.focused !== "fnref-index" || back.hash !== route) problems.push(`flow1: the note's back link did not return (${JSON.stringify(back)})`);
 } catch (err) {
   problems.push(`flow1 (full onboarding): ${err.message}`);
 }

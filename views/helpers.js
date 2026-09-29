@@ -128,34 +128,35 @@ export function gradeBadge(grade, unrankedReason = null) {
   return `<span class="grade-badge grade-${grade.grade.toLowerCase()}" title="${escapeHtml(title)}">${escapeHtml(grade.grade)}</span>`;
 }
 
-// The Balance Index headline block for a personal page. `index` is the
-// harmonic mean from grades.js; `weakest` is its {aspect, score} drag point;
-// `standing` is the {count, total} from aspectsAtOrAboveAverage().
+// --- Footnotes (v141) ---------------------------------------------------------
+// The owner, 2026-09-29: the page keeps to what a first-time reader needs, and
+// the method and the sources sit in a Notes and sources section at its end,
+// reached like a Wikipedia footnote. `mark` is what the reader sees ("1",
+// "†"); `id` names the note. Each mark and note links to the other; where one
+// note has several marks, only the first (`anchor`) is where "↑" returns to.
 //
-// The standing sentence sits ABOVE the caption on purpose. "Am I at least the
-// average of the population?" is the question this app exists to answer, and
-// until now the answer was only ever implied — spread across eight percentiles
-// and folded into one composite number. It is stated first; the caption
-// explaining how the composite is built is fine print underneath it.
-//
-// The caption is deliberate: this number is the app's own aggregate, not a
-// published measure, and every surface that shows it says so. Removing that
-// line would put an uncited construct next to eight cited ones with nothing
-// to tell them apart.
-export function balanceIndexBlock(index, band, weakest, standing = null) {
-  return `
-    <div class="balance-index">
-      <div class="balance-index-figure">
-        <span class="balance-index-value">${index}</span>
-        <span class="balance-index-max">/100</span>
-      </div>
-      <div class="balance-index-body">
-        <p class="balance-index-title">${t("Balance Index")} <span class="balance-band band-${band.key}">${t(band.label)}</span></p>
-        ${standing ? `<p class="balance-index-standing">${tp("You are at or above the population average in {count} of {total} aspects.", { count: standing.count, total: standing.total })}</p>` : ""}
-        <p class="balance-index-caption">${t("A harmonic mean of how your eight aspects compare with the population — 50 is the average person, and it rises fastest when your weakest aspect rises. This is this app's own summary figure, not a published measure.")}</p>
-        ${weakest ? `<p class="balance-index-weakest">${tp("Lifting {aspect} would move it most.", { aspect: aspectLabel(weakest.aspect) })}</p>` : ""}
-      </div>
-    </div>`;
+// The links jump by script, not by their href: the router reads the hash, so
+// following "#fn-index" would send the reader to Overview's default route
+// (the skip link in app.js does the same for the same reason).
+export function footnoteRef(id, mark, anchor = true) {
+  return `<sup class="fn-ref"><a${anchor ? ` id="fnref-${id}"` : ""} href="#fn-${id}" data-jump="fn-${id}" aria-label="${escapeHtml(tp("Note {n}", { n: mark }))}">${escapeHtml(mark)}</a></sup>`;
+}
+
+// `notes` is [{ id, mark, body }], body being trusted markup.
+export function footnoteList(notes) {
+  return `<ol class="fn-list">${notes.map(n => `
+    <li id="fn-${n.id}" tabindex="-1"><span class="fn-mark">${escapeHtml(n.mark)}</span><div class="fn-body">${n.body}
+      <a class="fn-back" href="#fnref-${n.id}" data-jump="fnref-${n.id}" aria-label="${escapeHtml(t("Back to the text"))}">↑</a></div></li>`).join("")}</ol>`;
+}
+
+export function bindFootnotes(root) {
+  root.querySelectorAll("a[data-jump]").forEach(link => link.addEventListener("click", (e) => {
+    const target = document.getElementById(link.dataset.jump);
+    if (!target) return;
+    e.preventDefault();
+    target.scrollIntoView({ block: "center", behavior: isReduced() ? "auto" : "smooth" });
+    target.focus({ preventScroll: true });
+  }));
 }
 
 // --- FRIENDLIER PERCENTILE PRESENTATION ---

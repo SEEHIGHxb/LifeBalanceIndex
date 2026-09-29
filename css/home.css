@@ -43,15 +43,13 @@
   line-height: 0.9;
 }
 .home-top .balance-index-max { font-size: max(14px, calc(24 * var(--px))); font-weight: 700; }
-.home-top .balance-index-body p { margin: 0 0 calc(10 * var(--px)); line-height: 1.6; }
-.home-top .balance-index-title { font-weight: 700; }
-.home-top .balance-index-caption { font-size: max(13px, calc(18 * var(--px))); color: #444444; }
+.home-top .balance-index { align-items: flex-end; }
+.home-top .balance-index-title { margin: 0 0 calc(12 * var(--px)); font-weight: 700; font-size: max(16px, calc(28 * var(--px))); }
 .home-headline { margin: 0 0 calc(30 * var(--px)); font-weight: 700; font-size: max(16px, calc(30 * var(--px))); line-height: 1.5; }
 .home-identity { padding-top: calc(30 * var(--px)); border-top: 1px dashed rgba(0, 0, 0, 0.25); }
 .home-identity p { margin: 0 0 calc(8 * var(--px)); }
 .home-facts { font-weight: 500; }
 .home-name { font-weight: 700; }
-.home-identity .level-note { font-size: max(13px, calc(18 * var(--px))); color: #444444; }
 .home-identity .home-links { display: flex; flex-wrap: wrap; gap: 12px; margin: calc(24 * var(--px)) 0 0; }
 
 /* -------------------------------------------------------------- to do */
@@ -66,15 +64,8 @@
   border-bottom: 1px dashed rgba(0, 0, 0, 0.25);
 }
 .todo:last-child { border-bottom: 0; padding-bottom: 0; }
-/* The quick-start row keeps index.css's hook class but not its boxed look. */
-.home .todo.quickstart-note { margin: 0; padding: 0 0 calc(30 * var(--px)); border: 0; border-radius: 0; background: none; font-size: inherit; }
-.home .todo.quickstart-note:not(:last-child) { border-bottom: 1px dashed rgba(0, 0, 0, 0.25); }
-.home .quickstart-note strong,
-.home .completeness-note strong { color: inherit; }
-.home .home-note.completeness-note { padding: 0; border: 0; background: none; }
 .home .todo-text { flex: 1 1 calc(900 * var(--px)); margin: 0; font-size: max(15px, calc(22 * var(--px))); line-height: 1.7; }
 .home .todo-done .todo-text { color: #444444; }
-.home .deep-progress { display: block; font-weight: 700; }
 .home .todo.deep-offer { margin-top: calc(40 * var(--px)); padding: calc(30 * var(--px)) 0 0; border-top: 1px dashed rgba(0, 0, 0, 0.25); border-bottom: 0; }
 .todo-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
@@ -82,7 +73,7 @@
 .aspect-rows { margin: 0; padding: 0; list-style: none; }
 .aspect-row {
   display: grid;
-  grid-template-columns: calc(110 * var(--px)) minmax(0, 1.1fr) calc(130 * var(--px)) minmax(0, 1fr) minmax(0, 1.5fr) calc(270 * var(--px));
+  grid-template-columns: calc(110 * var(--px)) minmax(0, 1.1fr) calc(150 * var(--px)) minmax(0, 1.4fr) minmax(0, 1fr);
   gap: calc(40 * var(--px));
   align-items: center;
   padding: calc(22 * var(--px)) 0;
@@ -117,19 +108,26 @@
   margin-left: -1px;
   background: var(--frame-ink);
 }
-.ar-meter .score-average { margin: 0; font-size: max(11px, calc(15 * var(--px))); }
-.ar-standing { min-width: 0; font-size: max(13px, calc(18 * var(--px))); line-height: 1.5; }
-.ar-standing p { margin: 0; }
-.ar-standing .benchmark-detail { display: none; }
-.ar-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
-.home-note,
-.home-sources { margin: calc(40 * var(--px)) 0 0; font-size: max(14px, calc(20 * var(--px))); line-height: 1.7; }
-.home-sources summary { cursor: pointer; font-weight: 700; }
-/* A thumb's 44px on a touchscreen (WCAG 2.5.5). */
-@media (pointer: coarse) {
-  .home-sources summary { min-height: 44px; padding-block: 10px; box-sizing: border-box; }
-}
-.home-sources ul { padding-left: 1.2em; }
+/* A score from default answers carries a small dagger (the notes say why). */
+.ar-est { margin-left: 0.08em; font-size: 0.4em; vertical-align: super; }
+/* Your character in the region, on the right (v141). */
+.ar-character { min-width: 0; font-weight: 700; font-size: max(14px, calc(22 * var(--px))); text-align: right; }
+/* What the tick and the dagger mean, under the rows. */
+.aspects-key { display: flex; flex-wrap: wrap; gap: 4px calc(40 * var(--px)); margin: calc(30 * var(--px)) 0 0; font-size: max(13px, calc(18 * var(--px))); color: #444444; }
+
+/* ------------------------------------------------ notes and sources (v141) */
+.fn-ref { font-size: 0.62em; line-height: 0; }
+.fn-ref a { padding: 0 0.15em; font-weight: 700; color: inherit; text-decoration: none; border-bottom: 1px solid currentColor; }
+.fn-ref a:focus-visible,
+.fn-back:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
+.fn-list { display: grid; gap: calc(30 * var(--px)); margin: 0; padding: 0; list-style: none; font-size: max(14px, calc(20 * var(--px))); line-height: 1.7; }
+.fn-list > li { display: grid; grid-template-columns: 2em minmax(0, 1fr); scroll-margin: 96px; border-radius: 6px; }
+.fn-list > li:focus { outline: none; background: rgba(226, 184, 102, 0.18); transition: background-color 1.2s ease-out; }
+.fn-mark { font-weight: 700; }
+.home-notes .fn-body p { margin: 0; font-size: inherit; line-height: inherit; }
+.fn-sources { margin: 8px 0 0; padding-left: 1.2em; }
+.fn-back { display: inline-block; min-width: 24px; margin-left: 6px; font-weight: 700; color: inherit; text-align: center; text-decoration: none; }
+@media (pointer: coarse) { .fn-ref a, .fn-back { padding: 10px 6px; } }
 
 /* ------------------------------------------- where to start, and recent */
 .home-news { padding: calc(100 * var(--px)) 0 calc(90 * var(--px)); }
@@ -209,7 +207,6 @@
   .home-top .shape-switch { grid-column: 1 / -1; order: 1; justify-self: start; }
   .home-reading { display: contents; }
   .home-top .balance-index { flex-direction: column; gap: calc(10 * var(--px)); margin: 0; }
-  .home-top .balance-index-caption { display: none; }
   .home-headline { grid-column: 1 / -1; margin: 0; font-size: max(15px, calc(30 * var(--px))); }
   .home-identity { grid-column: 1 / -1; }
   .home .todo-text { font-size: max(15px, calc(28 * var(--px))); }
@@ -226,7 +223,7 @@
       "emblem score"
       "name name"
       "meter meter"
-      "badges badges";
+      "who who";
     align-content: start;
     gap: calc(14 * var(--px));
     padding: calc(24 * var(--px));
@@ -241,8 +238,7 @@
   .ar-name small { font-size: max(11px, calc(21 * var(--px))); }
   .ar-score { grid-area: score; align-self: center; font-size: max(30px, calc(76 * var(--px))); }
   .ar-meter { grid-area: meter; }
-  .ar-standing { display: none; }
-  .ar-badges { grid-area: badges; justify-content: flex-start; }
+  .ar-character { grid-area: who; text-align: left; font-size: max(12px, calc(21 * var(--px))); }
   /* Where to start and Recent: a small icon beside two lines. The full
      suggestion is on the aspect page the row opens. */
   .home-news .newsrow,
@@ -266,5 +262,3 @@
    No tracking and no uppercase for Thai (the Thai block in index.css). */
 html[lang="th"] .ar-name b { letter-spacing: 0; text-transform: none; }
 
-/* Your character beside the aspect's name (v122). */
-.ar-name .ar-character { font-weight: 700; color: var(--frame-ink); }

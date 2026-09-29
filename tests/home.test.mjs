@@ -84,13 +84,28 @@ test("the top names the Balance Index for readers, and the headline names real r
   assert.match(html, /<a class="star-hit" href="#\/star" aria-label="Open your star">/);
 });
 
-test("every aspect is one row that links to its aspect and shows its average", () => {
+test("every aspect is one row that links to its aspect and ticks its average", () => {
   const html = render(STATE);
   assert.equal((html.match(/class="aspect-row"/g) || []).length, 8);
   for (const chapter of CHAPTERS) {
     assert.match(html, new RegExp(`class="aspect-row" href="#/aspect/${chapter.aspect}"`));
   }
-  assert.equal((html.match(/class="score-average"/g) || []).length, 8);
+  assert.equal((html.match(/<em style="left: \d+%;"><\/em>/g) || []).length, 8);
+});
+
+// v141 (the owner): Overview keeps to what a first-time reader needs; the
+// standing, the band and the grade are on each aspect page, and the method
+// and sources are notes at the end, reached by footnote marks.
+test("Overview leaves the rankings to the aspect pages and the method to the notes", () => {
+  const html = render(STATE);
+  for (const gone of ["percentile-band", "grade-badge", "benchmark-plain-lead", "balance-band", "balance-index-caption", "level-note", "Points:", "Office Worker", "news-note"]) {
+    assert.ok(!html.includes(gone), `Overview still shows ${gone}`);
+  }
+  assert.match(html, /<sup class="fn-ref"><a id="fnref-index" href="#fn-index" data-jump="fn-index"/);
+  assert.match(html, /<li id="fn-index" tabindex="-1">/);
+  assert.match(html, /this app's own summary figure/, "the index must still say it is the app's own figure");
+  assert.ok(html.indexOf("home-notes") > html.indexOf("home-aspects"), "the notes come at the end");
+  assert.match(html, /class="fn-sources"><li><a href="https?:/, "the sources are listed in the notes");
 });
 
 test("Home is compact: no full-screen hero, photo band or repeated panels", () => {

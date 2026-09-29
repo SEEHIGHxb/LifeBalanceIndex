@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `140`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `141`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.73.0] - 2026-09-29 (v141)
+
+### Changed
+- Overview is trimmed for a first-time reader (the owner approved the cut list). The top shows the Balance Index, the one-line reading, and your name and level. The band chip, the standing sentence, the "lifting X" line, the job and region, the points and the level note are gone from it.
+- Each aspect row keeps its emblem, region, score and bar, with your character on the right. The percentile sentence, band chip and grade are on the aspect page the row opens. "Average N" under each bar is replaced by one line saying what the tick is.
+- Method and sources moved to a new Notes and sources section at the end of Overview, reached by footnote marks (1, 2, †) that jump down and back without changing the route. Note 1 still says the Balance Index is this app's own figure.
+- Estimated scores carry a † instead of a separate paragraph and the Quick-start row. The in-depth offer is one line and its button. Where to start drops its explainer and the component numbers. The to-do reasons are a few words each.
+- This year's points are on Your year only, shown whenever a year is open.
 
 ## [2.72.1] - 2026-09-29 (v140)
 

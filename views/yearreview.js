@@ -14,7 +14,8 @@
 // THE REDESIGN (R5, v100; docs/prototype/redesign/you.js yearHTML). A stage
 // page: YEAR and your level in the hero, when the year closes typed in, this
 // year's points, then what moved and the years filed as news lists, and the
-// day your year turns at the end.
+// day your year turns at the end. The points are here only (v141: Overview
+// no longer shows them), so they show whenever a year is open, birthday or not.
 
 import { stateManager } from "../state.js";
 import { seasonPace, nextBirthday, daysUntil, weeksBetween } from "../season.js";
@@ -160,7 +161,7 @@ export function yearMarkup(state, now = new Date()) {
         tapLabel: t("Play with the star")
       })}
       ${missionMarkup(t("Your year"), lines)}
-      ${known ? pointsSection(seasonPace(profile.season)) : ""}
+      ${profile.season ? pointsSection(seasonPace(profile.season)) : ""}
       ${known ? movementSection(state) : ""}
       ${filedSection(state.levelYears)}
       ${birthdaySection(profile, known)}

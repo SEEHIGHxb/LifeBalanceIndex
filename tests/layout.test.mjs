@@ -153,5 +153,5 @@ test("on a phone the eight aspects are a two-column grid of tiles, not eight tal
   const css = read("css/home.css");
   const phone = css.slice(css.indexOf("@container (max-width: 900px)"));
   assert.match(phone, /\.aspect-rows \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
-  assert.match(phone, /\.ar-standing \{ display: none; \}/, "the standing sentence belongs to the aspect page on a phone");
+  assert.match(phone, /"who who"/, "each tile ends on your character there");
 });

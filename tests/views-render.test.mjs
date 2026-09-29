@@ -262,14 +262,17 @@ test("the dashboard renders every aspect card", async () => {
 });
 
 test("a quick-start save is told its baseline is partial", async () => {
-  // `assessmentComplete: false` is the express-onboarding flag. The note is the
-  // only thing telling that user their scores rest on defaults.
+  // `assessmentComplete: false` is the express-onboarding flag: the sections it
+  // skipped are unanswered, so their scores rest on defaults. Since v141 each
+  // such score is marked † and the notes at the end say what that means.
   const { renderDashboard } = await import("../views/dashboard.js");
   const html = render(() => renderDashboard(MAIN, {
     ...STATE,
-    profile: { ...STATE.profile, assessmentComplete: false }
+    profile: { ...STATE.profile, assessmentComplete: false },
+    baseline: { ...STATE.baseline, answered: { cfpb: true, jss: true } }
   }, () => {}));
-  assert.ok(html.includes("quickstart-note"), "an express save got no partial-baseline note");
+  assert.ok(html.includes('class="ar-est"'), "an express save marked no score as an estimate");
+  assert.ok(html.includes('id="fn-estimate"'), "an express save got no note on its estimates");
 });
 
 // --- views/lumi.js ------------------------------------------------------

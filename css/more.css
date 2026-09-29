@@ -71,20 +71,6 @@
 
 .stage-page .duo { padding: calc(100 * var(--px)) 0 calc(90 * var(--px)); }
 .duo .split { --col: 704; }
-.stage-page .duo .duo-note {
-  max-width: calc(560 * var(--px));
-  margin: calc(24 * var(--px)) calc(40 * var(--px)) 0 0;
-  font-size: max(13px, calc(18 * var(--px)));
-  line-height: 1.7;
-}
-.stage-page .duo .duo-share { margin: calc(40 * var(--px)) 0 0; }
-.stage-page .duo .duo-none {
-  max-width: calc(1200 * var(--px));
-  margin: 0;
-  font-weight: 600;
-  font-size: max(15px, calc(26 * var(--px)));
-  line-height: 1.8;
-}
 .duo-legend {
   display: flex;
   flex-wrap: wrap;
@@ -380,7 +366,6 @@
   .code-row { flex-wrap: wrap; }
   .stage-page .code-input { flex-basis: 100%; }
   .stage-page .duo { padding: calc(90 * var(--px)) 0 calc(80 * var(--px)); }
-  .stage-page .duo .duo-note { max-width: none; margin-right: 0; font-size: max(14px, calc(26 * var(--px))); }
   .sbs-table th,
   .sbs-table td { padding: calc(20 * var(--px)) calc(6 * var(--px)); }
   .sbs-emblem { display: none; }

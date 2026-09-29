@@ -392,10 +392,12 @@ html[lang="th"] .rv-wipe-window span { font-weight: 700; }
 /* The notes at the page's end (views/helpers.js footnoteList), in the small
    print of the section they close rather than the statement size. */
 .aspect-page .statement .fn-list > li,
-.goals .statement .fn-list > li { max-width: calc(1400 * var(--px)); margin: 0; font-size: inherit; line-height: inherit; }
+.goals .statement .fn-list > li,
+.compare .statement .fn-list > li { max-width: calc(1400 * var(--px)); margin: 0; font-size: inherit; line-height: inherit; }
 .aspect-page .statement .fn-body p,
 .aspect-page .statement .fn-body li,
 .goals .statement .fn-body p,
-.goals .statement .fn-body li { max-width: none; margin: 0 0 8px; font-size: inherit; line-height: inherit; }
+.goals .statement .fn-body li,
+.compare .statement .fn-body p { max-width: none; margin: 0 0 8px; font-size: inherit; line-height: inherit; }
 .fn-points { margin: 0 0 8px; padding-left: 1.2em; }
 html[lang="th"] .aspect-page .statement .character-name { letter-spacing: 0; text-transform: none; line-height: 1.4; }

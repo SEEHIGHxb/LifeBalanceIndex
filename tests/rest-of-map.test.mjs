@@ -39,11 +39,29 @@ const person = (id, name, v) => ({ id, name, aspects: Object.fromEntries(Object.
 
 // --- Side by Side -------------------------------------------------------------
 
-test("with no one added there is nothing to lay over your star", () => {
+test("with no one added the page is the codes alone, and says so once", () => {
   renderLeaderboard(MAIN, STATE, () => {});
-  assert.match(html(), /No one added yet/);
-  assert.doesNotMatch(html(), /class="duo-them"/);
-  assert.doesNotMatch(html(), /compare-aspects/, "no aspect cards with no one to compare");
+  const out = html();
+  assert.doesNotMatch(out, /statement duo|compare-aspects|btn-share-radar/, "nothing to lay over your star, no second share button");
+  assert.match(out, /<h2 class="page-top-word">Side by Side <small><\/small><\/h2>/, "no \"You + 0\"");
+  assert.match(out, /Send your code to someone, and paste theirs below\.<sup class="fn-ref"><a id="fnref-codes"/);
+  assert.match(out, /<label for="my-comparison-code">Your code<\/label>/);
+  assert.match(out, /<li id="fn-codes"[^>]*>[\s\S]*A code carries only a name and the eight aspect scores/);
+});
+
+test("the page's promise and the ▲ ▽ marks are one note on the table, not a lead line", () => {
+  renderLeaderboard(MAIN, { ...STATE, friends: [person("f1", "Ann", 90)] }, () => {});
+  const out = html();
+  assert.doesNotMatch(out, /page-top-lead|duo-note|Pick whose shape|btn-share-radar/);
+  assert.match(out, /<small>You \+ 1<\/small>/);
+  // One person: nothing to pick, so no picker; Remove stays.
+  assert.doesNotMatch(out, /role="radiogroup"/);
+  assert.match(out, /data-friend-id="f1"/);
+  assert.match(out, /\(Eight aspects, side by side\)<sup class="fn-ref"><a id="fnref-reading"/);
+  assert.match(out, /<li id="fn-reading"[^>]*>[\s\S]*Not a ranking\. Where you differ, not who is ahead\.[\s\S]*▲ marks a score/);
+  // Notes number in reading order: the table's comes before the folded codes'.
+  assert.ok(out.indexOf('id="fn-reading"') < out.indexOf('id="fn-codes"'));
+  assert.match(out, /Ann is above average in /);
 });
 
 test("everyone keeps the order they were added in, whatever their scores", () => {
@@ -63,7 +81,7 @@ test("everyone keeps the order they were added in, whatever their scores", () =>
 test("the codes lead when no one is added, and fold away last once someone is", () => {
   renderLeaderboard(MAIN, STATE, () => {});
   const empty = html();
-  assert.ok(empty.indexOf("statement codes") < empty.indexOf("statement duo"), "with no one added the codes come first");
+  assert.ok(empty.indexOf("statement codes") > -1 && empty.indexOf("statement codes") < empty.indexOf("compare-notes"), "with no one added the codes come first");
   assert.doesNotMatch(empty, /codes-fold/);
   renderLeaderboard(MAIN, { ...STATE, friends: [person("f1", "Ann", 20)] }, () => {});
   const some = html();

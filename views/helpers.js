@@ -170,6 +170,10 @@ export function bindFootnotes(root) {
     const target = document.getElementById(link.dataset.jump);
     if (!target) return;
     e.preventDefault();
+    // A mark inside a folded section (Side by Side's codes) opens its fold,
+    // or there is nothing to scroll to.
+    const fold = target.closest("details:not([open])");
+    if (fold) fold.open = true;
     target.scrollIntoView({ block: "center", behavior: isReduced() ? "auto" : "smooth" });
     target.focus({ preventScroll: true });
   }));

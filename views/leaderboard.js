@@ -29,10 +29,9 @@ import { encodeComparisonCode, decodeComparisonCode } from "../comparison-code.j
 import { ASPECT_KEYS } from "../aspects.js";
 import { AVERAGE_ASPECT_SCORES } from "../averages.js";
 import { t, tp } from "../i18n.js";
-import { escapeHtml, aspectLabel } from "./helpers.js";
+import { escapeHtml, aspectLabel, noteBook, footnoteList, bindFootnotes } from "./helpers.js";
 import { CHAPTERS } from "./journey.js";
 import { topMarkup, label, renderStagePage } from "./stage-page.js";
-import { openShareFor } from "./dashboard.js";
 import { shapeFigure, shapeSwitchMarkup, bindShapeSwitch, adoptShape, morphShape, readShapeView } from "./shape.js";
 import { aspectName } from "./news.js";
 
@@ -53,7 +52,7 @@ const sameSnapshot = (a, b) => a.name.toLowerCase() === b.name.toLowerCase()
 function complementLine(person, myAspects) {
   const gaps = ASPECT_KEYS.filter(key => clearsAverage(person.aspects, key) && !clearsAverage(myAspects, key));
   if (gaps.length === 0) return "";
-  return `<p>${tp("{name} clears the population average in {aspects}, where you do not yet.", {
+  return `<p>${tp("{name} is above average in {aspects}, where you are not yet.", {
     name: escapeHtml(person.name),
     aspects: gaps.map(aspectLabel).join(", ")
   })}</p>`;
@@ -62,11 +61,13 @@ function complementLine(person, myAspects) {
 // With no one added the codes are the whole point, so they lead, open. Once
 // someone is added they are needed far less than the comparison, so they go
 // last and fold away (the owner's map, 2026-09-26).
-function codesSection(myCode, folded) {
+// What a code carries, and how to update someone, is a note (v148).
+function codesSection(myCode, folded, book) {
+  const ref = book.ref("codes", `<p>${escapeHtml(t("A code carries only a name and the eight aspect scores: no age, no points, nothing else. Paste a newer code any time to update someone."))}</p>`);
   const inner = `
-        <p>${t("Share your code with others over LINE or Discord, and paste theirs below. A code carries only a name and the eight aspect scores — no age, no points, nothing else. Re-paste a newer code any time to update someone.")}</p>
+        <p>${t("Send your code to someone, and paste theirs below.")}${ref}</p>
         <div class="code-field">
-          <label for="my-comparison-code">${t("Your Comparison Code")}</label>
+          <label for="my-comparison-code">${t("Your code")}</label>
           <div class="code-row">
             <input type="text" id="my-comparison-code" class="form-control code-input" value="${escapeHtml(myCode)}" readonly>
             <button type="button" id="btn-copy-code" class="pill">${t("Copy")}</button>
@@ -100,9 +101,10 @@ function duoFigure(state, them, view) {
 }
 
 // Everyone added, in the order they were added. Each can be picked to lie over
-// your star, and removed (which asks first).
+// your star, and removed (which asks first). With one person there is nothing
+// to pick, so there is no picker (v148).
 function peopleMarkup(friends, pick, confirm) {
-  const pills = friends.map((f, k) => {
+  const pills = friends.length < 2 ? "" : friends.map((f, k) => {
     const on = k === pick;
     return `<button type="button" class="pill pill-light" role="radio" data-pick="${k}" aria-checked="${on}" tabindex="${on ? 0 : -1}">${escapeHtml(f.name)}</button>`;
   }).join("");
@@ -120,16 +122,18 @@ function peopleMarkup(friends, pick, confirm) {
     return `<button type="button" class="linkbtn friend-remove" data-friend-id="${id}">${tp("Remove {name}", { name })}</button>`;
   }).join("");
   return `
-    <div class="people" role="radiogroup" aria-label="${escapeHtml(t("Whose star shares yours"))}">${pills}</div>
+    ${pills ? `<div class="people" role="radiogroup" aria-label="${escapeHtml(t("Whose star shares yours"))}">${pills}</div>` : ""}
     <div class="people-rm">${removes}</div>`;
 }
 
+// Your star with the picked person's laid over it. With no one added there is
+// nothing to show: the codes above already say what to do (v148). The legend
+// says which colour is whose, so the page does not say it again.
 function duoSection(state, friends, pick, confirm, view) {
-  const you = tp("{name} (You)", { name: escapeHtml(state.profile.name) });
   const them = friends[pick];
-  const body = !them
-    ? `<p class="duo-none">${t("No one added yet. Paste someone's comparison code above to see their eight aspects beside yours.")}</p>`
-    : `
+  if (!them) return "";
+  const you = tp("{name} (You)", { name: escapeHtml(state.profile.name) });
+  const body = `
       <ul class="duo-legend">
         <li><i class="lg-you"></i>${you}</li>
         <li><i class="lg-them"></i><span id="duo-them-name">${escapeHtml(them.name)}</span></li>
@@ -140,11 +144,7 @@ function duoSection(state, friends, pick, confirm, view) {
       <p class="duo-switch">${shapeSwitchMarkup(view)}</p>`;
   return `
     <section class="panel statement duo"><div class="wrap split">
-      <div>
-        ${label(t("Ray by ray"))}
-        <p class="duo-note">${them ? t("Pick whose shape lies over yours: yours is gold and theirs is dark, or pale blue in the asterism. The dashed line is the population average.") : t("Not a ranking. Each column is one person's eight aspects, marked against the population average — so you can see where you differ, not who is ahead.")}</p>
-        <p class="duo-share"><button type="button" id="btn-share-radar" class="pill pill-light">${escapeHtml(t("Share your star"))}</button></p>
-      </div>
+      <h2 class="label" id="duo-label" tabindex="-1">(${escapeHtml(t("Ray by ray"))})</h2>
       <div>${body}</div>
     </div></section>`;
 }
@@ -184,31 +184,44 @@ export function compareMarkup(state, { pick = 0, confirm = null } = {}) {
   const friends = state.friends || [];
   const myCode = encodeComparisonCode(state);
   const learn = friends.map(f => complementLine(f, state.aspects)).join("");
-  const count = tp("You + {n}", { n: friends.length });
   const anyone = friends.length > 0;
+  // "You + 0" said nothing (v148): the count shows once someone is added.
+  const count = anyone ? tp("You + {n}", { n: friends.length }) : "";
   const view = readShapeView();
+  // Sections are built in reading order, so the notes number the way the page
+  // reads. The page's promise (not a ranking) and what the ▲ ▽ marks mean are
+  // one note on the table (v148), where they apply.
+  const book = noteBook();
+  const codesFirst = anyone ? "" : codesSection(myCode, false, book);
+  const duo = duoSection(state, friends, Math.min(pick, Math.max(0, friends.length - 1)), confirm, view);
+  const table = anyone ? `
+      <section class="panel statement compare-aspects"><div class="wrap">
+        <h2 class="label">(${escapeHtml(t("Eight aspects, side by side"))})${book.ref("reading", `<p>${t("Not a ranking.")} ${t("Where you differ, not who is ahead.")}</p><p>${escapeHtml(t("▲ marks a score at or above the population average, ▽ one below it."))}</p>`)}</h2>
+        ${aspectTable(state, friends)}
+      </div></section>` : "";
+  const codesLast = anyone ? codesSection(myCode, true, book) : "";
   return `
     <div class="stage-page compare">
       ${topMarkup({
         mark: shapeFigure({ view, you: scoresOf(state.aspects) }),
         word: t("Side by Side"),
         inc: count,
-        tapLabel: t("Play with the star"),
-        body: `<p class="page-top-lead">${t("Not a ranking.")} ${t("Where you differ, not who is ahead.")}</p>`
+        tapLabel: t("Play with the star")
       })}
-      ${anyone ? "" : codesSection(myCode, false)}
-      ${duoSection(state, friends, Math.min(pick, Math.max(0, friends.length - 1)), confirm, view)}
-      ${anyone ? `
-      <section class="panel statement compare-aspects"><div class="wrap">
-        ${label(t("Eight aspects, side by side"))}
-        ${aspectTable(state, friends)}
-      </div></section>` : ""}
+      ${codesFirst}
+      ${duo}
+      ${table}
       ${learn ? `
       <section class="panel statement compare-learn"><div class="wrap split">
         ${label(t("What they have cleared"))}
         <div>${learn}</div>
       </div></section>` : ""}
-      ${anyone ? codesSection(myCode, true) : ""}
+      ${codesLast}
+      ${book.notes.length ? `
+      <section class="panel statement compare-notes"><div class="wrap split">
+        ${label(t("Notes and sources"))}
+        <div>${footnoteList(book.notes)}</div>
+      </div></section>` : ""}
     </div>`;
 }
 
@@ -234,6 +247,10 @@ export function renderLeaderboard(containerId, state, onRefresh, view = {}) {
     them: svg.classList.contains("shape-duo") && friends[pick] ? scoresOf(friends[pick].aspects) : null
   }));
   bindShapeSwitch(root, scope);
+  if (root) bindFootnotes(root);
+  // Focus after a change goes to the picker, or with one person (no picker)
+  // to the star's own heading.
+  const duoFocus = (n) => (n >= 2 ? '.people [aria-checked="true"]' : "#duo-label");
 
   if (root && focus) root.querySelector(focus)?.focus();
   const announcer = document.getElementById("route-announcer");
@@ -270,7 +287,7 @@ export function renderLeaderboard(containerId, state, onRefresh, view = {}) {
       if (!result.ok) throw new Error(result.reason);
       const at = stateManager.state.friends.findIndex(f => f.id === result.friend.id);
       const live = result.updated ? tp("{name} updated.", { name: friend.name }) : tp("{name} added.", { name: friend.name });
-      redraw({ pick: at, focus: '.people [aria-checked="true"]', live });
+      redraw({ pick: at, focus: duoFocus(stateManager.state.friends.length), live });
     } catch (err) {
       errorEl.classList.remove("d-none");
       errorEl.textContent = err.message;
@@ -279,8 +296,6 @@ export function renderLeaderboard(containerId, state, onRefresh, view = {}) {
       input.focus();
     }
   });
-
-  document.getElementById("btn-share-radar")?.addEventListener("click", () => openShareFor(state));
 
   if (!root) return;
 
@@ -294,7 +309,7 @@ export function renderLeaderboard(containerId, state, onRefresh, view = {}) {
     const still = rest.findIndex(f => f.id === pickedId);
     redraw({
       pick: still >= 0 ? still : Math.min(pick, Math.max(0, rest.length - 1)),
-      focus: rest.length ? '.people [aria-checked="true"]' : "#friend-code",
+      focus: rest.length ? duoFocus(rest.length) : "#friend-code",
       live: gone ? tp("{name} removed.", { name: gone.name }) : ""
     });
   };

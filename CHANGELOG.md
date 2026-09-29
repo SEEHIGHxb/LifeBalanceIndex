@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `147`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `148`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.79.0] - 2026-09-29 (v148)
+
+Side by Side trimmed with the owner's cut list.
+
+- The lead line ("Not a ranking. Where you differ, not who is ahead.") leaves the top and becomes a note on the eight-aspect table, together with what ▲ and ▽ mean. The count is hidden until someone is added (no "You + 0").
+- The codes intro is one line, "Send your code to someone, and paste theirs below.", with what a code carries in a note; "Your Comparison Code" is "Your code".
+- With no one added, the star section is gone (the codes already say what to do). Once someone is, the colour note and the page's own "Share your star" are gone (the legend shows the colours; sharing is on Overview and your star's page), and the picker shows only with two or more people.
+- "{name} is above average in {aspects}, where you are not yet."
+- A note mark inside a folded section opens the fold when its note links back (`bindFootnotes`).
+- All Thai to date is approved, the v112 to v135 blocks included; 5 new drafts.
 
 ## [2.78.1] - 2026-09-29 (v147)
 

@@ -7,6 +7,13 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
+  // v148 drafts, awaiting the owner review: Side by Side trimmed.
+  "{name} is above average in {aspects}, where you are not yet.": "{name} อยู่เหนือค่าเฉลี่ยในด้าน{aspects} ซึ่งคุณยังไปไม่ถึง",
+  "Send your code to someone, and paste theirs below.": "ส่งรหัสของคุณให้อีกฝ่าย แล้วนำรหัสของเขามาวางด้านล่าง",
+  "A code carries only a name and the eight aspect scores: no age, no points, nothing else. Paste a newer code any time to update someone.": "รหัสมีแค่ชื่อและคะแนนรายด้านทั้งแปด ไม่มีอายุ ไม่มีคะแนนสะสม ไม่มีอย่างอื่น วางรหัสใหม่ได้ทุกเมื่อเพื่ออัปเดตข้อมูลของแต่ละคน",
+  "Your code": "รหัสของคุณ",
+  "▲ marks a score at or above the population average, ▽ one below it.": "▲ คือคะแนนที่เท่ากับหรือสูงกว่าค่าเฉลี่ยของประชากร ▽ คือต่ำกว่า",
+
   // v146, approved by the owner 2026-09-29: the Goals page's sources.
   "The National Sleep Foundation recommends 7 to 9 hours a night for adults.": "มูลนิธิการนอนหลับแห่งชาติ (National Sleep Foundation) แนะนำให้ผู้ใหญ่นอนคืนละ 7 ถึง 9 ชั่วโมง",
 
@@ -95,18 +102,17 @@ export const TH = {
   "Grit {g}/5 from your full 12-item scale vs the ~3.4 adult reference point.": "ความมุ่งมั่น {g}/5 จากแบบวัดฉบับเต็ม 12 ข้อ เทียบกับค่าอ้างอิงผู้ใหญ่ ~3.4",
   "Grit {g}/5 — the onboarding measure is the perseverance facet only (4 of the 8 Grit-S items), so this is indicative, not an exact match to the ~3.4 reference.": "ความมุ่งมั่น {g}/5 — แบบวัดตอนเริ่มต้นครอบคลุมเฉพาะด้านความเพียร (4 จาก 8 ข้อของ Grit-S) จึงเป็นเพียงค่าชี้บ่ง ไม่ใช่การเทียบตรงกับค่าอ้างอิง ~3.4",
   // --- Core-surface i18n leaks fixed (finding #10) ---
-  "Asterism: Life Balance Index": "Asterism: ดัชนีสมดุลชีวิต", // v131 rename, awaiting the owner review
-  // v134 drafts, awaiting the owner review: the star / radar / asterism switch.
+  "Asterism: Life Balance Index": "Asterism: ดัชนีสมดุลชีวิต", // v131 rename, approved by the owner 2026-09-29
+  // v134 drafts, approved by the owner 2026-09-29: the star / radar / asterism switch.
   "Star": "ดาว",
   "Radar": "เรดาร์",
   "Asterism": "กลุ่มดาว",
   "Show your eight aspects as": "แสดง 8 ด้านของคุณเป็น",
   "Shape": "รูปทรง",
   "Open your star": "เปิดดาวของคุณ",
-  // v135 drafts awaiting the owner review: your star's own page.
+  // v135 drafts approved by the owner 2026-09-29: your star's own page.
   "Your star": "ดาวของคุณ",
   "Your eight regions": "แปดดินแดนของคุณ",
-  "Pick whose shape lies over yours: yours is gold and theirs is dark, or pale blue in the asterism. The dashed line is the population average.": "เลือกคนที่จะวางรูปทรงทับของคุณ: ของคุณเป็นสีทอง ของเขาเป็นสีเข้ม หรือสีฟ้าอ่อนในมุมมองกลุ่มดาว เส้นประคือค่าเฉลี่ยของประชากร",
   "Lv.": "Lv.",
   // Recovery banner + storage-error toast (findings #1/#2, now translated)
   "We found earlier data we couldn't open after an update. Download it before it's replaced.": "เราพบข้อมูลเก่าที่เปิดไม่ได้หลังการอัปเดต ดาวน์โหลดเก็บไว้ก่อนที่จะถูกแทนที่",
@@ -543,11 +549,11 @@ export const TH = {
   "Restore from a backup": "กู้คืนจากไฟล์สำรอง",
   "Paste a friend's code first.": "กรุณาวางรหัสของเพื่อนก่อน",
   "Enter a name.": "กรุณาใส่ชื่อ",
-  // v112, awaiting the owner's review.
+  // v112, approved by the owner 2026-09-29.
   "Your first review opens on {date}.": "การทบทวนรายสัปดาห์ครั้งแรกเปิดให้ทำในวันที่ {date}",
-  // v113, awaiting the owner's review: the first-run menu's link to the Landing.
+  // v113, approved by the owner 2026-09-29: the first-run menu's link to the Landing.
   "About": "เกี่ยวกับ",
-  // v116, awaiting the owner's review: a screen or the Thai text failed to download.
+  // v116, approved by the owner 2026-09-29: a screen or the Thai text failed to download.
   "This page could not load. Check your connection and try again.": "โหลดหน้านี้ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง",
 
   // --- Shared dialog actions ---
@@ -556,25 +562,16 @@ export const TH = {
   // --- Side by Side / Comparison Codes ---
   "Comparison Codes": "รหัสเปรียบเทียบ",
   "Share or add a code": "แชร์หรือเพิ่มรหัส",
-  "Share your code with others over LINE or Discord, and paste theirs below. A code carries only a name and the eight aspect scores — no age, no points, nothing else. Re-paste a newer code any time to update someone.":
-    "แชร์รหัสของคุณให้ผู้อื่นทาง LINE หรือ Discord แล้วนำรหัสของพวกเขามาวางด้านล่าง รหัสมีแค่ชื่อและคะแนนรายด้านทั้งแปด — ไม่มีอายุ ไม่มีคะแนนสะสม ไม่มีอย่างอื่น วางรหัสใหม่ได้ทุกเมื่อเพื่ออัปเดตข้อมูลของแต่ละคน",
-  "Your Comparison Code": "รหัสเปรียบเทียบของคุณ",
   "Copy": "คัดลอก",
   "Copied!": "คัดลอกแล้ว!",
   "Add someone's code": "เพิ่มรหัสของคนอื่น",
   "Add": "เพิ่ม",
   "Side by Side": "เทียบเคียงกัน",
-  "Not a ranking. Each column is one person's eight aspects, marked against the population average — so you can see where you differ, not who is ahead.":
-    "ไม่ใช่การจัดอันดับ แต่ละคอลัมน์คือคะแนนทั้งแปดด้านของแต่ละคน โดยเทียบกับค่าเฉลี่ยของประชากร — เพื่อให้เห็นว่าคุณต่างกันตรงไหน ไม่ใช่ว่าใครนำใคร",
-  "No one added yet. Paste someone's comparison code above to see their eight aspects beside yours.":
-    "ยังไม่ได้เพิ่มใคร วางรหัสเปรียบเทียบของคนอื่นด้านบนเพื่อดูคะแนนทั้งแปดด้านของเขาเทียบกับของคุณ",
   // "Population average" is already defined once for the radar legend above —
   // the Side by Side column header reuses that same key.
   "Aspect": "ด้าน",
   "At or above the population average": "เท่ากับหรือสูงกว่าค่าเฉลี่ยของประชากร",
   "Below the population average": "ต่ำกว่าค่าเฉลี่ยของประชากร",
-  "{name} clears the population average in {aspects}, where you do not yet.":
-    "{name} ทำได้ถึงค่าเฉลี่ยของประชากรในด้าน{aspects} ซึ่งคุณยังไปไม่ถึง",
   "{name} (You)": "{name} (คุณ)",
   "Remove {name}": "ลบ {name}",
   "Participant list is full (max {max}).": "รายชื่อผู้เข้าร่วมเต็มแล้ว (สูงสุด {max} คน)",
@@ -1306,7 +1303,7 @@ export const TH = {
   "Where to start": "เริ่มจากตรงนี้",
   "Your pledges": "คำมั่นของคุณ",
   "{n} active this week": "ใช้อยู่ {n} คำมั่นในสัปดาห์นี้",
-  "{kept} kept at your last review": "ทำได้ {kept} คำมั่นในการทบทวนครั้งล่าสุด", // v127 draft, awaiting the owner review
+  "{kept} kept at your last review": "ทำได้ {kept} คำมั่นในการทบทวนครั้งล่าสุด", // v127 draft, approved by the owner 2026-09-29
   "Done for this week.": "สัปดาห์นี้เสร็จแล้ว",
   "The next one opens {date}.": "ครั้งถัดไปเปิด {date}",
   // The weekly loop (views/aspect.js, review.js, quests.js; redesign R4). The
@@ -1459,7 +1456,7 @@ export const TH = {
   "Light": "พื้นสว่าง",
   "Dark": "พื้นเข้ม",
   "What to show": "แสดงรายละเอียดแค่ไหน",
-  // v135 drafts awaiting the owner review: the five label choices.
+  // v135 drafts approved by the owner 2026-09-29: the five label choices.
   "Score": "คะแนน",
   "Character": "ตัวละคร",
   "Save image": "บันทึกรูปภาพ",
@@ -1639,7 +1636,7 @@ export const TH = {
   "Please answer every question on this screen.":
     "กรุณาตอบทุกคำถามในหน้านี้",
 
-  // v118, awaiting the owner's review: the learning question and the painted
+  // v118, approved by the owner 2026-09-29: the learning question and the painted
   // week (views/activity-fields.js).
   "How much of your week goes to learning something on purpose?":
     "แต่ละสัปดาห์ คุณใช้เวลาเรียนรู้สิ่งใหม่อย่างตั้งใจมากแค่ไหน",
@@ -1666,7 +1663,7 @@ export const TH = {
   "{n} min": "{n} นาที",
   "{n} h": "{n} ชม.",
   "{n} h or more": "{n} ชม. ขึ้นไป",
-  // v120, awaiting the owner's review: donations, volunteering and the
+  // v120, approved by the owner 2026-09-29: donations, volunteering and the
   // plastic tally as everyday answers.
   "What does your giving look like in a usual month?": "เดือนปกติ คุณให้หรือบริจาคประมาณไหน",
   "Nothing this month": "เดือนนี้ไม่ได้ให้",
@@ -1696,7 +1693,7 @@ export const TH = {
   "None of these on a usual day": "วันปกติไม่มีสิ่งเหล่านี้เลย",
   "{n} pieces a day": "วันละ {n} ชิ้น",
 
-  // v122, the region characters (characters.js). Drafts awaiting the owner review.
+  // v122, the region characters (characters.js). Drafts approved by the owner 2026-09-29.
   "Your character": "ตัวละครของคุณ",
   "Try this:": "ลองดู:",
   "The four characters in this region": "ตัวละครทั้งสี่ของดินแดนนี้",

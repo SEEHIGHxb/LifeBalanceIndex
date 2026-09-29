@@ -193,7 +193,7 @@ test("renderLeaderboard escapes a hostile participant name in every sink", async
   });
   assertEscaped(captured.html, PAYLOAD, "participant name");
   assert.ok(!captured.html.includes(BREAKOUT), "participant id reached innerHTML verbatim");
-  assert.ok(captured.html.includes("clears the population average"),
+  assert.ok(captured.html.includes("is above average in"),
     "the complement line should have rendered (otherwise this test proves nothing)");
 });
 

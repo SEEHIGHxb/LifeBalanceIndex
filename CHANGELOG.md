@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `142`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `143`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.75.0] - 2026-09-29 (v143)
+
+The owner's review of the trimmed aspect pages.
+
+- The runway is gone, input and calculation: `runwayMonths`, `totalCommittedOutflow`, the Finance page's runway row and invitation, the in-depth page's runway form, and the Profile's savings and committed-outflow boxes. `liquidSavings` and `committedOutflow` left the defaults, sanitiser and validator. The Finance character's safety-net side reads the savings rate alone. Money sent to family stays, on the Profile and on Social Contribution.
+- Notes: the marks lose their underline; the note's number is the way back, and the "↑" is gone. The character's mark ends its one-line description rather than its name.
+- "Measured, Not Scored" loses its heading; the facts sit under the components, their note on the first.
+- An unranked aspect has no "How you compare" section; "Not ranked" in the top carries the note, and "— on purpose" is gone.
+- Guideline checks start in one column whatever the verdict's width; Where to start's tip titles are bold.
+- Label separators (grade lines, component details, fact notes) use a middle dot instead of an em-dash.
+- An aspect page opens at its top.
+- The v142 Thai is approved; 2 new drafts; 21 orphaned entries and the methodology's runway sentence removed.
 
 ## [2.74.0] - 2026-09-29 (v142)
 

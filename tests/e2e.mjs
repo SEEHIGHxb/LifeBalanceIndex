@@ -418,7 +418,7 @@ try {
   await page.click("#fnref-index");
   const jumped = await page.evaluate(() => ({ focused: document.activeElement?.id, hash: location.hash }));
   if (jumped.focused !== "fn-index" || jumped.hash !== route) problems.push(`flow1: the Balance Index footnote did not jump to its note (${JSON.stringify(jumped)})`);
-  await page.click("#fn-index .fn-back");
+  await page.click("#fn-index .fn-mark");
   const back = await page.evaluate(() => ({ focused: document.activeElement?.id, hash: location.hash }));
   if (back.focused !== "fnref-index" || back.hash !== route) problems.push(`flow1: the note's back link did not return (${JSON.stringify(back)})`);
 } catch (err) {

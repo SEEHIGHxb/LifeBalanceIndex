@@ -7,7 +7,11 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
-  // v142 drafts, awaiting the owner review: the aspect pages trimmed.
+  // v143 drafts, awaiting the owner review: the runway removed.
+  "Leave this blank or enter 0 if you send nothing.": "เว้นว่างหรือใส่ 0 หากไม่ได้ส่ง",
+  "Shown on your Social Contribution page as giving. It changes nothing about your score.": "แสดงในหน้าการช่วยเหลือสังคมในฐานะการให้ และไม่มีผลต่อคะแนนของคุณ",
+
+  // v142, approved by the owner 2026-09-29: the aspect pages trimmed.
   "{pct} percentile": "เปอร์เซ็นไทล์{pct}",
   "How you compare": "เทียบกับคนอื่น",
   "What it's made of": "มาจากอะไรบ้าง",
@@ -38,7 +42,7 @@ export const TH = {
   "Grit (perseverance)": "ความมุ่งมั่น (ด้านความเพียร)",
   "Not scored — shown for information. Perseverance facet only, {g}/5 vs the ~3.4 full-scale reference.":
     "ไม่ถูกนำไปคิดคะแนน แสดงเพื่อเป็นข้อมูล เฉพาะด้านความเพียร {g}/5 เทียบกับค่าอ้างอิงฉบับเต็ม ~3.4",
-  "Raw {n}/20 — converted with the CFPB's official scoring table (self-administered)": "คะแนนดิบ {n}/20 — แปลงด้วยตารางคะแนนทางการของ CFPB (แบบตอบด้วยตนเอง)",
+  "Raw {n}/20 · converted with the CFPB's official scoring table (self-administered)": "คะแนนดิบ {n}/20 · แปลงด้วยตารางคะแนนทางการของ CFPB (แบบตอบด้วยตนเอง)",
   "Full 10-item scale — raw {n}/40, converted with the CFPB's official scoring table": "แบบเต็ม 10 ข้อ — คะแนนดิบ {n}/40 แปลงด้วยตารางคะแนนทางการของ CFPB",
   "Grit {g}/5 from your full 12-item scale vs the ~3.4 adult reference point.": "ความมุ่งมั่น {g}/5 จากแบบวัดฉบับเต็ม 12 ข้อ เทียบกับค่าอ้างอิงผู้ใหญ่ ~3.4",
   "Grit {g}/5 — the onboarding measure is the perseverance facet only (4 of the 8 Grit-S items), so this is indicative, not an exact match to the ~3.4 reference.": "ความมุ่งมั่น {g}/5 — แบบวัดตอนเริ่มต้นครอบคลุมเฉพาะด้านความเพียร (4 จาก 8 ข้อของ Grit-S) จึงเป็นเพียงค่าชี้บ่ง ไม่ใช่การเทียบตรงกับค่าอ้างอิง ~3.4",
@@ -162,46 +166,19 @@ export const TH = {
   "e.g. 3,000": "เช่น 3,000",
   // --- RUNWAY (v70): asked in onboarding and on the Profile page, shown on the
   // Finance aspect page, scored nowhere. ---
-  "Liquid Savings You Could Reach This Week (THB)": "เงินออมที่ถอนใช้ได้ภายในสัปดาห์นี้ (บาท)",
-  "Committed Monthly Outflow (THB)": "รายจ่ายผูกพันต่อเดือน (บาท)",
-  "e.g. 50,000": "เช่น 50,000",
-  "e.g. 12,000": "เช่น 12,000",
   // v79: the two runway boxes stopped being required, so the note under them
   // says so first. The definition of "committed outflow" that used to open
   // this paragraph moved into that field's own note -- it said "the second
   // box", and .grid-2 is one column on a phone.
-  "Both optional. Together they give your runway: how long you could cover the unskippable if income stopped. Reported on your Finance page, not scored.":
-    "ไม่บังคับทั้งสองช่อง หากกรอกทั้งคู่จะได้ “ระยะประคอง” ของคุณ คือระยะเวลาที่คุณจะครอบคลุมรายจ่ายที่ตัดไม่ได้หากรายได้หยุดลง แสดงบนหน้าการเงิน ไม่คิดคะแนน",
   "Money You Send to Family (THB/month)": "เงินที่คุณส่งให้ครอบครัว (บาท/เดือน)",
   // v80: the three runway boxes left onboarding for the in-depth assessment,
   // where they are a separate block with its own save. The heading says what
   // they are and what they are not, because on that page everything around
   // them IS scored.
-  "Runway — optional, and never scored": "ระยะประคอง — ไม่บังคับ และไม่คิดคะแนน",
-  "Save these figures": "บันทึกตัวเลขเหล่านี้",
-  "e.g. 5,000 — leave blank if none": "เช่น 5,000 — เว้นว่างไว้หากไม่มี",
-  "Counted in your runway with the box above, and shown on your Social Contribution page as giving. It is never subtracted from a score.":
-    "นับรวมในระยะประคองพร้อมกับช่องด้านบน และแสดงบนหน้าการมีส่วนร่วมทางสังคมในฐานะการให้ ค่านี้ไม่เคยถูกนำไปหักออกจากคะแนนใด",
-  "Of which, family support": "ในจำนวนนี้ เป็นเงินช่วยเหลือครอบครัว",
-  "Counted in the runway above, because it does not stop when income does. It is also reported on your Social Contribution page, where it is giving rather than a bill.":
-    "นับรวมในระยะประคองด้านบน เพราะเงินก้อนนี้ไม่หยุดเมื่อรายได้หยุด และยังแสดงบนหน้าการมีส่วนร่วมทางสังคมของคุณด้วย ซึ่งที่นั่นถือเป็นการให้ ไม่ใช่ค่าใช้จ่าย",
   "Family support": "เงินช่วยเหลือครอบครัว",
   "Money you send to your family. Not scored — the two published participation rates this page's percentile is built on count donating money to an organisation and formal volunteering, and neither asks about supporting your parents. Ranking you on a measure that population was never asked about would be inventing the comparison. It is shown here because it is giving, whatever those two surveys count.":
     "เงินที่คุณส่งให้ครอบครัว ไม่นำไปคิดคะแนน เพราะอัตราการมีส่วนร่วมที่เผยแพร่สองชุดซึ่งเป็นฐานของเปอร์เซ็นไทล์หน้านี้ นับการบริจาคเงินให้องค์กรและการเป็นอาสาสมัครอย่างเป็นทางการ และไม่มีชุดใดถามถึงการดูแลพ่อแม่ การจัดอันดับคุณด้วยมาตรวัดที่ไม่เคยถามประชากรกลุ่มนั้นเลย เท่ากับเป็นการสร้างการเปรียบเทียบขึ้นมาเอง ค่านี้แสดงไว้ตรงนี้เพราะมันคือการให้ ไม่ว่าแบบสำรวจสองชุดนั้นจะนับหรือไม่",
-  "Measured, Not Scored": "วัดไว้ แต่ไม่คิดคะแนน",
-  "Runway": "ระยะประคอง",
   // Shown in the runway row's place while its two inputs are not on file.
-  "Not shown yet. It needs two numbers: the savings you could reach this week, and what you cannot skip in a month. Give both and this page will show how long you could cover the unskippable if income stopped. Like everything in this section it is reported to you, not scored — no published distribution says what a given number of months is worth, so there is no ranking to gain or lose by answering.":
-    "ยังไม่แสดง ต้องใช้ตัวเลขสองตัว: เงินออมที่ถอนใช้ได้ภายในสัปดาห์นี้ และรายจ่ายที่คุณตัดไม่ได้ในแต่ละเดือน เมื่อกรอกครบทั้งสองตัว หน้านี้จะแสดงว่าหากรายได้หยุดลง คุณจะครอบคลุมรายจ่ายที่ตัดไม่ได้ไปได้นานแค่ไหน เช่นเดียวกับทุกอย่างในส่วนนี้ ตัวเลขนี้รายงานให้คุณทราบ ไม่คิดคะแนน — ไม่มีการกระจายตัวที่เผยแพร่ใดบอกว่าจำนวนเดือนเท่าใดมีค่าแค่ไหน จึงไม่มีอันดับใดที่จะได้หรือเสียจากการตอบ",
-  "Add them on the Profile page": "เพิ่มได้ในหน้าโปรไฟล์",
-  "{n} months": "{n} เดือน",
-  "{savings} THB you could reach this week ÷ {outflow} THB/mo you cannot skip. Not scored — no published distribution says what a given number of months is worth, so this is reported to you rather than ranked.":
-    "เงินออมที่ถอนใช้ได้ภายในสัปดาห์นี้ {savings} บาท ÷ รายจ่ายที่ตัดไม่ได้ {outflow} บาท/เดือน ไม่คิดคะแนน เพราะไม่มีการกระจายตัวที่เผยแพร่ใดบอกว่าจำนวนเดือนเท่าใดมีค่าแค่ไหน ค่านี้จึงรายงานให้คุณทราบ ไม่ได้นำไปจัดอันดับ",
-  "These three give your runway on the Finance page. They change nothing about your score — no published distribution says what a given number of months is worth, so the app reports the figure rather than ranking it. Money you send to your family is also shown on your Social Contribution page, where it is giving rather than a bill.":
-    "สามค่านี้ให้ “ระยะประคอง” ของคุณบนหน้าการเงิน และไม่เปลี่ยนแปลงคะแนนใด ๆ เพราะไม่มีการกระจายตัวที่เผยแพร่ใดบอกว่าจำนวนเดือนเท่าใดมีค่าแค่ไหน แอปจึงรายงานตัวเลขนี้แทนการจัดอันดับ ส่วนเงินที่คุณส่งให้ครอบครัวจะแสดงบนหน้าการมีส่วนร่วมทางสังคมด้วย ซึ่งที่นั่นถือเป็นการให้ ไม่ใช่ค่าใช้จ่าย",
-  "Rent, loan repayments, bills.": "ค่าเช่า ค่าผ่อนชำระ ค่าสาธารณูปโภค",
-  "Asked separately since v78. If you set up this profile earlier, this money was part of the box above — take it out of that figure before you enter it here, or it will be counted twice. Leave this blank or enter 0 if you send nothing.":
-    "แอปเริ่มถามแยกตั้งแต่ v78 หากคุณตั้งค่าโปรไฟล์ไว้ก่อนหน้านั้น เงินก้อนนี้เคยรวมอยู่ในช่องด้านบน กรุณาหักออกจากตัวเลขในช่องนั้นก่อนกรอกตรงนี้ มิฉะนั้นจะถูกนับซ้ำ หากคุณไม่ได้ส่งเงินให้ครอบครัว เว้นว่างไว้หรือกรอก 0",
   "Height (cm)": "ส่วนสูง (ซม.)",
   "Weight (kg)": "น้ำหนัก (กก.)",
   "Average Nightly Sleep (Hours)": "ชั่วโมงนอนเฉลี่ยต่อคืน",
@@ -253,8 +230,8 @@ export const TH = {
     "15% ระดับรายได้ + 85% คะแนนสุขภาวะทางการเงิน CFPB (ตารางทางการแยกช่วงอายุ) สองน้ำหนักนี้คือคะแนนทั้งหมด — ระดับรายได้เป็นค่าเชิงขนาด ไม่ใช่อันดับ: ค่าจ้างเฉลี่ยที่เผยแพร่ (15,972 บาท/เดือน) ได้ 50 คะแนน และขั้นภาษีสูงสุดของกรมสรรพากร (333,333 บาท/เดือน) ได้เต็ม โดยใช้มาตราส่วนลอการิทึม รายได้ที่เพิ่มเป็นเท่าตัวจึงมีค่าเท่ากันทุกช่วง ค่านี้จงใจไม่ใช่เปอร์เซ็นไทล์รายได้ที่แสดงบนการ์ดการเงิน เพราะเปอร์เซ็นไทล์ย่อมตันที่ปลายบน — แทบทุกคนอยู่ต่ำกว่าผู้มีรายได้สูงสุดจริง ๆ ซึ่งเคยทำให้ทุกรายได้เกินราว 70,000 ได้คะแนนเท่ากันหมด ส่วนการออมกรอกเป็นจำนวนเงินบาท แล้วแอปแปลงเป็นอัตราให้เอง โดยแสดงบนหน้าการเงินแต่ไม่คิดคะแนน: ก่อน v76 การออมเคยบวกให้สูงสุด 10 คะแนน ซึ่งเป็นการนับซ้ำกับคำถาม CFPB ที่ถามว่ามีเงินเหลือสิ้นเดือนหรือไม่ และใช้เป้า 20% ที่มาจากหนังสือการจัดงบมากกว่างานวิจัยที่ตีพิมพ์ใด",
   "No score in this app reaches 100 — not an aspect, not the Balance Index. The arithmetic is allowed to, and then the displayed figure stops at 99. That is a stance rather than a rounding rule: a perfect score would read as “nothing left to do” on an instrument whose whole purpose is to point at the next step.":
     "ไม่มีคะแนนใดในแอปนี้ที่ถึง 100 ไม่ว่าจะเป็นด้านใดหรือดัชนีสมดุล การคำนวณไปถึง 100 ได้ แต่ตัวเลขที่แสดงจะหยุดที่ 99 นี่เป็นจุดยืน ไม่ใช่กฎการปัดเศษ เพราะคะแนนเต็มย่อมสื่อว่า “ไม่เหลืออะไรให้ทำอีกแล้ว” บนเครื่องมือที่มีขึ้นเพื่อชี้ก้าวต่อไป",
-  "Income was weighted 60% until v69, and that was wrong: no validated financial well-being instrument scores raw income at all, and the CFPB's own published figures move only about 14 points from the lowest income band to the highest. So how you are coping now carries the score, and your salary informs it rather than deciding it. The 15% is this app's own reading of that 14-point spread, not a published weight. Since v70 the app also asks for your liquid savings and your committed monthly outflow, and shows the runway between them on the Finance page — how many months you could cover the unskippable if income stopped. It is reported, never scored: two salaries of the same size can be entirely spoken for or entirely free, which is the gap the score cannot see, but no published distribution says what three months is worth against nine, and until one is found a weight here would be invented rather than measured.":
-    "จนถึงเวอร์ชัน 69 รายได้เคยมีน้ำหนัก 60% ซึ่งไม่ถูกต้อง เพราะไม่มีเครื่องมือวัดสุขภาวะทางการเงินที่ผ่านการตรวจสอบชิ้นใดให้คะแนนรายได้ดิบเลย และตัวเลขที่ CFPB เผยแพร่เองก็ต่างกันเพียงราว 14 คะแนนระหว่างกลุ่มรายได้ต่ำสุดกับสูงสุด คะแนนจึงยึดที่ว่าตอนนี้คุณรับมือกับการเงินได้ดีแค่ไหน ส่วนเงินเดือนเป็นข้อมูลประกอบ ไม่ใช่ตัวตัดสิน ทั้งนี้ค่า 15% เป็นการตีความช่วง 14 คะแนนนั้นของแอปเอง ไม่ใช่น้ำหนักที่มีการเผยแพร่ ตั้งแต่เวอร์ชัน 70 แอปยังถามเงินออมที่ถอนได้ทันทีและรายจ่ายผูกพันต่อเดือนของคุณ แล้วแสดง “ระยะประคอง” ระหว่างสองค่านี้บนหน้าการเงิน — คือจำนวนเดือนที่คุณจะครอบคลุมรายจ่ายที่ตัดไม่ได้ หากรายได้หยุดลง ค่านี้เป็นการรายงาน ไม่ใช่การให้คะแนน เพราะเงินเดือนเท่ากันอาจถูกผูกไว้หมดหรือว่างเปล่าก็ได้ ซึ่งเป็นช่องว่างที่คะแนนมองไม่เห็น แต่ไม่มีการกระจายตัวที่เผยแพร่ใดบอกว่าสามเดือนมีค่าเท่าไรเมื่อเทียบกับเก้าเดือน ตราบใดที่ยังไม่พบ การกำหนดน้ำหนักตรงนี้ย่อมเป็นการคิดขึ้นเอง ไม่ใช่การวัด",
+  "Income was weighted 60% until v69, and that was wrong: no validated financial well-being instrument scores raw income at all, and the CFPB's own published figures move only about 14 points from the lowest income band to the highest. So how you are coping now carries the score, and your salary informs it rather than deciding it. The 15% is this app's own reading of that 14-point spread, not a published weight.":
+    "จนถึงเวอร์ชัน 69 รายได้เคยมีน้ำหนัก 60% ซึ่งไม่ถูกต้อง เพราะไม่มีเครื่องมือวัดสุขภาวะทางการเงินที่ผ่านการตรวจสอบชิ้นใดให้คะแนนรายได้ดิบเลย และตัวเลขที่ CFPB เผยแพร่เองก็ต่างกันเพียงราว 14 คะแนนระหว่างกลุ่มรายได้ต่ำสุดกับสูงสุด คะแนนจึงยึดที่ว่าตอนนี้คุณรับมือกับการเงินได้ดีแค่ไหน ส่วนเงินเดือนเป็นข้อมูลประกอบ ไม่ใช่ตัวตัดสิน ทั้งนี้ค่า 15% เป็นการตีความช่วง 14 คะแนนนั้นของแอปเอง ไม่ใช่น้ำหนักที่มีการเผยแพร่",
   "40% activity (IPAQ MET-minutes vs the WHO 600 guideline) + 20% Asian-BMI band + 20% sleep (Jenkins Sleep Scale + reported duration) + 20% nutrition (vegetables + water). Missing measurements are omitted and the weights renormalized — never faked.":
     "40% การเคลื่อนไหว (MET-นาทีตาม IPAQ เทียบเกณฑ์ WHO 600) + 20% ช่วง BMI เอเชีย + 20% การนอน (Jenkins Sleep Scale + ชั่วโมงนอนที่รายงาน) + 20% โภชนาการ (ผัก + น้ำ) ค่าที่ไม่ได้กรอกจะถูกตัดออกและกระจายน้ำหนักใหม่ ไม่มีการแต่งตัวเลขแทน",
   "Activity carries the most weight because it has the strongest evidence base and is the component your weekly review re-measures most directly.":
@@ -689,13 +666,13 @@ export const TH = {
   "Sleep duration": "ระยะเวลานอน",
   "{h}h/night (7-9h ideal)": "{h} ชม./คืน (7-9 ชม. คือช่วงดี)",
   "Sleep quality": "คุณภาพการนอน",
-  "Baseline quality {jss}/20 issues — no sleep duration recorded": "ปัญหาคุณภาพการนอน {jss}/20 ณ จุดเริ่มต้น — ไม่ได้บันทึกระยะเวลานอน",
+  "Baseline quality {jss}/20 issues · no sleep duration recorded": "ปัญหาคุณภาพการนอน {jss}/20 ณ จุดเริ่มต้น · ไม่ได้บันทึกระยะเวลานอน",
   "Nutrition": "โภชนาการ",
   "{veg} veg portions, {water}L water/day": "ผัก {veg} ส่วน, น้ำ {water} ลิตร/วัน",
   "Well-being (WHO-5)": "สุขภาวะ (WHO-5)",
   "Raw {n}/25 at baseline (scores under 50/100 suggest low mood)": "คะแนนดิบ {n}/25 ณ จุดเริ่มต้น (ต่ำกว่า 50/100 บ่งชี้อารมณ์ซึม)",
   "Stress resilience (ST-5)": "ความทนทานต่อความเครียด (ST-5)",
-  "Stress {n}/15 — DMH bands: 0-4 fine, 5-6 watch, 7+ problem": "ความเครียด {n}/15 — เกณฑ์กรมสุขภาพจิต: 0-4 ปกติ, 5-6 เฝ้าระวัง, 7 ขึ้นไปมีปัญหา",
+  "Stress {n}/15 · DMH bands: 0-4 fine, 5-6 watch, 7+ problem": "ความเครียด {n}/15 · เกณฑ์กรมสุขภาพจิต: 0-4 ปกติ, 5-6 เฝ้าระวัง, 7 ขึ้นไปมีปัญหา",
   "Social network (LSNS-6)": "เครือข่ายสังคม (LSNS-6)",
   "Raw {n}/30 (under 12 = isolation risk)": "คะแนนดิบ {n}/30 (ต่ำกว่า 12 = เสี่ยงโดดเดี่ยว)",
   "Low loneliness (UCLA-3)": "ความเหงาต่ำ (UCLA-3)",
@@ -704,8 +681,8 @@ export const TH = {
   "Raw {n}/15 at baseline": "คะแนนดิบ {n}/15 ณ จุดเริ่มต้น",
   "Self-efficacy (GSE)": "การรับรู้ความสามารถของตนเอง (GSE)",
   "Goal progress": "ความคืบหน้าตามเป้าหมาย",
-  "{h}h/week study + CIT Learning {n}/15 — not ranked against a norm": "เรียน {h} ชม./สัปดาห์ + CIT Learning {n}/15 — ไม่จัดอันดับเทียบเกณฑ์",
-  "CIT Accomplishment, raw {n}/15 — not ranked against a norm": "CIT Accomplishment คะแนนดิบ {n}/15 — ไม่จัดอันดับเทียบเกณฑ์",
+  "{h}h/week study + CIT Learning {n}/15 · not ranked against a norm": "เรียน {h} ชม./สัปดาห์ + CIT Learning {n}/15 · ไม่จัดอันดับเทียบเกณฑ์",
+  "CIT Accomplishment, raw {n}/15 · not ranked against a norm": "CIT Accomplishment คะแนนดิบ {n}/15 · ไม่จัดอันดับเทียบเกณฑ์",
   "Raw {n}/24 at baseline": "คะแนนดิบ {n}/24 ณ จุดเริ่มต้น",
   "Active learning": "การเรียนรู้เชิงรุก",
   "{h}h/week study + digital skills {d}/100": "เรียน {h} ชม./สัปดาห์ + ทักษะดิจิทัล {d}/100",
@@ -718,7 +695,7 @@ export const TH = {
   "{n} single-use pieces/day (Thai avg ~3)": "พลาสติกใช้ครั้งเดียว {n} ชิ้น/วัน (เฉลี่ยไทย ~3)",
   "Green habits (GEB)": "นิสัยรักษ์โลก (GEB)",
   "Future skills": "ทักษะแห่งอนาคต",
-  "{h}h/week toward future-proof skills — reuses your weekly learning hours": "{h} ชม./สัปดาห์กับทักษะที่พร้อมรับอนาคต — ใช้ชั่วโมงการเรียนรู้รายสัปดาห์ร่วมกัน",
+  "{h}h/week toward future-proof skills · reuses your weekly learning hours": "{h} ชม./สัปดาห์กับทักษะที่พร้อมรับอนาคต · ใช้ชั่วโมงการเรียนรู้รายสัปดาห์ร่วมกัน",
   // The "Long-term security" row and its two detail strings were deleted in
   // v68 along with the question that fed them. v67 had already made them
   // unscored; a row reading 0 for everyone who was never asked is worse than
@@ -1416,7 +1393,6 @@ export const TH = {
   // The unranked state — measured, but with no defensible population to rank against.
   "Not ranked": "ไม่จัดอันดับ",
   "Not ranked against a population": "ไม่ได้จัดอันดับเทียบกับประชากรกลุ่มใด",
-  "Not ranked — on purpose.": "ไม่จัดอันดับ — โดยตั้งใจ",
   "Loneliness (UCLA-3) and social network (LSNS-6) — measured, not ranked":
     "ความเหงา (UCLA-3) และเครือข่ายทางสังคม (LSNS-6) — วัดผลได้ แต่ไม่จัดอันดับ",
   "Loneliness (UCLA-3) {ucla}/9 — lower is better. Social network (LSNS-6) {lsns}/30 — higher is better.":

@@ -22,8 +22,7 @@
 // <form>, and reads it back with carriedStep() while it renders.
 //
 // In memory only, and gone the moment the re-render ends: a draft that should
-// outlive a reload is draft.js's job, and some of these forms (the Review, the
-// runway) are deliberately never written to storage.
+// outlive a reload is draft.js's job, and some of these forms (the Review) are deliberately never written to storage.
 
 let carried = null;
 

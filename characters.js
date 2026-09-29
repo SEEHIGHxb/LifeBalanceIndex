@@ -21,9 +21,8 @@ import { t } from "./i18n.js";
 import { incomePercentile } from "./benchmarks.js";
 import {
   cfpbScore, metMinutes, learningScore,
-  donationVolumeFactor, volunteerFactor, runwayMonths
+  donationVolumeFactor, volunteerFactor
 } from "./scoring.js";
-import { runwayInputsMissing } from "./aspects.js";
 
 // --- where each side is cut, and why ----------------------------------------
 
@@ -56,8 +55,6 @@ const PTM_ABOVE_MIDDLE = 12;
 const GEB_HALF = 12;
 // Thailand's average is about 3 single-use pieces a day (scoring.js).
 const PLASTIC_THAI_AVERAGE = 3;
-// The usual emergency-fund guideline starts at 3 months of expenses.
-const RUNWAY_MONTHS = 3;
 // A common rule of thumb: save 10% of income.
 const SAVINGS_RATE = 10;
 // Two hours a week of learning, half of the Future skills part's 4 h.
@@ -103,10 +100,8 @@ const SIDES = {
   ]
 };
 
-// The runway when both of its numbers were given, else the savings rate.
+// The savings rate (the runway it once preferred left in v143).
 function safetyNet(p) {
-  const runway = runwayInputsMissing(p).length === 0 ? runwayMonths(p) : null;
-  if (runway !== null) return runway >= RUNWAY_MONTHS;
   return side(p.savingsRate, v => v >= SAVINGS_RATE);
 }
 

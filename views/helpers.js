@@ -142,11 +142,12 @@ export function footnoteRef(id, mark, anchor = true) {
   return `<sup class="fn-ref"><a${anchor ? ` id="fnref-${id}"` : ""} href="#fn-${id}" data-jump="fn-${id}" aria-label="${escapeHtml(tp("Note {n}", { n: mark }))}">${escapeHtml(mark)}</a></sup>`;
 }
 
-// `notes` is [{ id, mark, body }], body being trusted markup.
+// `notes` is [{ id, mark, body }], body being trusted markup. The note's own
+// number is the way back up (the owner, v143: an "↑" after each note cost a
+// line apiece).
 export function footnoteList(notes) {
   return `<ol class="fn-list">${notes.map(n => `
-    <li id="fn-${n.id}" tabindex="-1"><span class="fn-mark">${escapeHtml(n.mark)}</span><div class="fn-body">${n.body}
-      <a class="fn-back" href="#fnref-${n.id}" data-jump="fnref-${n.id}" aria-label="${escapeHtml(t("Back to the text"))}">↑</a></div></li>`).join("")}</ol>`;
+    <li id="fn-${n.id}" tabindex="-1"><a class="fn-mark" href="#fnref-${n.id}" data-jump="fnref-${n.id}" aria-label="${escapeHtml(tp("Note {n}", { n: n.mark }))}, ${escapeHtml(t("Back to the text"))}">${escapeHtml(n.mark)}</a><div class="fn-body">${n.body}</div></li>`).join("")}</ol>`;
 }
 
 export function bindFootnotes(root) {

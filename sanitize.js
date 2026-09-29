@@ -32,9 +32,6 @@ const PROFILE_NUMERIC = {
   age: [1, 120],
   income: [0, 100000000],
   savingsRate: [0, 100],
-  // Runway inputs (v70), on the same generous import bounds as income.
-  liquidSavings: [0, 100000000],
-  committedOutflow: [0, 100000000],
   familySupport: [0, 100000000],
   digitalLiteracy: [0, 100],
   weeklyLearningHours: [0, 168],

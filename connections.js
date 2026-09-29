@@ -69,9 +69,8 @@ const FACT_SPECS = {
     numbers: {
       monthlyIncome: { min: 0, max: 10000000 },
       monthlyExpenses: { min: 0, max: 10000000 },
-      // Not consumed yet. It is the numerator of the runway measure held back
-      // to v48 pending published anchors; validated now so the contract is
-      // fixed before anything depends on it.
+      // Not consumed (the runway it was meant for left in v143); still
+      // validated, so the contract with the exporter stays fixed.
       liquidSavings: { min: -1000000000, max: 1000000000 }
     },
     booleans: ["hasLongTermInvestments"],
@@ -274,7 +273,7 @@ export function midoriFields(payload) {
   const fields = {
     income,
     savingsRate: Math.round(savingsRateFrom(surplus, f.monthlyIncome) * 10) / 10,
-    // Collected and stored from v47, consumed by the runway measure in v48.
+    // Collected and stored from v47.
     monthlyExpenses: Math.round(f.monthlyExpenses)
   };
   // Absent means "Midori did not report", which is not the same as "no

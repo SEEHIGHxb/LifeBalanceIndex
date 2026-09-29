@@ -37,8 +37,6 @@ import {
   learningScore,
   futureStudyScore,
   savingsAmountFrom,
-  runwayMonths,
-  totalCommittedOutflow,
   donationVolumeFactor,
   volunteerFactor,
   DEEP_NORM
@@ -223,7 +221,7 @@ function financeComponents(p, b, benchmark) {
     items.push({ key: "income", label: t("Income standing"), value: benchmark.percentile, detail: t("Percentile vs Thai worker earnings (estimate)") });
   }
   if (b && Number.isFinite(b.cfpb)) {
-    items.push({ key: "cfpb", label: t("Financial well-being (CFPB)"), value: clamp100(cfpbScore(b.cfpb, p.age)), detail: tp("Raw {n}/20 — converted with the CFPB's official scoring table (self-administered)", { n: b.cfpb }) });
+    items.push({ key: "cfpb", label: t("Financial well-being (CFPB)"), value: clamp100(cfpbScore(b.cfpb, p.age)), detail: tp("Raw {n}/20 · converted with the CFPB's official scoring table (self-administered)", { n: b.cfpb }) });
   }
   // Saving used to occupy a bar here. It moved to aspectFacts in v76, when
   // round 14 removed the term that scored it -- a bar that looks exactly like
@@ -251,7 +249,7 @@ function physicalComponents(p, b) {
   if (b && Number.isFinite(b.jss)) {
     const quality = sleepQualityScore(b.jss);
     if (durationScore === null) {
-      items.push({ key: "sleep", label: t("Sleep quality"), value: clamp100(sleepScore(p, quality)), detail: tp("Baseline quality {jss}/20 issues — no sleep duration recorded", { jss: b.jss }) });
+      items.push({ key: "sleep", label: t("Sleep quality"), value: clamp100(sleepScore(p, quality)), detail: tp("Baseline quality {jss}/20 issues · no sleep duration recorded", { jss: b.jss }) });
     } else {
       items.push({ key: "sleep", label: t("Sleep"), value: clamp100(sleepScore(p, quality)), detail: tp("{h}h/night + baseline quality {jss}/20 issues", { h: p.sleepHours, jss: b.jss }) });
     }
@@ -269,7 +267,7 @@ function mentalComponents(b) {
     items.push({ key: "who5", label: t("Well-being (WHO-5)"), value: clamp100(who5Score(b.who5)), detail: tp("Raw {n}/25 at baseline (scores under 50/100 suggest low mood)", { n: b.who5 }) });
   }
   if (Number.isFinite(b.st5)) {
-    items.push({ key: "st5", label: t("Stress resilience (ST-5)"), value: clamp100(st5Resilience(b.st5)), detail: tp("Stress {n}/15 — DMH bands: 0-4 fine, 5-6 watch, 7+ problem", { n: b.st5 }) });
+    items.push({ key: "st5", label: t("Stress resilience (ST-5)"), value: clamp100(st5Resilience(b.st5)), detail: tp("Stress {n}/15 · DMH bands: 0-4 fine, 5-6 watch, 7+ problem", { n: b.st5 }) });
   }
   return items;
 }
@@ -297,7 +295,7 @@ function personalGoalsComponents(p, b) {
   // Goal progress, the only term that measures the thing the aspect is named
   // after (v72). Scored, but never ranked -- see the citacc note in surveys.js.
   if (b && Number.isFinite(b.citacc)) {
-    items.push({ key: "accomplishment", label: t("Goal progress"), value: clamp100(citAccScore(b.citacc)), detail: tp("CIT Accomplishment, raw {n}/15 — not ranked against a norm", { n: b.citacc }) });
+    items.push({ key: "accomplishment", label: t("Goal progress"), value: clamp100(citAccScore(b.citacc)), detail: tp("CIT Accomplishment, raw {n}/15 · not ranked against a norm", { n: b.citacc }) });
   }
   // Shown but NOT scored since v64. The bar deliberately stays: grit is worth
   // knowing about yourself, it just isn't a life domain (see
@@ -312,7 +310,7 @@ function personalGoalsComponents(p, b) {
   // digital-literacy slider exactly as it did before — same detail line, so an
   // old save is never described in terms of a question it was not asked.
   if (b && Number.isFinite(b.citlearn)) {
-    items.push({ key: "learning", label: t("Active learning"), value: clamp100(learningScore(p, b.citlearn)), detail: tp("{h}h/week study + CIT Learning {n}/15 — not ranked against a norm", { h: p.weeklyLearningHours || 0, n: b.citlearn }) });
+    items.push({ key: "learning", label: t("Active learning"), value: clamp100(learningScore(p, b.citlearn)), detail: tp("{h}h/week study + CIT Learning {n}/15 · not ranked against a norm", { h: p.weeklyLearningHours || 0, n: b.citlearn }) });
   } else {
     const digital = Math.max(0, Math.min(100, parseFloat(p.digitalLiteracy || 0)));
     items.push({ key: "learning", label: t("Active learning"), value: clamp100(learningScore(p)), detail: tp("{h}h/week study + digital skills {d}/100", { h: p.weeklyLearningHours || 0, d: digital }) });
@@ -350,17 +348,14 @@ function humanityFutureComponents(p, b) {
   // genuinely evidence for both future-proofing and personal development. The
   // reuse is surfaced to the user in the detail line below so it is not silent.
   const items = [
-    { key: "skills", label: t("Future skills"), value: clamp100(futureStudyScore(p)), detail: tp("{h}h/week toward future-proof skills — reuses your weekly learning hours", { h: p.weeklyLearningHours || 0 }) },
+    { key: "skills", label: t("Future skills"), value: clamp100(futureStudyScore(p)), detail: tp("{h}h/week toward future-proof skills · reuses your weekly learning hours", { h: p.weeklyLearningHours || 0 }) },
     // NO "security" COMPONENT. v64 stopped scoring it, round 9 (v67) confirmed
     // it should never be scored, and v68 stopped asking the question — so
     // displaying a row that reads 0 for everyone who was never asked is worse
     // than displaying nothing. `profile.longTermInvestments` still exists and
     // is still settable by the Midori connector, whose FACT_SPECS contract
     // publishes `hasLongTermInvestments`; it is now a stored fact with no UI
-    // and no score. `liquidSavings` left that held-for-later state in v70,
-    // where it became a profile field feeding the runway fact above; the
-    // Midori FACT of the same name is still unconsumed, because that connector
-    // reports TOTAL spending and runway needs committed outflow.
+    // and no score. The Midori FACT `liquidSavings` is unconsumed too.
     // See docs/research/round-9-retirement-assets-in-finance.md.
   ];
   if (b && Number.isFinite(b.lfis)) {
@@ -375,55 +370,15 @@ function humanityFutureComponents(p, b) {
   return items;
 }
 
-// --- THE TWO RUNWAY INPUTS (v79; off the onboarding form since v80) ---
-//
-// The runway is the only figure in this app assembled from numbers the reader
-// may decline to give. Both were `required: true` in onboarding until v79,
-// which meant the mandatory gate in front of the whole app asked for a
-// household's cash position to produce a figure that is, by round 11's
-// permanent decision, never scored and never ranked.
-//
-// The cost of making them optional is that `liquidSavings: 0` stops being one
-// fact. It is now either "I have nothing I could reach this week" or "I did
-// not answer that", and only the coverage map can tell them apart. These two
-// helpers are the single place that distinction is drawn, so the row and the
-// invitation to fill it can never disagree about which inputs are missing.
-const RUNWAY_INPUTS = ["liquidSavings", "committedOutflow"];
-
-// Which runway inputs the reader is KNOWN not to have given. Empty when the
-// coverage map is absent: that is "unknown", not "missing" (inputAnswered
-// above draws the same line), and on such a save the fields were required, so
-// treating silence as a skip would blank a row its owner did answer.
-export function runwayInputsMissing(p = {}) {
-  const provided = p.provided;
-  if (!provided || typeof provided !== "object") return [];
-  return RUNWAY_INPUTS.filter(k => provided[k] !== true);
-}
-
-// The Finance page's invitation to supply them, shown exactly when they are
-// the reason no runway is printed. Returned as DATA, not markup, so the rule
-// for when it appears is testable without a DOM — and so it can never drift
-// from runwayInputsMissing, which decides whether the row is there at all.
-export function runwayInvite(p = {}) {
-  if (runwayInputsMissing(p).length === 0) return null;
-  return {
-    label: t("Runway"),
-    text: t("Not shown yet. It needs two numbers: the savings you could reach this week, and what you cannot skip in a month. Give both and this page will show how long you could cover the unskippable if income stopped. Like everything in this section it is reported to you, not scored — no published distribution says what a given number of months is worth, so there is no ranking to gain or lose by answering."),
-    href: "#/profile",
-    linkLabel: t("Add them on the Profile page")
-  };
-}
-
 // --- FACTS: MEASURED, NOT SCORED (v70) ---
 //
 // A second, separate list from `components`, and separate on purpose. Every
 // component carries a 0-100 value and renders as a bar; a fact carries a
 // FORMATTED STRING and renders as a line. Grit is the precedent for showing an
 // unscored number, but grit had a published normalizer and so could honestly
-// occupy a bar with `scored: false` on it. Runway has no normalizer at all —
-// that is the open question round 11 exists to answer — so giving it a bar
-// would mean inventing the very divisor the app is refusing to invent. A fact
-// with no bar cannot silently acquire a weight.
+// occupy a bar with `scored: false` on it. A fact has no normalizer, so giving
+// it a bar would mean inventing a divisor. A fact with no bar cannot silently
+// acquire a weight.
 function aspectFacts(aspectKey, p) {
   if (aspectKey === "socialContribution") return socialContributionFacts(p);
   if (aspectKey !== "finance") return [];
@@ -433,7 +388,7 @@ function aspectFacts(aspectKey, p) {
   // entered and the share of income it works out to. No bar and no target,
   // because round 14 found the 20% the old bar divided by was a trade-paperback
   // budgeting rule rather than a published threshold. Omitted rather than shown
-  // as 0% when there is no income to divide by — same contract as runway.
+  // as 0% when there is no income to divide by.
   const rate = parseFloat(p.savingsRate || 0);
   if (rate > 0 && parseFloat(p.income || 0) > 0) {
     facts.push({
@@ -448,51 +403,6 @@ function aspectFacts(aspectKey, p) {
     });
   }
 
-  // Since v79 both runway inputs are optional, and since v80 onboarding does
-  // not ask for them at all -- they are entered on #/deep or the Profile page.
-  // Either way a stored 0 carries two meanings it did not have before: someone
-  // who has none, and someone who skipped the box. runwayMonths cannot tell
-  // them apart -- it sees 0 either way and returns "0 months", which would put
-  // a sentence about this reader's finances on screen that the reader never
-  // said. So the check is made HERE, against the coverage flags, before the
-  // row is built.
-  //
-  // Both inputs are required, not just the numerator: skipping the outflow box
-  // while filling in family support leaves a denominator that is only part of
-  // what cannot be skipped, and an understated denominator OVERSTATES the
-  // runway — the more dangerous direction of the two.
-  //
-  // An absent `provided` map reads as unknown rather than as missing, the same
-  // convention inputAnswered uses above: those saves predate coverage capture,
-  // and on them the field was required, so their owners did answer and their
-  // row must keep rendering.
-  const months = runwayInputsMissing(p).length > 0 ? null : runwayMonths(p);
-  // null = no committed outflow on file, so no runway is defined. Omitted
-  // rather than printed as zero or as infinity — same contract as bmiScore.
-  if (months === null) return facts;
-  facts.push({
-    key: "runway",
-    label: t("Runway"),
-    // One decimal: the inputs are self-reported round numbers, and a second
-    // decimal would claim a precision neither of them has.
-    display: tp("{n} months", { n: Math.round(months * 10) / 10 }),
-    detail: tp("{savings} THB you could reach this week ÷ {outflow} THB/mo you cannot skip. Not scored — no published distribution says what a given number of months is worth, so this is reported to you rather than ranked.", {
-      savings: Math.round(parseFloat(p.liquidSavings || 0)).toLocaleString(),
-      // The denominator is committed outflow PLUS family support (v78). Both
-      // halves are named in the line below when the second one is non-zero, so
-      // the arithmetic on screen adds up to the number printed here.
-      outflow: Math.round(totalCommittedOutflow(p)).toLocaleString()
-    })
-  });
-  const family = Math.round(parseFloat(p.familySupport || 0));
-  if (family > 0) {
-    facts.push({
-      key: "familySupport",
-      label: t("Of which, family support"),
-      display: tp("{thb} THB/mo", { thb: family.toLocaleString() }),
-      detail: t("Counted in the runway above, because it does not stop when income does. It is also reported on your Social Contribution page, where it is giving rather than a bill.")
-    });
-  }
   return facts;
 }
 
@@ -500,7 +410,7 @@ function aspectFacts(aspectKey, p) {
 //
 // Until v78 this app asked for "committed monthly outflow — rent, loan
 // repayments, family support, bills", and money sent to parents entered the
-// model in exactly one place: as a number that shortens a runway. Meanwhile
+// model in exactly one place: as a bill in the finance section. Meanwhile
 // Social Contribution scored donations to charity and volunteering hours. So
 // for a reader practising กตัญญู, the single largest transfer they make to
 // another household counted as an obligation in the finance section and as
@@ -586,10 +496,6 @@ export function getAspectDetail(state, aspectKey) {
     confidence: getAspectConfidence(state, aspectKey),
     components,
     facts: aspectFacts(aspectKey, p),
-    // null on every aspect but finance, and on finance only once both runway
-    // inputs are on file. The view renders the "Measured, Not Scored" card when
-    // either this or `facts` has something to say.
-    invite: aspectKey === "finance" ? runwayInvite(p) : null,
     flaggedInstruments,
     trend: (state.snapshots || []).map(s => ({
       date: s.date,

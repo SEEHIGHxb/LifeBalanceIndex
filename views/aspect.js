@@ -105,7 +105,7 @@ function noteBook() {
 // Where the score stands, in words.
 function standingLine(a) {
   if (ranked(a.b)) return percentilePhrase(a.b.percentile, a.b.population);
-  if (a.b) return t("Not ranked — on purpose.");
+  if (a.b) return t("Not ranked");
   return t("Not graded yet.");
 }
 
@@ -117,19 +117,19 @@ function gradeNote(a) {
   const reassess = a.canReassess ? ` <a href="#/checkin">${t("Start Re-assessment")}</a>` : "";
   if (grade && grade.basis === "score") {
     return {
-      line: `<p><strong>${tp("Grade {letter}", { letter: grade.grade })}</strong> — ${tp("{band} for this aspect, from your score of {score}.", { band: t(grade.label), score: grade.score })}</p>`,
+      line: `<p><strong>${tp("Grade {letter}", { letter: grade.grade })}</strong> · ${tp("{band} for this aspect, from your score of {score}.", { band: t(grade.label), score: grade.score })}</p>`,
       why: `<p>${t("This grade comes from the aspect score, not from the percentile below. The percentile here ranks your income alone, and grading on it would grade your income rather than your financial life — someone on a small income with no debt and no money worry was being shown an F. The letters describe where this score sits against a typical one, not what share of people you are ahead of.")}</p>`
     };
   }
   if (grade) {
     return {
-      line: `<p><strong>${tp("Grade {letter}", { letter: grade.grade })}</strong> — ${tp("{band} of {population}, from the population comparison below.", { band: t(grade.label), population: b.population || t("people like you") })}</p>`,
+      line: `<p><strong>${tp("Grade {letter}", { letter: grade.grade })}</strong> · ${tp("{band} of {population}, from the population comparison below.", { band: t(grade.label), population: b.population || t("people like you") })}</p>`,
       why: `<p>${t("Grades come from the cited percentile, not from the 0-100 score — the score is this app's own composite, while the percentile is the part that compares you with real published data.")}</p>`
     };
   }
   if (unranked) {
     return {
-      line: `<p><strong>${t("Not ranked — on purpose.")}</strong> ${escapeHtml(unranked)}</p>`,
+      line: `<p><strong>${t("Not ranked")}</strong> · ${escapeHtml(unranked)}</p>`,
       why: `<p>${t("A grade is a rank against a population. Where there is no population this app can honestly rank you against — because the published norms describe the wrong people, or because the source publishes a single average rather than a distribution — it shows your measurements and withholds the rank rather than printing one it cannot stand behind.")}</p>`
     };
   }
@@ -167,7 +167,7 @@ function characterNote(c) {
 
 function factsNote(detail) {
   if (!detail.facts.length) return "";
-  return `<ul class="fn-points">${detail.facts.map(f => `<li><strong>${escapeHtml(f.label)}</strong> — ${escapeHtml(f.detail)}</li>`).join("")}</ul>`;
+  return `<ul class="fn-points">${detail.facts.map(f => `<li><strong>${escapeHtml(f.label)}</strong> · ${escapeHtml(f.detail)}</li>`).join("")}</ul>`;
 }
 
 // --- sections ---------------------------------------------------------------
@@ -198,18 +198,24 @@ function gradeBlock(a, ref) {
 }
 
 // Under the photograph: the grade and score, and where they stand. A letter
-// grade's reasoning is its note; a missing grade says why in the open, below.
+// grade's reasoning is its note, marked on the grade; an unranked aspect's is
+// its note too, marked on "Not ranked" (the owner, v143: the page says why no
+// further up than that). One never graded says why in the open, below.
 function topBody(a, book) {
-  let ref = "";
+  let gradeRef = "";
+  let lineRef = "";
   if (a.grade) {
     const note = gradeNote(a);
-    ref = book.ref("grade", `${blurb(a)}${note.line}${note.why}`);
+    gradeRef = book.ref("grade", `${blurb(a)}${note.line}${note.why}`);
+  } else if (a.unranked) {
+    const note = gradeNote(a);
+    lineRef = book.ref("grade", `${blurb(a)}${note.line}${note.why}${comparisonNote(a.b)}`);
   }
   return `
     <div class="aspect-top-read">
-      ${gradeBlock(a, ref)}
+      ${gradeBlock(a, gradeRef)}
       <div class="aspect-top-lines">
-        <p class="page-top-lead aspect-standing">${escapeHtml(standingLine(a))}</p>
+        <p class="page-top-lead aspect-standing">${escapeHtml(standingLine(a))}${lineRef}</p>
       </div>
     </div>`;
 }
@@ -225,8 +231,8 @@ function characterSection(a, book) {
     <section class="panel statement aspect-character"><div class="wrap split">
       ${label(t("Your character"))}
       <div>
-        <p class="character-name">${escapeHtml(c.name)}${book.ref("character", characterNote(c))}</p>
-        <p class="character-line">${escapeHtml(c.line)}</p>
+        <p class="character-name">${escapeHtml(c.name)}</p>
+        <p class="character-line">${escapeHtml(c.line)}${book.ref("character", characterNote(c))}</p>
         <ul class="character-sides">
           ${c.sides.map(s => `<li><span>${escapeHtml(s.label)}</span> <b>${escapeHtml(s.value)}</b></li>`).join("")}
         </ul>
@@ -257,17 +263,17 @@ function gauge(b) {
 }
 
 // The gauge and its figure stay open, with anything that changes how to read
-// them (a missing grade, an estimate, uniform answers) and the guideline
-// checks. A missing grade keeps its sentence open, because that sentence is
-// the reason and the way to fix it; its note carries the comparison when there
-// is no figure to hang it on.
+// them (an estimate, uniform answers) and the guideline checks. A grade never
+// given keeps its sentence open, because that sentence is the reason and the
+// way to fix it. An unranked aspect has no comparison to show, so the section
+// goes when nothing else is in it (the owner, v143).
 function compareSection(a, book) {
   const { b, detail, chapter, grade } = a;
   const reassess = a.canReassess ? ` <a href="#/checkin">${t("Start Re-assessment")}</a>` : "";
   const figure = ranked(b) ? `${gauge(b)}
     <p class="benchmark-detail">${escapeHtml(tp("{pct} percentile", { pct: percentileLabel(b.percentile) }))}${book.ref("compare", comparisonNote(b))}</p>` : "";
   let missing = "";
-  if (!grade) {
+  if (!grade && !a.unranked) {
     const note = gradeNote(a);
     const ref = book.ref("grade", `${blurb(a)}${note.why}${ranked(b) ? "" : comparisonNote(b)}`);
     missing = `<div class="grade-explainer">${note.line.replace("</strong>", `</strong>${ref}`)}</div>`;
@@ -277,6 +283,9 @@ function compareSection(a, book) {
     <p class="aspect-note"><strong>${t("Estimated score.")}</strong> ${tp("This score comes from default answers. Answer the {aspect} questions or submit a Weekly Review to confirm it.", { aspect: detail.label })}${reassess}</p>` : "";
   const uniform = detail.flaggedInstruments && detail.flaggedInstruments.length > 0 ? `
     <p class="aspect-note"><strong>${t("Uniform answers detected.")}</strong> ${t("Some questionnaire answers all sat on the same option, so they are not counted as a confirmed measurement. Re-answer them honestly to confirm this score.")}</p>` : "";
+  const checks = criteriaCard(a.criteria, book.ref("guidelines", criteriaNote(a.criteria)));
+  const body = `${figure}${noData}${missing}${estimated}${uniform}${checks}`;
+  if (!body.trim()) return "";
   return `
     <section class="panel statement aspect-society"><div class="wrap split">
       ${label(t("How you compare"))}
@@ -284,7 +293,7 @@ function compareSection(a, book) {
         ${figure}${noData}${missing}
         ${isQuietChapter(chapter) ? `<p class="aspect-note aspect-quiet">${t("This region is kept still on purpose.")}</p>` : ""}
         ${estimated}${uniform}
-        ${criteriaCard(a.criteria, book.ref("guidelines", criteriaNote(a.criteria)))}
+        ${checks}
       </div>
     </div></section>`;
 }
@@ -302,28 +311,18 @@ function partRow(c, chapter) {
     </li>`;
 }
 
-// "Measured, not scored": facts on file, and the runway row that asks for its
-// inputs when they are not. Same row for both, deliberately: the ask sits with
-// the thing being asked for. No value in the invite's slot, because there is
-// none; a dash there would read as a measured result. Why each fact is not
-// scored is its note.
+// The facts measured but not scored, under the components with no heading of
+// their own (the owner, v143). Why they are not scored is their note, marked
+// on the first.
 function factsBlock(detail, book) {
-  if (!detail.facts.length && !detail.invite) return "";
-  const facts = detail.facts.map(f => `
+  if (!detail.facts.length) return "";
+  const ref = book.ref("facts", factsNote(detail));
+  const facts = detail.facts.map((f, i) => `
     <li class="fact-row">
-      <span class="fact-label">${escapeHtml(f.label)}</span>
+      <span class="fact-label">${escapeHtml(f.label)}${i === 0 ? ref : ""}</span>
       <b class="fact-value">${escapeHtml(f.display)}</b>
     </li>`).join("");
-  const invite = detail.invite ? `
-    <li class="fact-row">
-      <span class="fact-label">${escapeHtml(detail.invite.label)}</span>
-      <small class="fact-detail">${escapeHtml(detail.invite.text)} <a href="${escapeHtml(detail.invite.href)}">${escapeHtml(detail.invite.linkLabel)}</a></small>
-    </li>` : "";
-  return `
-    <div class="facts">
-      <p class="facts-head">${t("Measured, Not Scored")}${book.ref("facts", factsNote(detail))}</p>
-      <ul class="fact-list">${facts}${invite}</ul>
-    </div>`;
+  return `<ul class="fact-list facts">${facts}</ul>`;
 }
 
 function partsSection(a, book) {
@@ -456,4 +455,7 @@ export function renderAspectPage(containerId, state, aspectKey) {
     still: isQuietChapter(a.chapter) || !!a.notice
   });
   bindFootnotes(container);
+  // Opened from a row halfway down Overview, the page starts at its top
+  // (the owner, v143), as the star page does.
+  globalThis.scrollTo?.(0, 0);
 }

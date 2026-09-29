@@ -41,10 +41,18 @@
 /* The guideline checks: open, under a heading with its note mark. */
 .aspect-page .criteria-card { margin: calc(40 * var(--px)) 0 0; }
 .aspect-page .criteria-card .card-header { display: inline; margin: 0; padding: 0; border: 0; font: inherit; color: var(--frame-ink); }
-.aspect-page .statement .criteria-head,
-.aspect-page .statement .facts-head { margin: 0 0 calc(12 * var(--px)); font-weight: 700; font-size: max(15px, calc(24 * var(--px))); }
+.aspect-page .statement .criteria-head { margin: 0 0 calc(12 * var(--px)); font-weight: 700; font-size: max(15px, calc(24 * var(--px))); }
+/* Every check's name starts in one column, whatever its verdict's width (the
+   owner, v143): the rows share the list's two columns. */
+.aspect-page .criteria-list { display: grid; grid-template-columns: max-content minmax(0, 1fr); column-gap: 14px; }
+.aspect-page .criterion-row { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; }
+.aspect-page .criterion-chip { justify-self: start; }
+@media (max-width: 420px) {
+  .aspect-page .criteria-list { display: block; }
+  .aspect-page .criterion-row { display: flex; }
+}
 .aspect-society .gauge-track { max-width: calc(1400 * var(--px)); }
-.aspect-page .facts { margin-top: calc(40 * var(--px)); }
+.aspect-page .fact-list.facts { margin-top: calc(24 * var(--px)); }
 
 /* One row per component: name, score, a meter in the region's hue, and what
    it is made of. */
@@ -104,7 +112,7 @@
 .aspect-page .focus-row { max-width: none; margin: 0; padding: calc(40 * var(--px)) 0; border-bottom: 1px dashed rgba(0, 0, 0, 0.25); }
 .aspect-page .focus-row:first-child { padding-top: 0; }
 .aspect-page .focus-row p { margin: 0; }
-.aspect-page .focus-title { font-weight: 700; }
+.aspect-page .statement .focus-title { font-weight: 700; }
 .careers-note { margin: 0; font-weight: 600; font-size: max(14px, calc(22 * var(--px))); }
 
 /* ================================================================= goals */

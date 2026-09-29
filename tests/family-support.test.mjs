@@ -13,21 +13,20 @@
 // bill in the finance section and did not exist at all in the section about
 // giving.
 //
-// v78 asks for it separately, keeps it in the runway (it does not stop when
-// income stops), and reports it on Social Contribution as giving. It is
+// v78 asks for it separately and reports it on Social Contribution as
+// giving (the runway it also fed left in v143). It is
 // deliberately NOT added to that score — see socialContributionFacts() in
 // aspects.js for why, which is the same reason Environment lost its percentile
 // in v77 rather than the convenient one.
 //
-// These tests pin all three halves of that: the arithmetic, the silence, and
-// the wording that caused it.
+// These tests pin the silence: reported, never scored.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-import { runwayMonths, totalCommittedOutflow, calculateSocialContributionScore } from "../scoring.js";
+import { calculateSocialContributionScore } from "../scoring.js";
 import { getAspectDetail } from "../aspects.js";
 import { DEFAULT_STATE } from "../defaults.js";
 
@@ -35,52 +34,6 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (f) => readFileSync(join(root, f), "utf8");
 
 const profile = (over = {}) => ({ ...DEFAULT_STATE.profile, ...over });
-
-// --- The arithmetic --------------------------------------------------------
-
-test("family support is part of the runway denominator", () => {
-  // It is in the sum because the runway question is "how long could I cover
-  // what I cannot stop paying", and for someone supporting their parents that
-  // money does not stop.
-  const p = profile({ liquidSavings: 120000, committedOutflow: 15000, familySupport: 5000 });
-  assert.equal(totalCommittedOutflow(p), 20000);
-  assert.equal(runwayMonths(p), 6);
-});
-
-test("a save written before the split keeps the runway it had", () => {
-  // familySupport defaults to 0 and the old single field already carried the
-  // total, so the split is additive with no migration and no schema bump.
-  const before = profile({ liquidSavings: 120000, committedOutflow: 20000 });
-  delete before.familySupport;
-  assert.equal(runwayMonths(before), 6);
-  assert.equal(totalCommittedOutflow(before), 20000);
-});
-
-test("family support alone still defines a runway", () => {
-  // Someone whose only unskippable outgoing is what they send home has a
-  // runway, and before v78 they would have had to file it under "bills" to see
-  // one at all.
-  const p = profile({ liquidSavings: 30000, committedOutflow: 0, familySupport: 10000 });
-  assert.equal(runwayMonths(p), 3);
-});
-
-test("no outflow of either kind still means no runway, not zero months", () => {
-  // The existing contract: unbounded is not a quantity this can print, so the
-  // row is omitted. Adding a second field must not turn null into 0.
-  const p = profile({ liquidSavings: 50000, committedOutflow: 0, familySupport: 0 });
-  assert.equal(runwayMonths(p), null);
-});
-
-test("a negative or garbage value cannot drag the denominator down", () => {
-  // Reachable from a connector, never from the form, which floors at 0. A
-  // negative family support must not lengthen someone's runway.
-  const p = profile({ liquidSavings: 60000, committedOutflow: 10000, familySupport: -5000 });
-  assert.equal(totalCommittedOutflow(p), 10000);
-  assert.equal(runwayMonths(p), 6);
-  assert.equal(totalCommittedOutflow(profile({ committedOutflow: 10000, familySupport: "abc" })), 10000);
-});
-
-// --- The silence -----------------------------------------------------------
 
 test("family support does not move the Social Contribution score", () => {
   // THE POINT OF THE WHOLE ROUND, stated as an assertion. It is reported on
@@ -101,7 +54,7 @@ test("family support does not move the Social Contribution score", () => {
 
 test("family support does not move any aspect score", () => {
   const base = { ...DEFAULT_STATE, onboarded: true,
-    profile: profile({ income: 30000, liquidSavings: 120000, committedOutflow: 15000 }),
+    profile: profile({ income: 30000 }),
     aspects: { ...DEFAULT_STATE.aspects } };
   const withFamily = { ...base, profile: { ...base.profile, familySupport: 9000 } };
   for (const key of Object.keys(base.aspects)) {
@@ -136,46 +89,6 @@ test("nothing is reported when nothing is sent", () => {
   assert.equal(detail.facts.filter(f => f.key === "familySupport").length, 0);
 });
 
-// --- The wording that caused it -------------------------------------------
-
-test("the committed-outflow question no longer files family support as a bill", () => {
-  // This is the drift guard. Putting "family support" back into that list of
-  // examples would silently undo the whole round: the new field would still
-  // exist, and readers would still enter the money in the box that only ever
-  // shortens a runway.
-  // RE-ANCHORED in v79, and worth saying why rather than letting a future
-  // reader assume the guard was weakened. It used to match the sentence "The
-  // second box is what you cannot skip in a month...". v79 deleted that
-  // sentence -- it named a "second box" that does not exist under 600px, where
-  // .grid-2 is a single column -- but the copy did not go away, it moved into
-  // the outflow field's own note. So the guard moves with it. What is being
-  // protected has not changed by a word: whatever text explains committed
-  // outflow to the reader must not list family support among its examples.
-  //
-  // Reading the note rather than the whole field block is deliberate. The block
-  // now carries a source comment that discusses family support by name, and a
-  // guard that searched the block would fail on a comment while a real
-  // regression in the user-facing string went unnoticed.
-  // RE-ANCHORED AGAIN in v80: the question moved off onboarding entirely and
-  // into the in-depth assessment's finance card. What is protected has still
-  // not changed by a word -- whatever text explains committed outflow to the
-  // reader must not list family support among its examples -- only where that
-  // text lives. The Profile page carries the identical string and is covered
-  // by its own suite.
-  const onboarding = read("views/assessments.js");
-  const outflowField = onboarding.match(/numberField\("deep-outflow"[\s\S]*?\}\)\}/);
-  assert.ok(outflowField, "the committed-outflow field must still be there");
-  const outflowNote = outflowField[0].match(/note: t\("([^"]+)"\)/);
-  assert.ok(outflowNote, "the committed-outflow help text must still be there");
-  assert.ok(
-    !/family support/i.test(outflowNote[1]),
-    `the committed-outflow question lists family support as an example again: ` +
-    `"${outflowNote[1]}"`
-  );
-  assert.match(onboarding, /field: "familySupport"/,
-    "the app must still ask for family support on its own, in its own box");
-});
-
 test("the field survives a round trip through the profile editor", async () => {
   // An earlier version of this test was named for a round trip and consisted
   // entirely of regexes over source text — it would have passed if
@@ -185,21 +98,19 @@ test("the field survives a round trip through the profile editor", async () => {
   const mgr = new GameStateManager();
   mgr.state = structuredClone({
     ...DEFAULT_STATE, onboarded: true,
-    profile: profile({ income: 30000, liquidSavings: 120000, committedOutflow: 15000 })
+    profile: profile({ income: 30000 })
   });
 
   mgr.updateProfile({ familySupport: "5000" });
   assert.equal(mgr.state.profile.familySupport, 5000, "the edit must be stored");
-  assert.equal(runwayMonths(mgr.state.profile), 6, "and must reach the runway");
 
   // Blank means ZERO for this field, not "leave unchanged". It is the app's
   // only optional money field and its own placeholder says "leave blank if
   // none", so someone who stops sending money home has to be able to say so.
-  // Without this they would be stuck with a permanently shortened runway and a
-  // Social Contribution page reporting money they no longer send.
+  // Without this Social Contribution would keep reporting money they no
+  // longer send.
   mgr.updateProfile({ familySupport: "" });
   assert.equal(mgr.state.profile.familySupport, 0, "an emptied box must clear the field");
-  assert.equal(runwayMonths(mgr.state.profile), 8, "and the runway must recover");
 
   // Blank still means "unchanged" for the fields that have no meaningful zero.
   mgr.updateProfile({ income: "" });
@@ -213,7 +124,7 @@ test("editing family support reports no score change, because nothing scores it"
   const mgr = new GameStateManager();
   mgr.state = structuredClone({
     ...DEFAULT_STATE, onboarded: true,
-    profile: profile({ income: 30000, liquidSavings: 120000, committedOutflow: 15000 })
+    profile: profile({ income: 30000 })
   });
   const before = { ...mgr.state.aspects };
   const result = mgr.updateProfile({ familySupport: "9000" });

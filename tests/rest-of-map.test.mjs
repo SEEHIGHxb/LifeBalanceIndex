@@ -145,7 +145,7 @@ test("Profile is a text page that keeps every field and control", () => {
   assert.match(out, /class="stage-page textpage profile-view"/);
   assert.doesNotMatch(out, /class="hero"/, "a text page has no hero");
   for (const id of ["pf-name", "pf-age", "pf-gender", "pf-birthday-month", "pf-birthday-day", "pf-region", "pf-employment",
-    "pf-relationship", "pf-income", "pf-height", "pf-weight", "pf-liquid", "pf-outflow", "pf-family", "pf-save",
+    "pf-relationship", "pf-income", "pf-height", "pf-weight", "pf-family", "pf-save",
     "pf-reduce-motion", "btn-export-data", "btn-import-data", "btn-reset-data", "import-file-input"]) {
     assert.match(out, new RegExp(`id="${id}"`), `Profile lost #${id}`);
   }

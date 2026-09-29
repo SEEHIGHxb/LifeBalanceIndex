@@ -66,11 +66,8 @@ const WIPE_MS = 700;
 // its onboarding input id — used for reading and coverage tracking. The inputs
 // also carry data-field so validateScope range-checks them per screen.
 //
-// liquidSavings / committedOutflow / familySupport are deliberately absent
-// since v80. Their coverage flags therefore come back false from
-// buildProvidedFlags, which is exactly right: the runway row stays withheld
-// until someone actually enters the figures on the Profile or deep pages,
-// rather than reporting a zero nobody typed.
+// familySupport is deliberately absent since v80: it is entered on the
+// Profile page, and its coverage flag stays false until someone does.
 const ONB_NUMERIC_IDS = {
   income: "onb-income", monthlySavings: "onb-savings",
   weeklyLearningHours: "onb-learning", weeklyVigorousDays: "onb-vig-days",

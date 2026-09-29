@@ -51,21 +51,9 @@ export const DEFAULT_STATE = {
     // two of them in disagreement. The amount is re-derived for display by
     // savingsAmountFrom (scoring.js). This is why v46 needed no schema bump.
     savingsRate: 10,
-    // The two runway fields (v70). Both default to 0, and a committed outflow
-    // of 0 makes runwayMonths return null rather than a number, so a save that
-    // predates these questions simply shows no runway row. That is why they are
-    // additive with no schemaVersion bump — same reasoning as
-    // birthdayPromptDismissed above, and unlike savingsRate neither of these is
-    // derived from the other, because a stock and an outflow are independent
-    // facts that no income edit can put in disagreement.
-    liquidSavings: 0, // THB, cash you could reach this week
-    committedOutflow: 0, // THB/mo you cannot skip: rent, loans, bills
-    // Split out of committedOutflow in v78, which used to name "family
-    // support" as one more unskippable bill. For a large share of this app's
-    // readers it is not a bill — it is กตัญญู, and money sent to parents was
-    // the ONE kind of giving in this app that could only ever shorten a
-    // runway. It is additive and defaults to 0, so a save from before the
-    // split keeps whatever total it already had (see totalCommittedOutflow).
+    // Asked on its own since v78: for a large share of this app's readers
+    // money sent to parents is not a bill, it is กตัญญู. Reported on Social
+    // Contribution as giving, and never scored.
     familySupport: 0, // THB/mo sent to parents or family
     digitalLiteracy: 50,
     weeklyLearningHours: 2,

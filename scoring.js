@@ -268,8 +268,7 @@ export function futureStudyScore(profile) {
 //
 // THE RATE IS STILL COLLECTED AND STILL SHOWN. It sets the savings goal target
 // (goals.js), pre-fills the weekly review, and is reported on the Finance page
-// as a FACT rather than a bar -- the same treatment as runway below, and for
-// the same reason: there is no published divisor, so a bar would have to invent
+// as a FACT rather than a bar, because there is no published divisor, so a bar would have to invent
 // one. Finding 3 is precisely that the old bar had invented it.
 
 // The forms ASK for a baht amount and store a RATE. Asking for a percentage
@@ -285,8 +284,8 @@ export function savingsRateFrom(amount, income) {
   const inc = parseFloat(income || 0);
   // No income means no rate to compute — NOT a rate of zero. The forms guard
   // this before calling, so reaching here means hand-edited or hostile input.
-  // Saving with no salary is a real situation and it is what the runway
-  // measure is for; until then it is honestly out of this scale's range.
+  // Saving with no salary is a real situation, and honestly out of this
+  // scale's range.
   if (!(inc > 0) || !(amt > 0)) return 0;
   return Math.min(100, (amt / inc) * 100);
 }
@@ -299,76 +298,6 @@ export function savingsAmountFrom(rate, income) {
   return Math.round((r / 100) * inc);
 }
 
-// --- RUNWAY: MEASURED, DELIBERATELY NOT SCORED (v70) ---
-//
-// Months of committed outflow covered by liquid savings. This is the number
-// round 10 concluded the finance aspect was missing: a 75,000 salary that is
-// entirely spoken for and a 75,000 salary that is not are the same number to
-// `income` and to `savingsRate`, and the CFPB items only capture how that
-// difference FEELS. Runway is the fact underneath the feeling.
-//
-// IT RETURNS MONTHS, NOT A 0-100 SCORE, AND NOTHING WEIGHTS IT.
-//
-// Round 11 closed 2026-08-22 and found that a normalizer DOES exist, correcting
-// round 10: the Financial Health Network's FinHealth Score Toolkit scores this
-// exact question as 1 of 8 equally-weighted indicators, with published point
-// values (6mo+ = 100, 3-5mo = 75, 1-2mo = 50, 1-3wk = 25, <1wk = 0). Round 10
-// looked in the Pulse report; the weighting is in the Toolkit.
-//
-// IT IS DELIBERATELY NOT APPLIED, AND THAT IS NOW PERMANENT — decided
-// 2026-08-22, not deferred. Three reasons, in the order that settles it:
-//
-//   1. BOTH published instruments divide by TOTAL spending, while
-//      committedOutflow is deliberately the unskippable subset. Our months are
-//      therefore always larger than the months those bands describe, by a
-//      factor that varies per person with their discretionary share. The two
-//      numbers are not interchangeable and no published conversion exists.
-//   2. The Toolkit is "all rights reserved" and its publisher requires a
-//      licence for use of the Score in software. This is software.
-//   3. No peer-reviewed psychometric validation of the FinHealth Score was
-//      found. The app's other instruments carry one; this would not.
-//
-// So the honest thing to report is the number itself, which is what happens.
-// Do not reopen this without new evidence on (1) — a published Thai
-// non-discretionary spending share is the only thing that would change it.
-// See docs/research/round-11-runway-normalizer.md.
-//
-// NULL means "no runway is defined", and it is returned when committed outflow
-// is zero or absent — not zero months. Someone who genuinely owes nothing each
-// month (the student from the v69 regression test pays for nothing) has an
-// unbounded runway, and unbounded is not a quantity this can print. Callers
-// OMIT the row, the same contract bmiScore and sleepDurationScore already use.
-//
-// Zero or negative savings against a real outflow IS zero months, and says so.
-// Negative is reachable from a connector reporting net of debt, never from the
-// form, which floors at 0.
-// The denominator of the runway: everything that leaves each month and cannot
-// be skipped. Split across two stored fields since v78 and summed here, so the
-// runway is unchanged for a save written before the split (familySupport
-// defaults to 0 and the old single field already carried the total).
-//
-// Family support is in this sum because the runway question is "how long could
-// I cover what I cannot stop paying", and for someone supporting their parents
-// that money does not stop. Being IN the sum is not the same as being a
-// liability, which is why it is also reported on its own, on the aspect that
-// deals in giving. See aspectFacts() in aspects.js.
-export function totalCommittedOutflow(profile) {
-  const committed = parseFloat(profile.committedOutflow || 0);
-  const family = parseFloat(profile.familySupport || 0);
-  return (committed > 0 ? committed : 0) + (family > 0 ? family : 0);
-}
-
-export function runwayMonths(profile) {
-  const outflow = totalCommittedOutflow(profile);
-  if (!(outflow > 0)) return null;
-  const savings = parseFloat(profile.liquidSavings || 0);
-  // NaN floors to zero months rather than propagating: `parseFloat("abc")` is
-  // NaN, and NaN survives Math.max, so an unguarded version printed the literal
-  // string "NaN months" on the Finance page. The outflow side above is already
-  // safe because NaN > 0 is false, which returns null and omits the row.
-  if (!(savings > 0)) return 0;
-  return savings / outflow;
-}
 
 // Donation volume vs income, 0-100: 2% of income or 500 THB/mo maxes it.
 export function donationVolumeFactor(profile) {

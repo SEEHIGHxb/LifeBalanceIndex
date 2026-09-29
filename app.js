@@ -320,10 +320,7 @@ function screenFor(route, activeTab, state) {
   switch (route.type) {
     case "aspect": return ["aspect", m => m.renderAspectPage(main, state, route.key)];
     case "checkin": return ["assessments", m => m.renderCheckin(main, state, handleCheckinComplete)];
-    // The fourth argument is the runway block's save handler, not the
-    // assessment's: those three figures are profile facts and report exactly
-    // as the Profile page's own save does.
-    case "deep": return ["assessments", m => m.renderDeepAssessment(main, state, handleDeepComplete, handleProfileSaved)];
+    case "deep": return ["assessments", m => m.renderDeepAssessment(main, state, handleDeepComplete)];
     case "methodology": return ["methodology", m => m.renderMethodology(main, state)];
     case "welcome": return ["landing", m => m.renderLanding(main, { returning: true })];
     case "year": return ["year", m => m.renderYearReview(main, state, renderActiveTab)];

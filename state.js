@@ -72,17 +72,14 @@ const BACKUP_NUDGE_MIN_LOGS = 10;
 // sanitizeProfileFields knows, and age is bounded tighter than the importer's
 // 1-120). birthMonth/birthDay ride the existing setBirthday path, not this one.
 const PROFILE_EDIT_ENUMS = ["gender", "region", "employment", "relationshipStatus"];
-// liquidSavings and committedOutflow joined in v70. They belong here rather
-// than in the weekly review because they are slow-moving FACTS, not weekly
-// behaviour — and because the weekly review re-measures scores, which these
-// deliberately do not touch.
+// liquidSavings and committedOutflow (the runway, v70) left in v143.
 // digitalLiteracy left this list in v73 when the CIT Learning subscale
 // replaced it. The stored field, its sanitiser and its validator all remain so
 // that pre-v73 saves keep scoring; it simply has no input to arrive from.
-const PROFILE_EDIT_NUMERIC = ["income", "weight", "height", "liquidSavings", "committedOutflow", "familySupport"];
+const PROFILE_EDIT_NUMERIC = ["income", "weight", "height", "familySupport"];
 // The numeric fields whose hand-entry should upgrade the confidence tier: a
 // value the user just typed is provided data, same as answering it at onboarding.
-const PROFILE_EDIT_PROVIDED = ["income", "weight", "height", "liquidSavings", "committedOutflow", "familySupport"];
+const PROFILE_EDIT_PROVIDED = ["income", "weight", "height", "familySupport"];
 
 // Fields where an EMPTY box means zero rather than "leave this alone".
 //
@@ -91,8 +88,8 @@ const PROFILE_EDIT_PROVIDED = ["income", "weight", "height", "liquidSavings", "c
 // box is a user who did not want to retype a number. familySupport is the
 // app's first optional money field — its own placeholder says "leave blank if
 // none" — so for it, blank is an ANSWER. Without this, someone who stops
-// sending money home has no way to say so: their runway stays permanently
-// shortened and Social Contribution keeps reporting money they no longer send.
+// sending money home has no way to say so: Social Contribution keeps reporting
+// money they no longer send.
 const PROFILE_EDIT_CLEARABLE = new Set(["familySupport"]);
 const AGE_MIN = 15;
 const AGE_MAX = 100;
@@ -895,10 +892,6 @@ export class GameStateManager {
     p.relationshipStatus = surveyData.relationshipStatus;
     p.income = parseFloat(surveyData.income || 0);
     p.savingsRate = parseFloat(surveyData.savingsRate || 0);
-    // Stored in baht exactly as typed. Nothing scores them (see runwayMonths);
-    // an absent or zero committedOutflow simply leaves the runway undefined.
-    p.liquidSavings = parseFloat(surveyData.liquidSavings || 0);
-    p.committedOutflow = parseFloat(surveyData.committedOutflow || 0);
     p.familySupport = parseFloat(surveyData.familySupport || 0);
     p.digitalLiteracy = parseFloat(surveyData.digitalLiteracy || 50);
     p.weeklyLearningHours = parseFloat(surveyData.weeklyLearningHours || 0);

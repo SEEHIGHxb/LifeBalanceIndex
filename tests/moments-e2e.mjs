@@ -26,8 +26,8 @@
 //      and its ending lifts its curtain and bursts, leaving nothing parked.
 //   6. Home: a tap on your star bursts sixteen stars and motifs and it comes
 //      home; the pledge wall drifts with the scroll; the share card assembles
-//      in its preview. Beside the care notice Home is still: nothing typed,
-//      nothing burst, nothing moved.
+//      in its preview. Beside the care notice Home is calm (nothing typed,
+//      the wall does not drift), but your star still warps to its page.
 //
 // The art set: the ending's emblem loads without a layout shift, and the
 // sprite sheet's star really draws.
@@ -380,21 +380,33 @@ try {
   problems.push(`home: ${err.message}`);
 }
 
-// ...and beside the care notice Home is still: the headline is not parked for
-// typing, and a tap on the star opens its page with nothing moving.
+// ...and beside the care notice Home is calm: the headline is not parked for
+// typing and the wall does not drift, but a tap on the star still warps into
+// its page and flies home again (the owner, v140: "Full warp always").
 try {
   const { context, page } = await openJourney(browser);
   await finishJourney(page);
   if (!(await page.locator(".care-banner").count())) throw new Error("this reader was meant to see the care notice");
   if ((await heroState(page)).hidden) problems.push("quiet home: text was parked for typing beside the care notice");
+  await page.evaluate(() => document.querySelector(".home .wall")?.scrollIntoView({ block: "center" }));
+  await page.waitForTimeout(100);
+  const drift = await page.evaluate(() => [...document.querySelectorAll(".home .wall-col")].map(c => c.style.transform).filter(Boolean));
+  if (drift.length) problems.push("quiet home: the wall drifted beside the care notice");
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.click(".home .star-hit");
   await page.waitForSelector(".star-page .sp-mark svg.shape", { timeout: 10000 });
-  let moved = 0;
-  for (let f = 0; f < 120; f++) {
-    await advance(page, FRAME_MS);
-    moved += await page.evaluate(() => [...document.querySelectorAll(".star-page .sp-mark svg, .star-page .sp-bloom, .star-page .sp-label-in, .star-page .sp-fade")].filter(el => el.getAttribute("style")).length);
+  await advance(page, FRAME_MS * 3 + 300);
+  const warp = await page.evaluate(() => ({
+    night: !!document.querySelector(".star-page .sp-night").style.transform,
+    spin: /rotate\(-?[1-9]/.test(document.querySelector(".star-page .sp-mark svg.shape").style.transform)
+  }));
+  if (!warp.night || !warp.spin) problems.push(`quiet home: the warp did not play beside the care notice (${JSON.stringify(warp)})`);
+  await advance(page, 2500);
+  await page.click(".star-page .sp-back");
+  await advance(page, FRAME_MS * 3);
+  if (!(await page.evaluate(() => document.querySelector(".star-page .sp-mark svg.shape")?.style.transform))) {
+    problems.push("quiet home: your star did not fly home beside the care notice");
   }
-  if (moved) problems.push("quiet home: your star's page moved beside the care notice");
   await context.close();
 } catch (err) {
   problems.push(`quiet home: ${err.message}`);
@@ -599,4 +611,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star warps into its own page and flies back (and stays still beside the care notice), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi's panel settles and types, and reduced motion moves nothing");
+console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star warps into its own page and flies back (the care notice too), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi's panel settles and types, and reduced motion moves nothing");

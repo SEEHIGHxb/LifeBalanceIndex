@@ -155,8 +155,8 @@ export function renderStarPage(containerId, state) {
   const prefs = readSharePrefs();
   const note = takeZoom();
   globalThis.scrollTo?.(0, 0);
-  // Beside the care notice this page is as still as Home is.
-  const scope = renderStagePage(container, () => starPageMarkup(h, prefs), { still: !!h.careNotice });
+  // The warp plays beside the care notice too (the owner, v140).
+  const scope = renderStagePage(container, () => starPageMarkup(h, prefs));
   adoptShape(container.querySelector(".sp-mark svg.shape"), { view: h.view, you: h.scores });
   bindShapeSwitch(container, scope);
   bindOptions(container, state, prefs);

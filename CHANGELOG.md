@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `139`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `140`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.72.1] - 2026-09-29 (v140)
+
+### Fixed
+- Your star's warp now plays while the care notice is showing too (it used to open with no transition until the notice was closed). The rest of Home stays calm beside the notice: nothing types and the pledge wall does not drift.
 
 ## [2.72.0] - 2026-09-28 (v139)
 

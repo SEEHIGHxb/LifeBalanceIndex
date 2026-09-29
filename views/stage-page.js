@@ -383,12 +383,15 @@ function mountScroll(root, scope) {
 
 // Draws a stage page into the container and sets its sections moving.
 // `markup` returns the finished page; `still` keeps it exactly so (reduced
-// motion always does). Returns the motion scope, for the caller's own moving
-// sections, or null when the page is to stay still.
-export function renderStagePage(container, markup, { motifs = EVERY_MOTIF, still = false } = {}) {
+// motion always does). `calm` leaves the page's own sections still but still
+// returns the scope, for a caller that moves only what it chooses. Returns the
+// motion scope, for the caller's own moving sections, or null when the page
+// is to stay still.
+export function renderStagePage(container, markup, { motifs = EVERY_MOTIF, still = false, calm = false } = {}) {
   container.innerHTML = markup();
   const scope = mountMotion();
   if (still || isReduced()) return null;
+  if (calm) return scope;
   const root = container.querySelector(".stage-page");
   if (!root) return null;
   try {

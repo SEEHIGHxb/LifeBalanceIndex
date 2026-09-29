@@ -15,9 +15,9 @@
 //   recent      reviews, re-assessments and the journey, newest first
 //   pledges     your active pledges as stickers
 //
-// Beside the care notice the whole page is still: the star opens its page
-// without zooming and the wall does not drift (the old ceremony's quiet rule,
-// kept).
+// Beside the care notice the page is calm: nothing types and the wall does
+// not drift (the old ceremony's quiet rule), but your star still warps to its
+// own page and back (v140).
 
 import { stateManager } from "../state.js";
 import { AVERAGE_ASPECT_SCORES } from "../averages.js";
@@ -457,16 +457,18 @@ export function renderDashboard(containerId, state, onExportBackup) {
   const h = readHome(state);
   // Taken before the page draws, so a still page drops it too.
   const zoom = takeZoom();
-  // Beside the care notice nothing moves: the notice never does, and a page
-  // bursting with stars around it would be the wrong tone.
-  const scope = renderStagePage(container, () => homeMarkup(h), { still: !!h.careNotice });
+  // Beside the care notice the page itself stays calm (the notice never
+  // moves, and no text types or wall drifts around it), but your star still
+  // flies to and from its page (the owner, 2026-09-29: "Full warp always").
+  const calm = !!h.careNotice;
+  const scope = renderStagePage(container, () => homeMarkup(h), { calm });
   // The switch works on a still page too; there it redraws without moving.
   adoptShape(container.querySelector(".home-star-mark svg.shape"), { view: h.view, you: h.scores });
   bindShapeSwitch(container, scope);
   if (scope) {
     try {
       mountStar(container, scope, zoom);
-      mountWall(container, scope);
+      if (!calm) mountWall(container, scope);
     } catch (err) {
       console.error("Home motion failed:", err);
     }

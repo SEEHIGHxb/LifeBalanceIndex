@@ -1,7 +1,9 @@
 // views/star-zoom.js - your star flies between Home and its own page (v135;
 // the owner, 2026-09-28: a tap on the star should zoom into a page of its
 // own, not burst; v136: "make the transition more creative"; v139: "even
-// make it more creative and impressive").
+// make it more creative and impressive"). This is the star view's way in;
+// the radar and the asterism have their own (views/star-shape-zoom.js, v152),
+// built from the helpers exported here.
 //
 // The page being left notes where its star sits on screen (markZoom); the
 // page being drawn takes that note (takeZoom). Going in (enterStar) is a warp
@@ -65,10 +67,10 @@ const FRESH_MS = 1500;
 let pending = null;
 
 const now = () => (typeof performance === "object" ? performance.now() : Date.now());
-const clamp01 = (v) => Math.max(0, Math.min(1, v));
+export const clamp01 = (v) => Math.max(0, Math.min(1, v));
 // Progress through [start, start + length] of a timeline at `t` ms, eased.
-const span = (t, start, length) => easeStar(clamp01((t - start) / length));
-const centre = (r) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+export const span = (t, start, length) => easeStar(clamp01((t - start) / length));
+export const centre = (r) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
 
 // `y` is where the star was on screen; `docY` where it sits on its page, for
 // the way back, when Home is drawn again from its top.
@@ -96,14 +98,14 @@ export function arcOffset(dx, dy, u) {
 }
 
 // The star at `u` along its flight, turned `turn` degrees and swollen by `pop`.
-const flightPose = (flight, u, turn = 0, pop = 0) => {
+export const flightPose = (flight, u, turn = 0, pop = 0) => {
   const at = arcOffset(flight.dx, flight.dy, u);
   const scale = (flight.s0 + (1 - flight.s0) * u) * (1 + pop);
   return `translate(${at.x.toFixed(1)}px, ${at.y.toFixed(1)}px) rotate(${turn.toFixed(1)}deg) scale(${scale.toFixed(4)})`;
 };
 
 // Where a flight starts: the note, relative to where `el` now sits.
-function flightFrom(el, note) {
+export function flightFrom(el, note) {
   const r = el.getBoundingClientRect();
   if (!(r.width > 0)) return null;
   const c = centre(r);
@@ -113,20 +115,20 @@ function flightFrom(el, note) {
 // A disc (the night, or the page's ground): it sits centred on the stage, big
 // enough to cover it from any point, and is moved to `from` and scaled down
 // to `width` to begin there.
-function discFrom(disc, from, width) {
+export function discFrom(disc, from, width) {
   const r = disc?.getBoundingClientRect();
   if (!r || !(r.width > 0)) return null;
   const c = centre(r);
   return { el: disc, dx: from.x - c.x, dy: from.y - c.y, s0: width / r.width };
 }
-function paintDisc(disc, u) {
+export function paintDisc(disc, u) {
   if (!disc) return;
   const q = 1 - u;
   writeMotionStyle(disc.el, {
     transform: `translate(${(disc.dx * q).toFixed(1)}px, ${(disc.dy * q).toFixed(1)}px) scale(${(disc.s0 + (1 - disc.s0) * u).toFixed(4)})`
   });
 }
-const grow = (t, [start, length]) => clamp01((t - start) / length) ** DISC_EASE;
+export const grow = (t, [start, length]) => clamp01((t - start) / length) ** DISC_EASE;
 
 // The warp's streaks and the landing's rings, placed from the star's centre
 // on the stage. Every streak has its own angle, lag and reach, fixed by its
@@ -164,23 +166,23 @@ function paintRing(fx, ring, u) {
 }
 
 // Each label's way out of the star's centre to its place.
-function labelPaths(labels, star) {
+export function labelPaths(labels, star) {
   const s = centre(star.getBoundingClientRect());
   return labels.map(el => {
     const c = centre(el.getBoundingClientRect());
     return { el, dx: s.x - c.x, dy: s.y - c.y };
   });
 }
-function paintLabel(path, u) {
+export function paintLabel(path, u) {
   const q = 1 - u;
   writeMotionStyle(path.el, {
     transform: `translate(${(path.dx * q).toFixed(1)}px, ${(path.dy * q).toFixed(1)}px) scale(${(0.35 + 0.65 * u).toFixed(3)})`,
     opacity: u.toFixed(3)
   });
 }
-const paintRise = (el, u) => writeMotionStyle(el, { transform: `translateY(${(RISE_PX * (1 - u)).toFixed(1)}px)`, opacity: u.toFixed(3) });
+export const paintRise = (el, u) => writeMotionStyle(el, { transform: `translateY(${(RISE_PX * (1 - u)).toFixed(1)}px)`, opacity: u.toFixed(3) });
 
-function restAll(els) {
+export function restAll(els) {
   for (const el of els) if (el) writeMotionStyle(el, { transform: "", opacity: "" });
 }
 

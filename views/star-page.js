@@ -20,7 +20,14 @@ import { readHome, regionLabels, shareStar } from "./dashboard.js";
 import { CHAPTERS } from "./journey.js";
 import { renderStagePage } from "./stage-page.js";
 import { markZoom, takeZoom, enterStar, leaveStar } from "./star-zoom.js";
+import { enterRadar, leaveRadar, enterAsterism, leaveAsterism } from "./star-shape-zoom.js";
 import { escapeHtml } from "./helpers.js";
+
+// Each view has its own way in and out (the owner, v152): the star's warp,
+// the radar folding and opening, the asterism drawn star by star.
+const ENTER = { star: enterStar, radar: enterRadar, asterism: enterAsterism };
+const LEAVE = { star: leaveStar, radar: leaveRadar, asterism: leaveAsterism };
+const shownView = (container) => container.querySelector(".sp-mark svg.shape")?.dataset.view;
 
 const THEMES = ["paper", "navy"];
 // Where the labels sit, in % of the figure from its centre: just past the
@@ -144,7 +151,7 @@ function bindBack(container, note, scope) {
     e.preventDefault();
     if (leaving) return;
     leaving = true;
-    leaveStar(note, motionParts(container), scope).finally(() => { location.hash = "#/dashboard"; });
+    (LEAVE[shownView(container)] ?? leaveStar)(note, motionParts(container), scope).finally(() => { location.hash = "#/dashboard"; });
   });
 }
 
@@ -163,5 +170,5 @@ export function renderStarPage(containerId, state) {
   container.querySelector("#sp-share")?.addEventListener("click", () => shareStar(readHome(state)));
   if (!scope) return;
   bindBack(container, note, scope);
-  enterStar(note, motionParts(container), scope);
+  (ENTER[h.view] ?? enterStar)(note, motionParts(container), scope);
 }

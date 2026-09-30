@@ -121,3 +121,32 @@ test("the star flies home along an arc, not a straight line", async () => {
   const offLine = Math.abs(mid.x * -100 - mid.y * 300) / Math.hypot(300, 100);
   assert.ok(offLine > 20, `only ${offLine.toFixed(1)} px off the line`);
 });
+
+// v152: the asterism is drawn again star by star, from the top.
+test("the asterism's line is drawn from the first star round to the last", async () => {
+  const { tracePoints } = await import("../views/star-shape-zoom.js");
+  const tips = [{ x: 50, y: 10 }, { x: 90, y: 50 }, { x: 50, y: 90 }, { x: 10, y: 50 }];
+  const pts = (s) => s.split(" ").map(Number);
+  // Nothing drawn: a line of no length at the first star.
+  assert.deepEqual(pts(tracePoints(tips, 0)), [50, 10, 50, 10]);
+  // Half way to the second star, walked out and back so no closing edge shows.
+  assert.deepEqual(pts(tracePoints(tips, 0.5)), [50, 10, 70, 30]);
+  assert.deepEqual(pts(tracePoints(tips, 2)), [50, 10, 90, 50, 50, 90, 90, 50]);
+  // Every segment drawn: the loop closes on the first star.
+  const full = pts(tracePoints(tips, 4));
+  assert.deepEqual(full.slice(0, 10), [50, 10, 90, 50, 50, 90, 10, 50, 50, 10]);
+  assert.deepEqual(pts(tracePoints(tips, 9)), full, "more than the loop draws the loop");
+});
+
+test("an asterism star pops past its size and settles back", async () => {
+  const { popScale } = await import("../views/star-shape-zoom.js");
+  assert.equal(popScale(0), 0);
+  assert.ok(popScale(0.55) > 1.4);
+  assert.equal(popScale(1), 1);
+});
+
+test("the star page picks its way in by the view it shows", async () => {
+  const src = (await import("node:fs")).readFileSync(new URL("../views/star-page.js", import.meta.url), "utf8");
+  assert.match(src, /const ENTER = \{ star: enterStar, radar: enterRadar, asterism: enterAsterism \}/);
+  assert.match(src, /const LEAVE = \{ star: leaveStar, radar: leaveRadar, asterism: leaveAsterism \}/);
+});

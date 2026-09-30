@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `151`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `152`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.83.0] - 2026-09-30 (v152)
+
+- **The radar and the asterism have their own ways into your star's page** (views/star-shape-zoom.js; the owner, 2026-09-30). The star keeps its warp. The radar folds its shape into the hub, the empty grid flies to the middle and grows over the page's ground, then the shape opens again ray by ray from the top, each label riding out on its ray. The asterism's stars go out, its sky grows from Home's figure to fill the page, then the constellation is drawn again from the top star: each star pops and a line runs to the next until the eighth closes the loop, each label lighting as its star pops, and the sky fades into the chosen card style. Back to Overview runs each one in reverse. Reduced motion, or the page opened by its address, shows the page as it is.
 
 ## [2.82.0] - 2026-09-29 (v151)
 

@@ -59,6 +59,37 @@ body:has(.star-page) .app-container { min-height: 0; }
   border-radius: 50%;
 }
 .star-page .sp-stage:not([data-blooming]) :is(.sp-night, .sp-fx) { display: none; }
+/* The radar's and the asterism's ways in (views/star-shape-zoom.js, v152).
+   The radar opens the page's ground behind its grid, with no night and no
+   streaks; the asterism's night is its own sky, the figure's ink with the
+   same faint specks, so the figure's sky and the page's are one. */
+.star-page .sp-stage[data-blooming="radar"] :is(.sp-night, .sp-fx),
+.star-page .sp-stage[data-blooming="asterism"] .sp-fx { display: none; }
+.star-page .sp-stage[data-blooming="asterism"] .sp-night {
+  /* Scattered specks: several in each of two large tiles of different
+     sizes, so no row or column of them lines up. */
+  --speck: rgba(255, 255, 255, 0.5) 0 1px, transparent 1.6px;
+  background:
+    radial-gradient(circle at 12% 18%, var(--speck)) 0 0 / 437px 389px,
+    radial-gradient(circle at 63% 9%, var(--speck)) 0 0 / 437px 389px,
+    radial-gradient(circle at 38% 47%, var(--speck)) 0 0 / 437px 389px,
+    radial-gradient(circle at 86% 58%, var(--speck)) 0 0 / 437px 389px,
+    radial-gradient(circle at 21% 81%, var(--speck)) 0 0 / 437px 389px,
+    radial-gradient(circle at 71% 92%, var(--speck)) 0 0 / 437px 389px,
+    radial-gradient(circle at 47% 22%, var(--speck)) 0 0 / 293px 331px,
+    radial-gradient(circle at 9% 63%, var(--speck)) 0 0 / 293px 331px,
+    radial-gradient(circle at 78% 36%, var(--speck)) 0 0 / 293px 331px,
+    radial-gradient(circle at 56% 74%, var(--speck)) 0 0 / 293px 331px,
+    #1b1b1b;
+}
+/* While the stars are drawn on the sky, their labels are light to read on
+   it, and darken again as the sky fades into the page's style. */
+.star-page .sp-stage[data-sky] .sp-labels { --sp-ink: #f4efe4; --sp-muted: #c9ccd6; }
+.star-page :is(.sp-label, .sp-value) { transition: color 450ms ease; }
+/* The shape folds and its rays open about the figure's centre; each star
+   pops about its own. */
+.star-page .sp-mark :is(.sh-you, .sh-fill polygon) { transform-origin: 50px 50px; }
+.star-page .sp-mark .sh-stars circle { transform-box: fill-box; transform-origin: center; }
 
 /* The star is the page (v137): a slim line above it (the way back, the
    title, Share) and a slim line of switches below it, so the star takes the

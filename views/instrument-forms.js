@@ -110,15 +110,15 @@ export function collectInstrument(instrKey) {
 // time, so re-asking them would put the same question to the user twice. The
 // radio NAME keeps the item's original index while the visible number counts
 // the asked items, so the form reads 1..n with no gaps yet collect and score
-// stay aligned with the canonical scale.
-export function deepInstrumentBlock(instrKey, askIndices) {
+// stay aligned with the canonical scale. The page's notes say so once (v154),
+// so the block only names its questionnaire; `noteRef` is the mark of the
+// note on what it adds, markup the caller built.
+export function deepInstrumentBlock(instrKey, askIndices, noteRef = "") {
   const instr = DEEP_INSTRUMENTS[instrKey];
   const ask = askIndices || instr.items.map((_, i) => i);
-  const carried = instr.items.length - ask.length;
   return `
     <div class="instrument-block">
-      <p class="instrument-title">${t(instr.title)}</p>
-      ${carried > 0 ? `<p class="carry-note">${tp("{n} answers carry over from your baseline — only the new questions are asked here.", { n: carried })}</p>` : ""}
+      <p class="onb-source">${tp("Questionnaire: {name}", { name: t(instr.title) })}${noteRef}</p>
       ${ask.map((itemIndex, position) =>
         radioQuestion(`deep-${instrKey}`, itemIndex, instr.items[itemIndex], position)
       ).join("")}

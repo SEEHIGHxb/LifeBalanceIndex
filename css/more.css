@@ -340,10 +340,10 @@
   font-size: 18px;
   color: var(--frame-ink);
 }
-.assess-journey .carry-note,
-.assess-journey .onb-note,
-.assess-journey .deep-done-note { color: #444444; font-size: 15px; line-height: 1.55; }
-.assess-journey .deep-done-note { font-weight: 600; }
+.assess-journey .onb-note { color: #444444; font-size: 15px; line-height: 1.55; }
+/* The in-depth assessment names each questionnaire in the journey's small
+   source line (v154), with the room the title line had above the questions. */
+.assess-journey .instrument-block > .onb-source { margin: 0 0 16px; }
 .assess-done {
   margin: 0;
   padding: 6px 14px;

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `153`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `154`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.85.0] - 2026-09-30 (v154)
+
+- **The in-depth assessment trimmed** (views/assessments.js; the owner, 2026-09-30). The head is one line, "Optional. Save each section on its own."; each section is titled with its aspect alone; each questionnaire is named in the small "Questionnaire: …" line the journey uses, and the "answers carry over" line is gone. A finished section is marked Done, and its button reads Update (Save before). What the questionnaires are for, why some questions are not asked again, the points and what "verified" means are numbered notes in a new Notes and sources section at the end, with one note per section on what its questionnaires add. New Thai drafts await the owner's review.
 
 ## [2.84.0] - 2026-09-30 (v153)
 

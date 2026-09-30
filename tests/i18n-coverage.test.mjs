@@ -78,7 +78,6 @@ test("every survey title, item text, and option label has a Thai translation", (
     }
   }
   for (const section of DEEP_SECTIONS) {
-    check(section.title, `DEEP_SECTIONS.${section.aspect}.title`);
     check(section.blurb, `DEEP_SECTIONS.${section.aspect}.blurb`);
   }
   // Pledge templates render via t(variable) too — same partial-translation

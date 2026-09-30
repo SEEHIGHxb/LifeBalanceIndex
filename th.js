@@ -7,6 +7,15 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
+  // v154, draft awaiting the owner's review: the in-depth assessment trimmed.
+  "Optional. Save each section on its own.": "ไม่บังคับ บันทึกแต่ละหมวดแยกกันได้",
+  "These longer questionnaires make each aspect's estimate more reliable and tighten its percentile band.": "แบบสอบถามที่ยาวขึ้นเหล่านี้ทำให้ค่าประมาณของแต่ละด้านน่าเชื่อถือขึ้นและช่วงเปอร์เซ็นไทล์แคบลง",
+  "Completed sections are kept as you go, and each one earns 60 points.": "หมวดที่ทำเสร็จจะถูกเก็บไว้ระหว่างทาง และแต่ละหมวดได้ 60 คะแนน",
+  "Questions you already answered in the journey are not asked again: those answers still count here.": "คำถามที่คุณตอบไปแล้วระหว่างการเดินทางจะไม่ถามซ้ำ: คำตอบเหล่านั้นยังนับรวมที่นี่",
+  "A finished section marks its aspect Done and its score verified. Save it again any time to update it.": "หมวดที่ทำเสร็จจะแสดงว่าเสร็จแล้ว และคะแนนด้านนั้นได้รับการยืนยัน บันทึกซ้ำได้ทุกเมื่อเพื่ออัปเดต",
+  "Done": "เสร็จแล้ว",
+  "Update": "อัปเดต",
+
   // v150, approved by the owner: Profile trimmed.
   "About you": "เกี่ยวกับคุณ",
   "Birthday (optional)": "วันเกิด (ไม่บังคับ)",
@@ -1000,7 +1009,6 @@ export const TH = {
   // (the earlier English-only carve-out rendered half-translated forms,
   // because items shared with onboarding already had Thai entries). The
   // canonical instruments remain the cited English versions on #/methodology.
-  "In-depth": "เชิงลึก",
   "Ahead of about {pct}% of people like you": "นำหน้าผู้คนที่คล้ายคุณราว {pct}%",
   // {pct}/{low}/{high} arrive from percentileLabel() already prefixed with
   // "ที่ " in Thai, so the template adds no space before them.
@@ -1012,16 +1020,6 @@ export const TH = {
 
   "Continue in-depth": "ทำเชิงลึกต่อ",
   "Start in-depth assessment": "เริ่มแบบประเมินเชิงลึก",
-  "Optional • full-length validated questionnaires • one section at a time":
-    "ไม่บังคับ • แบบสอบถามฉบับเต็มที่ผ่านการตรวจสอบ • ทำทีละหมวด",
-  "These longer questionnaires make each aspect's estimate more reliable and tighten its percentile band. Save each section on its own — completed sections are kept as you go. Reward: +60 points per section.":
-    "แบบสอบถามที่ยาวขึ้นเหล่านี้ทำให้ค่าประมาณของแต่ละด้านน่าเชื่อถือขึ้นและช่วงเปอร์เซ็นไทล์แคบลง บันทึกแต่ละหมวดแยกกันได้ — หมวดที่ทำเสร็จจะถูกเก็บไว้ รางวัล: +60 คะแนนต่อหมวด",
-  "Completed — this aspect's score is verified. You can redo it to update.":
-    "เสร็จแล้ว — คะแนนด้านนี้ได้รับการยืนยัน คุณทำซ้ำเพื่ออัปเดตได้",
-  "Update this section": "อัปเดตหมวดนี้",
-  "Save this section": "บันทึกหมวดนี้",
-  "{n} answers carry over from your baseline — only the new questions are asked here.":
-    "{n} คำตอบนำมาจากการประเมินพื้นฐานของคุณ — ที่นี่จะถามเฉพาะคำถามใหม่เท่านั้น",
   "{aspect} verified in depth — score now {score} (+60 points)":
     "{aspect} ยืนยันเชิงลึกแล้ว — คะแนนตอนนี้ {score} (+60 คะแนน)",
   "In-depth assessment needs a baseline — complete the initial assessment first.":
@@ -1072,14 +1070,6 @@ export const TH = {
     "เกรดยังชี้นำคำแนะนำด้วย: เมื่อคุณเพิ่มคำมั่นรายสัปดาห์ คำมั่นที่ผูกกับด้านที่คุณได้เกรดต่ำที่สุดจะแสดงก่อน เพื่อให้เป้าหมายที่ลงมือทำได้ง่ายที่สุดอยู่บนสุดแล้ว",
 
   // Deep section titles & blurbs
-  "Finance — in depth": "การเงิน — เชิงลึก",
-  "Physical — in depth": "ร่างกาย — เชิงลึก",
-  "Mental — in depth": "จิตใจ — เชิงลึก",
-  "Relationships — in depth": "ความสัมพันธ์ — เชิงลึก",
-  "Personal Goals — in depth": "เป้าหมายส่วนตัว — เชิงลึก",
-  "Social Contribution — in depth": "การช่วยเหลือสังคม — เชิงลึก",
-  "Environment — in depth": "สิ่งแวดล้อม — เชิงลึก",
-  "Humanity's Future — in depth": "อนาคตมนุษยชาติ — เชิงลึก",
   "The full 10-item CFPB Financial Well-Being Scale (onboarding used 5).":
     "แบบวัดสุขภาวะทางการเงิน CFPB ฉบับเต็ม 10 ข้อ (ตอนเริ่มต้นใช้ 5 ข้อ)",
   "Sedentary time and sleep hygiene refine your activity and sleep scores.":

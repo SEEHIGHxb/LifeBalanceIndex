@@ -68,14 +68,31 @@ test("the in-depth assessment is one panel per aspect, each saved on its own", (
   assert.doesNotMatch(out, /deep-runway-form/);
 });
 
-test("a finished section is marked In-depth beside its region", () => {
+test("a finished section is marked Done beside its region", () => {
   const done = { ...STATE, baseline: { ...STATE.baseline, deepDone: { mental: true } } };
   renderDeepAssessment(MAIN, done, () => {});
   const out = html();
   const mental = between(out, "deep-section-mental", "deep-section-relationships");
-  assert.match(mental, /class="assess-done"/);
-  assert.match(mental, /Update this section/);
+  assert.match(mental, /<p class="assess-done">Done<\/p>/);
+  assert.match(mental, /<button type="submit" class="pill">Update<\/button>/);
   assert.equal((out.match(/class="assess-done"/g) || []).length, 1, "only the finished section is marked");
+});
+
+// v154 (the owner): the page keeps to names and questions; the rest is notes.
+test("the in-depth assessment shows plain names and keeps its explanations in notes", () => {
+  renderDeepAssessment(MAIN, STATE, () => {});
+  const out = html();
+  assert.match(out, /Optional\. Save each section on its own\./);
+  assert.match(out, /<h3 class="q-title">Finance<\/h3>/);
+  assert.match(out, /Questionnaire: CFPB Financial Well-Being Scale \(full 10-item\)/);
+  assert.match(out, /<button type="submit" class="pill">Save<\/button>/);
+  for (const gone of [/in depth/, /carry over from your baseline/, /Reward:/, /Optional •/, /Save this section/]) {
+    assert.doesNotMatch(out, gone);
+  }
+  // One note on the page, then one per section, listed at its end.
+  assert.match(out, /class="panel statement textsec deep-notes"/);
+  assert.equal((out.match(/<li id="fn-/g) || []).length, 1 + DEEP_SECTIONS.length);
+  assert.match(out, /id="fn-deep-finance"[\s\S]*onboarding used 5/);
 });
 
 // --- Privacy and the frame -------------------------------------------------------

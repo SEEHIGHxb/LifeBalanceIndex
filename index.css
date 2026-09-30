@@ -1443,19 +1443,6 @@ html {
 
 .deep-progress { font-size: var(--text-sm); color: var(--color-text-secondary); margin-top: 4px; }
 
-.deep-done-note {
-  font-size: var(--text-sm);
-  color: var(--color-navy);
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-/* Explains why a full-length scale shows fewer questions than its name implies:
-   the shared items were already answered at the baseline assessment. */
-.carry-note {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  margin: -6px 0 12px;
-}
 
 /* ==========================================================================
    MOBILE LAYER — phones (max-width: 640px)

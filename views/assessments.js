@@ -13,10 +13,10 @@ import {
   deepInstrumentBlock, collectDeepInstrument,
   validateScope
 } from "./instrument-forms.js";
-import { escapeHtml, scrollIntoViewGently } from "./helpers.js";
+import { escapeHtml, scrollIntoViewGently, noteBook, footnoteList, bindFootnotes } from "./helpers.js";
 import { applyDraft, saveDraft, clearDraft } from "../draft.js";
 import { isCarrying } from "./lang-carry.js";
-import { pageHead } from "./stage-page.js";
+import { pageHead, textSection } from "./stage-page.js";
 import { emblemImg } from "./onboarding.js";
 import { chapterOf, aspectName } from "./news.js";
 
@@ -149,41 +149,54 @@ export function renderCheckin(containerId, state, onComplete) {
 // One card per aspect section, each saved independently so a user can progress
 // through the long-form instruments a section at a time. Completing a section
 // upgrades that aspect to the "verified" confidence tier and tightens its band.
+//
+// The owner, v154: the page keeps to the aspect's name, the questionnaire's
+// name and its questions; what the questionnaires are for, why some questions
+// are not asked again and what a finished section means are notes at its end.
 export function renderDeepAssessment(containerId, state, onComplete) {
   const container = document.getElementById(containerId);
   if (!container) return;
   const isCoupled = state.profile.relationshipStatus !== "Single";
+  const book = noteBook();
+  const aboutRef = book.ref("about", [
+    t("These longer questionnaires make each aspect's estimate more reliable and tighten its percentile band."),
+    t("Completed sections are kept as you go, and each one earns 60 points."),
+    t("Questions you already answered in the journey are not asked again: those answers still count here."),
+    t("A finished section marks its aspect Done and its score verified. Save it again any time to update it.")
+  ].map(p => `<p>${escapeHtml(p)}</p>`).join(""));
 
+  // The section's note (what its questionnaires add) marks its first one.
   const sectionCard = (section) => {
     const done = isAspectDeepVerified(state, section.aspect);
     const keys = deepSectionInstruments(section, isCoupled);
-    const doneMark = done ? `<p class="assess-done">${t("In-depth")}</p>` : "";
+    const ref = book.ref(`deep-${section.aspect}`, `<p>${escapeHtml(t(section.blurb))}</p>`);
+    const doneMark = done ? `<p class="assess-done">${t("Done")}</p>` : "";
     return assessPanel(section.aspect, `
-      <h3 class="q-title">${t(section.title)}</h3>
-      <p class="onb-why">${t(section.blurb)}</p>
-      ${done ? `<p class="deep-done-note">${t("Completed — this aspect's score is verified. You can redo it to update.")}</p>` : ""}
+      <h3 class="q-title">${escapeHtml(aspectName(section.aspect))}</h3>
       <form class="deep-form" data-aspect="${section.aspect}" data-keys="${keys.join(",")}">
-        ${keys.map(k => deepInstrumentBlock(k, deepAskIndices(k, state.baseline))).join("")}
+        ${keys.map((k, i) => deepInstrumentBlock(k, deepAskIndices(k, state.baseline), i ? "" : ref)).join("")}
         <p class="onboarding-error deep-form-error d-none" role="alert"></p>
         <div class="assess-submit">
-          <button type="submit" class="pill">${done ? t("Update this section") : t("Save this section")}</button>
+          <button type="submit" class="pill">${done ? t("Update") : t("Save")}</button>
         </div>
       </form>`,
     { id: `deep-section-${section.aspect}`, sideExtra: doneMark });
   };
 
+  const sections = DEEP_SECTIONS.map(sectionCard).join("");
   container.innerHTML = `
     <div class="stage-page textpage assess deep-view">
       ${pageHead(t("In-depth assessment"), [
-        escapeHtml(t("Optional • full-length validated questionnaires • one section at a time")),
-        escapeHtml(t("These longer questionnaires make each aspect's estimate more reliable and tighten its percentile band. Save each section on its own — completed sections are kept as you go. Reward: +60 points per section."))
+        `${escapeHtml(t("Optional. Save each section on its own."))}${aboutRef}`
       ])}
       <div class="journey assess-journey">
-        ${DEEP_SECTIONS.map(sectionCard).join("")}
+        ${sections}
         <p id="deep-error" class="onboarding-error d-none" role="alert"></p>
       </div>
+      ${textSection(t("Notes and sources"), footnoteList(book.notes), "deep-notes")}
     </div>
   `;
+  bindFootnotes(container);
 
   container.querySelectorAll(".deep-form").forEach(form => {
     // One draft per aspect section, because each is submitted independently:

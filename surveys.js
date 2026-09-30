@@ -737,14 +737,14 @@ export const DEEP_INSTRUMENTS = {
 // complete it progressively. `coupledOnly` instruments are shown only to users
 // whose relationshipStatus is not "Single". `blurb` explains the section's gain.
 export const DEEP_SECTIONS = [
-  { aspect: "finance", title: "Finance — in depth", blurb: "The full 10-item CFPB Financial Well-Being Scale (onboarding used 5).", instruments: [{ key: "cfpb10" }] },
-  { aspect: "physical", title: "Physical — in depth", blurb: "Sedentary time and sleep hygiene refine your activity and sleep scores.", instruments: [{ key: "sedentary" }] },
-  { aspect: "mental", title: "Mental — in depth", blurb: "The 10-item Perceived Stress Scale adds a validated stress reading.", instruments: [{ key: "pss10" }] },
-  { aspect: "relationships", title: "Relationships — in depth", blurb: "The full LSNS-R social-network scale, plus the full relationship scale for couples.", instruments: [{ key: "lsnsR" }, { key: "ras7", coupledOnly: true }] },
-  { aspect: "personalGoals", title: "Personal Goals — in depth", blurb: "Full GSE-10 and Grit-12, plus the Rosenberg Self-Esteem Scale.", instruments: [{ key: "gse10" }, { key: "grit12" }, { key: "rses" }] },
-  { aspect: "socialContribution", title: "Social Contribution — in depth", blurb: "Additional giving and civic-participation habits.", instruments: [{ key: "civicplus" }] },
-  { aspect: "environment", title: "Environment — in depth", blurb: "Additional everyday green habits.", instruments: [{ key: "greenplus" }] },
-  { aspect: "humanityFuture", title: "Humanity's Future — in depth", blurb: "The 12-item Consideration of Future Consequences scale.", instruments: [{ key: "cfc12" }] }
+  { aspect: "finance", blurb: "The full 10-item CFPB Financial Well-Being Scale (onboarding used 5).", instruments: [{ key: "cfpb10" }] },
+  { aspect: "physical", blurb: "Sedentary time and sleep hygiene refine your activity and sleep scores.", instruments: [{ key: "sedentary" }] },
+  { aspect: "mental", blurb: "The 10-item Perceived Stress Scale adds a validated stress reading.", instruments: [{ key: "pss10" }] },
+  { aspect: "relationships", blurb: "The full LSNS-R social-network scale, plus the full relationship scale for couples.", instruments: [{ key: "lsnsR" }, { key: "ras7", coupledOnly: true }] },
+  { aspect: "personalGoals", blurb: "Full GSE-10 and Grit-12, plus the Rosenberg Self-Esteem Scale.", instruments: [{ key: "gse10" }, { key: "grit12" }, { key: "rses" }] },
+  { aspect: "socialContribution", blurb: "Additional giving and civic-participation habits.", instruments: [{ key: "civicplus" }] },
+  { aspect: "environment", blurb: "Additional everyday green habits.", instruments: [{ key: "greenplus" }] },
+  { aspect: "humanityFuture", blurb: "The 12-item Consideration of Future Consequences scale.", instruments: [{ key: "cfc12" }] }
 ];
 
 export function deepInstrumentSize(key) {

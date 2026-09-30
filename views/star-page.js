@@ -81,6 +81,7 @@ export function starPageMarkup(h, prefs) {
     <div class="stage-page star-page" data-theme="${prefs.theme}">
       <section class="panel sp-stage">
         <i class="sp-night" aria-hidden="true"></i>
+        <i class="sp-specks" aria-hidden="true"></i>
         <i class="sp-bloom" aria-hidden="true"></i>
         <div class="sp-fx" aria-hidden="true">${WARP_MARKUP}</div>
         <div class="sp-layout">
@@ -129,6 +130,7 @@ function bindOptions(container, state, prefs) {
 const motionParts = (container) => ({
   stage: container.querySelector(".sp-stage"),
   night: container.querySelector(".sp-night"),
+  specks: container.querySelector(".sp-specks"),
   bloom: container.querySelector(".sp-bloom"),
   streaks: [...container.querySelectorAll(".sp-streak")],
   rings: [...container.querySelectorAll(".sp-ring")],

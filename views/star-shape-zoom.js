@@ -1,16 +1,19 @@
 // views/star-shape-zoom.js - the way into your star's page when it is shown
 // as a radar or an asterism (v152; the owner, 2026-09-30: the star's warp
-// stays as it is, and the other two get ways in of their own).
+// stays as it is, and the other two get ways in of their own; v153: nothing
+// flies, each one leaves Home where it is and grows again in the middle).
 //
 // Radar, in three beats:
-//   fold      the shape folds into the hub, leaving the empty grid;
-//   grow      the grid flies to the middle and grows, while the page's own
-//             ground opens behind it (no night, no streaks, no spin);
-//   unfold    the shape opens again ray by ray, clockwise from the top, each
-//             region's label riding out on its ray.
+//   shrink    the whole radar shrinks away where it sits on Home;
+//   grid      the empty grid grows from nothing in its place on the page,
+//             the page's own ground opening with it;
+//   shape     the shape grows out of the centre all at once, the region
+//             labels riding out with it.
 // Asterism, in four:
-//   dim       the stars and their line go out, leaving the sky;
-//   sky       the sky grows out of Home's figure until it fills the page;
+//   dim       the stars and their line go out, then Home's sky fades away
+//             where it is;
+//   sky       the black grows from nothing out of the figure's centre on the
+//             page until it fills the page;
 //   draw      from the top star, each star pops and a line runs on to the
 //             next, until the eighth closes on the first; each star's label
 //             lights as it pops;
@@ -25,45 +28,48 @@ import { animate, linear } from "../motion.js";
 import { writeMotionStyle } from "./motion-mount.js";
 import { onAbort } from "./stage.js";
 import {
-  clamp01, span, flightFrom, flightPose, discFrom, paintDisc, grow,
+  clamp01, span, centre, flightFrom, flightPose, discFrom, paintDisc, grow,
   labelPaths, paintLabel, paintRise, restAll
 } from "./star-zoom.js";
 
-const RADAR_MS = 1800;
-const RADAR_LEAVE_MS = 900;
-const FOLD = [0, 320];
-const FLY = [260, 700];
-const RAY_FROM_MS = 960;
-const RAY_STEP_MS = 60;
-const RAY_MS = 300;
-const RADAR_RISE_FROM_MS = 1100;
+const RADAR_MS = 1750;
+const RADAR_LEAVE_MS = 1000;
+const SHRINK = [0, 360];
+const GRID = [420, 520];
+const SHAPE = [980, 460];
+const RADAR_LABEL_STEP_MS = 25;
+const RADAR_RISE_FROM_MS = 1150;
 
-const ASTER_MS = 2500;
-const ASTER_LEAVE_MS = 1000;
-const DIM = [0, 300];
-const SKY = [250, 500];
+const ASTER_MS = 2550;
+const ASTER_LEAVE_MS = 1100;
+const DIM = [0, 280];
+const FADE = [260, 260];
+const SKY = [500, 700];
+// The page's figure shows once the black has grown past it, and the specks
+// once it fills the page.
+const FIGURE = [880, 200];
+const SPECKS = [950, 400];
 // The constellation: star i pops as the line reaches it; the line leaves a
 // star LEAD_MS after the first one pops and takes STEP_MS to the next.
-const DRAW_FROM_MS = 950;
+const DRAW_FROM_MS = 1100;
 const LEAD_MS = 100;
-const STEP_MS = 110;
+const STEP_MS = 100;
 const POP_MS = 320;
 const POP_PEAK = 1.6;
 const POP_TURN = 0.55;
-const FILL = [1850, 300];
-const ASTER_RISE_FROM_MS = 1850;
-const SETTLE = [1950, 450];
+const FILL = [1900, 300];
+const ASTER_RISE_FROM_MS = 1900;
+const SETTLE = [2000, 450];
 
 const RISE_STEP_MS = 65;
 const RISE_MS = 400;
-const SVG_C = 50;
 
 const fmt = (n) => n.toFixed(2);
 const scaleBy = (s) => ({ transform: `scale(${s.toFixed(4)})` });
 const lerp = (a, b, u) => ({ x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u });
-// A tip drawn `s` of the way out from the figure's centre.
-const outward = (p, s) => ({ x: SVG_C + (p.x - SVG_C) * s, y: SVG_C + (p.y - SVG_C) * s });
 const pointsOf = (pts) => pts.map(p => `${fmt(p.x)} ${fmt(p.y)}`).join(" ");
+// The figure where it sat on Home, shrunk by `shrink` (0 to 1) about its centre.
+const homePose = (flight, shrink = 0) => ({ transform: flightPose(flight, 0, 0, -shrink) });
 
 // The line through the stars drawn `amount` segments along (0 to the number
 // of stars), from the first star round and back to it. The line is a closed
@@ -101,9 +107,10 @@ const drawnAt = (t, n) => {
 const paintLight = (el, u) => writeMotionStyle(el, { transform: `scale(${(0.6 + 0.4 * u).toFixed(3)})`, opacity: u.toFixed(3) });
 
 // Everything that moves, measured once from the finished page. The stage is
-// marked with the shape while it plays, which picks its backdrop in CSS.
+// marked with the shape while it plays, which picks its backdrop in CSS. The
+// radar's ground and the asterism's black both open from the figure's centre.
 function measure(parts, from, shape) {
-  const { stage, night, bloom, star, labels = [], fades = [] } = parts;
+  const { stage, night, specks, bloom, star, labels = [], fades = [] } = parts;
   stage?.setAttribute("data-blooming", shape);
   const flight = star && from ? flightFrom(star, from) : null;
   const you = star?.querySelector(".sh-you");
@@ -111,18 +118,19 @@ function measure(parts, from, shape) {
     stage?.removeAttribute("data-blooming");
     return null;
   }
-  const polys = [...you.querySelectorAll(".sh-fill polygon")];
+  const middle = centre(star.getBoundingClientRect());
   const dots = [...you.querySelectorAll(".sh-stars circle")];
   const fill = you.querySelector(".sh-fill");
   const line = you.querySelector(".sh-line");
   return {
-    flight, you, polys, dots, fill, line, labels, fades,
+    flight, you, dots, fill, line, labels, fades,
+    specks: shape === "asterism" ? specks : null,
     tips: dots.map(d => ({ x: Number(d.getAttribute("cx")), y: Number(d.getAttribute("cy")) })),
     points: line?.getAttribute("points") ?? "",
-    night: shape === "asterism" ? discFrom(night, from, from.width) : null,
-    bloom: shape === "radar" ? discFrom(bloom, from, from.width) : bloom,
+    night: shape === "asterism" ? discFrom(night, middle, 0) : null,
+    bloom: shape === "radar" ? discFrom(bloom, middle, 0) : bloom,
     paths: labelPaths(labels, star),
-    moved: [star, night, bloom, you, fill, ...polys, ...dots, ...labels, ...fades]
+    moved: [star, night, specks, bloom, you, fill, ...dots, ...labels, ...fades]
   };
 }
 
@@ -139,12 +147,6 @@ const markSky = (stage, on) => {
   if (stage && on !== stage.hasAttribute("data-sky")) stage.toggleAttribute("data-sky", on);
 };
 
-// The radar's shape with ray i drawn `grown(i)` of the way out.
-function paintRays(m, grown) {
-  m.polys.forEach((poly, i) => writeMotionStyle(poly, scaleBy(grown(i))));
-  m.line?.setAttribute("points", pointsOf(m.tips.map((p, i) => outward(p, grown(i)))));
-}
-
 function play(scope, duration, paint, what) {
   paint(0);
   return animate({ duration, ease: linear, update: paint, signal: scope.signal, reduced: "end" })
@@ -159,23 +161,21 @@ export function enterRadar(note, parts, scope) {
   if (!m) return Promise.resolve(false);
   const rest = () => restore(m, parts.stage);
   onAbort(scope.signal, rest);
-  const rayAt = (t, i) => span(t, RAY_FROM_MS + i * RAY_STEP_MS, RAY_MS);
   const paint = (p) => {
     const t = p * RADAR_MS;
-    const unfolding = t >= RAY_FROM_MS;
-    writeMotionStyle(m.you, scaleBy(unfolding ? 1 : 1 - span(t, ...FOLD)));
-    if (unfolding) paintRays(m, i => rayAt(t, i));
-    writeMotionStyle(parts.star, { transform: flightPose(m.flight, span(t, ...FLY)) });
-    paintDisc(m.bloom, grow(t, FLY));
-    m.paths.forEach((path, i) => paintLabel(path, span(t, RAY_FROM_MS + i * RAY_STEP_MS + 40, RAY_MS + 80)));
+    const home = t < GRID[0];
+    writeMotionStyle(parts.star, home ? homePose(m.flight, span(t, ...SHRINK)) : scaleBy(span(t, ...GRID)));
+    writeMotionStyle(m.you, scaleBy(home ? 1 : span(t, ...SHAPE)));
+    paintDisc(m.bloom, grow(t, GRID));
+    m.paths.forEach((path, i) => paintLabel(path, span(t, SHAPE[0] + i * RADAR_LABEL_STEP_MS, SHAPE[1])));
     m.fades.forEach((el, i) => paintRise(el, span(t, RADAR_RISE_FROM_MS + i * RISE_STEP_MS, RISE_MS)));
   };
   return play(scope, RADAR_MS, paint, "Radar entrance").finally(rest);
 }
 
-// Back to Overview: the labels go in, the shape folds, the grid flies home
-// and the shape opens again there. The page is about to be replaced, so the
-// last pose is left as it is.
+// Back to Overview: the labels go in with the shape, the empty grid shrinks
+// away, and the whole radar grows again where it sits on Home. The page is
+// about to be replaced, so the last pose is left as it is.
 export function leaveRadar(note, parts, scope) {
   const back = note ? { x: note.x, y: note.docY ?? note.y, width: note.width } : null;
   const m = scope && back ? measure(parts, back, "radar") : null;
@@ -183,11 +183,12 @@ export function leaveRadar(note, parts, scope) {
   const n = m.paths.length;
   const paint = (p) => {
     const t = p * RADAR_LEAVE_MS;
-    m.paths.forEach((path, i) => paintLabel(path, 1 - span(t, (n - 1 - i) * 25, 240)));
+    const page = t < 560;
+    m.paths.forEach((path, i) => paintLabel(path, 1 - span(t, (n - 1 - i) * 20, 240)));
     m.fades.forEach(el => paintRise(el, 1 - span(t, 0, 220)));
-    writeMotionStyle(m.you, scaleBy(t < 700 ? 1 - span(t, 60, 260) : span(t, 700, 200)));
-    paintDisc(m.bloom, 1 - span(t, 150, 420));
-    writeMotionStyle(parts.star, { transform: flightPose(m.flight, 1 - span(t, 280, 440)) });
+    writeMotionStyle(m.you, scaleBy(page ? 1 - span(t, 0, 280) : 1));
+    writeMotionStyle(parts.star, page ? scaleBy(1 - span(t, 240, 300)) : homePose(m.flight, 1 - span(t, 600, 400)));
+    paintDisc(m.bloom, 1 - span(t, 240, 320));
   };
   return play(scope, RADAR_LEAVE_MS, paint, "Radar exit");
 }
@@ -200,15 +201,19 @@ export function enterAsterism(note, parts, scope) {
   const n = m.tips.length;
   const paint = (p) => {
     const t = p * ASTER_MS;
+    const home = t < SKY[0];
     const drawing = t >= DRAW_FROM_MS;
-    writeMotionStyle(m.you, { opacity: (drawing ? 1 : 1 - span(t, ...DIM)).toFixed(3) });
+    writeMotionStyle(parts.star, home
+      ? { ...homePose(m.flight), opacity: (1 - span(t, ...FADE)).toFixed(3) }
+      : { transform: "none", opacity: span(t, ...FIGURE).toFixed(3) });
+    writeMotionStyle(m.you, { opacity: (home ? 1 - span(t, ...DIM) : drawing ? 1 : 0).toFixed(3) });
     if (drawing) {
       m.dots.forEach((dot, i) => writeMotionStyle(dot, scaleBy(popScale(clamp01((t - popAt(i)) / POP_MS)))));
       m.line?.setAttribute("points", tracePoints(m.tips, drawnAt(t, n)));
       if (m.fill) writeMotionStyle(m.fill, { opacity: span(t, ...FILL).toFixed(3) });
     }
-    writeMotionStyle(parts.star, { transform: flightPose(m.flight, span(t, ...SKY)) });
     paintDisc(m.night, grow(t, SKY));
+    if (m.specks) writeMotionStyle(m.specks, { opacity: span(t, ...SPECKS).toFixed(3) });
     m.labels.forEach((el, i) => paintLight(el, span(t, popAt(i), POP_MS)));
     m.fades.forEach((el, i) => paintRise(el, span(t, ASTER_RISE_FROM_MS + i * RISE_STEP_MS, RISE_MS)));
     if (m.bloom) writeMotionStyle(m.bloom, { opacity: span(t, ...SETTLE).toFixed(3) });
@@ -218,8 +223,8 @@ export function enterAsterism(note, parts, scope) {
 }
 
 // Back to Overview: the page's style fades back to the sky, the line and the
-// stars go out from the last to the first, then the sky closes onto Home's
-// figure as it flies home.
+// stars go out from the last to the first, the black shrinks into the
+// figure's centre, and Home's figure fades in where it sits.
 export function leaveAsterism(note, parts, scope) {
   const back = note ? { x: note.x, y: note.docY ?? note.y, width: note.width } : null;
   const m = scope && back ? measure(parts, back, "asterism") : null;
@@ -227,15 +232,19 @@ export function leaveAsterism(note, parts, scope) {
   const n = m.tips.length;
   const paint = (p) => {
     const t = p * ASTER_LEAVE_MS;
+    const page = t < 820;
     m.labels.forEach(el => paintLight(el, 1 - span(t, 0, 200)));
     m.fades.forEach(el => paintRise(el, 1 - span(t, 0, 220)));
     if (m.bloom) writeMotionStyle(m.bloom, { opacity: (1 - span(t, 80, 300)).toFixed(3) });
     markSky(parts.stage, t >= 80);
-    m.line?.setAttribute("points", tracePoints(m.tips, n * (1 - clamp01((t - 200) / 340))));
-    m.dots.forEach((dot, i) => writeMotionStyle(dot, scaleBy(1 - span(t, 200 + (n - 1 - i) * 40, 160))));
-    if (m.fill) writeMotionStyle(m.fill, { opacity: (1 - span(t, 150, 200)).toFixed(3) });
-    writeMotionStyle(parts.star, { transform: flightPose(m.flight, 1 - span(t, 520, 480)) });
-    paintDisc(m.night, 1 - span(t, 560, 440));
+    m.line?.setAttribute("points", page ? tracePoints(m.tips, n * (1 - clamp01((t - 200) / 340))) : m.points);
+    m.dots.forEach((dot, i) => writeMotionStyle(dot, scaleBy(page ? 1 - span(t, 200 + (n - 1 - i) * 40, 160) : 1)));
+    if (m.fill) writeMotionStyle(m.fill, { opacity: (page ? 1 - span(t, 150, 200) : 1).toFixed(3) });
+    if (m.specks) writeMotionStyle(m.specks, { opacity: (1 - span(t, 400, 160)).toFixed(3) });
+    paintDisc(m.night, 1 - clamp01((t - 540) / 360));
+    writeMotionStyle(parts.star, page
+      ? { transform: "none", opacity: (1 - span(t, 660, 140)).toFixed(3) }
+      : { ...homePose(m.flight), opacity: span(t, 840, 260).toFixed(3) });
   };
   return play(scope, ASTER_LEAVE_MS, paint, "Asterism exit");
 }

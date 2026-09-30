@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `152`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `153`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.84.0] - 2026-09-30 (v153)
+
+- **Nothing flies now on the way into your star's page as a radar or an asterism** (views/star-shape-zoom.js; the owner, 2026-09-30). The whole radar shrinks away where it sits on Overview, the empty grid grows from nothing in the middle of the page, then the shape grows out of the centre all at once with its labels. The asterism's stars go out and its circle fades where it sits, then the black grows from nothing out of the figure's centre to fill the page before the stars are drawn. The sky's specks are a layer of their own that fades in once the black has filled the page, so they no longer crowd into a grid while it grows. Back to Overview runs each in reverse.
 
 ## [2.83.0] - 2026-09-30 (v152)
 

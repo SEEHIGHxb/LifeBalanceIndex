@@ -65,7 +65,13 @@ body:has(.star-page) .app-container { min-height: 0; }
    same faint specks, so the figure's sky and the page's are one. */
 .star-page .sp-stage[data-blooming="radar"] :is(.sp-night, .sp-fx),
 .star-page .sp-stage[data-blooming="asterism"] .sp-fx { display: none; }
-.star-page .sp-stage[data-blooming="asterism"] .sp-night {
+.star-page .sp-stage[data-blooming="asterism"] .sp-night { background: #1b1b1b; }
+/* The sky's specks sit on a layer of their own that does not grow with the
+   black, so they never crowd into a lattice while it opens; they fade in
+   once it has filled the page. */
+.star-page .sp-specks { display: none; position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.star-page .sp-stage[data-blooming="asterism"] .sp-specks {
+  display: block;
   /* Scattered specks: several in each of two large tiles of different
      sizes, so no row or column of them lines up. */
   --speck: rgba(255, 255, 255, 0.5) 0 1px, transparent 1.6px;
@@ -79,8 +85,7 @@ body:has(.star-page) .app-container { min-height: 0; }
     radial-gradient(circle at 47% 22%, var(--speck)) 0 0 / 293px 331px,
     radial-gradient(circle at 9% 63%, var(--speck)) 0 0 / 293px 331px,
     radial-gradient(circle at 78% 36%, var(--speck)) 0 0 / 293px 331px,
-    radial-gradient(circle at 56% 74%, var(--speck)) 0 0 / 293px 331px,
-    #1b1b1b;
+    radial-gradient(circle at 56% 74%, var(--speck)) 0 0 / 293px 331px;
 }
 /* While the stars are drawn on the sky, their labels are light to read on
    it, and darken again as the sky fades into the page's style. */

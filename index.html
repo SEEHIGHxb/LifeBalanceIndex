@@ -34,19 +34,20 @@
        vendored under assets/fonts. Self-hosting removes the round-trip to
        Google on every cold load, makes the PWA genuinely offline-capable,
        and means no visitor IP is disclosed to a third party. -->
-  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=154">
-  <link rel="stylesheet" href="./index.css?v=154">
+  <link rel="stylesheet" href="./assets/fonts/fonts.css?v=155">
+  <link rel="stylesheet" href="./index.css?v=155">
   <!-- The redesign's frame; loaded after index.css so it wins where both
        style the same element. One sheet per redesign area, each under 800
        lines (docs/redesign-build-plan.md §3). -->
-  <link rel="stylesheet" href="./css/frame.css?v=154">
-  <link rel="stylesheet" href="./css/stage-page.css?v=154">
-  <link rel="stylesheet" href="./css/home.css?v=154">
-  <link rel="stylesheet" href="./css/journey.css?v=154">
-  <link rel="stylesheet" href="./css/weekly.css?v=154">
-  <link rel="stylesheet" href="./css/more.css?v=154">
-  <link rel="stylesheet" href="./css/shape.css?v=154">
-  <link rel="stylesheet" href="./css/star-page.css?v=154">
+  <link rel="stylesheet" href="./css/frame.css?v=155">
+  <link rel="stylesheet" href="./css/stage-page.css?v=155">
+  <link rel="stylesheet" href="./css/home.css?v=155">
+  <link rel="stylesheet" href="./css/journey.css?v=155">
+  <link rel="stylesheet" href="./css/weekly.css?v=155">
+  <link rel="stylesheet" href="./css/more.css?v=155">
+  <link rel="stylesheet" href="./css/shape.css?v=155">
+  <link rel="stylesheet" href="./css/star-page.css?v=155">
+  <link rel="stylesheet" href="./css/phone.css?v=155">
   <!-- Starts a Thai reader's dictionary with the core (lang-preload.js). -->
   <script async fetchpriority="high" src="./lang-preload.js"></script>
   <!-- The core every screen needs, then the Landing: listed here, they are
@@ -110,10 +111,12 @@
          accessible name is the translated app name, which app.js writes. -->
     <h1 class="wordmark"><a id="brand-home" href="#/dashboard"><span class="wordmark-mark" aria-hidden="true">ASTERISM</span><span class="sr-only" id="brand-name">Asterism: Life Balance Index</span></a></h1>
     <nav id="navpill" class="navpill d-none" aria-label="Sections">
-      <a id="navpill-dashboard" href="#/dashboard">Overview</a>
-      <a id="navpill-review" href="#/review">Weekly Review</a>
-      <a id="navpill-quests" href="#/quests">Goals</a>
-      <a id="navpill-leaderboard" href="#/leaderboard">Side by Side</a>
+      <!-- On a phone these are the bottom bar (css/phone.css, v155), each
+           with its icon; the label is the span, which app.js translates. -->
+      <a href="#/dashboard"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span id="navpill-dashboard">Overview</span></a>
+      <a href="#/review"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M9 15l2 2 4-4"/></g></svg><span id="navpill-review">Weekly Review</span></a>
+      <a href="#/quests"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 21V4h11l-2.5 4.5L17 13H6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="navpill-quests">Goals</span></a>
+      <a href="#/leaderboard"><svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></g></svg><span id="navpill-leaderboard">Side by Side</span></a>
     </nav>
     <!-- The journey's progress star (views/journey-progress.js). aria-hidden:
          the journey's own live status line says the same thing in words. -->
@@ -164,6 +167,6 @@
   </div>
 
   <!-- Core Scripts -->
-  <script type="module" src="./app.js?v=154"></script>
+  <script type="module" src="./app.js?v=155"></script>
 </body>
 </html>

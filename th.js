@@ -7,7 +7,7 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
-  // v154, draft awaiting the owner's review: the in-depth assessment trimmed.
+  // v154, approved by the owner: the in-depth assessment trimmed.
   "Optional. Save each section on its own.": "ไม่บังคับ บันทึกแต่ละหมวดแยกกันได้",
   "These longer questionnaires make each aspect's estimate more reliable and tighten its percentile band.": "แบบสอบถามที่ยาวขึ้นเหล่านี้ทำให้ค่าประมาณของแต่ละด้านน่าเชื่อถือขึ้นและช่วงเปอร์เซ็นไทล์แคบลง",
   "Completed sections are kept as you go, and each one earns 60 points.": "หมวดที่ทำเสร็จจะถูกเก็บไว้ระหว่างทาง และแต่ละหมวดได้ 60 คะแนน",
@@ -15,6 +15,9 @@ export const TH = {
   "A finished section marks its aspect Done and its score verified. Save it again any time to update it.": "หมวดที่ทำเสร็จจะแสดงว่าเสร็จแล้ว และคะแนนด้านนั้นได้รับการยืนยัน บันทึกซ้ำได้ทุกเมื่อเพื่ออัปเดต",
   "Done": "เสร็จแล้ว",
   "Update": "อัปเดต",
+
+  // v155, draft awaiting the owner's review: the phone's folded notes.
+  "Notes and sources ({n})": "หมายเหตุและแหล่งอ้างอิง ({n})",
 
   // v150, approved by the owner: Profile trimmed.
   "About you": "เกี่ยวกับคุณ",

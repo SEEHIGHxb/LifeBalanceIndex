@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `154`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `155`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.86.0] - 2026-09-30 (v155)
+
+- **Phone layout, phase 1: the shared rules** (css/phone.css; the owner, 2026-09-30). One sheet, loaded last, sets the phone layout instead of shrinking the desktop's numbers: 24px between sections, page names at 28px close to the header, scores at 28px at most, 44px buttons, and a small footer without its mark. The four main pages are a bar along the bottom of a phone, each with an icon, like YouTube Music's; it steps aside on the star page and while the menu is open. Notes and sources fold into one row on a phone, "Notes and sources (N)", opened on a tap or by a note mark. Measured at 412px: Overview 4.8 screens to 2.8, Profile 5.3 to 3.0, an aspect page 3.7 to 2.0. The showpieces (the Landing, the photo bands, the Overview's star, the star page) are unchanged. The v154 Thai is approved.
 
 ## [2.85.0] - 2026-09-30 (v154)
 

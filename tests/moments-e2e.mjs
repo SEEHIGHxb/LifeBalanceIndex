@@ -168,10 +168,6 @@ const endingState = (page) => page.evaluate(() => {
 });
 
 // A <use> into assets/sprites.svg that failed to resolve draws nothing.
-const spriteDrawn = (page, selector) => page.evaluate((sel) => {
-  const use = document.querySelector(`${sel} use`);
-  return !!use && use.getBBox().width > 0;
-}, selector);
 
 const browser = await chromium.launch();
 
@@ -252,7 +248,17 @@ try {
   if (!end.emblem?.loaded) problems.push("market: the region's emblem did not load");
   const shifted = await page.evaluate(() => globalThis.__shift);
   if (shifted > 0) problems.push(`market: the ending shifted the layout (CLS ${shifted.toFixed(4)})`);
-  if (!(await spriteDrawn(page, ".brand-star"))) problems.push("sprites: the footer star did not draw");
+  // The sprite sheet draws. The footer's star steps aside on a phone (v155),
+  // so it is shown for the reading and put back.
+  const sheetDrawn = await page.evaluate(() => {
+    const mark = document.querySelector(".footer-mark");
+    if (mark) mark.style.display = "grid";
+    const use = document.querySelector(".brand-star use");
+    const drawn = !!use && use.getBBox().width > 0;
+    if (mark) mark.style.display = "";
+    return drawn;
+  });
+  if (!sheetDrawn) problems.push("sprites: the footer star did not draw");
 
   // The Highlands' first screen: its title types in and its emblem settles.
   await next(page);

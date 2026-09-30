@@ -165,7 +165,26 @@ export function footnoteList(notes) {
     <li id="fn-${n.id}" tabindex="-1"><a class="fn-mark" href="#fnref-${n.id}" data-jump="fnref-${n.id}" aria-label="${escapeHtml(tp("Note {n}", { n: n.mark }))}, ${escapeHtml(t("Back to the text"))}">${escapeHtml(n.mark)}</a><div class="fn-body">${n.body}</div></li>`).join("")}</ol>`;
 }
 
+// On a phone the notes fold into one row, "Notes and sources (N)", opened
+// on a tap (the owner, v155); the fold stands in for the section's label
+// (css/phone.css). A mark jumping into it opens it (below).
+const PHONE = "(max-width: 900px)";
+function foldNotes(root) {
+  if (typeof matchMedia !== "function" || !matchMedia(PHONE).matches) return;
+  root.querySelectorAll(".fn-list").forEach(list => {
+    if (list.closest("details")) return;
+    const fold = document.createElement("details");
+    fold.className = "notes-fold";
+    const row = document.createElement("summary");
+    row.textContent = tp("Notes and sources ({n})", { n: list.children.length });
+    list.replaceWith(fold);
+    fold.append(row, list);
+    fold.closest("section")?.classList.add("has-notes-fold");
+  });
+}
+
 export function bindFootnotes(root) {
+  foldNotes(root);
   root.querySelectorAll("a[data-jump]").forEach(link => link.addEventListener("click", (e) => {
     const target = document.getElementById(link.dataset.jump);
     if (!target) return;

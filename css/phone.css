@@ -1,0 +1,152 @@
+/* css/phone.css - the phone rules (the owner, 2026-09-30, v155). Loaded last,
+   so the phone layout is decided here rather than by shrinking the desktop's
+   numbers. The rules, agreed with the owner:
+     space      16px at the edges, 24px between sections, 12px inside a group;
+     titles     a page's name at 28px, 16px above it and 12px below;
+     scores     28px at most, the Overview's Balance Index aside;
+     buttons    40-44px tall, beside their text or field when they fit;
+     footer     small;
+     navigation a bar along the bottom (like YouTube Music's), not the menu;
+     notes      folded into one row that opens on a tap.
+   The showpieces stay as they are: the Landing's hero and regions, the photo
+   bands, the Overview's star and the star page. */
+
+/* ------------------------------------------------------ the page's sections
+   Measured against #main-view, as the pages' own phone rules are. */
+@container (max-width: 900px) {
+  .stage-page .statement,
+  .goals .statement,
+  .compare .statement,
+  .aspect-page .statement,
+  .home .statement,
+  .home .home-aspects,
+  .home-news,
+  .home-pledges,
+  .stage-page .duo,
+  .news { padding: 24px 0; }
+  .stage-page .split { gap: 12px; }
+  .statement .label { margin: 0; }
+  .stage-page.textpage { padding-bottom: 0; }
+
+  /* A page's name: 28px, close to the header. */
+  .pagehead { padding: 16px 0 12px; }
+  .pagehead-word { margin: 0 0 8px; font-size: 28px; line-height: 1.1; }
+  .pagehead p { margin: 0 0 8px; font-size: 15px; line-height: 1.5; }
+  .page-top { padding: 16px 0 12px; }
+  .page-top-grid { grid-template-columns: 48px minmax(0, 1fr); gap: 12px; align-items: center; }
+  .page-top-word { font-size: 28px; line-height: 1.1; }
+  .page-top-text p { font-size: 15px; margin: 0; }
+  .page-top.has-plate { padding: 0 0 12px; }
+  .page-top-plate { padding: 96px 0 16px; }
+  .page-top-plate .page-top-grid { grid-template-columns: 56px minmax(0, 1fr); }
+  .page-top-body { padding-top: 16px; }
+  .page-top-body p { font-size: 15px; }
+
+  /* Scores and names that were set in display sizes. */
+  .ar-score,
+  .aspect-page .statement .character-name,
+  .pr-score b { font-size: 28px; }
+  /* A section's last field ends the section: no margin on top of its padding. */
+  .stage-page .statement .form-group:last-child,
+  .stage-page .statement form > :last-child { margin-bottom: 0; }
+
+  /* The questionnaires' panels: a question and its answers on one screen. */
+  .assess-journey .survey-page { padding: 24px 0; }
+  .assess-journey .q-split { gap: 12px; }
+  .assess-journey .instrument-block { margin-top: 16px; padding-top: 16px; }
+  .assess-journey fieldset.survey-question { margin-bottom: 20px; }
+  .assess-journey .radio-group { gap: 6px; }
+  .assess-journey .radio-option { min-height: 44px; padding: 8px 20px 8px 16px; }
+  .assess-submit { margin-top: 16px; }
+
+  /* Buttons: 44px, the thumb's minimum, and no taller. */
+  .stage-page .pill:not(.pill-xl) { min-height: 44px; padding-block: 0; }
+
+  /* The notes, folded (views/helpers.js foldNotes): the fold is the section's
+     title, so the section's own label steps aside. */
+  .has-notes-fold .label { display: none; }
+}
+
+/* The fold's row. */
+.notes-fold > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+}
+.notes-fold > summary::-webkit-details-marker { display: none; }
+.notes-fold > summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+.notes-fold[open] > summary::after { transform: rotate(-135deg); }
+.notes-fold[open] > summary { margin-bottom: 12px; }
+.notes-fold > summary:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+html[lang="th"] .notes-fold > summary { letter-spacing: normal; text-transform: none; }
+
+/* ------------------------------------------------ the bottom bar and footer
+   The frame lives outside #main-view, so these follow the window. */
+.nav-ico { display: none; }
+@media (max-width: 900px) {
+  :root { --nav-bar-h: 64px; }
+  #navpill:not(.d-none) {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+    transform: none;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    height: calc(var(--nav-bar-h) + env(safe-area-inset-bottom, 0px));
+    padding: 0 0 env(safe-area-inset-bottom, 0px);
+    border-top: 1px solid #e6e3de;
+    border-radius: 0;
+    background: var(--frame-page);
+  }
+  #navpill a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    min-height: var(--nav-bar-h);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--frame-muted);
+  }
+  #navpill a[aria-current="page"] { color: var(--frame-ink); font-weight: 700; text-decoration: none; }
+  #navpill .nav-ico {
+    display: block;
+    width: 56px;
+    height: 28px;
+    padding: 2px 16px;
+    border-radius: 14px;
+    box-sizing: border-box;
+  }
+  #navpill a[aria-current="page"] .nav-ico { background: var(--frame-card); }
+  #navpill a:focus-visible { outline-offset: -4px; }
+  /* Room under the page for the bar, and none of it on the star's one
+     screen, which the bar would cover. */
+  body:has(#navpill:not(.d-none)):not(:has(.star-page)) #page { padding-bottom: calc(var(--nav-bar-h) + env(safe-area-inset-bottom, 0px)); }
+  body:has(.star-page) #navpill,
+  body.menu-open #navpill { display: none; }
+
+  /* The footer: a line of links and the small print, no mark. */
+  .site-footer { gap: 8px; padding: 16px; border-radius: 0; }
+  .footer-mark { display: none; }
+  .footer-links { gap: 0 20px; }
+  .site-footer .footer-links a { font-size: 12px; }
+}

@@ -146,12 +146,13 @@ test("every 100vh is followed by a dvh override in the same rule", () => {
 
 // --- the eight aspects fit one phone screen --------------------------------
 
-test("on a phone the eight aspects are a two-column grid of tiles, not eight tall rows", () => {
-  // The owner, 2026-09-26: a long page loses the reader before the bottom.
-  // Eight rows stacked were 1,560px at 390 wide; as tiles two to a line they
-  // fit one screen.
+test("on a phone the eight aspects are compact list rows: emblem, name, score, bar", () => {
+  // The owner, 2026-09-26: a long page loses the reader before the bottom,
+  // so all eight fit one screen. First as two-by-four tiles; since v156 (the
+  // owner's phone cut list) as list rows with a 40px emblem, about 60px each.
   const css = read("css/home.css");
   const phone = css.slice(css.indexOf("@container (max-width: 900px)"));
-  assert.match(phone, /\.aspect-rows \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
-  assert.match(phone, /"who who"/, "each tile ends on your character there");
+  assert.match(phone, /\.aspect-row,[^{]*\{[^}]*grid-template-columns: 40px minmax\(0, 1fr\) auto;/);
+  assert.match(phone, /"emblem name score"\s*"emblem meter score"/, "the bar sits under the name, the score beside both");
+  assert.match(phone, /\.ar-emblem \{[^}]*width: 40px/);
 });

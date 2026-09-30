@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `155`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `156`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.87.0] - 2026-09-30 (v156)
+
+- **Phone layout, phase 2: the Overview** (views/dashboard.js, css/home.css; the owner's cut list, 2026-09-30). List rows with a trailing action, as YouTube Music lays them out. The top: the star beside the index with a round share icon, the star/radar/asterism switch under it, and "Your year ›" at the end of your name's line. To do and "Want sharper scores?" are rows ending on a short Start or Continue button; the full label stays its accessible name. The eight aspects are list rows (a 40px emblem, the region and aspect, your character, the score and a thin bar) in place of the two-by-four tiles. Where to start and Recent are one-line rows with the kind and date in small print under the title. Section names are 18px header rows; Your pledges ends on "Goals ›". Measured at 412px: 2,532px to 2,110px. Desktop is unchanged. The v155 Thai is approved.
 
 ## [2.86.0] - 2026-09-30 (v155)
 

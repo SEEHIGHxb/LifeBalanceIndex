@@ -184,13 +184,23 @@ function topSection(h) {
             <p class="home-facts"><strong class="home-name">${escapeHtml(p.name)}</strong> · ${t("Lv.")}${escapeHtml(p.level)}</p>
             <p class="home-links">
               <a class="pill" href="#/year">${escapeHtml(t("Your year"))}</a>
-              <button type="button" id="btn-share-radar" class="pill pill-light">${escapeHtml(t("Share your star"))}</button>
+              <button type="button" id="btn-share-radar" class="pill pill-light share-btn">${SHARE_ICON}<span class="share-text">${escapeHtml(t("Share your star"))}</span></button>
             </p>
           </div>
         </div>
       </div>
     </section>`;
 }
+
+// On a phone the share button is this icon alone (Android's share mark); the
+// words stay as its accessible name (css/home.css).
+const SHARE_ICON = `<svg class="share-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.4M8.3 13.2l7.4 4.4"/></g></svg>`;
+
+// A button's label, and the one word it shortens to on a phone, where the
+// button trails its row (css/home.css). The full label stays the accessible
+// name; the short word is hidden from it, and is its first word.
+const shortLabel = (full, short) =>
+  `<span class="pill-long">${full}</span><span class="pill-short" aria-hidden="true">${short}</span>`;
 
 // One thing to do: a headline, why, and the controls that do it.
 function todoRow({ title, body, actions, cls = "" }) {
@@ -213,14 +223,14 @@ function todoSection(h) {
     rows.push(todoRow({
       title: t("Weekly review open."),
       body: t("About two minutes."),
-      actions: `<a href="#/review" class="pill">${t("Start Weekly Review")}</a>`
+      actions: `<a href="#/review" class="pill">${shortLabel(t("Start Weekly Review"), t("Start"))}</a>`
     }));
   }
   if (h.checkinDue) {
     rows.push(todoRow({
       title: t("Monthly re-assessment due."),
       body: t("A few short questions, once a month."),
-      actions: `<a href="#/checkin" class="pill">${t("Start Re-assessment")}</a>`
+      actions: `<a href="#/checkin" class="pill">${shortLabel(t("Start Re-assessment"), t("Start"))}</a>`
     }));
   }
   if (h.needsBackup) {
@@ -287,7 +297,7 @@ function deepOffer(h) {
   return `
     <div class="todo deep-offer">
       <p class="todo-text"><strong class="todo-title">${t("Want sharper scores?")}</strong></p>
-      <span class="todo-actions"><a href="#/deep" class="pill pill-light">${h.deepDone > 0 ? t("Continue in-depth") : t("Start in-depth assessment")}</a></span>
+      <span class="todo-actions"><a href="#/deep" class="pill pill-light">${h.deepDone > 0 ? shortLabel(t("Continue in-depth"), t("Continue")) : shortLabel(t("Start in-depth assessment"), t("Start"))}</a></span>
     </div>`;
 }
 

@@ -212,3 +212,12 @@ test("each aspect row names your character there", () => {
   // The fixture skips the goal, giving and green questionnaires: no character there.
   assert.equal(names.length, 5, `${names.length} rows named a character`);
 });
+
+test("on a phone the buttons shorten, but keep their full words as their names", () => {
+  // v156, the owner's phone cut list: a to-do row ends on a short "Start",
+  // and sharing is an icon; the full label stays readable to a screen reader.
+  const html = render({ ...STATE, reviews: [] });
+  assert.match(html, /<span class="pill-long">Start in-depth assessment<\/span><span class="pill-short" aria-hidden="true">Start<\/span>/);
+  assert.match(html, /id="btn-share-radar"[^>]*><svg class="share-ico"[^>]*aria-hidden="true"/);
+  assert.match(html, /<span class="share-text">Share your star<\/span>/);
+});

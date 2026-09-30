@@ -68,6 +68,9 @@
 .home .todo-done .todo-text { color: #444444; }
 .home .todo.deep-offer { margin-top: calc(40 * var(--px)); padding: calc(30 * var(--px)) 0 0; border-top: 1px dashed rgba(0, 0, 0, 0.25); border-bottom: 0; }
 .todo-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+/* The phone's short button words and share icon (the phone block below). */
+.pill-short,
+.share-ico { display: none; }
 
 /* ------------------------------------------------ the eight aspect rows */
 .aspect-rows { margin: 0; padding: 0; list-style: none; }
@@ -200,62 +203,150 @@
   .home .home-aspects,
   .home-news { padding: calc(90 * var(--px)) 0 calc(80 * var(--px)); }
   .home-pledges { padding: calc(70 * var(--px)) 0 calc(60 * var(--px)); }
-  .home-top { padding: calc(80 * var(--px)) 0; }
-  /* The star beside the index; the rest runs the full width under them. */
-  .home-top-grid { grid-template-columns: calc(230 * var(--px)) minmax(0, 1fr); gap: calc(30 * var(--px)) calc(40 * var(--px)); align-items: center; }
-  /* The star column is too narrow for the switch: it takes its own row under the reading. */
-  .home-star-col { display: contents; }
-  .home-top .shape-switch { grid-column: 1 / -1; order: 1; justify-self: start; }
-  .home-reading { display: contents; }
-  .home-top .balance-index { flex-direction: column; gap: calc(10 * var(--px)); margin: 0; }
-  .home-headline { grid-column: 1 / -1; margin: 0; font-size: max(15px, calc(30 * var(--px))); }
-  .home-identity { grid-column: 1 / -1; }
-  .home .todo-text { font-size: max(15px, calc(28 * var(--px))); }
-  /* The eight aspects as a two-by-four grid of tiles, so all of them fit on
-     one screen (the owner, 2026-09-26). Each tile keeps the emblem, the name,
-     the score on its bar and the grade; the standing sentence is on the
-     aspect page the tile opens. */
-  .aspect-rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: calc(20 * var(--px)); }
-  .aspect-rows > li { display: grid; }
+  .home-top { padding: 16px 0 24px; }
+  /* The phone's Overview (the owner's cut list, v156): list rows with a
+     trailing action, as YouTube Music lays them out.
+     The top: the star beside the index with the share icon after it, the
+     switch under the star, the headline, then your name and level with
+     "Your year" at the end of the same line. */
+  .home-top-grid {
+    grid-template-columns: calc(230 * var(--px)) minmax(0, 1fr) auto;
+    grid-template-areas:
+      "star index share"
+      "switch switch switch"
+      "head head head"
+      "facts facts year";
+    gap: 12px;
+    align-items: center;
+  }
+  .home-star-col,
+  .home-reading,
+  .home-identity,
+  .home-identity .home-links { display: contents; }
+  .home-top .home-star { grid-area: star; }
+  .home-top .balance-index { grid-area: index; flex-direction: column; gap: calc(10 * var(--px)); margin: 0; }
+  .home-top .shape-switch { grid-area: switch; justify-self: start; }
+  .home-top .shape-opt { padding: 0 14px; font-size: 13px; }
+  .home-headline { grid-area: head; margin: 0; font-size: 15px; }
+  .home-identity p.home-facts { grid-area: facts; margin: 0; }
+  /* "Your year" and "Goals" are links at the end of their line, not pills. */
+  .home-links a.pill,
+  .pledge-count a.pill {
+    grid-area: year;
+    min-height: 44px;
+    height: auto;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--frame-ink);
+    font-size: 14px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  :is(.home-links, .pledge-count) a.pill::after,
+  :is(.home-links, .pledge-count) a.pill .pill__in::after {
+    content: "\203A";
+    width: auto;
+    aspect-ratio: auto;
+    border-radius: 0;
+    background: none;
+    font-size: 18px;
+    line-height: 1;
+  }
+  /* Share: the icon alone, in a 44px circle; the words stay its name. */
+  .home-top .share-btn { grid-area: share; align-self: start; width: 44px; min-height: 44px; height: 44px; padding: 0; border-radius: 50%; }
+  .home-top .share-btn::after,
+  .home-top .share-btn .pill__in::after { content: none; }
+  .share-btn .share-ico { display: block; width: 20px; height: 20px; }
+  .share-btn .share-text,
+  .todo-actions .pill-long {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .todo-actions .pill-short { display: inline; }
+
+  /* The section names as header rows. */
+  .home .label { font-size: 18px; letter-spacing: 0; text-transform: none; white-space: normal; }
+
+  /* To do: the words on the left, a short button trailing them. */
+  .todo,
+  .home .todo.deep-offer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 0;
+  }
+  .todo-list { gap: 0; }
+  .todo:first-child { padding-top: 0; }
+  .home .todo.deep-offer { margin-top: 16px; padding-bottom: 0; }
+  .home .todo-text { font-size: 15px; line-height: 1.4; }
+  .todo-title { display: block; }
+  .todo-body { display: block; font-size: 13px; color: #444444; }
+  .todo-actions { gap: 8px; }
+  .todo-actions .pill { position: relative; min-height: 40px; padding: 0 16px; font-size: 12px; letter-spacing: 0.06em; }
+  .todo-actions .pill::after,
+  .todo-actions .pill .pill__in::after { content: none; }
+
+  /* The eight aspects as eight list rows: the emblem, the region with the
+     aspect and your character under it, the score, and a thin bar. All
+     eight fit one phone screen. */
   .aspect-row,
   .aspect-rows > li:first-child .aspect-row {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: 40px minmax(0, 1fr) auto;
     grid-template-areas:
-      "emblem score"
-      "name name"
-      "meter meter"
-      "who who";
-    align-content: start;
-    gap: calc(14 * var(--px));
-    padding: calc(24 * var(--px));
-    border: 0;
-    border-radius: calc(24 * var(--px));
-    background: var(--wash);
+      "emblem name score"
+      "emblem meter score";
+    gap: 4px 12px;
+    padding: 8px 0;
   }
-  .ar-emblem { grid-area: emblem; width: calc(84 * var(--px)); border-radius: 0; background: none; }
-  .ar-emblem img { width: 100%; }
+  .ar-emblem { grid-area: emblem; width: 40px; border-radius: 50%; }
   .ar-name { grid-area: name; }
-  .ar-name b { font-size: max(12px, calc(24 * var(--px))); }
-  .ar-name small { font-size: max(11px, calc(21 * var(--px))); }
-  .ar-score { grid-area: score; align-self: center; font-size: max(30px, calc(76 * var(--px))); }
+  .ar-name b { font-size: 13px; }
+  .ar-name small { font-size: 12px; }
+  .ar-score { grid-area: score; }
   .ar-meter { grid-area: meter; }
-  .ar-character { grid-area: who; text-align: left; font-size: max(12px, calc(21 * var(--px))); }
-  /* Where to start and Recent: a small icon beside two lines. The full
-     suggestion is on the aspect page the row opens. */
+  .ar-meter .meter { height: 4px; }
+  .ar-meter .meter em { top: -3px; bottom: -3px; }
+  /* Your character, at the end of the aspect's line. */
+  .ar-character { grid-area: name; align-self: end; justify-self: end; font-size: 12px; }
+  .aspects-key { margin-top: 12px; font-size: 12px; }
+
+  /* Where to start and Recent: the icon, the title, one line under it, and
+     the kind and date last in small print. The full suggestion is on the
+     aspect page the row opens. */
+  .home-news .news-block + .news-block { margin-top: 24px; }
   .home-news .newsrow,
   .home-news .newslist > li:first-child > .newsrow,
   .home-news .newslist > .newsrow:first-child {
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: calc(10 * var(--px)) calc(24 * var(--px));
-    padding: calc(22 * var(--px)) 0;
+    grid-template-columns: 40px minmax(0, 1fr);
+    grid-template-areas:
+      "thumb title"
+      "thumb meta";
+    gap: 2px 12px;
+    align-items: start;
+    padding: 10px 0;
   }
-  .home-news .newsrow-thumb { width: calc(76 * var(--px)); }
+  .home-news .newsrow-thumb { grid-area: thumb; width: 40px; border-radius: 10px; }
+  .home-news .newsrow-title { grid-area: title; min-width: 0; font-size: 15px; line-height: 1.4; }
   .home-news .newsrow-title small {
-    display: -webkit-box;
     overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
+  .home-news .newsrow-meta { grid-area: meta; gap: 8px; }
+  .home-news :is(.newsrow-date, .newsrow-kind) { font-size: 11px; color: #444444; }
+
+  /* Your pledges: the header row ends on "Goals"; the count is under it. */
+  .home-pledges .split { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; }
+  .pledge-count { display: contents; }
+  .pledge-count > span { grid-column: 1 / -1; font-size: 15px; }
+  .pledge-count a.pill { grid-area: auto; grid-row: 1; grid-column: 2; }
   .wall { height: calc(300 * var(--px)); margin: 0; background-color: var(--night); background-image: var(--night-specks); }
 }
 

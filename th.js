@@ -16,7 +16,7 @@ export const TH = {
   "Done": "เสร็จแล้ว",
   "Update": "อัปเดต",
 
-  // v155, draft awaiting the owner's review: the phone's folded notes.
+  // v155, approved by the owner: the phone's folded notes.
   "Notes and sources ({n})": "หมายเหตุและแหล่งอ้างอิง ({n})",
 
   // v150, approved by the owner: Profile trimmed.

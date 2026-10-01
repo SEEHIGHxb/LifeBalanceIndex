@@ -46,11 +46,41 @@
 .home-top .balance-index { align-items: flex-end; }
 .home-top .balance-index-title { margin: 0 0 calc(12 * var(--px)); font-weight: 700; font-size: max(16px, calc(28 * var(--px))); }
 .home-headline { margin: 0 0 calc(30 * var(--px)); font-weight: 700; font-size: max(16px, calc(30 * var(--px))); line-height: 1.5; }
-.home-identity { padding-top: calc(30 * var(--px)); border-top: 1px dashed rgba(0, 0, 0, 0.25); }
-.home-identity p { margin: 0 0 calc(8 * var(--px)); }
-.home-facts { font-weight: 500; }
-.home-name { font-weight: 700; }
-.home-identity .home-links { display: flex; flex-wrap: wrap; gap: 12px; margin: calc(24 * var(--px)) 0 0; }
+/* Under the star: the view switch, and share as a round icon (v157). */
+.home-tools { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.share-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1.5px solid var(--frame-ink);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--frame-ink);
+  cursor: pointer;
+}
+.share-btn:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+.share-ico { display: block; width: 20px; height: 20px; }
+.share-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------- your effort (v157)
+   What you have done, as four figures: the page's reward. */
+.home-effort { padding: calc(70 * var(--px)) 0 calc(60 * var(--px)); }
+.home-effort .split { --col: 704; }
+.effort-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px calc(40 * var(--px)); margin: 0; padding: 0; list-style: none; }
+.effort-item { display: grid; align-content: start; gap: 6px; }
+.effort-value { font-family: var(--frame-word); font-size: max(32px, calc(84 * var(--px))); line-height: 1; color: var(--frame-ink); }
+.effort-value b { font-weight: inherit; }
+.effort-value small { margin-left: 2px; font-size: 0.42em; }
+.effort-caption { font-size: max(12px, calc(18 * var(--px))); font-weight: 600; line-height: 1.3; color: #444444; }
 
 /* -------------------------------------------------------------- to do */
 .todo-list { display: grid; gap: calc(30 * var(--px)); margin: 0; padding: 0; list-style: none; }
@@ -68,9 +98,8 @@
 .home .todo-done .todo-text { color: #444444; }
 .home .todo.deep-offer { margin-top: calc(40 * var(--px)); padding: calc(30 * var(--px)) 0 0; border-top: 1px dashed rgba(0, 0, 0, 0.25); border-bottom: 0; }
 .todo-actions { display: flex; flex-wrap: wrap; gap: 12px; }
-/* The phone's short button words and share icon (the phone block below). */
-.pill-short,
-.share-ico { display: none; }
+/* The phone's short button words (the phone block below). */
+.pill-short { display: none; }
 
 /* ------------------------------------------------ the eight aspect rows */
 .aspect-rows { margin: 0; padding: 0; list-style: none; }
@@ -92,9 +121,11 @@
   place-items: center;
   aspect-ratio: 1;
   border-radius: calc(18 * var(--px));
-  background: var(--wash);
+  overflow: hidden;
+  /* The emblems' own cream (the owner, v157): the aspect's colour is on its bar. */
+  background: #f9f4e8;
 }
-.ar-emblem img { width: 78%; height: auto; }
+.ar-emblem img { display: block; width: 100%; height: auto; }
 .ar-name { display: grid; gap: 2px; min-width: 0; }
 .ar-name b { font-size: max(14px, calc(22 * var(--px))); letter-spacing: 0.04em; text-transform: uppercase; }
 .ar-name small { font-size: max(12px, calc(17 * var(--px))); font-weight: 500; color: #444444; }
@@ -204,35 +235,30 @@
   .home-news { padding: calc(90 * var(--px)) 0 calc(80 * var(--px)); }
   .home-pledges { padding: calc(70 * var(--px)) 0 calc(60 * var(--px)); }
   .home-top { padding: 16px 0 24px; }
-  /* The phone's Overview (the owner's cut list, v156): list rows with a
-     trailing action, as YouTube Music lays them out.
-     The top: the star beside the index with the share icon after it, the
-     switch under the star, the headline, then your name and level with
-     "Your year" at the end of the same line. */
+  /* The phone's Overview (the owner's cut lists, v156 and v157): list rows
+     with a trailing action, as YouTube Music lays them out. The top: the star
+     beside the index, the switch and share under them, then the headline. */
   .home-top-grid {
-    grid-template-columns: calc(230 * var(--px)) minmax(0, 1fr) auto;
+    grid-template-columns: calc(300 * var(--px)) minmax(0, 1fr);
     grid-template-areas:
-      "star index share"
-      "switch switch switch"
-      "head head head"
-      "facts facts year";
-    gap: 12px;
+      "star index"
+      "tools tools"
+      "head head";
+    gap: 12px 16px;
     align-items: center;
   }
   .home-star-col,
-  .home-reading,
-  .home-identity,
-  .home-identity .home-links { display: contents; }
+  .home-reading { display: contents; }
   .home-top .home-star { grid-area: star; }
-  .home-top .balance-index { grid-area: index; flex-direction: column; gap: calc(10 * var(--px)); margin: 0; }
-  .home-top .shape-switch { grid-area: switch; justify-self: start; }
-  .home-top .shape-opt { padding: 0 14px; font-size: 13px; }
+  .home-top .balance-index { grid-area: index; flex-direction: column; align-items: flex-start; gap: calc(10 * var(--px)); margin: 0; }
+  .home-tools { grid-area: tools; justify-content: space-between; }
   .home-headline { grid-area: head; margin: 0; font-size: 15px; }
-  .home-identity p.home-facts { grid-area: facts; margin: 0; }
-  /* "Your year" and "Goals" are links at the end of their line, not pills. */
-  .home-links a.pill,
+  .home-effort { padding: 24px 0; }
+  .effort-list { gap: 12px; }
+  .effort-value { font-size: 28px; }
+  .effort-caption { font-size: 12px; }
+  /* "Goals" is a link at the end of the pledges' header row, not a pill. */
   .pledge-count a.pill {
-    grid-area: year;
     min-height: 44px;
     height: auto;
     padding: 0;
@@ -243,8 +269,8 @@
     letter-spacing: 0;
     text-transform: none;
   }
-  :is(.home-links, .pledge-count) a.pill::after,
-  :is(.home-links, .pledge-count) a.pill .pill__in::after {
+  .pledge-count a.pill::after,
+  .pledge-count a.pill .pill__in::after {
     content: "\203A";
     width: auto;
     aspect-ratio: auto;
@@ -253,12 +279,6 @@
     font-size: 18px;
     line-height: 1;
   }
-  /* Share: the icon alone, in a 44px circle; the words stay its name. */
-  .home-top .share-btn { grid-area: share; align-self: start; width: 44px; min-height: 44px; height: 44px; padding: 0; border-radius: 50%; }
-  .home-top .share-btn::after,
-  .home-top .share-btn .pill__in::after { content: none; }
-  .share-btn .share-ico { display: block; width: 20px; height: 20px; }
-  .share-btn .share-text,
   .todo-actions .pill-long {
     position: absolute;
     width: 1px;
@@ -346,7 +366,7 @@
   .home-pledges .split { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; }
   .pledge-count { display: contents; }
   .pledge-count > span { grid-column: 1 / -1; font-size: 15px; }
-  .pledge-count a.pill { grid-area: auto; grid-row: 1; grid-column: 2; }
+  .pledge-count a.pill { grid-row: 1; grid-column: 2; }
   .wall { height: calc(300 * var(--px)); margin: 0; background-color: var(--night); background-image: var(--night-specks); }
 }
 

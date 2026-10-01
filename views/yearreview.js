@@ -23,9 +23,11 @@ import { t, tp, dateLocale } from "../i18n.js";
 import { escapeHtml, birthdayFields } from "./helpers.js";
 import { SPRITES } from "./stage.js";
 import { heroMarkup, missionMarkup, label, renderStagePage } from "./stage-page.js";
-import { aspectName, chapterOf, motifThumb, starThumb } from "./news.js";
+import { aspectName, chapterOf, motifThumb, starThumb, newsRow, dotDate, shiftSummary } from "./news.js";
+import { pledgesAndPoints } from "./review.js";
 
 const FILED_ROWS = 12;
+const RECENT_ROWS = 5;
 const MINUS = "−";
 const signed = (d) => (d > 0 ? `+${d}` : d < 0 ? `${MINUS}${Math.abs(d)}` : "0");
 const STAR_SVG = `<svg viewBox="0 0 100 100" aria-hidden="true"><use href="${SPRITES}#star"/></svg>`;
@@ -117,6 +119,45 @@ function movementSection(state) {
   return newsSection("year-move", t("Movement this year"), note, list);
 }
 
+// The aspect a record moved most, for its thumbnail; null when none moved.
+const biggestShift = (shifts) => {
+  const moved = Object.entries(shifts || {}).filter(([k, v]) => v && chapterOf(k));
+  if (!moved.length) return null;
+  return moved.reduce((a, b) => (Math.abs(b[1]) > Math.abs(a[1]) ? b : a))[0];
+};
+
+// Reviews, re-assessments and the journey, newest first: moved here from
+// Overview (the owner, v157), as this page is your timeline.
+export function recentRecords(state) {
+  const rows = [
+    ...(state.reviews || []).map(r => ({
+      date: r.date, kind: t("Weekly Review"), aspect: biggestShift(r.shifts),
+      title: shiftSummary(r.shifts), sub: pledgesAndPoints(r)
+    })),
+    ...(state.checkins || []).map(c => ({
+      date: c.date, kind: t("Re-assessment"), aspect: biggestShift(c.shifts), title: shiftSummary(c.shifts)
+    })),
+    ...(state.baseline?.date ? [{
+      date: state.baseline.date, kind: t("Journey"), aspect: null, title: t("Journey complete"), sub: t("All eight regions")
+    }] : [])
+  ];
+  return rows
+    .filter(r => !Number.isNaN(new Date(r.date).getTime()))
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, RECENT_ROWS);
+}
+
+function recentSection(state) {
+  const rows = recentRecords(state);
+  const list = rows.length
+    ? rows.map(r => newsRow({
+      date: dotDate(r.date), kind: r.kind,
+      thumb: r.aspect ? motifThumb(r.aspect) : starThumb(STAR_SVG), title: r.title, sub: r.sub
+    })).join("")
+    : `<li class="newsrow newsrow-empty">${escapeHtml(t("No weekly reviews yet — your first one opens the week after onboarding."))}</li>`;
+  return newsSection("year-recent", t("Recent"), "", list);
+}
+
 // The archive is the whole reason a season reset is survivable: a year does
 // not vanish at the birthday, it moves here. Newest first.
 function filedSection(levelYears) {
@@ -163,6 +204,7 @@ export function yearMarkup(state, now = new Date()) {
       ${missionMarkup(t("Your year"), lines)}
       ${profile.season ? pointsSection(seasonPace(profile.season)) : ""}
       ${known ? movementSection(state) : ""}
+      ${recentSection(state)}
       ${filedSection(state.levelYears)}
       ${birthdaySection(profile, known)}
     </div>`;

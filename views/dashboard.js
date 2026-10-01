@@ -2,25 +2,29 @@
 // (R3, 2026-09-25); made compact on 2026-09-26 with the map the owner approved
 // then, because a page you open every week should read at a glance.
 //
+// Since v157 (the owner, 2026-10-01) the page's job is to show the effort you
+// have put in, so it feels like a reward, and then invite you to explore. What
+// is due is a dot on the Weekly Review link (app.js), your level and year are
+// on Profile, and your recent records are on Your year.
+//
 // Top to bottom:
 //   notice      the duty-of-care notice, only past the screening cutoff; still
-//   top         your star beside the Balance Index, its band and standing,
-//               your strongest region and the one asking for more, then your
-//               name, level and points
-//   to do       everything to act on, most urgent first, the in-depth offer
-//               while it is unfinished, and when the next review opens
-//   aspects     one row per region: score against the average, standing,
-//               grade; each opens its aspect page
+//   top         your star beside the Balance Index, the view switch and share
+//               under the star, your strongest region and the one asking for more
+//   effort      what you have done: regions explored, questions answered,
+//               weekly reviews, pledges kept
+//   aspects     one row per region: score against the average, your
+//               character; each opens its aspect page; the in-depth offer
 //   start       the recommendations
-//   recent      reviews, re-assessments and the journey, newest first
-//   pledges     your active pledges as stickers
+//   pledges     your active pledges over the night sky
 //
-// Beside the care notice the page is calm: nothing types and the wall does
-// not drift (the old ceremony's quiet rule), but your star still warps to its
-// own page and back (v140).
+// Beside the care notice the page is calm: nothing types, counts or drifts
+// (the old ceremony's quiet rule), but your star still warps to its own page
+// and back (v140).
 
-import { stateManager } from "../state.js";
 import { AVERAGE_ASPECT_SCORES } from "../averages.js";
+import { INSTRUMENTS, deepAskIndices } from "../surveys.js";
+import { animate, easeStar } from "../motion.js";
 import { starOutline, starRay } from "../chart.js";
 import { getAllBenchmarks, collectSources } from "../benchmarks.js";
 import { ASPECT_KEYS, isAspectDeepVerified } from "../aspects.js";
@@ -34,20 +38,18 @@ import { openShareSheet } from "./share.js";
 import { shapeFigure, shapeSwitchMarkup, bindShapeSwitch, adoptShape, readShapeView } from "./shape.js";
 import { CHAPTERS } from "./journey.js";
 import { SPRITES, onAbort } from "./stage.js";
-import {
-  chapterOf, aspectName, dotDate, shiftSummary, motifThumb, starThumb, newsRow
-} from "./news.js";
+import { chapterOf, aspectName, motifThumb, starThumb, newsRow } from "./news.js";
 import { label, renderStagePage } from "./stage-page.js";
 import { markZoom, takeZoom, zoomFrom } from "./star-zoom.js";
 import { writeMotionStyle } from "./motion-mount.js";
-import { nextReviewDate, pledgesAndPoints } from "./review.js";
 import { t, tp } from "../i18n.js";
 import {
   escapeHtml, aspectLabel, estimatedAspects, mentalHealthNotice, isCareNoticeClosed, closeCareNotice,
   footnoteRef, footnoteList, bindFootnotes, sourceList, CHECKIN_ASPECTS
 } from "./helpers.js";
 
-const RECENT_ROWS = 5;
+// The effort row counts up once as the page opens, unless the page is calm.
+const COUNT_MS = 900;
 // The night sky under the pledges (v127, the owner chose it over the sticker
 // wall): six drifting columns of stars, three each. Where each star sits in
 // its column, as [left %, top %, size in prototype px]; fixed, not random, so
@@ -97,12 +99,29 @@ export function yourStarSvg(scores) {
     `<circle cx="50" cy="50" r="6" fill="#FBF8F1" stroke="#6F7D64" stroke-width="2.4"/></svg>`;
 }
 
-// The aspect a record moved most, for its thumbnail; null when none moved.
-const biggestShift = (shifts) => {
-  const moved = Object.entries(shifts || {}).filter(([k, v]) => v && chapterOf(k));
-  if (!moved.length) return null;
-  return moved.reduce((a, b) => (Math.abs(b[1]) > Math.abs(a[1]) ? b : a))[0];
-};
+// --- your effort ------------------------------------------------------------
+// What the reader has done, counted from what the app already keeps: regions
+// answered rather than left at defaults, every question asked of them (the
+// journey's questionnaires, each re-assessment, the in-depth items actually
+// asked), weekly reviews, and pledges kept at them.
+export function effortCounts(state, estimated = estimatedAspects(state)) {
+  const b = state.baseline || {};
+  const size = (key) => INSTRUMENTS[key]?.items.length || 0;
+  // An older save carries no coverage flags: its questionnaires were answered whole.
+  const answered = b.answered || Object.fromEntries(Object.keys(INSTRUMENTS).filter(k => Number.isFinite(b[k])).map(k => [k, true]));
+  const journey = Object.keys(INSTRUMENTS).filter(k => answered[k] === true).reduce((n, k) => n + size(k), 0);
+  const checkins = (state.checkins || []).reduce((n, c) =>
+    n + Object.entries(c.sums || {}).filter(([, v]) => v !== null && v !== undefined).reduce((m, [k]) => m + size(k), 0), 0);
+  const deep = Object.keys(b.deepAnswered || {}).filter(k => b.deepAnswered[k])
+    .reduce((n, k) => { try { return n + deepAskIndices(k, b).length; } catch { return n; } }, 0);
+  const reviews = state.reviews || [];
+  return {
+    regions: state.baseline ? Math.max(0, CHAPTERS.length - estimated.length) : 0,
+    questions: journey + checkins + deep,
+    reviews: reviews.length,
+    kept: reviews.reduce((n, r) => n + (r.goals || []).filter(g => g.met).length, 0)
+  };
+}
 
 // --- the reading ------------------------------------------------------------
 // Everything the page says, computed once, so the markup and the share card
@@ -112,6 +131,7 @@ export function readHome(state) {
   const benchmarks = getAllBenchmarks(state);
   const index = balanceIndex(state.aspects);
   const rel = (k) => relativeToPopulation(state.aspects[k], AVERAGE_ASPECT_SCORES[k]);
+  const estimated = estimatedAspects(state);
   return {
     state,
     profile: p,
@@ -126,20 +146,12 @@ export function readHome(state) {
     // Measured the same way as the weakest: against the population average.
     strongest: ASPECT_KEYS.reduce((a, b) => (rel(b) > rel(a) ? b : a)),
     // Scored from default answers so far: marked † and explained in the notes.
-    estimated: estimatedAspects(state),
+    estimated,
+    effort: effortCounts(state, estimated),
     scores: CHAPTERS.map(c => state.aspects[c.aspect]),
     // Star, radar or asterism (views/shape.js): the reader's last choice.
     view: readShapeView(),
     suggestions: getTopSuggestions(state, 3),
-    reviewDue: stateManager.isWeeklyReviewDue(),
-    checkinDue: stateManager.isCheckinDue(),
-    // A soft ask, shown once until it is answered or waved off, and held back
-    // until a first weekly review is on record: month and day cannot matter
-    // until a level-year turns, which takes months of use. The Profile page
-    // carries the fields the whole time.
-    askBirthday: state.reviews.length > 0 && !p.birthMonth && !p.birthdayPromptDismissed,
-    needsBackup: stateManager.needsBackupNudge(),
-    daysSinceExport: stateManager.daysSinceLastExport(),
     deepDone: ASPECT_KEYS.filter(k => isAspectDeepVerified(state, k)).length
   };
 }
@@ -151,13 +163,17 @@ function noticeSection(h) {
   return `<section class="panel notice-panel"><div class="wrap">${mentalHealthNotice(h.careNotice, { closable: true })}</div></section>`;
 }
 
-// Your star beside what it adds up to: the Balance Index, where you are
-// strongest and what asks for more, then your name and level. How the index
-// is worked out is note 1 (v141, the owner: a first-time reader gets the
-// number and the plain reading, the method is one tap away). The star is a
-// link to its own page (views/star-page.js), which it zooms into.
+// Sharing is this icon (Android's share mark) beside the view switch; the
+// words stay as its accessible name (css/home.css).
+const SHARE_ICON = `<svg class="share-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.4M8.3 13.2l7.4 4.4"/></g></svg>`;
+
+// Your star beside what it adds up to: the Balance Index, then where you are
+// strongest and what asks for more. Under the star, the view switch and
+// share (v157). How the index is worked out is note 1 (v141, the owner: a
+// first-time reader gets the number and the plain reading, the method is one
+// tap away). The star is a link to its own page (views/star-page.js), which
+// it zooms into.
 function topSection(h) {
-  const p = h.profile;
   const strong = chapterOf(h.strongest)?.region || "";
   const weak = chapterOf(h.weakest?.aspect)?.region || "";
   return `
@@ -169,7 +185,10 @@ function topSection(h) {
             <div class="home-star-mark">${shapeFigure({ view: h.view, you: h.scores })}</div>
             <a class="star-hit" href="#/star" aria-label="${escapeHtml(t("Open your star"))}"></a>
           </div>
-          ${shapeSwitchMarkup(h.view)}
+          <div class="home-tools">
+            ${shapeSwitchMarkup(h.view)}
+            <button type="button" id="btn-share-radar" class="share-btn" title="${escapeHtml(t("Share your star"))}">${SHARE_ICON}<span class="share-text">${escapeHtml(t("Share your star"))}</span></button>
+          </div>
         </div>
         <div class="home-reading">
           <div class="balance-index">
@@ -180,91 +199,37 @@ function topSection(h) {
             <p class="balance-index-title">${t("Balance Index")}${footnoteRef("index", "1")}</p>
           </div>
           <p class="home-headline">${escapeHtml(tp("Strongest in {strong}.", { strong }))} ${escapeHtml(tp("{weak} is asking for more.", { weak }))}</p>
-          <div class="home-identity">
-            <p class="home-facts"><strong class="home-name">${escapeHtml(p.name)}</strong> · ${t("Lv.")}${escapeHtml(p.level)}</p>
-            <p class="home-links">
-              <a class="pill" href="#/year">${escapeHtml(t("Your year"))}</a>
-              <button type="button" id="btn-share-radar" class="pill pill-light share-btn">${SHARE_ICON}<span class="share-text">${escapeHtml(t("Share your star"))}</span></button>
-            </p>
-          </div>
         </div>
       </div>
     </section>`;
 }
 
-// On a phone the share button is this icon alone (Android's share mark); the
-// words stay as its accessible name (css/home.css).
-const SHARE_ICON = `<svg class="share-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.4M8.3 13.2l7.4 4.4"/></g></svg>`;
+// What you have done so far, as four figures (the owner, v157): the page's
+// reward, before anything asks for more.
+function effortSection(h) {
+  const e = h.effort;
+  const figure = (value, max, caption) => `
+    <li class="effort-item">
+      <span class="effort-value"><b data-count="${escapeHtml(value)}">${escapeHtml(value)}</b>${max ? `<small>/${escapeHtml(max)}</small>` : ""}</span>
+      <span class="effort-caption">${escapeHtml(caption)}</span>
+    </li>`;
+  return `
+    <section class="panel home-effort"><div class="wrap split">
+      ${label(t("Your effort so far"))}
+      <ul class="effort-list">
+        ${figure(e.regions, CHAPTERS.length, t("regions explored"))}
+        ${figure(e.questions, 0, t("questions answered"))}
+        ${figure(e.reviews, 0, t("weekly reviews"))}
+        ${figure(e.kept, 0, t("pledges kept"))}
+      </ul>
+    </div></section>`;
+}
 
 // A button's label, and the one word it shortens to on a phone, where the
 // button trails its row (css/home.css). The full label stays the accessible
 // name; the short word is hidden from it, and is its first word.
 const shortLabel = (full, short) =>
   `<span class="pill-long">${full}</span><span class="pill-short" aria-hidden="true">${short}</span>`;
-
-// One thing to do: a headline, why, and the controls that do it.
-function todoRow({ title, body, actions, cls = "" }) {
-  return `
-    <li class="todo${cls ? ` ${cls}` : ""}">
-      <p class="todo-text"><strong class="todo-title">${title}</strong> <span class="todo-body">${body}</span></p>
-      ${actions ? `<span class="todo-actions">${actions}</span>` : ""}
-    </li>`;
-}
-
-// Everything to act on, most urgent first: the weekly review is the app's
-// loop, a due re-assessment is stale scores, and an un-backed-up browser is
-// the only one that can lose data. Once the week's review is done the list
-// ends by saying when the next one opens, so it is never empty. The in-depth
-// offer is not here: it argues for more accurate scores, so it sits under
-// them (tests/layout.test.mjs).
-function todoSection(h) {
-  const rows = [];
-  if (h.reviewDue) {
-    rows.push(todoRow({
-      title: t("Weekly review open."),
-      body: t("About two minutes."),
-      actions: `<a href="#/review" class="pill">${shortLabel(t("Start Weekly Review"), t("Start"))}</a>`
-    }));
-  }
-  if (h.checkinDue) {
-    rows.push(todoRow({
-      title: t("Monthly re-assessment due."),
-      body: t("A few short questions, once a month."),
-      actions: `<a href="#/checkin" class="pill">${shortLabel(t("Start Re-assessment"), t("Start"))}</a>`
-    }));
-  }
-  if (h.needsBackup) {
-    rows.push(todoRow({
-      title: t("Back up your data."),
-      body: h.daysSinceExport === null
-        ? t("Your data lives only in this browser.")
-        : tp("Last backup {days} days ago.", { days: h.daysSinceExport }),
-      actions: `<button type="button" id="backup-nudge-export" class="pill">${t("Export")}</button>`
-    }));
-  }
-  if (h.askBirthday) {
-    rows.push(todoRow({
-      title: t("When does your year turn?"),
-      body: t("Month and day only."),
-      actions: `<a href="#/year" class="pill">${t("Answer")}</a>
-                <button type="button" id="birthday-prompt-dismiss" class="pill pill-light">${t("Not now")}</button>`
-    }));
-  }
-  // A quick-start save's estimated scores are marked † on their rows instead.
-  if (!h.reviewDue) {
-    rows.push(todoRow({
-      cls: "todo-done",
-      title: t("Done for this week."),
-      body: escapeHtml(tp("The next one opens {date}.", { date: nextReviewDate() })),
-      actions: ""
-    }));
-  }
-  return `
-    <section class="panel statement home-todo"><div class="wrap split">
-      ${label(t("To do"))}
-      <ul class="todo-list">${rows.join("")}</ul>
-    </div></section>`;
-}
 
 // One aspect as a row: its emblem, region and aspect, the score on a bar with
 // the population average ticked, and your character there. The standing, the
@@ -347,54 +312,21 @@ function notesSection(h) {
     </div></section>`;
 }
 
-// A record's thumbnail: the region it moved most, or your star.
+// A suggestion's thumbnail: the region it is for, or your star.
 const thumbFor = (aspect, h) => (aspect && chapterOf(aspect) ? motifThumb(aspect) : starThumb(yourStarSvg(h.scores)));
 
-// Reviews, re-assessments and the journey, newest first. Pledges carry no
-// date, so they are on the wall below rather than in this list.
-function recentRecords(h) {
-  const { state } = h;
-  const rows = [
-    ...state.reviews.map(r => ({
-      date: r.date,
-      kind: t("Weekly Review"),
-      aspect: biggestShift(r.shifts),
-      title: shiftSummary(r.shifts),
-      sub: pledgesAndPoints(r)
-    })),
-    ...(state.checkins || []).map(c => ({
-      date: c.date, kind: t("Re-assessment"), aspect: biggestShift(c.shifts), title: shiftSummary(c.shifts)
-    })),
-    ...(state.baseline?.date ? [{
-      date: state.baseline.date, kind: t("Journey"), aspect: null, title: t("Journey complete"), sub: t("All eight regions")
-    }] : [])
-  ];
-  return rows
-    .filter(r => !Number.isNaN(new Date(r.date).getTime()))
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, RECENT_ROWS);
-}
-
-// Where to start, then what happened recently: two compact lists.
+// Where to start: the recommendations, each opening its aspect page. Your
+// recent records moved to Your year (v157).
 function newsSection(h) {
-  const recent = recentRecords(h);
-  const recentList = recent.length
-    ? recent.map(r => newsRow({ date: dotDate(r.date), kind: r.kind, thumb: thumbFor(r.aspect, h), title: r.title, sub: r.sub })).join("")
-    : `<li class="newsrow newsrow-empty">${escapeHtml(t("No weekly reviews yet — your first one opens the week after onboarding."))}</li>`;
-  const start = h.suggestions.length ? `
-    <div class="wrap split news-block">
-      <div class="news-side">${label(t("Where to start"))}</div>
-      <ul class="newslist">${h.suggestions.map(s => newsRow({
-        kind: s.aspectLabel, thumb: thumbFor(s.aspect, h), title: s.title,
-        sub: s.text, href: `#/aspect/${s.aspect}`
-      })).join("")}</ul>
-    </div>` : "";
+  if (!h.suggestions.length) return "";
   return `
     <section class="panel news home-news">
-      ${start}
       <div class="wrap split news-block">
-        <div class="news-side">${label(t("Recent"))}</div>
-        <ul class="newslist">${recentList}</ul>
+        <div class="news-side">${label(t("Where to start"))}</div>
+        <ul class="newslist">${h.suggestions.map(s => newsRow({
+          kind: s.aspectLabel, thumb: thumbFor(s.aspect, h), title: s.title,
+          sub: s.text, href: `#/aspect/${s.aspect}`
+        })).join("")}</ul>
       </div>
     </section>`;
 }
@@ -433,7 +365,7 @@ export function homeMarkup(h) {
     <div class="stage-page home">
       ${noticeSection(h)}
       ${topSection(h)}
-      ${todoSection(h)}
+      ${effortSection(h)}
       ${aspectsSection(h)}
       ${newsSection(h)}
       ${wallSection(h)}
@@ -473,15 +405,29 @@ function mountWall(root, scope) {
   frame();
 }
 
-export function renderDashboard(containerId, state, onExportBackup) {
+// The effort figures count up from zero, once, as the page opens.
+function mountEffort(root, scope) {
+  const figures = [...root.querySelectorAll(".effort-value b[data-count]")];
+  const ends = figures.map(b => Number(b.dataset.count) || 0);
+  animate({
+    duration: COUNT_MS,
+    ease: easeStar,
+    signal: scope.signal,
+    reduced: "end",
+    update: (u) => figures.forEach((b, i) => { b.textContent = String(Math.round(ends[i] * u)); })
+  });
+  onAbort(scope.signal, () => figures.forEach((b, i) => { b.textContent = String(ends[i]); }));
+}
+
+export function renderDashboard(containerId, state) {
   const container = document.getElementById(containerId);
   if (!container) return;
   const h = readHome(state);
   // Taken before the page draws, so a still page drops it too.
   const zoom = takeZoom();
   // Beside the care notice the page itself stays calm (the notice never
-  // moves, and no text types or wall drifts around it), but your star still
-  // flies to and from its page (the owner, 2026-09-29: "Full warp always").
+  // moves, and nothing types, counts or drifts around it), but your star
+  // still flies to and from its page (the owner, 2026-09-29: "Full warp always").
   const calm = !!h.careNotice;
   const scope = renderStagePage(container, () => homeMarkup(h), { calm });
   // The switch works on a still page too; there it redraws without moving.
@@ -491,7 +437,10 @@ export function renderDashboard(containerId, state, onExportBackup) {
   if (scope) {
     try {
       mountStar(container, scope, zoom);
-      if (!calm) mountWall(container, scope);
+      if (!calm) {
+        mountEffort(container, scope);
+        mountWall(container, scope);
+      }
     } catch (err) {
       console.error("Home motion failed:", err);
     }
@@ -502,21 +451,6 @@ export function renderDashboard(containerId, state, onExportBackup) {
     closeCareNotice();
     e.target.closest(".notice-panel")?.remove();
   });
-
-  // Removing the row rather than re-rendering: the flag is persisted either
-  // way, and a full re-render would scroll the reader back to the top as a
-  // reward for declining a question.
-  document.getElementById("birthday-prompt-dismiss")?.addEventListener("click", (e) => {
-    stateManager.dismissBirthdayPrompt();
-    const row = e.target.closest(".todo");
-    const list = row?.parentElement;
-    row?.remove();
-    if (list && !list.children.length) list.closest(".home-todo")?.remove();
-  });
-
-  if (h.needsBackup && typeof onExportBackup === "function") {
-    document.getElementById("backup-nudge-export")?.addEventListener("click", onExportBackup);
-  }
 
   document.getElementById("btn-share-radar")?.addEventListener("click", () => shareStar(h));
 }

@@ -432,19 +432,17 @@ try {
 // --- FLOW 2: weekly review -> measured values land, pledges grade, points pay ---
 // Onboarding counts as this week's measurement, so backdate the baseline a
 // week to make the review due, exactly as a returning user would find it.
-// Reads the dashboard's birthday prompt by its dismiss button, which only that
-// card renders — matching on prose would break the moment the copy is reworded.
-const birthdayPromptShown = () =>
-  page.evaluate(() => !!document.getElementById("birthday-prompt-dismiss"));
+// What is due is a dot on the Weekly Review link (v157, in place of Overview's
+// To do), read by its element rather than its words.
+const dueDotShown = () =>
+  page.evaluate(() => !!document.querySelector('#navpill a[href="#/review"] .nav-dot'));
 
 try {
   const before = await readState();
 
-  // The birthday left onboarding, so it must not simply reappear on the first
-  // dashboard — that would relocate the question rather than defer it. At this
-  // point the user has onboarded and submitted nothing, so the prompt is gated.
-  if (await birthdayPromptShown()) {
-    problems.push("flow2: the birthday prompt fired before the first weekly review");
+  // The journey was this week's measurement: nothing is due yet.
+  if (await dueDotShown()) {
+    problems.push("flow2: the nav marked a review due in the journey's own week");
   }
 
   // The week of the journey: the review is not due, and says when it opens
@@ -459,6 +457,8 @@ try {
     localStorage.setItem("lifequest_state", JSON.stringify(s));
   });
   await page.reload({ waitUntil: "networkidle" });
+  await page.waitForSelector("#navpill:not(.d-none)", { timeout: 10000 });
+  if (!(await dueDotShown())) problems.push("flow2: a review came due and the nav did not mark it");
   await goTo("review");
   await page.waitForSelector("#weekly-review-form", { timeout: 10000 });
 
@@ -546,12 +546,13 @@ try {
   // Wait for a card the dashboard actually renders, then give the prompt its own
   // bounded wait so a genuine absence still fails the flow.
   await page.waitForSelector(".home-top .balance-index", { timeout: 10000 });
-  const birthdayArrived = await page
-    .waitForSelector("#birthday-prompt-dismiss", { timeout: 5000 })
+  if (await dueDotShown()) problems.push("flow2: the nav still marked the review due once it was done");
+  // The birthday question left Overview (v157); Your year always carries it.
+  await page.goto(`${BASE}/#/year`);
+  const birthdayAsked = await page
+    .waitForSelector("#year-birthday-form", { timeout: 5000 })
     .then(() => true, () => false);
-  if (!birthdayArrived) {
-    problems.push("flow2: the birthday prompt never arrived after the first weekly review");
-  }
+  if (!birthdayAsked) problems.push("flow2: Your year no longer asks when your year turns");
 } catch (err) {
   problems.push(`flow2 (weekly review): ${err.message}`);
 }

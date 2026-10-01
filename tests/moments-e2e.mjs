@@ -562,16 +562,8 @@ try {
   const picked = await page.evaluate(() => document.querySelector('.people [aria-checked="true"]')?.textContent);
   if (picked !== "Ton") problems.push(`side by side: removing Nok moved the pick to ${picked}`);
 
-  // Lumi: the panel settles in and the tip types itself, then both rest.
-  await page.click("#btn-lumi");
-  await advance(page, FRAME_MS * 3);
-  const arriving = await lumiState(page);
-  if (!arriving.open || !arriving.styled || !arriving.hidden) problems.push(`lumi: the panel did not settle in and type (${JSON.stringify(arriving)})`);
-  await advance(page, 6000);
-  const rested = await lumiState(page);
-  if (rested.styled || rested.hidden) problems.push(`lumi: the panel was left mid-motion (${JSON.stringify(rested)})`);
-  await page.keyboard.press("Escape");
-  if ((await lumiState(page)).open) problems.push("lumi: Escape did not close the panel");
+  // Lumi is off for now (the owner, v157: app.js LUMI_ON): its star stays hidden.
+  if (await page.isVisible("#btn-lumi")) problems.push("lumi: the header star shows while Lumi is off");
   await context.close();
 } catch (err) {
   problems.push(`rest of the map: ${err.message}`);
@@ -609,11 +601,6 @@ try {
     wipe: !!document.querySelector(".rv-wipe.on")
   }));
   if (hop.step !== "1" || hop.wipe) problems.push(`reduced: the review wiped or did not move on (screen ${hop.step})`);
-  // Lumi's panel is simply there, the tip whole.
-  await page.click("#btn-lumi");
-  const lumi = await lumiState(page);
-  if (!lumi.open || lumi.styled || lumi.hidden) problems.push(`reduced: Lumi's panel moved or typed (${JSON.stringify(lumi)})`);
-  await page.keyboard.press("Escape");
   const writes = await page.evaluate(() => globalThis.__styleWrites);
   if (writes.length) problems.push(`reduced: styles written on moving pieces: ${writes.slice(0, 4).join(" | ")}`);
   const frames = await page.evaluate(() => globalThis.__framesRequested());
@@ -629,4 +616,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star warps into its own page and flies back (the care notice too), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi's panel settles and types, and reduced motion moves nothing");
+console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star warps into its own page and flies back (the care notice too), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi stays off, and reduced motion moves nothing");

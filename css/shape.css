@@ -68,6 +68,9 @@
   transition: background-color 160ms linear, color 160ms linear;
 }
 :is(.shape-opt, .sp-opt)[aria-pressed="true"] { background: var(--frame-ink); color: #ffffff; }
+/* The view switch's symbols (v157): round 44px buttons. */
+.shape-opt { display: inline-grid; place-items: center; width: 44px; padding: 0; }
+.shape-opt svg { display: block; width: 22px; height: 22px; }
 :is(.shape-opt, .sp-opt):focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
 
 html[data-reduce-motion] .shape *,

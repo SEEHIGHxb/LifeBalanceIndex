@@ -19,6 +19,8 @@ import { bringAnswers, shouldBringAnswers } from "./moved.js";
 const TOAST_DURATION_MS = 1600;
 const TABS = ["dashboard", "review", "quests", "leaderboard"];
 const DEFAULT_TAB = "dashboard";
+// Lumi's tips are off for now (the owner, 2026-10-01); true brings them back.
+const LUMI_ON = false;
 
 // Each screen's code is fetched the first time it is shown (view-loader.js;
 // the owner, 2026-09-27: "load only the code each screen needs"). The Landing
@@ -188,7 +190,7 @@ function initializeApp() {
   // Lumi speaks from the header's star once there are scores to speak about.
   bindLumi(() => stateManager.state);
   closeLumi();
-  setLumiAvailable(state.onboarded);
+  setLumiAvailable(LUMI_ON && state.onboarded);
   maybeOfferRecovery();
 
   if (!state.onboarded) {
@@ -305,6 +307,7 @@ function renderActiveTab() {
   const activeTab = route.type === "tab" ? route.tab : null;
   // Mark the current route in the menu and the quick links (aria-current).
   syncMenuRoute(routePath(route));
+  syncDueDot();
 
   const [name, draw] = screenFor(route, activeTab, state);
   // Resolves once drawn: at once when the screen's code is already loaded.
@@ -312,6 +315,29 @@ function renderActiveTab() {
     draw(mod);
     announceRoute(route);
   });
+}
+
+// What is due shows as a dot on the Weekly Review link (the owner, v157, in
+// place of Overview's To do): a weekly review open, or a monthly
+// re-assessment due, which the review page offers once its review is done.
+// The dot's words are for screen readers.
+function syncDueDot() {
+  const link = document.querySelector('#navpill a[href="#/review"]');
+  if (!link) return;
+  const due = stateManager.isWeeklyReviewDue() ? t("Weekly review open.")
+    : stateManager.isCheckinDue() ? t("Monthly re-assessment due.") : "";
+  let dot = link.querySelector(".nav-dot");
+  if (!due) {
+    dot?.remove();
+    return;
+  }
+  if (!dot) {
+    dot = document.createElement("span");
+    dot.className = "nav-dot";
+    dot.innerHTML = '<span class="sr-only"></span>';
+    link.appendChild(dot);
+  }
+  dot.firstChild.textContent = ` ${due}`;
 }
 
 // Which screen a route shows, and how to draw it from that screen's module.
@@ -337,7 +363,7 @@ function screenFor(route, activeTab, state) {
   if (activeTab === "review") return ["review", m => m.renderReview(main, state, handleReviewComplete)];
   if (activeTab === "quests") return ["quests", m => m.renderQuests(main, state)];
   if (activeTab === "leaderboard") return ["leaderboard", m => m.renderLeaderboard(main, state, renderActiveTab)];
-  return ["dashboard", m => m.renderDashboard(main, state, downloadBackup)];
+  return ["dashboard", m => m.renderDashboard(main, state)];
 }
 
 // The hash path a route lives at, without "#/": what the menu's links point to.

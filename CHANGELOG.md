@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `156`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `157`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.88.0] - 2026-10-01 (v157)
+
+- **Overview as a reward** (views/dashboard.js; the owner, 2026-10-01). The page now shows the effort you have put in, then invites you to explore. New: "Your effort so far", four figures that count up once (regions explored, questions answered, weekly reviews, pledges kept), counted from what the app already keeps. Removed from Overview: To do (what is due is now a gold dot on the Weekly Review link, app.js), your name, level and "Your year" (now under the name on Profile, with the backup reminder), and Recent (now on Your year). The birthday question lives on Profile and Your year as before.
+- **The view switch is three symbols** (views/shape.js): a star, a radar web and joined dots, on every screen, with the names kept for screen readers. On Overview the switch and a round share icon sit under your star.
+- **Aspect emblems sit on their own cream** (#F9F4E8) and fill their circle; the aspect colour stays on the bar.
+- **Lumi is off for now** (app.js LUMI_ON): its header star and tips are hidden; the code stays.
+- **New region pictures** (assets/regions), brighter and full-bleed, cropped to 1280x720 and kept under the 180 KB budget each.
+- Thai drafts for the effort row await the owner's review; eleven Thai entries for the retired To do were removed.
 
 ## [2.87.0] - 2026-09-30 (v156)
 

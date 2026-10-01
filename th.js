@@ -7,6 +7,13 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
+  // v157, draft awaiting the owner's review: Overview's effort row.
+  "Your effort so far": "สิ่งที่คุณทำมาแล้ว",
+  "regions explored": "ดินแดนที่สำรวจแล้ว",
+  "questions answered": "คำถามที่ตอบแล้ว",
+  "weekly reviews": "การทบทวนรายสัปดาห์",
+  "pledges kept": "คำมั่นที่ทำได้",
+
   // v154, approved by the owner: the in-depth assessment trimmed.
   "Optional. Save each section on its own.": "ไม่บังคับ บันทึกแต่ละหมวดแยกกันได้",
   "These longer questionnaires make each aspect's estimate more reliable and tighten its percentile band.": "แบบสอบถามที่ยาวขึ้นเหล่านี้ทำให้ค่าประมาณของแต่ละด้านน่าเชื่อถือขึ้นและช่วงเปอร์เซ็นไทล์แคบลง",
@@ -149,11 +156,7 @@ export const TH = {
   // v141, approved by the owner 2026-09-29: Overview trimmed, notes and sources.
   "Note {n}": "หมายเหตุ {n}",
   "Back to the text": "กลับไปที่เนื้อหา",
-  "About two minutes.": "ใช้เวลาราวสองนาที",
-  "A few short questions, once a month.": "คำถามสั้น ๆ ไม่กี่ข้อ เดือนละครั้ง",
-  "Your data lives only in this browser.": "ข้อมูลของคุณอยู่ในเบราว์เซอร์นี้เท่านั้น",
   "Last backup {days} days ago.": "สำรองข้อมูลล่าสุดเมื่อ {days} วันก่อน",
-  "Month and day only.": "เฉพาะวันและเดือนเท่านั้น",
   "Want sharper scores?": "อยากได้คะแนนที่แม่นยำขึ้นไหม",
   "The tick on each bar is the average.": "ขีดบนแต่ละแถบคือค่าเฉลี่ย",
   "† An estimate for now.": "† เป็นค่าประมาณในตอนนี้",
@@ -537,7 +540,6 @@ export const TH = {
   "It cannot be undone, and this browser holds the only copy.": "ไม่สามารถกู้คืนได้ และเบราว์เซอร์นี้เก็บข้อมูลสำเนาเดียวเท่านั้น",
   "Download a backup, then erase": "ดาวน์โหลดไฟล์สำรอง แล้วจึงลบ",
   "Erase without a backup": "ลบโดยไม่สำรองข้อมูล",
-  "Back up your data.": "สำรองข้อมูลของคุณ",
   "Monthly re-assessment due.": "ถึงเวลาประเมินซ้ำประจำเดือนแล้ว",
   "Start Re-assessment": "เริ่มประเมินซ้ำ",
   "This year's points": "คะแนนปีนี้",
@@ -551,9 +553,6 @@ export const TH = {
   "Birth month": "เดือนเกิด",
   "Day of month": "วันที่",
   "Save": "บันทึก",
-  "When does your year turn?": "ปีของคุณเปลี่ยนวันไหน?",
-  "Answer": "ตอบคำถาม",
-  "Not now": "ไว้ก่อน",
   "Your level is simply your age — a fact about you, not a score you earned. Tell the app which day your year turns and it can close each year and open the next one for you.":
     "เลเวลของคุณคืออายุ — เป็นข้อเท็จจริงเกี่ยวกับตัวคุณ ไม่ใช่คะแนนที่ต้องไขว่คว้า บอกแอปว่าปีของคุณเปลี่ยนวันไหน แล้วแอปจะปิดปีเก่าและเปิดปีใหม่ให้คุณ",
   "Year {level}": "ปีอายุ {level}",
@@ -1323,7 +1322,6 @@ export const TH = {
   "Strongest in {strong}.": "จุดแข็งที่สุดคือ{strong}",
   "{weak} is asking for more.": "{weak}ยังรอให้คุณใส่ใจอีกนิด",
   "Share your star": "แชร์ดาวของคุณ",
-  "To do": "สิ่งที่ต้องทำ",
   "Your eight aspects": "แปดด้านของคุณ",
   "out of 100": "จาก 100",
   "Journey": "การเดินทาง",
@@ -1333,8 +1331,6 @@ export const TH = {
   "Your pledges": "คำมั่นของคุณ",
   "{n} active this week": "ใช้อยู่ {n} คำมั่นในสัปดาห์นี้",
   "{kept} kept at your last review": "ทำได้ {kept} คำมั่นในการทบทวนครั้งล่าสุด", // v127 draft, approved by the owner 2026-09-29
-  "Done for this week.": "สัปดาห์นี้เสร็จแล้ว",
-  "The next one opens {date}.": "ครั้งถัดไปเปิด {date}",
   // The weekly loop (views/aspect.js, review.js, quests.js; redesign R4). The
   // prototype's Thai where it had the line (aStanding, aHead, aCovers, aTrend,
   // aTrendRow, aTrendSame, aTrendDelta, aKind, aQuiet, rHead, rStep, rSeeHome,

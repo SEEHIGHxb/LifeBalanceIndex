@@ -12,7 +12,8 @@ let dom;
 beforeEach(() => { dom = installDom(); });
 
 installDom();
-const { renderDashboard, yourStarSvg, litSkySlots } = await import("../views/dashboard.js");
+const { renderDashboard, yourStarSvg, litSkySlots, effortCounts } = await import("../views/dashboard.js");
+const { yearMarkup } = await import("../views/yearreview.js");
 const { CHAPTERS } = await import("../views/journey.js");
 
 const STATE = {
@@ -113,42 +114,60 @@ test("Home is compact: no full-screen hero, photo band or repeated panels", () =
   for (const gone of ['class="hero"', 'class="panel mission"', "photoband", "home-you", "panel careers", "region-card"]) {
     assert.ok(!html.includes(gone), `Home still renders ${gone}`);
   }
-  // Where to start comes before Recent.
-  assert.ok(html.indexOf("(Where to start)") < html.indexOf("(Recent)"));
 });
 
-test("the to-do list says when the next review opens once this week's is done", () => {
+test("Overview shows your effort, not chores: no To do, Recent or level (v157)", () => {
+  // The owner, 2026-10-01: the page rewards what you have done; what is due
+  // is a dot on the nav, the level and year are on Profile, Recent on Your year.
   const html = render({ ...STATE, reviews: [{ date: new Date().toISOString(), goals: [], xp: 0, shifts: {} }] });
-  assert.match(html, /class="todo todo-done"/);
-  assert.match(html, /Done for this week\./);
-  assert.doesNotMatch(html, /Weekly review open\./);
+  for (const gone of ["home-todo", "(To do)", "(Recent)", "home-name", 'href="#/year"', "backup-nudge-export", "birthday-prompt-dismiss"]) {
+    assert.ok(!html.includes(gone), `Overview still renders ${gone}`);
+  }
+  assert.match(html, /class="panel home-effort"/);
+  assert.ok(html.indexOf("home-top") < html.indexOf("home-effort"), "the effort row follows your star");
+  assert.ok(html.indexOf("home-effort") < html.indexOf("home-aspects"), "and comes before the aspects");
 });
 
-test("a hostile name, pledge id and review shift are escaped or dropped", () => {
+test("the effort row counts regions, questions, reviews and pledges kept", () => {
+  const state = {
+    ...STATE,
+    baseline: { ...STATE.baseline, answered: { cfpb: true, who5: true, jss: false } },
+    checkins: [{ date: "2026-09-01T00:00:00.000Z", sums: { who5: 14, st5: 4, ras: null }, shifts: {} }],
+    reviews: [
+      { date: "2026-09-08T00:00:00.000Z", goals: [{ met: true }, { met: false }], xp: 10, shifts: {} },
+      { date: "2026-09-15T00:00:00.000Z", goals: [{ met: true }, { met: true }], xp: 10, shifts: {} }
+    ]
+  };
+  const e = effortCounts(state, []);
+  // cfpb 5 + who5 5 at the journey; who5 5 + st5 5 at the re-assessment; ras skipped.
+  assert.deepEqual(e, { regions: 8, questions: 20, reviews: 2, kept: 3 });
+  assert.equal(effortCounts(state, ["finance", "mental"]).regions, 6, "an estimated region is not explored");
+  assert.deepEqual(effortCounts({ ...STATE, baseline: null, reviews: [], checkins: [] }, []), { regions: 0, questions: 0, reviews: 0, kept: 0 });
+  const html = render(state);
+  assert.match(html, /data-count="20">20<\/b>/, "the figure is printed whole, for a still page");
+});
+
+test("a hostile name and pledge id are escaped or dropped", () => {
   const html = render({
     ...STATE,
     profile: { ...STATE.profile, name: "<img src=x onerror=alert(1)>" },
-    goals: [{ id: "g1", templateId: "constructor", target: 1 }, { id: "g2", templateId: "water", target: 2 }],
-    reviews: [{ date: "2026-09-01T00:00:00.000Z", goals: [], xp: 5, shifts: { "<b>": 3 } }]
+    goals: [{ id: "g1", templateId: "constructor", target: 1 }, { id: "g2", templateId: "water", target: 2 }]
   });
   assert.doesNotMatch(html, /<img src=x/);
-  assert.match(html, /&lt;img src=x/);
-  assert.match(html, /&lt;b&gt; \+3/, "an unknown shift key must print escaped");
-  assert.doesNotMatch(html, /<b> \+3/);
 });
 
-test("the news list is newest first and at most five rows", () => {
+test("Your year's Recent list is newest first, at most five, escaped, and skips bad dates", () => {
   const reviews = Array.from({ length: 7 }, (_, i) => ({
     date: `2026-09-0${i + 1}T00:00:00.000Z`, goals: [], xp: 10, shifts: {}
   }));
-  const html = render({ ...STATE, reviews });
-  const dates = [...html.matchAll(/class="newsrow-date">([^<]*)</g)].map(m => m[1]);
+  const html = yearMarkup({ ...STATE, reviews: [...reviews, { date: "not a date", goals: [], xp: 1, shifts: {} }] });
+  const recent = html.slice(html.indexOf("year-recent"), html.indexOf("year-filed"));
+  const dates = [...recent.matchAll(/class="newsrow-date">([^<]*)</g)].map(m => m[1]);
   assert.deepEqual(dates, ["2026.09.07", "2026.09.06", "2026.09.05", "2026.09.04", "2026.09.03"]);
-});
-
-test("a bad date is left out of the news, not printed as NaN", () => {
-  const html = render({ ...STATE, reviews: [{ date: "not a date", goals: [], xp: 1, shifts: {} }] });
   assert.doesNotMatch(html, /NaN/);
+  const hostile = yearMarkup({ ...STATE, reviews: [{ date: "2026-09-01T00:00:00.000Z", goals: [], xp: 5, shifts: { "<b>": 3 } }] });
+  assert.match(hostile, /&lt;b&gt; \+3/, "an unknown shift key must print escaped");
+  assert.doesNotMatch(hostile, /<b> \+3/);
 });
 
 test("the pledge wall appears only with pledges, and says in words what it shows", () => {

@@ -26,9 +26,9 @@ beforeEach(() => installDom());
 
 // --- Home reads your star before your name --------------------------------
 
-test("Home shows your star and your index before your name", async () => {
-  // The scores are the point of the page. The hero is the radar shape of
-  // them with the Balance Index under it; the name comes after.
+test("Home shows your star, then your index, then your effort", async () => {
+  // The scores are the point of the page: your star, the Balance Index beside
+  // it, then what you have done (v157; the name moved to Profile).
   const { renderDashboard } = await import("../views/dashboard.js");
   const dom = installDom();
   renderDashboard(MAIN, STATE, () => {});
@@ -39,7 +39,7 @@ test("Home shows your star and your index before your name", async () => {
     return i;
   };
   assert.ok(at("home-star") < at("balance-index"), "your star must lead the page");
-  assert.ok(at("balance-index") < at("home-name"), "the Balance Index must precede the name");
+  assert.ok(at("balance-index") < at("home-effort"), "the Balance Index must precede the effort row");
   assert.ok(at("home-star") < at("home-aspects"), "the star must come before the aspects");
 });
 

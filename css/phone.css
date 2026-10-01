@@ -98,7 +98,20 @@ html[lang="th"] .notes-fold > summary { letter-spacing: normal; text-transform: 
 /* ------------------------------------------------ the bottom bar and footer
    The frame lives outside #main-view, so these follow the window. */
 .nav-ico { display: none; }
+/* Something due (app.js syncDueDot, v157): a gold dot on Weekly Review, after
+   its word on a wide screen, on its icon's corner on a phone. */
+.nav-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: #c8962e;
+  vertical-align: 0.15em;
+}
 @media (max-width: 900px) {
+  #navpill a { position: relative; }
+  #navpill .nav-dot { position: absolute; top: 10px; left: calc(50% + 12px); margin: 0; box-shadow: 0 0 0 2px var(--frame-page); }
   :root { --nav-bar-h: 64px; }
   #navpill:not(.d-none) {
     position: fixed;
@@ -150,3 +163,9 @@ html[lang="th"] .notes-fold > summary { letter-spacing: normal; text-transform: 
   .footer-links { gap: 0 20px; }
   .site-footer .footer-links a { font-size: 12px; }
 }
+
+/* Profile's line under its name: you, your level, and Your year (v157). */
+.profile-view .pagehead p { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; }
+.profile-year { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; font-weight: 700; color: var(--frame-ink); text-decoration: none; }
+.profile-year::after { content: "\203A"; font-size: 1.3em; line-height: 1; }
+.profile-year:hover { text-decoration: underline; }

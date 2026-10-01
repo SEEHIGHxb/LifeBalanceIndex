@@ -213,10 +213,13 @@ export function renderProfile(containerId, state, onSaved) {
   const moneyRef = book.ref("money", `<p>${t("Money sent to family: leave it blank or enter 0 if you send nothing.")} ${t("Shown on your Social Contribution page as giving. It changes nothing about your score.")}</p>`);
   const appsRef = book.ref("apps", `<p>${t("If you use these apps on this device, they can hand their numbers to your Weekly Review so you type less. Everything stays in this browser: nothing is uploaded, and no account is involved.")}</p><p>${t("Each app has its own sharing switch too. Turning one on here only means this app may read what that app chose to share.")}</p>${CONNECTION_SOURCES.map(s => `<p>${escapeHtml(meta[s].name)}. ${tp("Pre-fills: {fields}", { fields: meta[s].fills })}</p>`).join("")}`);
   const motion = motionCard(book);
+  // The backup reminder, moved here from Overview's To do (v157).
+  const sinceExport = stateManager.needsBackupNudge() ? stateManager.daysSinceLastExport() : null;
+  const backupLine = sinceExport === null ? "" : ` <strong>${escapeHtml(tp("Last backup {days} days ago.", { days: sinceExport }))}</strong>`;
 
   container.innerHTML = `
     <div class="stage-page textpage profile-view">
-      ${pageHead(t("Profile"), [])}
+      ${pageHead(t("Profile"), [`<span class="profile-who"><strong>${escapeHtml(p.name)}</strong> · ${t("Lv.")}${escapeHtml(p.level)}</span> <a class="profile-year" href="#/year">${escapeHtml(t("Your year"))}</a>`])}
 
       ${notedSection(t("About you"), aboutRef, `
         ${textField("pf-name", t("Name"), p.name, 'maxlength="40"')}
@@ -249,7 +252,7 @@ export function renderProfile(containerId, state, onSaved) {
       ${motion}
 
       ${textSection(t("Your data"), `
-        <p class="profile-note">${t("Stored only in this browser. Export a backup now and then.")}</p>
+        <p class="profile-note">${t("Stored only in this browser. Export a backup now and then.")}${backupLine}</p>
         <p class="actions profile-data-actions">
           <button type="button" id="btn-export-data" class="pill">${t("Export")}</button>
           <button type="button" id="btn-import-data" class="pill">${t("Import")}</button>

@@ -3,9 +3,12 @@
 // as HTML; the motion is covered by tests/moments-e2e.mjs.
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import { DEFAULT_STATE } from "../defaults.js";
 import { installDom } from "./dom-stub.mjs";
+
+const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
 
 const MAIN = "main-view";
 let dom;
@@ -165,7 +168,7 @@ test("an aspect page is compact: the emblem on the region's photograph, rows, an
   assert.match(out, /class="page-top-plate" style="background-image: url\('\.\/assets\/regions\/[^']+\.jpg'\);"/);
   assert.doesNotMatch(out, /class="photoband"/);
   assert.match(out, /<h2 class="page-top-word">The Market <small>[^<]+<\/small><\/h2>/);
-  assert.match(out, /class="aspect-score-badge"/, "the grade and score sit in the top");
+  assert.match(out, /class="aspect-top-read">/, "the grade and score sit in the top");
   assert.ok(out.indexOf("page-top") < out.indexOf("aspect-society"));
   // Where it stands is said once, in the top, not again under the gauge.
   assert.equal((out.match(/Ahead of about/g) || []).length, 1);
@@ -187,11 +190,11 @@ test("an aspect page's explanations are numbered notes at its end, in reading or
   }
   for (const heading of ["How you compare", "What it(&#39;|')s made of", "Where to start", "Notes and sources"]) assert.match(out, new RegExp(heading));
   const marks = [...out.matchAll(/<a id="fnref-([a-z]+)" href="#fn-\1" data-jump="fn-\1" aria-label="Note (\d)">\2<\/a>/g)].map(m => [m[1], m[2]]);
-  assert.deepEqual(marks, [["grade", "1"], ["character", "2"], ["compare", "3"], ["guidelines", "4"]]);
+  assert.deepEqual(marks, [["grade", "1"], ["character", "2"], ["compare", "3"], ["guidelines", "4"], ["parts", "5"]]);
   // The character's mark ends its line, not its name (the owner, v143).
   assert.match(out, /class="character-line">[^<]+<sup class="fn-ref"><a id="fnref-character"/);
   const notes = out.slice(out.indexOf('class="panel statement aspect-notes"'));
-  assert.deepEqual([...notes.matchAll(/<li id="fn-([a-z]+)"/g)].map(m => m[1]), ["grade", "character", "compare", "guidelines"]);
+  assert.deepEqual([...notes.matchAll(/<li id="fn-([a-z]+)"/g)].map(m => m[1]), ["grade", "character", "compare", "guidelines", "parts"]);
   assert.match(notes, /made up for fun/, "the character's disclaimer is kept");
   assert.match(notes, /“Percentile” = the share of people you're ahead of/);
   assert.match(notes, /class="fn-sources"><li><a href="https:/, "the sources are listed");
@@ -213,7 +216,7 @@ test("an unranked aspect says so in the top, and why in a note", () => {
   renderAspectPage(MAIN, STATE, "relationships");
   const out = html();
   assert.match(out, /class="page-top-lead aspect-standing">Not ranked<sup class="fn-ref"><a id="fnref-grade"/);
-  assert.doesNotMatch(out, /aspect-society|on purpose/);
+  assert.doesNotMatch(out, /aspect-society/);
   assert.match(out, /<li id="fn-grade"[^>]*>[\s\S]*A grade is a rank against a population/);
 });
 
@@ -225,11 +228,59 @@ test("the trend waits for a second week rather than repeat the score", () => {
   assert.match(html(), /class="trend-strip"/);
 });
 
-test("a quiet region's page says it is still on purpose, and a loud one does not", () => {
+test("a quiet region's page says it is still on purpose in a note, and a loud one does not", () => {
   renderAspectPage(MAIN, STATE, "mental");
-  assert.match(html(), /kept still on purpose/);
+  const out = html();
+  assert.doesNotMatch(out.split('class="panel statement aspect-notes"')[0], /kept still on purpose/);
+  assert.match(out, /<li id="fn-grade"[^>]*>[\s\S]*kept still on purpose/);
   renderAspectPage(MAIN, STATE, "physical");
   assert.doesNotMatch(html(), /kept still on purpose/);
+});
+
+// v160, the owner's cut list: the top on one line, no second percentile, one
+// line per check, and the rest in notes.
+test("an aspect page's top is one line: the letter, the score and where it stands", () => {
+  renderAspectPage(MAIN, STATE, "physical");
+  const out = html();
+  assert.match(out, /<div class="aspect-top-read">\s*<span class="aspect-grade-glyph grade-[a-f]">[A-F]<\/span>\s*<span class="sr-only">[^<]+<\/span><span class="aspect-top-sep" aria-hidden="true">·<\/span>\s*<span class="aspect-score"><span class="aspect-score-value">\d+<\/span><span class="aspect-score-max">\/100<\/span><\/span><span class="aspect-top-sep" aria-hidden="true">·<\/span>\s*<p class="page-top-lead aspect-standing">Ahead of about[^<]*<sup class="fn-ref"><a id="fnref-grade"/);
+  assert.doesNotMatch(out, /aspect-score-badge|aspect-grade-band|benchmark-detail/);
+  // The gauge keeps no figure of its own; its mark sits beside it.
+  assert.doesNotMatch(out, /\d+(st|nd|rd|th) percentile<sup/);
+  assert.match(out, /<div class="gauge-row">\s*<div class="gauge-track"[\s\S]*?<\/div>\s*<\/div><sup class="fn-ref"><a id="fnref-compare"/);
+});
+
+test("an unranked aspect's top starts at the score", () => {
+  renderAspectPage(MAIN, STATE, "relationships");
+  const out = html();
+  assert.doesNotMatch(out, /grade-badge|aspect-grade-glyph/);
+  assert.match(out, /<div class="aspect-top-read">\s*<span class="aspect-score">/);
+});
+
+test("each guideline check is one line, its figures in the note", () => {
+  renderAspectPage(MAIN, STATE, "physical");
+  const out = html();
+  const page = out.split('class="panel statement aspect-notes"')[0];
+  assert.doesNotMatch(page, /criterion-detail|criterion-body|The guideline is 150 min/);
+  assert.match(page, /<span class="criterion-chip criterion-chip-[a-z]+">[^<]+<\/span>\s*<span class="criterion-name">[^<]+<\/span>\s*<\/li>/);
+  assert.match(out, /<li id="fn-guidelines"[\s\S]*<li><strong>[^<]+<\/strong> · [^<]*The guideline is 150 min/);
+  assert.match(read("css/weekly.css"), /\.aspect-page \.criterion-name \{ order: -1; \}/);
+});
+
+test("the four characters, the parts' detail and a second suggestion are notes", () => {
+  renderAspectPage(MAIN, STATE, "mental");
+  const out = html();
+  const page = out.split('class="panel statement aspect-notes"')[0];
+  assert.doesNotMatch(out, /character-cast|aria-current="true"/);
+  assert.match(out, /<li id="fn-character"[^>]*>[\s\S]*?The four characters in this region: [^<]*<b>[^<]+<\/b>/);
+  assert.match(out, /<h3 class="card-title">[^<]+<sup class="fn-ref"><a id="fnref-parts"/);
+  assert.match(read("css/weekly.css"), /\.aspect-page \.statement \.pr-desc \{ display: none; \}/);
+  // The first suggestion is open; the second is its title and a mark.
+  const rows = [...page.matchAll(/<li class="focus-row">([\s\S]*?)<\/li>/g)].map(m => m[1]);
+  assert.ok(rows.length >= 2, "Mental should have two suggestions here");
+  assert.match(rows[0], /class="focus-text"/);
+  assert.doesNotMatch(rows[1], /class="focus-text"/);
+  assert.match(rows[1], /<a id="fnref-focus-1"/);
+  assert.match(out, /<li id="fn-focus-1"/);
 });
 
 // --- Goals --------------------------------------------------------------------

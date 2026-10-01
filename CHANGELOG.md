@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `159`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `160`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.91.0] - 2026-10-01 (v160)
+
+The aspect pages, trimmed to the owner's cut list.
+
+- **The top is one line** (views/aspect.js): "D · 62/100 · Ahead of about 16% of Thai adults¹". The grade box and its band label are gone; the band is in note 1 and said to a screen reader. With no letter the line starts at the score.
+- **The gauge keeps no figure of its own**: "16th percentile" repeated the top; its note mark sits beside the gauge.
+- **Each guideline check is one line** (views/helpers.js): its name and verdict, name first on a phone. The figures behind each check are listed in the guidelines note.
+- **Into notes**: the region's four characters (yours in bold), "This region is kept still on purpose.", every suggestion after the first (its title stays) and, on a phone, what each part is made of.
+- At 412px: Physical 2,584 → 1,884px, Mental 2,103 → 1,722px, Relationships 1,740 → 1,436px, Finance 1,885 → 1,611px.
+- No new Thai; the orphaned "{pct} percentile" entry was removed.
 
 ## [2.90.0] - 2026-10-01 (v159)
 

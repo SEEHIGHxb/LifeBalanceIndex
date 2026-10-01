@@ -13,6 +13,11 @@
 // keeps what a first-time reader needs, and the method, the research and the
 // sources are numbered notes at its end, reached by their marks.
 //
+// v160 (the owner's cut list, 2026-10-01): the top is one line; the gauge
+// keeps no figure; each guideline check is one line; the four characters, the
+// quiet-region line, every suggestion after the first and (on a phone) what
+// each part is made of are notes.
+//
 // Top to bottom:
 //   notice      the Mental page's duty-of-care notice, past the cutoff; still
 //   top         the emblem and the name on the region's photograph, then the
@@ -41,7 +46,7 @@ import { isQuietChapter } from "./stage.js";
 import { topMarkup, label, renderStagePage } from "./stage-page.js";
 import { dotDate } from "./news.js";
 import {
-  escapeHtml, gradeBadge, percentilePhrase, methodTag, mentalHealthNotice,
+  escapeHtml, percentilePhrase, methodTag, mentalHealthNotice,
   criteriaCard, criteriaNote, sourceList, noteBook, footnoteList, bindFootnotes,
   CHECKIN_ASPECTS
 } from "./helpers.js";
@@ -124,8 +129,10 @@ function gradeNote(a) {
   };
 }
 
-// What the aspect covers, in a line and its theme.
-const blurb = (a) => `<p>${escapeHtml(a.detail.blurb)} <em class="aspect-theme">${escapeHtml(a.chapter.theme)}</em></p>`;
+// What the aspect covers, in a line and its theme; a quiet region says it is
+// still on purpose here rather than on the page (v160).
+const blurb = (a) => `<p>${escapeHtml(a.detail.blurb)} <em class="aspect-theme">${escapeHtml(a.chapter.theme)}</em></p>${
+  isQuietChapter(a.chapter) ? `<p>${t("This region is kept still on purpose.")}</p>` : ""}`;
 
 // What the comparison is: the percentile's meaning and precision, how it was
 // made, and from what.
@@ -144,10 +151,21 @@ function comparisonNote(b) {
     ${sourceList(b.sources)}`;
 }
 
+// The region's four characters left the page for this note (v160), yours
+// in bold.
 function characterNote(c) {
-  return `<p><strong>${t("What the research says")}</strong></p>
+  const cast = c.cast.map((name, i) => (i === c.index ? `<b>${escapeHtml(name)}</b>` : escapeHtml(name))).join(" · ");
+  return `<p>${escapeHtml(t("The four characters in this region"))}: ${cast}</p>
+    <p><strong>${t("What the research says")}</strong></p>
     <ul class="fn-points">${c.research.map(r => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
     <p>${escapeHtml(characterDisclaimer())}</p>`;
+}
+
+// What each part is made of: under its row on a desktop, in this note on a
+// phone (v160).
+function partsNote(detail) {
+  if (!detail.components.length) return "";
+  return `<ul class="fn-points">${detail.components.map(c => `<li><strong>${escapeHtml(c.label)}</strong> · ${escapeHtml(c.detail)}</li>`).join("")}</ul>`;
 }
 
 function factsNote(detail) {
@@ -162,53 +180,41 @@ function noticeSection(a) {
   return `<section class="panel notice-panel"><div class="wrap">${mentalHealthNotice(a.notice)}</div></section>`;
 }
 
-// Grade first, score second. The letter is read off the cited percentile (or,
-// for finance, off the score, which its note says in as many words); the
-// 0-100 figure is this app's own composite. Aspects with no grade keep the
-// chip, because there is no letter to set and a placeholder glyph would invent
-// one.
-function gradeBlock(a, ref) {
-  const { grade, unranked, detail } = a;
-  return `
-    <div class="aspect-score-badge">
-      ${grade ? `
-        <span class="aspect-grade-glyph grade-${grade.grade.toLowerCase()}">${escapeHtml(grade.grade)}</span>
-        <span class="aspect-grade-band">${t(grade.label)}${ref}</span>
-      ` : gradeBadge(grade, unranked)}
-      <div>
-        <span class="aspect-score-value">${detail.score}</span>
-        <span class="aspect-score-max">/100</span>
-      </div>
-    </div>`;
-}
-
-// Under the photograph: the grade and score, and where they stand. A letter
-// grade's reasoning is its note, marked on the grade; an unranked aspect's is
-// its note too, marked on "Not ranked" (the owner, v143: the page says why no
-// further up than that). One never graded says why in the open, below.
+// Under the photograph, one line (v160): the grade, the score and where they
+// stand, "D · 62/100 · Ahead of about 16% of Thai adults". The letter is read
+// off the cited percentile (or, for finance, off the score, which its note
+// says in as many words) and is set larger than the 0-100 figure, this app's
+// own composite. The band ("Below typical") is in the note and said to a
+// screen reader. With no letter the line starts at the score: "Not ranked" or
+// "Not graded yet." is already its last part.
+//
+// The reasoning is the note marked at the line's end, for a letter grade and
+// an unranked aspect alike (the owner, v143: the page says why no further up
+// than that). One never graded says why in the open, below.
 function topBody(a, book) {
-  let gradeRef = "";
-  let lineRef = "";
-  if (a.grade) {
+  const { grade, detail } = a;
+  let ref = "";
+  if (grade) {
     const note = gradeNote(a);
-    gradeRef = book.ref("grade", `${blurb(a)}${note.line}${note.why}`);
+    ref = book.ref("grade", `${blurb(a)}${note.line}${note.why}`);
   } else if (a.unranked) {
     const note = gradeNote(a);
-    lineRef = book.ref("grade", `${blurb(a)}${note.line}${note.why}${comparisonNote(a.b)}`);
+    ref = book.ref("grade", `${blurb(a)}${note.line}${note.why}${comparisonNote(a.b)}`);
   }
+  const sep = '<span class="aspect-top-sep" aria-hidden="true">·</span>';
+  const letter = grade ? `
+      <span class="aspect-grade-glyph grade-${grade.grade.toLowerCase()}">${escapeHtml(grade.grade)}</span>
+      <span class="sr-only">${t(grade.label)}</span>${sep}` : "";
   return `
-    <div class="aspect-top-read">
-      ${gradeBlock(a, gradeRef)}
-      <div class="aspect-top-lines">
-        <p class="page-top-lead aspect-standing">${escapeHtml(standingLine(a))}${lineRef}</p>
-      </div>
+    <div class="aspect-top-read">${letter}
+      <span class="aspect-score"><span class="aspect-score-value">${detail.score}</span><span class="aspect-score-max">/100</span></span>${sep}
+      <p class="page-top-lead aspect-standing">${escapeHtml(standingLine(a))}${ref}</p>
     </div>`;
 }
 
 // Your character in this region (characters.js): the name, the two sides it
-// was drawn from, a tip, and the four characters with yours marked; the
-// research the lines rest on is its note. Nothing when a side has no answer
-// yet.
+// was drawn from and a tip; the region's four characters and the research the
+// lines rest on are its note. Nothing when a side has no answer yet.
 function characterSection(a, book) {
   const c = a.character;
   if (!c) return "";
@@ -222,9 +228,6 @@ function characterSection(a, book) {
           ${c.sides.map(s => `<li><span>${escapeHtml(s.label)}</span> <b>${escapeHtml(s.value)}</b></li>`).join("")}
         </ul>
         <p class="character-tip"><strong>${t("Try this:")}</strong> ${escapeHtml(c.tip)}</p>
-        <ul class="character-cast" aria-label="${escapeHtml(t("The four characters in this region"))}">
-          ${c.cast.map((name, i) => `<li${i === c.index ? ' aria-current="true"' : ""}>${escapeHtml(name)}</li>`).join("")}
-        </ul>
       </div>
     </div></section>`;
 }
@@ -253,10 +256,11 @@ function gauge(b) {
 // way to fix it. An unranked aspect has no comparison to show, so the section
 // goes when nothing else is in it (the owner, v143).
 function compareSection(a, book) {
-  const { b, detail, chapter, grade } = a;
+  const { b, detail, grade } = a;
   const reassess = a.canReassess ? ` <a href="#/checkin">${t("Start Re-assessment")}</a>` : "";
-  const figure = ranked(b) ? `${gauge(b)}
-    <p class="benchmark-detail">${escapeHtml(tp("{pct} percentile", { pct: percentileLabel(b.percentile) }))}${book.ref("compare", comparisonNote(b))}</p>` : "";
+  // The head already says where you stand, so the gauge carries no figure of
+  // its own, only the mark to its note (v160).
+  const figure = ranked(b) ? `<div class="gauge-row">${gauge(b)}${book.ref("compare", comparisonNote(b))}</div>` : "";
   let missing = "";
   if (!grade && !a.unranked) {
     const note = gradeNote(a);
@@ -276,7 +280,6 @@ function compareSection(a, book) {
       ${label(t("How you compare"))}
       <div>
         ${figure}${noData}${missing}
-        ${isQuietChapter(chapter) ? `<p class="aspect-note aspect-quiet">${t("This region is kept still on purpose.")}</p>` : ""}
         ${estimated}${uniform}
         ${checks}
       </div>
@@ -284,12 +287,13 @@ function compareSection(a, book) {
 }
 
 // One row per component: its name, score, a meter in the region's hue, and
-// what it is made of.
-function partRow(c, chapter) {
+// what it is made of (hidden on a phone, where the mark on the first name
+// leads to it; css/weekly.css).
+function partRow(c, chapter, ref = "") {
   const value = Number(c.value) || 0;
   return `
     <li class="part-row">
-      <div class="pr-name"><h3 class="card-title">${escapeHtml(c.label)}</h3></div>
+      <div class="pr-name"><h3 class="card-title">${escapeHtml(c.label)}${ref}</h3></div>
       <p class="pr-score"><b>${escapeHtml(c.value)}</b><span class="sr-only"> ${escapeHtml(t("out of 100"))}</span></p>
       <span class="meter" aria-hidden="true"><i style="width: ${value}%; background: ${chapter.hue};"></i></span>
       <p class="pr-desc">${escapeHtml(c.detail)}</p>
@@ -312,8 +316,9 @@ function factsBlock(detail, book) {
 
 function partsSection(a, book) {
   const { detail, chapter } = a;
+  const ref = book.ref("parts", partsNote(detail));
   const rows = detail.components.length
-    ? `<ul class="part-rows">${detail.components.map(c => partRow(c, chapter)).join("")}</ul>`
+    ? `<ul class="part-rows">${detail.components.map((c, i) => partRow(c, chapter, i === 0 ? ref : "")).join("")}</ul>`
     : `<p class="aspect-note">${t("Baseline survey data needed for this breakdown.")}</p>`;
   return `
     <section class="panel statement aspect-parts"><div class="wrap split">
@@ -375,14 +380,25 @@ function measuredRow(a) {
     </div>`;
 }
 
-function focusSection(a) {
-  const list = a.suggestions.length ? `
-    <ul class="focus-list">
-      ${a.suggestions.map(s => `
+// The first suggestion in full; any after it is its title, the text its note
+// (v160).
+function focusRow(s, i, book) {
+  if (i === 0) {
+    return `
         <li class="focus-row">
           <p class="focus-title">${escapeHtml(s.title)}</p>
           <p class="focus-text">${escapeHtml(s.text)}</p>
-        </li>`).join("")}
+        </li>`;
+  }
+  return `
+        <li class="focus-row">
+          <p class="focus-title">${escapeHtml(s.title)}${book.ref(`focus-${i}`, `<p>${escapeHtml(s.text)}</p>`)}</p>
+        </li>`;
+}
+
+function focusSection(a, book) {
+  const list = a.suggestions.length ? `
+    <ul class="focus-list">${a.suggestions.map((s, i) => focusRow(s, i, book)).join("")}
     </ul>` : "";
   return `
     <section class="panel statement aspect-focus"><div class="wrap split">
@@ -408,6 +424,7 @@ export function aspectMarkup(a) {
   const character = characterSection(a, book);
   const compare = compareSection(a, book);
   const parts = partsSection(a, book);
+  const focus = focusSection(a, book);
   return `
     <div class="stage-page aspect-page" data-aspect="${escapeHtml(a.key)}">
       ${noticeSection(a)}
@@ -424,7 +441,7 @@ export function aspectMarkup(a) {
       ${compare}
       ${parts}
       ${trendSection(a)}
-      ${focusSection(a)}
+      ${focus}
       ${notesSection(book.notes)}
     </div>`;
 }

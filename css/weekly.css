@@ -11,9 +11,13 @@
   border-radius: 18%;
   box-shadow: 0 calc(14 * var(--px)) calc(40 * var(--px)) rgba(0, 0, 0, 0.12);
 }
-/* Under the photograph: the grade and score beside where they stand. */
-.aspect-top-read { display: flex; align-items: center; gap: calc(50 * var(--px)); }
-.aspect-top-lines { display: grid; gap: 8px; min-width: 0; }
+/* Under the photograph, one line (v160): "D · 62/100 · Ahead of about 16% of
+   Thai adults". Where it stands wraps under itself, not under the letter. */
+.aspect-top-read { display: flex; align-items: baseline; gap: 0 max(10px, calc(20 * var(--px))); }
+.aspect-top-read .aspect-grade-glyph { display: inline; line-height: 1; }
+.aspect-top-read .aspect-score { white-space: nowrap; }
+.aspect-top-sep { color: var(--frame-muted); font-weight: 700; }
+.aspect-page .page-top-body .aspect-standing { flex: 1 1 0; min-width: 0; }
 
 /* The long sections carry prose and small print, not one statement each: a
    tighter measure than the Landing's. */
@@ -26,14 +30,12 @@
   line-height: 1.8;
   letter-spacing: normal;
 }
-.aspect-page .aspect-score-badge {
-  border: 0;
-  border-radius: calc(24 * var(--px));
-  background: var(--frame-card);
-  padding: max(12px, calc(30 * var(--px))) max(18px, calc(44 * var(--px)));
-}
 .aspect-page .aspect-theme { font-style: italic; }
-.aspect-page .benchmark-detail { margin: 12px 0 0; font-size: max(14px, calc(22 * var(--px))); color: #444444; }
+/* The gauge and the mark to its note, side by side; the mark sits on the rail
+   rather than beside the bracket that hangs under it. */
+.gauge-row { display: flex; align-items: flex-start; gap: 6px; max-width: calc(1400 * var(--px)); }
+.gauge-row .gauge-track { flex: 1 1 auto; }
+.gauge-row .fn-ref { line-height: 1; }
 .aspect-page .grade-explainer { margin: calc(30 * var(--px)) 0 calc(30 * var(--px)); }
 .aspect-page .grade-explainer p { margin: 0; }
 .aspect-page .aspect-note { padding-left: calc(30 * var(--px)); border-left: 3px solid var(--frame-ink); }
@@ -47,9 +49,12 @@
 .aspect-page .criteria-list { display: grid; grid-template-columns: max-content minmax(0, 1fr); column-gap: 14px; }
 .aspect-page .criterion-row { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; }
 .aspect-page .criterion-chip { justify-self: start; }
-@media (max-width: 420px) {
+/* A phone reads name first, the verdict at the line's end (v160). */
+@container (max-width: 900px) {
   .aspect-page .criteria-list { display: block; }
-  .aspect-page .criterion-row { display: flex; }
+  .aspect-page .criterion-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .aspect-page .criterion-name { order: -1; }
+  .aspect-page .statement .criterion-row { margin: 0; padding: 8px 0; }
 }
 .aspect-society .gauge-track { max-width: calc(1400 * var(--px)); }
 .aspect-page .fact-list.facts { margin-top: calc(24 * var(--px)); }
@@ -365,12 +370,11 @@
   .aspect-page .statement { padding: calc(60 * var(--px)) 0 calc(56 * var(--px)); }
   .aspect-page .statement p,
   .aspect-page .statement li { margin-bottom: calc(24 * var(--px)); font-size: max(15px, calc(30 * var(--px))); line-height: 1.6; }
-  .aspect-top-read { gap: calc(30 * var(--px)); }
-  .aspect-page .aspect-score-badge { padding: 8px 14px; }
   .part-row { grid-template-columns: minmax(0, 1fr) auto; gap: 6px calc(20 * var(--px)); padding: calc(20 * var(--px)) 0; }
   .part-row .meter { grid-column: 1 / -1; }
   .pr-score b { font-size: max(26px, calc(64 * var(--px))); }
-  .aspect-page .statement .pr-desc { font-size: max(13px, calc(25 * var(--px))); line-height: 1.5; }
+  /* What each part is made of is its note on a phone (v160). */
+  .aspect-page .statement .pr-desc { display: none; }
   .trend-strip { gap: calc(14 * var(--px)); }
   .aspect-page .statement .trend-cell { padding: calc(18 * var(--px)); }
   .trend-date { font-size: 10.5px; letter-spacing: 0; }
@@ -469,15 +473,6 @@ html[lang="th"] .rv-wipe-window span { font-weight: 700; }
 .character-sides li { font-size: max(14px, calc(21 * var(--px))); }
 .character-sides span { color: var(--frame-muted); }
 .aspect-page .statement .character-tip { margin: 0 0 calc(28 * var(--px)); font-size: max(15px, calc(22 * var(--px))); line-height: 1.6; }
-.character-cast { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 calc(36 * var(--px)); padding: 0; list-style: none; }
-.character-cast li {
-  padding: 6px 14px;
-  border: 1px solid #c8c8c8;
-  border-radius: 999px;
-  font-size: max(13px, calc(18 * var(--px)));
-  color: var(--frame-muted);
-}
-.character-cast li[aria-current="true"] { border-color: var(--frame-ink); background: var(--frame-ink); color: #ffffff; font-weight: 700; }
 /* The notes at the page's end (views/helpers.js footnoteList), in the small
    print of the section they close rather than the statement size. */
 .aspect-page .statement .fn-list > li,

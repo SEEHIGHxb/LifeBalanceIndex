@@ -157,7 +157,6 @@ export const TH = {
   "Shown on your Social Contribution page as giving. It changes nothing about your score.": "แสดงในหน้าการช่วยเหลือสังคมในฐานะการให้ และไม่มีผลต่อคะแนนของคุณ",
 
   // v142, approved by the owner 2026-09-29: the aspect pages trimmed.
-  "{pct} percentile": "เปอร์เซ็นไทล์{pct}",
   "How you compare": "เทียบกับคนอื่น",
   "What it's made of": "มาจากอะไรบ้าง",
   "Updated by your weekly review.": "อัปเดตจากการทบทวนรายสัปดาห์",

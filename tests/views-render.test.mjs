@@ -368,6 +368,6 @@ test("an aspect page shows your character with its research and the made-up disc
   const html = render(() => renderAspectPage(MAIN, STATE, "finance"));
   assert.match(html, /class="panel statement aspect-character"/);
   assert.match(html, /class="character-name">/);
-  assert.match(html, /aria-current="true"/);
+  assert.match(html, /The four characters in this region: [^<]*<b>/, "the cast is in the note, yours in bold");
   assert.match(html, /made up for fun/);
 });

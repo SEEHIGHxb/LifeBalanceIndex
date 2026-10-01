@@ -282,17 +282,16 @@ export function benchmarkStanding(b, { compact = false } = {}) {
 //
 // Open since v142 (the owner, 2026-09-29): the checks show, and what they are
 // and where they come from is a note at the page's end (criteriaNote), reached
-// by `ref`, the footnote mark beside the heading.
+// by `ref`, the footnote mark beside the heading. One line each since v160
+// (the owner's cut list, 2026-10-01): the verdict and the name, the figures
+// behind it in the note.
 export function criteriaCard(criteria, ref = "") {
   if (!criteria || criteria.length === 0) return "";
   const labels = CRITERION_STATUS_LABELS();
   const rows = criteria.map(c => `
     <li class="criterion-row criterion-${escapeHtml(c.status)}">
       <span class="criterion-chip criterion-chip-${escapeHtml(c.status)}">${escapeHtml(labels[c.status] || c.status)}</span>
-      <span class="criterion-body">
-        <span class="criterion-name">${escapeHtml(c.summary)}</span>
-        <span class="criterion-detail">${escapeHtml(c.detail)}</span>
-      </span>
+      <span class="criterion-name">${escapeHtml(c.summary)}</span>
     </li>`).join("");
   return `
     <div class="criteria-card">
@@ -301,8 +300,9 @@ export function criteriaCard(criteria, ref = "") {
     </div>`;
 }
 
-// The note behind the checks: that they are guidelines, not a rank, and the
-// guidelines they cite. Unique sources, in first-appearance order: several
+// The note behind the checks: that they are guidelines, not a rank, each
+// check's figures, and the guidelines they cite. Unique sources, in
+// first-appearance order: several
 // criteria share the WHO 2020 activity guideline, and listing it three times
 // would read as padding.
 export function criteriaNote(criteria) {
@@ -312,6 +312,7 @@ export function criteriaNote(criteria) {
     .map(c => c.source)
     .filter(src => src && !seen.has(src.url) && seen.add(src.url));
   return `<p>${t("These compare you with published health guidelines, not with a population. A guideline states what a body needs, so it applies regardless of country — which is why these checks exist for aspects where no representative Thai norm does. They do not affect your score, grade or Balance Index.")}</p>
+    <ul class="fn-points">${criteria.map(c => `<li><strong>${escapeHtml(c.summary)}</strong> · ${escapeHtml(c.detail)}</li>`).join("")}</ul>
     ${sourceList(sources)}`;
 }
 

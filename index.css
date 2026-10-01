@@ -594,15 +594,6 @@ html {
   line-height: 1.55;
 }
 
-.aspect-score-badge {
-  flex-shrink: 0;
-  background: #faf9f6;
-  border: 1px solid var(--color-card-border);
-  border-radius: var(--radius);
-  padding: 10px 18px;
-  text-align: center;
-}
-
 /* The aspect header used to lead with the 0-100 score at --text-3xl and carry
    the grade as a --text-xs chip beside it. The score is this app's own
    composite; the grade is read off the CITED percentile (or, for finance, off
@@ -834,30 +825,10 @@ html {
   color: var(--color-text-secondary);
 }
 
-.criterion-body {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
 .criterion-name {
+  min-width: 0;
   font-weight: 600;
   font-size: var(--text-base);
-}
-
-.criterion-detail {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  line-height: 1.45;
-}
-
-/* Narrow screens: the chip drops above the text rather than squeezing it. */
-@media (max-width: 420px) {
-  .criterion-row {
-    flex-direction: column;
-    gap: 5px;
-  }
 }
 
 /* Duty-of-care mental-health support banner (finding #4) */

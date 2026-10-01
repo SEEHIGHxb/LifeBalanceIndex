@@ -1,5 +1,6 @@
-// views/sheets.js - stacked sheets (v161 on the aspect pages, v164 on
-// Overview; the owner's layout rules of 2026-10-01, after fastwork.com).
+// views/sheets.js - stacked sheets (v161, the aspect pages; the owner's
+// layout rules of 2026-10-01, after fastwork.com). Overview tried them in
+// v164 and stayed flat.
 // Every section of a page is a rounded sheet that pins once it has been read
 // to its end, and the next one slides up over it. A sheet shorter than the
 // screen pins under the header; a taller one pins when its bottom reaches the

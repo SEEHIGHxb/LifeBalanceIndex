@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `164`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `165`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.95.1] - 2026-10-01 (app version 165)
+
+### Changed
+- Overview is a static page again (the owner, after trying v164): its sections no longer pin and slide over one another. The tip rail, the pledges on the night sky, the region chips and the folded notes stay.
 
 ## [2.95.0] - 2026-10-01 (app version 164)
 

@@ -66,17 +66,6 @@
 .region-chip:hover span { text-decoration: underline; text-underline-offset: 0.15em; }
 .region-chip:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
 
-/* v164: the sections as stacked sheets (views/sheets.js), as on the aspect
-   pages: each pins at --stick and the next slides up over it. The care
-   notice stays in the flow. */
-.home > .panel:not(.notice-panel) {
-  position: sticky;
-  top: var(--stick, 0px);
-  box-shadow: 0 calc(-14 * var(--px)) calc(40 * var(--px)) rgba(0, 0, 0, 0.16);
-}
-.home > .home-top { box-shadow: none; }
-@media (prefers-reduced-motion: reduce) { .home > .panel:not(.notice-panel) { position: relative; } }
-html[data-reduce-motion] .home > .panel:not(.notice-panel) { position: relative; }
 /* The notes folded at every width; the fold stands in for the label. */
 .home .has-notes-fold .label { display: none; }
 .home .has-notes-fold .split > :last-child { grid-column: -2 / -1; }
@@ -417,8 +406,6 @@ a.start-card:focus-visible { outline: 2px solid var(--frame-ink); outline-offset
 
   /* v164: the region chips are the headline again on a phone. */
   .home-regions { display: none; }
-  /* Rounded sheets now there is a sheet behind each one. */
-  .home > .panel + .panel { border-top: 0; border-radius: 22px 22px 0 0; }
 
   /* Where to start: the rail runs to the screen's edges. */
   .start-rail {

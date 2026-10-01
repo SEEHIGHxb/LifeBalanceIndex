@@ -75,10 +75,10 @@ test("your star never breaks on a missing or junk score", () => {
 
 // --- the page -------------------------------------------------------------------
 
-// v164 (the owner's Overview plan): stacked sheets, the headline's regions as
+// v164 (the owner's Overview plan): the headline's regions as
 // chips, Where to start as a rail of whole tips, the pledges as cards on the
 // sky, and the notes folded at every width.
-test("v164: Overview's chips, rail, pledge cards and sheets", async () => {
+test("v164: Overview's chips, rail and pledge cards, on a static page", async () => {
   const goals = [
     { id: "a", templateId: "sleep", target: 8, lastResult: { week: "2026-W39", value: 8, met: true } },
     { id: "b", templateId: "water", target: 2 }
@@ -96,9 +96,10 @@ test("v164: Overview's chips, rail, pledge cards and sheets", async () => {
   assert.match(html, /Average at least 8 hours of sleep per night\./);
   const { readFile } = await import("node:fs/promises");
   const css = await readFile(new URL("../css/home.css", import.meta.url), "utf8");
-  assert.match(css, /\.home > \.panel:not\(\.notice-panel\) \{\s*position: sticky;\s*top: var\(--stick/);
-  assert.match(css, /html\[data-reduce-motion\] \.home > \.panel:not\(\.notice-panel\) \{ position: relative; \}/);
+  // v165 (the owner): Overview stays a static page, no stacked sheets.
+  assert.doesNotMatch(css, /position: sticky/);
   const src = await readFile(new URL("../views/dashboard.js", import.meta.url), "utf8");
+  assert.doesNotMatch(src, /bindSheets/);
   assert.match(src, /bindFootnotes\(container, \{ fold: "always" \}\)/);
   assert.match(src, /onRouteEnd\(\(\) => ctl\.abort\(\)\)/);
 });

@@ -42,7 +42,6 @@ import { chapterOf, aspectName, motifThumb, starThumb } from "./news.js";
 import { label, renderStagePage } from "./stage-page.js";
 import { markZoom, takeZoom, zoomFrom } from "./star-zoom.js";
 import { writeMotionStyle, onRouteEnd } from "./motion-mount.js";
-import { bindSheets } from "./sheets.js";
 import { tightenLoneWords } from "./lone-words.js";
 import { t, tp } from "../i18n.js";
 import {
@@ -464,18 +463,18 @@ function mountEffort(root, scope) {
   onAbort(scope.signal, () => figures.forEach((b, i) => { b.textContent = String(ends[i]); }));
 }
 
-// The sections as stacked sheets (views/sheets.js), and no lone last words.
-// Their window listeners outlive the page's motion (a calm page has none), so
-// they end with the route, or with the next render of this page.
-let homeSheets = null;
-function bindHomeSheets(container) {
-  homeSheets?.abort();
+// No lone last words (views/lone-words.js). Its resize listener outlives the
+// page's motion (a calm page has none), so it ends with the route, or with
+// the next render of this page. The sections stay flat: v164 tried them as
+// stacked sheets and the owner kept the static page.
+let homeWords = null;
+function bindHomeWords(container) {
+  homeWords?.abort();
   const page = container.querySelector(".home");
   if (!page || typeof AbortController !== "function") return;
   const ctl = new AbortController();
-  homeSheets = ctl;
+  homeWords = ctl;
   onRouteEnd(() => ctl.abort());
-  bindSheets(page, ctl.signal);
   tightenLoneWords(page, ctl.signal);
 }
 
@@ -495,7 +494,7 @@ export function renderDashboard(containerId, state) {
   bindShapeSwitch(container, scope);
   // Folded at every width, as on the aspect pages (v164).
   bindFootnotes(container, { fold: "always" });
-  bindHomeSheets(container);
+  bindHomeWords(container);
   if (scope) {
     try {
       mountStar(container, scope, zoom);

@@ -823,7 +823,6 @@ export const TH = {
   "You are below the WHO guideline, which ~29% of Thai adults also are — that part is published. Your position inside that 29% is this app's own estimate: no per-person distribution of Thai activity minutes exists.": "คุณอยู่ต่ำกว่าเกณฑ์ของ WHO ซึ่งคนไทยราว 29% ก็เป็นเช่นกัน — ส่วนนี้มีการเผยแพร่ ส่วนตำแหน่งของคุณภายใน 29% นั้นเป็นการประมาณของแอปนี้เอง เพราะไม่มีข้อมูลการกระจายตัวของนาทีกิจกรรมทางกายรายบุคคลของคนไทย",
   "{band} for this aspect, from your score of {score}.": "{band} สำหรับด้านนี้ จากคะแนน {score} ของคุณ",
   "This grade comes from the aspect score, not from the percentile below. The percentile here ranks your income alone, and grading on it would grade your income rather than your financial life — someone on a small income with no debt and no money worry was being shown an F. The letters describe where this score sits against a typical one, not what share of people you are ahead of.": "เกรดนี้มาจากคะแนนของด้านนี้ ไม่ได้มาจากเปอร์เซ็นไทล์ด้านล่าง เปอร์เซ็นไทล์ตรงนี้จัดอันดับเฉพาะรายได้ของคุณ การให้เกรดจากมันจึงเท่ากับให้เกรดจากรายได้ ไม่ใช่ชีวิตทางการเงิน คนที่มีรายได้น้อยแต่ไม่มีหนี้และไม่มีความกังวลเรื่องเงินเคยได้รับเกรด F ตัวอักษรนี้บอกว่าคะแนนของคุณอยู่ตรงไหนเมื่อเทียบกับคะแนนทั่วไป ไม่ได้บอกว่าคุณนำหน้าคนกี่เปอร์เซ็นต์",
-  "Grade {letter} — {band} for this aspect (score {score} of 100).": "เกรด {letter} — {band} สำหรับด้านนี้ (คะแนน {score} จาก 100)",
   "Strong": "แข็งแรง",
   "Above typical": "สูงกว่าทั่วไป",
   "Typical": "ทั่วไป",
@@ -1055,18 +1054,13 @@ export const TH = {
   "Strained balance": "สมดุลตึงเครียด",
 
   "Grade {letter}": "เกรด {letter}",
-  "Not graded": "ยังไม่ให้เกรด",
   "Not graded yet.": "ยังไม่ให้เกรด",
   "Balance Index": "ดัชนีสมดุล",
   "Grades and the Balance Index": "เกรดและดัชนีสมดุล",
-  "Grade {letter} — {band} of people like you (percentile {pct}).":
-    "เกรด {letter} — {band} ของคนที่คล้ายคุณ (เปอร์เซ็นไทล์ที่ {pct})",
   "Grades come from the cited percentile, not from the 0-100 score — the score is this app's own composite, while the percentile is the part that compares you with real published data.":
     "เกรดมาจากเปอร์เซ็นไทล์ที่อ้างอิงแหล่งข้อมูล ไม่ได้มาจากคะแนน 0-100 เพราะคะแนนเป็นค่าที่แอปนี้ประกอบขึ้นเอง ส่วนเปอร์เซ็นไทล์คือส่วนที่เทียบคุณกับข้อมูลที่เผยแพร่จริง",
   "This aspect is graded from its population comparison, which needs its questionnaires answered first.":
     "ด้านนี้ให้เกรดจากการเทียบกับประชากร ซึ่งต้องตอบแบบสอบถามของด้านนี้ก่อน",
-  "Answer this aspect's questionnaires to unlock its grade.":
-    "ตอบแบบสอบถามของด้านนี้เพื่อปลดล็อกเกรด",
   "A harmonic mean of how your eight aspects compare with the population — 50 is the average person, and it rises fastest when your weakest aspect rises. This is this app's own summary figure, not a published measure.":
     "ค่าเฉลี่ยฮาร์มอนิกของการเปรียบเทียบทั้งแปดด้านของคุณกับประชากร — 50 คือคนทั่วไปโดยเฉลี่ย และจะขยับขึ้นเร็วที่สุดเมื่อด้านที่อ่อนที่สุดของคุณดีขึ้น นี่เป็นตัวเลขสรุปที่แอปนี้สร้างขึ้นเอง ไม่ใช่มาตรวัดที่มีการเผยแพร่",
   "A letter grade (A-F) comes from an aspect's population percentile rather than its 0-100 score: A is the top 10%, B the top 30%, C the typical middle (30th-69th), D below typical, and F the bottom 10%. The percentile is the part of an aspect that compares you with published data, so it is normally the only part worth grading. Finance is the one exception: its percentile is your income standing and nothing else, so grading on it would grade your income alone — a person on a small income with no debt and no money worry was being shown an F. Finance is therefore graded on its whole score, which weights the financial well-being questions far more heavily than income. Your income percentile is still shown on the card. An aspect whose questionnaires you have not answered is shown as “not graded” — never as an F, because missing data is not a failing result.":

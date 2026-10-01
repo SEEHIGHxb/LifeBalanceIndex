@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `168`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `169`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.98.1] - 2026-10-01 · v169
+
+### Removed
+- `gradeBadge` (views/helpers.js), its CSS chips and four Thai strings: nothing on any page used it since the redesign; only a test did.
+
+### Checked
+- Your year on a phone shows the points as "0 / 0"; the earlier "U / 0" was a misread of a small screenshot, not a bug.
+- "Pledges kept" counts every pledge met at every review; a test now holds it.
 
 ## [2.98.0] - 2026-10-01 (app version 168)
 

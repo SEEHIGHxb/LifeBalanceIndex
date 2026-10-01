@@ -388,25 +388,6 @@ test("the Finance grade card does not contradict the percentile beside it", asyn
   assert.match(text, /1st percentile/, "the income rank is still on the card");
 });
 
-test("no grade badge prints a score in the percentile slot", async () => {
-  // gradeBadge built its tooltip from grade.percentile unconditionally. A
-  // score-based grade has no percentile, so whatever sat in that field was
-  // printed as one: "Top 30% of people like you (percentile 74)" for a user
-  // whose finance percentile is 1.
-  const { gradeBadge } = await import("../views/helpers.js");
-  const { gradeForFinance, gradeForPercentile } = await import("../grades.js");
-
-  const scoreGrade = gradeForFinance(73);
-  assert.equal(scoreGrade.percentile, null, "a score-based grade carries no percentile");
-  const badge = gradeBadge(scoreGrade);
-  assert.doesNotMatch(badge, /percentile/, "so its tooltip must not say 'percentile'");
-  assert.match(badge, /score 73 of 100/, "it names the score it actually used");
-
-  // The percentile-based path is unchanged.
-  const pctBadge = gradeBadge(gradeForPercentile(42));
-  assert.match(pctBadge, /percentile 42/, "a real percentile is still printed as one");
-});
-
 // The aspect page tells you your character, the two sides it came from,
 // the research, and that it is made up for fun (v122).
 test("an aspect page shows your character with its research and the made-up disclaimer", async () => {

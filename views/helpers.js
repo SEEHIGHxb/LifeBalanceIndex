@@ -96,38 +96,6 @@ export function birthdayFields({ idPrefix, month = null, day = null }) {
 // an estimated one there gets an actionable link rather than text-only guidance.
 export const CHECKIN_ASPECTS = ["mental", "relationships", "personalGoals"];
 
-// --- GRADES (Phase L1) ---
-
-// Letter-grade chip for one aspect. `null` means the aspect has no benchmark
-// yet (the survey instruments were never answered) and renders as an explicit
-// "not graded" chip — NOT as an F. An unanswered questionnaire is missing
-// data, and showing it as a failing grade would be the app inventing a verdict
-// it has no measurement for.
-// `unrankedReason` distinguishes the two very different ways a grade can be
-// absent. "Not graded" means the user has not answered yet and CAN unlock it;
-// "Not ranked" means the app has the answers but no defensible population to
-// rank them against, and no amount of answering will change that. Collapsing
-// the two would tell people to go and complete a questionnaire they already
-// completed.
-export function gradeBadge(grade, unrankedReason = null) {
-  if (!grade && unrankedReason) {
-    return `<span class="grade-badge grade-unranked" title="${escapeHtml(unrankedReason)}">${t("Not ranked")}</span>`;
-  }
-  if (!grade) {
-    return `<span class="grade-badge grade-none" title="${escapeHtml(t("Answer this aspect's questionnaires to unlock its grade."))}">${t("Not graded")}</span>`;
-  }
-  // A score-based grade (finance) has no percentile, and printing its
-  // `standing` in that slot would state a population share nothing supports.
-  const title = grade.basis === "score"
-    ? tp("Grade {letter} — {band} for this aspect (score {score} of 100).", {
-        letter: grade.grade, band: t(grade.label), score: grade.score
-      })
-    : tp("Grade {letter} — {band} of people like you (percentile {pct}).", {
-        letter: grade.grade, band: t(grade.label), pct: grade.percentile
-      });
-  return `<span class="grade-badge grade-${grade.grade.toLowerCase()}" title="${escapeHtml(title)}">${escapeHtml(grade.grade)}</span>`;
-}
-
 // --- Footnotes (v141) ---------------------------------------------------------
 // The owner, 2026-09-29: the page keeps to what a first-time reader needs, and
 // the method and the sources sit in a Notes and sources section at its end,

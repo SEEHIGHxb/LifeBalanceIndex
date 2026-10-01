@@ -270,3 +270,12 @@ test("on a phone the buttons shorten, but keep their full words as their names",
   assert.match(html, /id="btn-share-radar"[^>]*><svg class="share-ico"[^>]*aria-hidden="true"/);
   assert.match(html, /<span class="share-text">Share your star<\/span>/);
 });
+
+// A probe once showed "0 pledges kept" and it was the probe's own data: the
+// count is every pledge met at every review, not the active pledges.
+test("your effort counts every pledge kept at every review", () => {
+  const reviews = [{ goals: [{ met: true }, { met: false }, { met: true }] }, { goals: [{ met: true }] }, { goals: [] }];
+  const counts = effortCounts({ reviews, goals: [] });
+  assert.equal(counts.reviews, 3);
+  assert.equal(counts.kept, 3);
+});

@@ -137,3 +137,14 @@ test("the journey asks all three with the old ids, so submit and scoring are unc
     assert.match(html, new RegExp(`id="${id}" hidden`), `${id} carries the stored value`);
   }
 });
+
+// v158: the review folds a monthly habit to last week's answer. Only with an
+// answer to show, and never in the journey, which has none.
+test("an everyday question folds only when asked to and there is an answer", async () => {
+  const { learningMarkup, donationMarkup, tallyMarkup } = await import("../views/activity-fields.js");
+  assert.doesNotMatch(learningMarkup("j"), /data-folded|easy-change/, "the journey never folds");
+  assert.doesNotMatch(learningMarkup("r", 3), /data-folded/, "folding is the caller's choice");
+  assert.doesNotMatch(donationMarkup("r", null, { fold: true }), /data-folded/, "nothing to show, nothing folded");
+  assert.match(learningMarkup("r", 3, { fold: true }), /data-out="r" data-folded/);
+  assert.match(tallyMarkup("p", 0, { fold: true }), /data-folded[\s\S]*class="easy-change"/, "none-of-these is an answer too");
+});

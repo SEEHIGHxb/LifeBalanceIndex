@@ -30,6 +30,13 @@ export function shiftSummary(shifts) {
   return parts.length ? parts.join(" · ") : t("Scores steady");
 }
 
+// The aspect a record moved most, for its thumbnail; null when none moved.
+export const biggestShift = (shifts) => {
+  const moved = Object.entries(shifts || {}).filter(([k, v]) => v && chapterOf(k));
+  if (!moved.length) return null;
+  return moved.reduce((a, b) => (Math.abs(b[1]) > Math.abs(a[1]) ? b : a))[0];
+};
+
 export const motifIcon = (aspect) =>
   `<svg viewBox="0 0 24 24" aria-hidden="true"><use href="${SPRITES}#motif-${aspect}"/></svg>`;
 

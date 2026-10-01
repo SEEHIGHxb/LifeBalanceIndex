@@ -148,12 +148,21 @@ export function daysFor(key, count, pattern) {
 const hidden = (id, extra = "") => `<input type="number" id="${id}" hidden step="any"${extra}>`;
 const valueAttr = (v) => isBlank(v) ? "" : ` value="${Number(v)}"`;
 
+// v158, the owner's Weekly Review cut list: a monthly habit rarely changes in
+// a week, so the review shows only last week's answer, folded, and "Change"
+// opens the whole list (css/weekly.css hides the rest while folded). Folded
+// only when there is an answer to show; the journey never folds.
+const folded = (fold, current) => fold && !isBlank(current) ? " data-folded" : "";
+const changeButton = (fold, current, id) => folded(fold, current)
+  ? `<button type="button" class="easy-change" aria-expanded="false" aria-controls="${id}-choices">${t("Change")}</button>`
+  : "";
+
 // --- learning ---------------------------------------------------------------
 
 // One question of everyday steps, lowest first. `id` is the old number box's
 // id; `current` pre-selects an earlier answer. `hint(n)` is the number under
 // a step's words, `last(n)` the words for an earlier answer between steps.
-export function stepsMarkup(id, { question, steps, hint, last }, current = null) {
+export function stepsMarkup(id, { question, steps, hint, last, fold = false }, current = null) {
   const values = withCurrent(steps.map(s => s.value), current);
   const options = values.map(v => {
     const step = steps.find(s => s.value === v);
@@ -167,44 +176,48 @@ export function stepsMarkup(id, { question, steps, hint, last }, current = null)
           </label>`;
   }).join("");
   return `
-    <div class="easy-field" data-easy="steps" data-out="${id}">
+    <div class="easy-field" data-easy="steps" data-out="${id}"${folded(fold, current)}>
       <fieldset class="survey-question" data-required="1"
         role="radiogroup" aria-required="true" aria-labelledby="${id}-legend">
         <legend id="${id}-legend">${question}</legend>
-        <div class="radio-group">${options}
+        <div class="radio-group" id="${id}-choices">${options}
         </div>
+        ${changeButton(fold, current, id)}
         <span class="field-error d-none" id="${id}-err" aria-live="polite"></span>
       </fieldset>
       ${hidden(id, valueAttr(current))}
     </div>`;
 }
 
-export function learningMarkup(id, current = null) {
+export function learningMarkup(id, current = null, { fold = false } = {}) {
   return stepsMarkup(id, {
     question: t("How much of your week goes to learning something on purpose?"),
     steps: LEARNING_STEPS.map(s => ({ value: s.hours, label: s.label })),
     hint: (n) => tp("about {n} h", { n }),
-    last: (n) => tp("About {n} h · your last answer", { n })
+    last: (n) => tp("About {n} h · your last answer", { n }),
+    fold
   }, current);
 }
 
 const baht = (n) => Number(n).toLocaleString("en-US");
 
-export function donationMarkup(id, current = null) {
+export function donationMarkup(id, current = null, { fold = false } = {}) {
   return stepsMarkup(id, {
     question: t("What does your giving look like in a usual month?"),
     steps: DONATION_STEPS,
     hint: (n) => tp("about {amount} baht", { amount: baht(n) }),
-    last: (n) => tp("{amount} baht · your last answer", { amount: baht(n) })
+    last: (n) => tp("{amount} baht · your last answer", { amount: baht(n) }),
+    fold
   }, current);
 }
 
-export function volunteerMarkup(id, current = null) {
+export function volunteerMarkup(id, current = null, { fold = false } = {}) {
   return stepsMarkup(id, {
     question: t("How much time do you give to helping others, unpaid, in a usual month?"),
     steps: VOLUNTEER_STEPS,
     hint: (n) => tp("about {n} h a month", { n }),
-    last: (n) => tp("{n} h a month · your last answer", { n })
+    last: (n) => tp("{n} h a month · your last answer", { n }),
+    fold
   }, current);
 }
 
@@ -229,7 +242,7 @@ export function summarizeTally({ items, none, carried }) {
 // `current` (the review) is last week's count. The items ticked then come
 // back if they still add up to it; otherwise the count is kept whole as one
 // ticked line of its own, so confirming it changes nothing.
-export function tallyMarkup(id, current = null) {
+export function tallyMarkup(id, current = null, { fold = false } = {}) {
   const n = isBlank(current) ? null : Math.max(0, Math.round(Number(current)));
   const saved = n ? readItems() : null;
   const ticked = saved && saved.filter(Boolean).length === n ? saved : [];
@@ -245,15 +258,16 @@ export function tallyMarkup(id, current = null) {
           <span>${tp("{n} pieces a day · your last answer", { n: carried })}</span>
         </label>` : "";
   return `
-    <div class="easy-field tally" data-easy="tally" data-out="${id}">
+    <div class="easy-field tally" data-easy="tally" data-out="${id}"${folded(fold, n)}>
       <fieldset class="survey-question" aria-labelledby="${id}-legend">
         <legend id="${id}-legend">${t("Which of these does a usual day bring you? Tick each one you use once and throw away.")}</legend>
-        <div class="tally-grid">${items}${kept}
+        <div class="tally-grid" id="${id}-choices">${items}${kept}
         </div>
         <label class="wk-none">
           <input type="checkbox" name="${id}-none" value="1"${n === 0 ? " checked" : ""}>
           ${t("None of these on a usual day")}
         </label>
+        ${changeButton(fold, n, id)}
         <p class="tally-count" aria-live="polite"></p>
         <span class="field-error d-none" id="${id}-err" aria-live="polite"></span>
       </fieldset>
@@ -446,6 +460,17 @@ function bindPainting(grid) {
 // Wires every activity field inside `root` and computes their values once.
 export function bindActivityFields(root) {
   root.querySelectorAll('[data-easy="week"] .wk-grid').forEach(bindPainting);
+  // "Change" unfolds the whole list; focus goes to the answer already chosen,
+  // so the arrow keys move straight on from it.
+  root.addEventListener("click", (e) => {
+    const button = e.target.closest(".easy-change");
+    const field = button?.closest("[data-easy]");
+    if (!field) return;
+    field.removeAttribute("data-folded");
+    button.setAttribute("aria-expanded", "true");
+    button.hidden = true;
+    field.querySelector("input:checked")?.focus();
+  });
   root.addEventListener("change", (e) => {
     const field = e.target.closest("[data-easy]");
     if (!field) return;

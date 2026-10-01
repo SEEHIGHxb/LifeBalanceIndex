@@ -325,6 +325,39 @@
 .rv-done-head:focus { outline: none; }
 .rv-done-note { margin: 0 0 calc(24 * var(--px)); font-size: max(15px, calc(24 * var(--px))); line-height: 1.8; }
 .rv-done-links { margin: calc(80 * var(--px)) 0 0; }
+.rv-done-cta { margin: 0 0 calc(40 * var(--px)); }
+
+/* v158, the owner's cut list. A monthly habit shows only last week's answer
+   until "Change" opens the list (views/activity-fields.js). Only while
+   something is chosen: with nothing chosen, every answer shows. */
+.easy-field[data-folded]:has(input:checked) .radio-option:not(:has(input:checked)),
+.easy-field[data-folded]:has(input:checked) .tally-item:not(:has(input:checked)),
+.easy-field[data-folded]:has(input:checked) .wk-none:not(:has(input:checked)),
+.easy-field[data-folded]:has(input:checked) .tally-count { display: none; }
+.journey .easy-field[data-folded]:has(input:checked) .radio-group { display: flex; }
+.journey .easy-field[data-folded]:has(input:checked) .radio-option { flex-direction: row; gap: 10px; padding: 10px 22px 10px 16px; border-radius: 999px; }
+.easy-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--frame-ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+  cursor: pointer;
+}
+.easy-change::after { content: "\203A"; text-decoration: none; }
+.easy-change:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+/* The phone's progress bar under the count; the desktop has room for both
+   the region's name and the count. */
+.rv-progress { display: none; }
 
 /* ================================================================ phones */
 @container (max-width: 900px) {
@@ -354,6 +387,53 @@
 }
 @media (max-width: 900px) {
   .review .rv-fields { grid-template-columns: minmax(0, 1fr); }
+
+  /* v158, the owner's cut list. The question names the region, so the top
+     line is the emblem, the count and a thin bar. */
+  .review .q-side .label { display: none; }
+  .review .q-side {
+    grid-template-areas:
+      "emblem count"
+      "emblem bar";
+  }
+  .review .rv-progress {
+    grid-area: bar;
+    display: block;
+    width: 100%;
+    max-width: 200px;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.12);
+  }
+  .review .rv-progress i { display: block; height: 100%; background: var(--frame-dark); }
+  /* Back and Next stay just above the bottom bar, so Next is never a scroll
+     away; the screen's own wash behind them. */
+  .review .onb-nav {
+    position: sticky;
+    bottom: calc(var(--nav-bar-h) + env(safe-area-inset-bottom, 0px));
+    z-index: 4;
+    margin-top: 24px;
+    padding: 12px 0;
+    background: var(--chapter-wash, var(--frame-page));
+  }
+  .review .onboarding-error { bottom: calc(var(--nav-bar-h) + env(safe-area-inset-bottom, 0px) + 88px); }
+  .review .onb-nav .pill-long {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .review .onb-nav .pill-short { display: inline; }
+  /* The ticked row already says the count. */
+  .review .tally-count { display: none; }
+
+  /* Done: a headline on one line, and no Overview button, which the bottom
+     bar already is. */
+  .rv-done-head { font-size: 36px; }
+  .review-done .rv-done-links { display: none; }
 }
 
 /* ================================================================= Thai

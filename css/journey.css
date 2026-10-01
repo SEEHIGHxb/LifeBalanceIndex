@@ -601,6 +601,10 @@
     border-radius: 999px;
     text-align: left;
   }
+  /* A session's length is a word or two: chips that wrap, lowest first as on
+     the desktop, not seven full-width rows (v158, the owner's cut list). */
+  .journey .wk-len .radio-group { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+  .journey .wk-len .radio-option { width: auto; padding: 10px 16px 10px 12px; }
   /* The kind's name over its seven days. */
   .journey .wk-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px 5px; }
   .journey .wk-kind { grid-column: 1 / -1; margin-top: 6px; }

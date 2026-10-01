@@ -87,6 +87,41 @@ test("a review done for the week lists the past reviews newest first", () => {
   assert.match(html(), /1\/1 pledges met · \+75 points/);
   assert.match(html(), /class="rv-done-note">Next review opens [^<]+\.</);
   assert.match(html(), /<a class="pill" href="#\/dashboard">Overview<\/a>/);
+  // v158: each row shows the region that moved most; a steady week the star.
+  assert.match(html(), /newsrow-thumb" style="[^"]*"><svg[^>]*><use href="[^"]*#motif-physical"/);
+  assert.match(html(), /newsrow-thumb newsrow-star/);
+});
+
+test("a due re-assessment on the done page is a button, not a bare link", () => {
+  const isDue = stateManager.isWeeklyReviewDue;
+  const checkin = stateManager.isCheckinDue;
+  stateManager.isWeeklyReviewDue = () => false;
+  stateManager.isCheckinDue = () => true;
+  try {
+    renderReview(MAIN, { ...STATE, reviews: [{ date: "2026-09-08T00:00:00.000Z", goals: [], xp: 50, shifts: {} }] }, () => {});
+  } finally {
+    stateManager.isWeeklyReviewDue = isDue;
+    stateManager.isCheckinDue = checkin;
+  }
+  assert.match(html(), /<a class="pill" href="#\/checkin">Start Re-assessment<\/a>/);
+});
+
+// v158, the owner's cut list: a monthly habit shows only last week's answer
+// until "Change" opens the list; the numbers and the painted week do not fold.
+test("the review folds the monthly habits to last week's answer, each with a Change button", () => {
+  stateManager.state.onboarded = true;
+  stateManager.state.baseline = { date: "2020-01-01T00:00:00.000Z" };
+  stateManager.state.reviews = [];
+  renderReview(MAIN, { ...STATE, profile: { ...STATE.profile, weeklyLearningHours: 3, monthlyDonations: 300, volunteeringHours: 2, singleUsePlastics: 3 } }, () => {});
+  const out = html();
+  for (const field of ["weeklyLearningHours", "monthlyDonations", "volunteeringHours", "singleUsePlastics"]) {
+    assert.match(out, new RegExp(`data-out="rev-${field}" data-folded`), `${field} should open folded`);
+    assert.match(out, new RegExp(`class="easy-change" aria-expanded="false" aria-controls="rev-${field}-choices">Change<`));
+  }
+  assert.doesNotMatch(out, /data-easy="week"[^>]*data-folded/, "the painted week never folds");
+  // The phone's short submit word, the long one still read out.
+  assert.match(out, /<span class="pill-long">Complete Weekly Review<\/span><span class="pill-short" aria-hidden="true">Finish<\/span>/);
+  assert.match(out, /class="rv-progress" aria-hidden="true"><i style="width: 17%;">/);
 });
 
 // The journey counts as the first week's measurement, so the review is not due

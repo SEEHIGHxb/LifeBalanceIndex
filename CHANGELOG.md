@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `157`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `158`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.89.0] - 2026-10-01 (v158)
+
+The Weekly Review, trimmed to the owner's cut list.
+
+- Learning, giving, helping and plastics show only last week's answer; "Change ›" opens the full list (`views/activity-fields.js`, folded only in the review and only when there is an answer).
+- On phones the exercise lengths are chips that wrap, Back and Next stay just above the bottom bar, the submit button reads "Finish", and the top line is the emblem, the count and a progress bar.
+- The repeated plastic count under the list is gone on phones.
+- Done page: "Start Re-assessment" is a button, the headline fits one line on phones, each past review shows the region that moved most (`biggestShift` moved to `views/news.js`, shared with Your year), and the Overview button is gone on phones.
+- Thai: v157 approved; draft "Change" → "เปลี่ยน" awaits review.
 
 ## [2.88.0] - 2026-10-01 (v157)
 

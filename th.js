@@ -7,7 +7,10 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
-  // v157, draft awaiting the owner's review: Overview's effort row.
+  // v158, draft awaiting the owner's review: the Weekly Review's folded answers.
+  "Change": "เปลี่ยน",
+
+  // v157, approved by the owner: Overview's effort row.
   "Your effort so far": "สิ่งที่คุณทำมาแล้ว",
   "regions explored": "ดินแดนที่สำรวจแล้ว",
   "questions answered": "คำถามที่ตอบแล้ว",

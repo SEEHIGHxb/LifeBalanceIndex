@@ -23,7 +23,7 @@ import { t, tp, dateLocale } from "../i18n.js";
 import { escapeHtml, birthdayFields } from "./helpers.js";
 import { SPRITES } from "./stage.js";
 import { heroMarkup, missionMarkup, label, renderStagePage } from "./stage-page.js";
-import { aspectName, chapterOf, motifThumb, starThumb, newsRow, dotDate, shiftSummary } from "./news.js";
+import { aspectName, chapterOf, motifThumb, starThumb, newsRow, dotDate, shiftSummary, biggestShift } from "./news.js";
 import { pledgesAndPoints } from "./review.js";
 
 const FILED_ROWS = 12;
@@ -118,13 +118,6 @@ function movementSection(state) {
       </li>`).join("");
   return newsSection("year-move", t("Movement this year"), note, list);
 }
-
-// The aspect a record moved most, for its thumbnail; null when none moved.
-const biggestShift = (shifts) => {
-  const moved = Object.entries(shifts || {}).filter(([k, v]) => v && chapterOf(k));
-  if (!moved.length) return null;
-  return moved.reduce((a, b) => (Math.abs(b[1]) > Math.abs(a[1]) ? b : a))[0];
-};
 
 // Reviews, re-assessments and the journey, newest first: moved here from
 // Overview (the owner, v157), as this page is your timeline.

@@ -36,7 +36,7 @@ import { isoWeekKey } from "../season.js";
 import { mountMotion, writeMotionStyle } from "./motion-mount.js";
 import { typedMarkup, typeIn, settleIn, burst, onAbort, SPRITES, isQuietChapter } from "./stage.js";
 import { label } from "./stage-page.js";
-import { chapterOf, dotDate, shiftSummary, starThumb, newsRow } from "./news.js";
+import { chapterOf, dotDate, shiftSummary, motifThumb, biggestShift, newsRow } from "./news.js";
 import { animate, easeStar, isReduced } from "../motion.js";
 import { carriedStep, isCarrying } from "./lang-carry.js";
 import { applyDraft, saveDraft, clearDraft, readDraft } from "../draft.js";
@@ -213,7 +213,7 @@ function reviewWeek(profile, prefills) {
 function reviewField(field, profile, prefills = {}) {
   if (field === "weeklyVigorousDays") return reviewWeek(profile, prefills);
   if (Object.values(WEEK_KINDS).flat().includes(field)) return "";
-  if (EASY_FIELDS[field]) return EASY_FIELDS[field](FIELD_IDS[field], profile[field] ?? 0);
+  if (EASY_FIELDS[field]) return EASY_FIELDS[field](FIELD_IDS[field], profile[field] ?? 0, { fold: true });
   const c = FIELD_CONSTRAINTS[field];
   const step = FIELD_STEPS[field] ? ` step="${FIELD_STEPS[field]}"` : "";
   const pre = Object.hasOwn(prefills, field) ? prefills[field] : null;
@@ -263,6 +263,10 @@ function stepMarkup(step, i, box, intro) {
   const last = i === STEPS.length - 1;
   const title = step.title ? t(step.title) : tp("How was {region} this week?", { region: chapter.region });
   const quiet = isQuietChapter(chapter) ? " data-quiet" : "";
+  const progress = Math.round(((i + 1) / STEPS.length) * 100);
+  // The phone shows the short word (css/weekly.css); a screen reader always
+  // hears the long one.
+  const submit = `<span class="pill-long">${t("Complete Weekly Review")}</span><span class="pill-short" aria-hidden="true">${t("Finish")}</span>`;
   return `
     <section class="survey-page rv-step${i ? " d-none" : ""}" id="rv-step-${i}" data-step="${i}"${quiet}
       style="--chapter-hue: ${chapter.hue}; --chapter-wash: ${chapter.wash};">
@@ -271,6 +275,7 @@ function stepMarkup(step, i, box, intro) {
           <p class="label">(${escapeHtml(chapter.region)})</p>
           <img class="q-emblem" src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async">
           <p class="q-count">${escapeHtml(tp("Weekly Review · {i} / {n}", { i: i + 1, n: STEPS.length }))}</p>
+          <span class="rv-progress" aria-hidden="true"><i style="width: ${progress}%;"></i></span>
         </div>
         <div class="q-main">
           <h3 class="q-title" tabindex="-1">${typedMarkup(title)}</h3>
@@ -280,7 +285,7 @@ function stepMarkup(step, i, box, intro) {
             ${i > 0 ? `<button type="button" class="btn btn-onb-prev rv-back">${t("Back")}</button>` : "<span></span>"}
             <div class="onb-nav-right">
               ${last
-                ? `<button type="submit" class="btn btn-primary">${t("Complete Weekly Review")}</button>`
+                ? `<button type="submit" class="btn btn-primary">${submit}</button>`
                 : `<button type="button" class="btn btn-primary rv-next">${t("Next")}</button>`}
             </div>
           </div>
@@ -319,18 +324,19 @@ export function pledgesAndPoints(r) {
   return `${tp("{met}/{total} pledges met", { met: r.goals.filter(g => g.met).length, total: r.goals.length })} · ${points}`;
 }
 
-// The review is done for the week: the past reviews as a dated list.
+// The review is done for the week: the past reviews as a dated list, each
+// with the region that moved most (v158, as Your year's Recent).
 function doneMarkup(state) {
   const rows = (state.reviews || []).slice(-PAST_ROWS).reverse().map(r => newsRow({
     date: dotDate(r.date),
     kind: t("Weekly Review"),
-    thumb: starThumb(),
+    thumb: motifThumb(biggestShift(r.shifts)),
     title: shiftSummary(r.shifts),
     sub: pledgesAndPoints(r)
   })).join("");
   const checkin = stateManager.isCheckinDue() ? `
-    <p class="rv-done-note">${t("Your monthly re-assessment is due.")}
-      <a href="#/checkin">${t("Start Re-assessment")}</a></p>` : "";
+    <p class="rv-done-note">${t("Your monthly re-assessment is due.")}</p>
+    <p class="rv-done-cta"><a class="pill" href="#/checkin">${t("Start Re-assessment")}</a></p>` : "";
   // No reviews yet: the journey was this week's measurement, and the first
   // review opens next Monday. "Reviewed this week." over an empty list said
   // otherwise.

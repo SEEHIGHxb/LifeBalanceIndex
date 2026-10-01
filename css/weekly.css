@@ -373,8 +373,6 @@
   .part-row { grid-template-columns: minmax(0, 1fr) auto; gap: 6px calc(20 * var(--px)); padding: calc(20 * var(--px)) 0; }
   .part-row .meter { grid-column: 1 / -1; }
   .pr-score b { font-size: max(26px, calc(64 * var(--px))); }
-  /* What each part is made of is its note on a phone (v160). */
-  .aspect-page .statement .pr-desc { display: none; }
   .trend-strip { gap: calc(14 * var(--px)); }
   .aspect-page .statement .trend-cell { padding: calc(18 * var(--px)); }
   .trend-date { font-size: 10.5px; letter-spacing: 0; }
@@ -491,3 +489,146 @@ html[lang="th"] .rv-wipe-window span { font-weight: 700; }
 .checkin-view .statement .fn-body p { max-width: none; margin: 0 0 8px; font-size: inherit; line-height: inherit; }
 .fn-points { margin: 0 0 8px; padding-left: 1.2em; }
 html[lang="th"] .aspect-page .statement .character-name { letter-spacing: 0; text-transform: none; line-height: 1.4; }
+
+/* ================================================== aspect page, v161 */
+/* The owner's layout rules (2026-10-01, after fastwork.com): sheets that
+   slide over each other, the parts as a stepper, the suggestions as a rail,
+   three sizes of type, rounded edges everywhere. */
+
+/* Three sizes: the reading at the top is large; names and titles are
+   medium; the rest is small and grey, so the eye knows where to land. */
+.aspect-page {
+  --t-lg: max(20px, calc(40 * var(--px)));
+  --t-md: max(16px, calc(26 * var(--px)));
+  --t-sm: max(13.5px, calc(21 * var(--px)));
+  --ink-soft: #4a4a4a;
+  --card-round: max(18px, calc(36 * var(--px)));
+}
+.aspect-page .statement p,
+.aspect-page .statement li { font-size: var(--t-sm); line-height: 1.6; color: var(--ink-soft); }
+.aspect-page .page-top-body .aspect-standing { font-size: var(--t-lg); line-height: 1.35; }
+.aspect-page .statement .character-line,
+.aspect-page .statement .focus-title,
+.aspect-page .statement .criteria-head,
+.aspect-page .aspect-measured .careers-head,
+.aspect-page .ps-card .card-title { font-size: var(--t-md); line-height: 1.45; color: var(--frame-ink); }
+.aspect-page .statement .character-tip strong,
+.aspect-page .character-sides b { color: var(--frame-ink); }
+.aspect-page .criterion-name { font-size: var(--t-sm); font-weight: 600; color: var(--frame-ink); }
+
+/* Rounded edges: the emblem, the cards, the chips. */
+.aspect-page .page-top .mark img { border-radius: 26%; }
+
+/* The sheets. Each pins at --stick (views/aspect-sheets.js: under the header,
+   or as high as a tall sheet needs to show its end) and the next, later in
+   the page and so painted above it, slides up over it. */
+.aspect-page > .panel {
+  position: sticky;
+  top: var(--stick, 0px);
+  box-shadow: 0 calc(-14 * var(--px)) calc(40 * var(--px)) rgba(0, 0, 0, 0.16);
+}
+.aspect-page > .panel:first-child { box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { .aspect-page > .panel { position: relative; } }
+html[data-reduce-motion] .aspect-page > .panel { position: relative; }
+
+/* The parts stepper. On a laptop the section is a few screens tall; the tabs
+   and the card stay pinned while the track's markers scroll past the middle
+   of the screen and pick the card. */
+.parts-stepper { position: relative; height: calc(var(--steps) * 26vh + 46vh); }
+/* The section's label rides along with the pinned stepper, mid-screen. */
+.aspect-parts .split > .label { position: sticky; top: calc(50vh - 120px); }
+.ps-pin {
+  position: sticky;
+  top: calc(50vh - 120px);
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: calc(48 * var(--px));
+  align-items: start;
+}
+.ps-track { position: absolute; inset: 0; display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; pointer-events: none; }
+.aspect-page .statement .ps-track li { flex: 1 1 0; margin: 0; }
+.ps-tabs { display: grid; gap: 4px; }
+.ps-tab {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: var(--t-md);
+  text-align: left;
+  color: var(--frame-muted);
+  cursor: pointer;
+}
+.ps-tab-score { font-family: var(--frame-word); font-weight: 400; }
+.ps-tab[aria-selected="true"] { background: var(--frame-ink); color: #ffffff; font-weight: 700; }
+.ps-tab:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
+.ps-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px 16px;
+  align-items: center;
+  padding: max(20px, calc(44 * var(--px)));
+  border-radius: var(--card-round);
+  background: var(--frame-card);
+}
+.ps-card[hidden] { display: none; }
+.aspect-page .ps-card .card-title { margin: 0; }
+.ps-card .meter { grid-column: 1 / -1; width: 100%; max-width: none; margin: 0; }
+.aspect-page .statement .ps-card .pr-desc { grid-column: 1 / -1; margin: 0; }
+
+/* The suggestions: a sideways rail of cards, the next one cut at the edge. */
+.aspect-page .focus-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(78%, 460px);
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 6px;
+  scrollbar-width: none;
+}
+.aspect-page .focus-rail::-webkit-scrollbar { display: none; }
+.aspect-page .focus-rail .focus-row {
+  scroll-snap-align: start;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: max(18px, calc(40 * var(--px)));
+  border: 0;
+  border-radius: var(--card-round);
+  background: var(--frame-card);
+}
+.aspect-page .focus-rail + .aspect-measured { margin-top: calc(40 * var(--px)); border-top: 0; padding-top: 0; }
+
+@container (max-width: 900px) {
+  .aspect-page {
+    --t-lg: 19px;
+    --t-md: 15.5px;
+    --t-sm: 13.5px;
+  }
+  .aspect-page .statement p,
+  .aspect-page .statement li { font-size: var(--t-sm); line-height: 1.55; }
+  /* Rounded sheets on a phone now there is a sheet behind each one. */
+  .aspect-page > .panel + .panel { border-top: 0; border-radius: 22px 22px 0 0; }
+  .parts-stepper { height: auto; }
+  .ps-track { display: none; }
+  .ps-pin { position: static; display: block; }
+  .aspect-parts .split > .label { position: static; }
+  .ps-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin: 0 calc(-1 * var(--gutter)) 14px;
+    padding: 0 var(--gutter) 4px;
+    scrollbar-width: none;
+  }
+  .ps-tabs::-webkit-scrollbar { display: none; }
+  .ps-tab { flex: none; padding: 8px 14px; border: 1px solid #d8d4cc; font-size: var(--t-sm); }
+  .ps-tab[aria-selected="true"] { border-color: var(--frame-ink); }
+  .aspect-page .focus-rail { grid-auto-columns: 82%; margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); }
+}
+

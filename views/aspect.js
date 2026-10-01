@@ -14,9 +14,13 @@
 // sources are numbered notes at its end, reached by their marks.
 //
 // v160 (the owner's cut list, 2026-10-01): the top is one line; the gauge
-// keeps no figure; each guideline check is one line; the four characters, the
-// quiet-region line, every suggestion after the first and (on a phone) what
-// each part is made of are notes.
+// keeps no figure; each guideline check is one line; the four characters are
+// a note.
+//
+// v161 (the owner's layout rules, 2026-10-01, after fastwork.com): every
+// section is a rounded sheet the next one slides over; the parts are a
+// stepper with their details back; the suggestions are a sideways rail; no
+// region is quiet any more (views/aspect-sheets.js, css/weekly.css).
 //
 // Top to bottom:
 //   notice      the Mental page's duty-of-care notice, past the cutoff; still
@@ -42,7 +46,7 @@ import { t, tp, percentileLabel } from "../i18n.js";
 import { gradeForAspect } from "../grades.js";
 import { criteriaForAspect } from "../criteria.js";
 import { CHAPTERS } from "./journey.js";
-import { isQuietChapter } from "./stage.js";
+import { bindAspectSheets } from "./aspect-sheets.js";
 import { topMarkup, label, renderStagePage } from "./stage-page.js";
 import { dotDate } from "./news.js";
 import {
@@ -129,10 +133,8 @@ function gradeNote(a) {
   };
 }
 
-// What the aspect covers, in a line and its theme; a quiet region says it is
-// still on purpose here rather than on the page (v160).
-const blurb = (a) => `<p>${escapeHtml(a.detail.blurb)} <em class="aspect-theme">${escapeHtml(a.chapter.theme)}</em></p>${
-  isQuietChapter(a.chapter) ? `<p>${t("This region is kept still on purpose.")}</p>` : ""}`;
+// What the aspect covers, in a line and its theme.
+const blurb = (a) => `<p>${escapeHtml(a.detail.blurb)} <em class="aspect-theme">${escapeHtml(a.chapter.theme)}</em></p>`;
 
 // What the comparison is: the percentile's meaning and precision, how it was
 // made, and from what.
@@ -159,13 +161,6 @@ function characterNote(c) {
     <p><strong>${t("What the research says")}</strong></p>
     <ul class="fn-points">${c.research.map(r => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
     <p>${escapeHtml(characterDisclaimer())}</p>`;
-}
-
-// What each part is made of: under its row on a desktop, in this note on a
-// phone (v160).
-function partsNote(detail) {
-  if (!detail.components.length) return "";
-  return `<ul class="fn-points">${detail.components.map(c => `<li><strong>${escapeHtml(c.label)}</strong> · ${escapeHtml(c.detail)}</li>`).join("")}</ul>`;
 }
 
 function factsNote(detail) {
@@ -286,18 +281,40 @@ function compareSection(a, book) {
     </div></section>`;
 }
 
-// One row per component: its name, score, a meter in the region's hue, and
-// what it is made of (hidden on a phone, where the mark on the first name
-// leads to it; css/weekly.css).
-function partRow(c, chapter, ref = "") {
+// "What it's made of" as a stepper (v161, the owner: "bring the details"):
+// the parts as tabs, each with its score, and one card at a time with the
+// score, a meter in the region's hue and what it is made of. The track is
+// the scroll a laptop reads the parts by (views/aspect-sheets.js); a phone
+// hides it and taps the tabs, which run sideways as chips.
+function partTab(c, i) {
+  return `
+        <button type="button" class="ps-tab" role="tab" id="ps-tab-${i}" aria-controls="ps-card-${i}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}">
+          <span class="ps-tab-name">${escapeHtml(c.label)}</span><b class="ps-tab-score">${escapeHtml(c.value)}</b>
+        </button>`;
+}
+
+function partCard(c, i, chapter) {
   const value = Number(c.value) || 0;
   return `
-    <li class="part-row">
-      <div class="pr-name"><h3 class="card-title">${escapeHtml(c.label)}${ref}</h3></div>
-      <p class="pr-score"><b>${escapeHtml(c.value)}</b><span class="sr-only"> ${escapeHtml(t("out of 100"))}</span></p>
-      <span class="meter" aria-hidden="true"><i style="width: ${value}%; background: ${chapter.hue};"></i></span>
-      <p class="pr-desc">${escapeHtml(c.detail)}</p>
-    </li>`;
+        <article class="ps-card" role="tabpanel" id="ps-card-${i}" aria-labelledby="ps-tab-${i}"${i ? " hidden" : ""}>
+          <h3 class="card-title">${escapeHtml(c.label)}</h3>
+          <p class="pr-score"><b>${escapeHtml(c.value)}</b><span class="sr-only"> ${escapeHtml(t("out of 100"))}</span></p>
+          <span class="meter" aria-hidden="true"><i style="width: ${value}%; background: ${chapter.hue};"></i></span>
+          <p class="pr-desc">${escapeHtml(c.detail)}</p>
+        </article>`;
+}
+
+function partsStepper(components, chapter) {
+  return `
+    <div class="parts-stepper" data-step="0" style="--steps: ${components.length};">
+      <div class="ps-pin">
+        <div class="ps-tabs" role="tablist" aria-label="${escapeHtml(t("What it's made of"))}">${components.map(partTab).join("")}
+        </div>
+        <div class="ps-cards">${components.map((c, i) => partCard(c, i, chapter)).join("")}
+        </div>
+      </div>
+      <ol class="ps-track" aria-hidden="true">${components.map(() => "<li></li>").join("")}</ol>
+    </div>`;
 }
 
 // The facts measured but not scored, under the components with no heading of
@@ -316,9 +333,8 @@ function factsBlock(detail, book) {
 
 function partsSection(a, book) {
   const { detail, chapter } = a;
-  const ref = book.ref("parts", partsNote(detail));
   const rows = detail.components.length
-    ? `<ul class="part-rows">${detail.components.map((c, i) => partRow(c, chapter, i === 0 ? ref : "")).join("")}</ul>`
+    ? partsStepper(detail.components, chapter)
     : `<p class="aspect-note">${t("Baseline survey data needed for this breakdown.")}</p>`;
   return `
     <section class="panel statement aspect-parts"><div class="wrap split">
@@ -380,25 +396,19 @@ function measuredRow(a) {
     </div>`;
 }
 
-// The first suggestion in full; any after it is its title, the text its note
-// (v160).
-function focusRow(s, i, book) {
-  if (i === 0) {
-    return `
+// The suggestions as a sideways rail of cards (v161, the owner's layout
+// rules: a rail, as YouTube Music does, rather than a column to read down).
+function focusCard(s) {
+  return `
         <li class="focus-row">
           <p class="focus-title">${escapeHtml(s.title)}</p>
           <p class="focus-text">${escapeHtml(s.text)}</p>
         </li>`;
-  }
-  return `
-        <li class="focus-row">
-          <p class="focus-title">${escapeHtml(s.title)}${book.ref(`focus-${i}`, `<p>${escapeHtml(s.text)}</p>`)}</p>
-        </li>`;
 }
 
-function focusSection(a, book) {
+function focusSection(a) {
   const list = a.suggestions.length ? `
-    <ul class="focus-list">${a.suggestions.map((s, i) => focusRow(s, i, book)).join("")}
+    <ul class="focus-list focus-rail">${a.suggestions.map(focusCard).join("")}
     </ul>` : "";
   return `
     <section class="panel statement aspect-focus"><div class="wrap split">
@@ -424,7 +434,7 @@ export function aspectMarkup(a) {
   const character = characterSection(a, book);
   const compare = compareSection(a, book);
   const parts = partsSection(a, book);
-  const focus = focusSection(a, book);
+  const focus = focusSection(a);
   return `
     <div class="stage-page aspect-page" data-aspect="${escapeHtml(a.key)}">
       ${noticeSection(a)}
@@ -454,9 +464,10 @@ export function renderAspectPage(containerId, state, aspectKey) {
   if (!a || !a.chapter) return;
   renderStagePage(container, () => aspectMarkup(a), {
     motifs: [{ motif: a.key, hue: a.chapter.hue }],
-    still: isQuietChapter(a.chapter) || !!a.notice
+    still: !!a.notice
   });
   bindFootnotes(container);
+  bindAspectSheets(container);
   // Opened from a row halfway down Overview, the page starts at its top
   // (the owner, v143), as the star page does.
   globalThis.scrollTo?.(0, 0);

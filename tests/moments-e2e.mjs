@@ -16,12 +16,13 @@
 //      sixteen particles burst, and afterwards nothing is left parked.
 //   3. The Highlands' first screen: every letter of its title starts hidden
 //      and all have typed in by the end, the emblem settled.
-//   4. The Still Water's ending: a quiet region, so no wipe and no burst.
+//   4. The Still Water's ending wipes and bursts like any region: no region
+//      is quiet since v161 (the owner, 2026-10-01).
 //   5. Reduced motion (the device setting): not one style is written on a
 //      moving piece of the journey or Home, no frame is ever asked for, and
 //      Home's star stays put when tapped.
 //   7. The weekly loop (R4): an aspect page's emblem bursts and comes home, and
-//      a quiet region's page does not; Goals' stickers stick on and settle;
+//      so does The Commons' (v161); Goals' stickers stick on and settle;
 //      the Weekly Review wipes the next region's photograph over and away,
 //      and its ending lifts its curtain and bursts, leaving nothing parked.
 //   6. Home: a tap on your star bursts sixteen stars and motifs and it comes
@@ -281,13 +282,14 @@ try {
   if (typed.off || typed.emblem) problems.push(`opening: left parked (${typed.off} letters hidden, emblem "${typed.emblem}")`);
 
   if (!(await walkToEnding(page, 2))) throw new Error("never reached The Still Water's ending");
-  const quiet = await endingState(page);
-  if (quiet.count !== "3 / 8") problems.push(`still water: the ending reads ${quiet.count}, not 3 / 8`);
-  if (quiet.particles || quiet.curtain) {
-    problems.push(`still water: a quiet region moved (${quiet.particles} particles, curtain "${quiet.curtain}")`);
-  }
+  const water = await endingState(page);
+  if (water.count !== "3 / 8") problems.push(`still water: the ending reads ${water.count}, not 3 / 8`);
+  await advance(page, 760);
+  const waterBurst = await endingState(page);
+  if (!water.curtain && !water.particles && !waterBurst.particles) problems.push("still water: the ending neither wiped nor burst");
   await advance(page, 3500);
-  if ((await endingState(page)).particles) problems.push("still water: a burst played in a quiet region");
+  const waterEnd = await endingState(page);
+  if (waterEnd.particles || waterEnd.curtain) problems.push(`still water: pieces left behind (${waterEnd.particles} particles, curtain "${waterEnd.curtain}")`);
   await context.close();
 } catch (err) {
   problems.push(`endings: ${err.message}`);
@@ -452,12 +454,14 @@ try {
   await advance(page, 2500);
   const rested = await pieceState(page, ".aspect-page");
   if (rested.particles || rested.styled.length) problems.push(`aspect: the emblem did not come home (${rested.styled.join(" | ")})`);
-  // A quiet region's page is still.
+  // The Commons bursts too: no region is quiet since v161.
   await openHash(page, "#/aspect/relationships", ".aspect-page .page-top .mark img");
   await page.click(".aspect-page .mark-hit");
-  await advance(page, 400);
-  const hush = await pieceState(page, ".aspect-page");
-  if (hush.particles || hush.styled.length) problems.push("aspect: The Commons' page moved or burst");
+  await advance(page, FRAME_MS * 3);
+  const commons = await pieceState(page, ".aspect-page");
+  if (commons.particles !== 16) problems.push(`aspect: The Commons burst ${commons.particles} particles, not 16`);
+  await advance(page, 2500);
+  if ((await pieceState(page, ".aspect-page")).particles) problems.push("aspect: The Commons' burst did not come home");
 
   // Goals: the stickers stick on when the list comes into view, then settle.
   await openHash(page, "#/quests", ".goals .pledge-list .pledge");
@@ -616,4 +620,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water stays still, Home's star warps into its own page and flies back (the care notice too), an aspect page bursts and The Commons' does not, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi stays off, and reduced motion moves nothing");
+console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water wipes and bursts too, Home's star warps into its own page and flies back (the care notice too), an aspect page bursts, The Commons' too, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi stays off, and reduced motion moves nothing");

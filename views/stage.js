@@ -22,10 +22,12 @@ import { escapeHtml } from "./helpers.js";
 
 export const SPRITES = "./assets/sprites.svg";
 
-// The Still Water and The Commons are quiet regions: nothing bursts or types
-// there (non-negotiable 4, symbols.md S2). Moved here from views/moments.js
-// when that file went with the old ceremony (R3).
-export const QUIET_ASPECTS = Object.freeze(["mental", "relationships"]);
+// Quiet regions, where nothing bursts or types. The Still Water and The
+// Commons were quiet until v161, when the owner retired the rule (2026-10-01:
+// "applied to all of the aspects, no exception"); the list stays so a region
+// can be made quiet again in one place. Answer groups and the duty-of-care
+// notice stay still regardless (views/motion-mount.js STILL_SELECTOR).
+export const QUIET_ASPECTS = Object.freeze([]);
 export const isQuietChapter = (chapter) => QUIET_ASPECTS.includes(chapter?.aspect);
 
 // V5/V6_REVIEW burst, in CSS px at the prototype's 1440px-wide laptop. `reach`

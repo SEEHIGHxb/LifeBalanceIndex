@@ -1566,3 +1566,8 @@ html {
 
   
 }
+
+/* No paragraph ends on a lone word (the owner's layout rule, v161): the
+   browser re-breaks the last lines at every width and in Thai. Firefox
+   ignores it and keeps its own breaks. */
+p, li, h1, h2, h3, h4, dd, figcaption, blockquote { text-wrap: pretty; }

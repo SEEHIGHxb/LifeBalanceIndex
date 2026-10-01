@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `160`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `161`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.92.0] - 2026-10-01 (v161)
+
+The aspect pages under the owner's new layout rules (2026-10-01, after fastwork.com).
+
+- **Sheets that slide** (views/aspect-sheets.js, css/weekly.css): every section is a rounded sheet; once read to its end it pins, and the next slides up over it. Rounded on phones too, now that a sheet sits behind each one. Reduced motion keeps the sheets still.
+- **The parts as a stepper**: the parts are tabs with their scores, and one card shows the score, a meter and what the part is made of (the details are back; note 5 is gone). On a laptop the card follows the scroll; on a phone the tabs are sideways chips.
+- **"Where to start" is a sideways rail** of cards, every suggestion in full.
+- **Three sizes of type**: the reading at the top large; names and titles medium; the rest small and grey.
+- **No lone last words** (index.css text-wrap: pretty; views/lone-words.js tightens what is left, letter spacing then size). None remain on the eight aspects in English or Thai at 412px or 1440px.
+- **No quiet regions** (views/stage.js): The Still Water and The Commons now wipe, burst and type like the rest. The care notice and the answer groups stay still.
+- Rounder emblem corners. No new Thai; "This region is kept still on purpose." was removed.
 
 ## [2.91.0] - 2026-10-01 (v160)
 

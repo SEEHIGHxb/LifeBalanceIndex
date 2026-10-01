@@ -172,7 +172,7 @@ test("an aspect page is compact: the emblem on the region's photograph, rows, an
   assert.ok(out.indexOf("page-top") < out.indexOf("aspect-society"));
   // Where it stands is said once, in the top, not again under the gauge.
   assert.equal((out.match(/Ahead of about/g) || []).length, 1);
-  assert.match(out, /class="part-row"/);
+  assert.match(out, /class="parts-stepper"/);
   // v143: the facts sit under the components with no heading, their note
   // marked on the first; the runway is gone.
   assert.match(out, /<ul class="fact-list facts">\s*<li class="fact-row">\s*<span class="fact-label">Monthly saving<sup class="fn-ref"><a id="fnref-facts"/);
@@ -190,11 +190,11 @@ test("an aspect page's explanations are numbered notes at its end, in reading or
   }
   for (const heading of ["How you compare", "What it(&#39;|')s made of", "Where to start", "Notes and sources"]) assert.match(out, new RegExp(heading));
   const marks = [...out.matchAll(/<a id="fnref-([a-z]+)" href="#fn-\1" data-jump="fn-\1" aria-label="Note (\d)">\2<\/a>/g)].map(m => [m[1], m[2]]);
-  assert.deepEqual(marks, [["grade", "1"], ["character", "2"], ["compare", "3"], ["guidelines", "4"], ["parts", "5"]]);
+  assert.deepEqual(marks, [["grade", "1"], ["character", "2"], ["compare", "3"], ["guidelines", "4"]]);
   // The character's mark ends its line, not its name (the owner, v143).
   assert.match(out, /class="character-line">[^<]+<sup class="fn-ref"><a id="fnref-character"/);
   const notes = out.slice(out.indexOf('class="panel statement aspect-notes"'));
-  assert.deepEqual([...notes.matchAll(/<li id="fn-([a-z]+)"/g)].map(m => m[1]), ["grade", "character", "compare", "guidelines", "parts"]);
+  assert.deepEqual([...notes.matchAll(/<li id="fn-([a-z]+)"/g)].map(m => m[1]), ["grade", "character", "compare", "guidelines"]);
   assert.match(notes, /made up for fun/, "the character's disclaimer is kept");
   assert.match(notes, /“Percentile” = the share of people you're ahead of/);
   assert.match(notes, /class="fn-sources"><li><a href="https:/, "the sources are listed");
@@ -228,13 +228,11 @@ test("the trend waits for a second week rather than repeat the score", () => {
   assert.match(html(), /class="trend-strip"/);
 });
 
-test("a quiet region's page says it is still on purpose in a note, and a loud one does not", () => {
-  renderAspectPage(MAIN, STATE, "mental");
-  const out = html();
-  assert.doesNotMatch(out.split('class="panel statement aspect-notes"')[0], /kept still on purpose/);
-  assert.match(out, /<li id="fn-grade"[^>]*>[\s\S]*kept still on purpose/);
-  renderAspectPage(MAIN, STATE, "physical");
-  assert.doesNotMatch(html(), /kept still on purpose/);
+test("no region is quiet any more, so no page says it is still on purpose", () => {
+  for (const key of ["mental", "relationships", "physical"]) {
+    renderAspectPage(MAIN, STATE, key);
+    assert.doesNotMatch(html(), /kept still on purpose/);
+  }
 });
 
 // v160, the owner's cut list: the top on one line, no second percentile, one
@@ -266,21 +264,38 @@ test("each guideline check is one line, its figures in the note", () => {
   assert.match(read("css/weekly.css"), /\.aspect-page \.criterion-name \{ order: -1; \}/);
 });
 
-test("the four characters, the parts' detail and a second suggestion are notes", () => {
+test("the four characters are a note; the parts are a stepper; the suggestions a rail", () => {
   renderAspectPage(MAIN, STATE, "mental");
   const out = html();
   const page = out.split('class="panel statement aspect-notes"')[0];
   assert.doesNotMatch(out, /character-cast|aria-current="true"/);
   assert.match(out, /<li id="fn-character"[^>]*>[\s\S]*?The four characters in this region: [^<]*<b>[^<]+<\/b>/);
-  assert.match(out, /<h3 class="card-title">[^<]+<sup class="fn-ref"><a id="fnref-parts"/);
-  assert.match(read("css/weekly.css"), /\.aspect-page \.statement \.pr-desc \{ display: none; \}/);
-  // The first suggestion is open; the second is its title and a mark.
+  // v161: one tab and one card per part, the first shown, the details back.
+  const tabs = [...page.matchAll(/<button type="button" class="ps-tab" role="tab" id="ps-tab-(\d)" aria-controls="ps-card-\1" aria-selected="(true|false)"/g)];
+  assert.ok(tabs.length >= 2, "Mental has two parts");
+  assert.deepEqual(tabs.map(m => m[2]), ["true", ...tabs.slice(1).map(() => "false")]);
+  assert.match(page, /<article class="ps-card" role="tabpanel" id="ps-card-0" aria-labelledby="ps-tab-0">/);
+  assert.match(page, /<article class="ps-card" role="tabpanel" id="ps-card-1" aria-labelledby="ps-tab-1" hidden>/);
+  assert.match(page, /class="ps-card"[\s\S]*?<p class="pr-desc">[^<]+<\/p>/);
+  assert.equal((page.match(/<ol class="ps-track" aria-hidden="true">(<li><\/li>)+<\/ol>/g) || []).length, 1);
+  assert.doesNotMatch(out, /fnref-parts|fnref-focus/);
+  // Every suggestion in full, as cards on a rail.
+  assert.match(page, /<ul class="focus-list focus-rail">/);
   const rows = [...page.matchAll(/<li class="focus-row">([\s\S]*?)<\/li>/g)].map(m => m[1]);
-  assert.ok(rows.length >= 2, "Mental should have two suggestions here");
-  assert.match(rows[0], /class="focus-text"/);
-  assert.doesNotMatch(rows[1], /class="focus-text"/);
-  assert.match(rows[1], /<a id="fnref-focus-1"/);
-  assert.match(out, /<li id="fn-focus-1"/);
+  assert.ok(rows.length >= 2);
+  for (const r of rows) assert.match(r, /class="focus-text"/);
+  const css = read("css/weekly.css");
+  assert.match(css, /\.aspect-page > \.panel \{\s*position: sticky;\s*top: var\(--stick, 0px\);/);
+  assert.match(css, /html\[data-reduce-motion\] \.aspect-page > \.panel \{ position: relative; \}/);
+  assert.match(read("index.css"), /text-wrap: pretty/);
+});
+
+test("the stepper picks the last part to enter the middle, and keeps its card on leavings alone", async () => {
+  const { stepFromEntries } = await import("../views/aspect-sheets.js");
+  assert.equal(stepFromEntries([{ step: 0, isIntersecting: false }, { step: 1, isIntersecting: true }], 0), 1);
+  assert.equal(stepFromEntries([{ step: 2, isIntersecting: false }], 2), 2);
+  assert.equal(stepFromEntries([{ step: 1, isIntersecting: true }, { step: 3, isIntersecting: true }], 0), 3);
+  assert.equal(stepFromEntries([{ step: -1, isIntersecting: true }], 1), 1);
 });
 
 // --- Goals --------------------------------------------------------------------

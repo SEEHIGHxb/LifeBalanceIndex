@@ -37,10 +37,10 @@ const hidden = (cells) => cells.filter(c => c.classList.contains("off")).length;
 
 // --- quiet zones -------------------------------------------------------------
 
-test("the quiet zones are exactly The Still Water and The Commons", () => {
-  const quiet = CHAPTERS.filter(isQuietChapter).map(c => c.aspect);
-  assert.deepEqual(quiet, ["mental", "relationships"]);
-  assert.deepEqual([...QUIET_ASPECTS], ["mental", "relationships"]);
+// v161: the owner retired the quiet regions; every region moves.
+test("no region is quiet any more", () => {
+  assert.deepEqual(CHAPTERS.filter(isQuietChapter), []);
+  assert.deepEqual([...QUIET_ASPECTS], []);
   assert.equal(isQuietChapter(undefined), false);
 });
 

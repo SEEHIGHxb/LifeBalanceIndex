@@ -75,6 +75,34 @@ test("your star never breaks on a missing or junk score", () => {
 
 // --- the page -------------------------------------------------------------------
 
+// v164 (the owner's Overview plan): stacked sheets, the headline's regions as
+// chips, Where to start as a rail of whole tips, the pledges as cards on the
+// sky, and the notes folded at every width.
+test("v164: Overview's chips, rail, pledge cards and sheets", async () => {
+  const goals = [
+    { id: "a", templateId: "sleep", target: 8, lastResult: { week: "2026-W39", value: 8, met: true } },
+    { id: "b", templateId: "water", target: 2 }
+  ];
+  const html = render({ ...STATE, goals });
+  const chips = [...html.matchAll(/class="region-chip" href="#\/aspect\/(\w+)"/g)].map(m => m[1]);
+  assert.ok(chips.length >= 1 && chips.length <= 2, `chips: ${chips}`);
+  assert.equal(new Set(chips).size, chips.length, "a region is never chipped twice");
+  assert.match(html, /<ul class="start-rail">/);
+  assert.doesNotMatch(html, /class="newslist"/);
+  // The whole tip is in the card, not a one-line excerpt.
+  assert.match(html, /<span class="start-text">[^<]{40,}<\/span>/);
+  assert.equal((html.match(/class="pledge-card[ "]/g) || []).length, 2);
+  assert.equal((html.match(/class="pledge-card is-kept"/g) || []).length, 1);
+  assert.match(html, /Average at least 8 hours of sleep per night\./);
+  const { readFile } = await import("node:fs/promises");
+  const css = await readFile(new URL("../css/home.css", import.meta.url), "utf8");
+  assert.match(css, /\.home > \.panel:not\(\.notice-panel\) \{\s*position: sticky;\s*top: var\(--stick/);
+  assert.match(css, /html\[data-reduce-motion\] \.home > \.panel:not\(\.notice-panel\) \{ position: relative; \}/);
+  const src = await readFile(new URL("../views/dashboard.js", import.meta.url), "utf8");
+  assert.match(src, /bindFootnotes\(container, \{ fold: "always" \}\)/);
+  assert.match(src, /onRouteEnd\(\(\) => ctl\.abort\(\)\)/);
+});
+
 test("the top names the Balance Index for readers, and the headline names real regions", () => {
   const html = render(STATE);
   assert.match(html, /<h2 class="sr-only">Your star — Balance Index \d+<\/h2>/);
@@ -173,7 +201,8 @@ test("Your year's Recent list is newest first, at most five, escaped, and skips 
 test("the pledge wall appears only with pledges, and says in words what it shows", () => {
   assert.doesNotMatch(render(STATE), /class="wall"/);
   const html = render({ ...STATE, goals: [{ id: "g", templateId: "sleep", target: 7 }] });
-  assert.match(html, /<section class="wall" aria-hidden="true">/);
+  // v164: the sky fills the pledges' own sheet, behind the count and cards.
+  assert.match(html, /<section class="panel home-pledges">\s*<div class="wall" aria-hidden="true">/);
   assert.match(html, /1 active this week/);
   // A strip, not a screen: a few stars per column, not a wall of them.
   const perColumn = html.split('class="wall-col"').slice(1).map(c => (c.match(/class="sky-star/g) || []).length);

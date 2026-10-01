@@ -38,10 +38,12 @@ import { openShareSheet } from "./share.js";
 import { shapeFigure, shapeSwitchMarkup, bindShapeSwitch, adoptShape, readShapeView } from "./shape.js";
 import { CHAPTERS } from "./journey.js";
 import { SPRITES, onAbort } from "./stage.js";
-import { chapterOf, aspectName, motifThumb, starThumb, newsRow } from "./news.js";
+import { chapterOf, aspectName, motifThumb, starThumb } from "./news.js";
 import { label, renderStagePage } from "./stage-page.js";
 import { markZoom, takeZoom, zoomFrom } from "./star-zoom.js";
-import { writeMotionStyle } from "./motion-mount.js";
+import { writeMotionStyle, onRouteEnd } from "./motion-mount.js";
+import { bindSheets } from "./sheets.js";
+import { tightenLoneWords } from "./lone-words.js";
 import { t, tp } from "../i18n.js";
 import {
   escapeHtml, aspectLabel, estimatedAspects, mentalHealthNotice, isCareNoticeClosed, closeCareNotice,
@@ -167,6 +169,16 @@ function noticeSection(h) {
 // words stay as its accessible name (css/home.css).
 const SHARE_ICON = `<svg class="share-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.4M8.3 13.2l7.4 4.4"/></g></svg>`;
 
+// The two regions the headline names, as chips that open their pages (v164:
+// on a laptop they fill the room beside the star; a phone hides them).
+function regionChips(keys) {
+  const chips = [...new Set(keys)].map(chapterOf).filter(Boolean).map(c => `
+    <a class="region-chip" href="#/aspect/${c.aspect}" style="--hue: ${c.hue}; --wash: ${c.wash};">
+      <img src="./assets/emblems/${c.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async"><span>${escapeHtml(c.region)}</span>
+    </a>`).join("");
+  return chips ? `<p class="home-regions">${chips}</p>` : "";
+}
+
 // Your star beside what it adds up to: the Balance Index, then where you are
 // strongest and what asks for more. Under the star, the view switch and
 // share (v157). How the index is worked out is note 1 (v141, the owner: a
@@ -199,6 +211,7 @@ function topSection(h) {
             <p class="balance-index-title">${t("Balance Index")}${footnoteRef("index", "1")}</p>
           </div>
           <p class="home-headline">${escapeHtml(tp("Strongest in {strong}.", { strong }))} ${escapeHtml(tp("{weak} is asking for more.", { weak }))}</p>
+          ${regionChips([h.strongest, h.weakest?.aspect])}
         </div>
       </div>
     </section>`;
@@ -316,17 +329,27 @@ function notesSection(h) {
 const thumbFor = (aspect, h) => (aspect && chapterOf(aspect) ? motifThumb(aspect) : starThumb(yourStarSvg(h.scores)));
 
 // Where to start: the recommendations, each opening its aspect page. Your
-// recent records moved to Your year (v157).
+// recent records moved to Your year (v157). Since v164 a sideways rail of
+// cards, each with its whole tip (the phone's rows cut it short).
+function startCard(s, h) {
+  const c = chapterOf(s.aspect);
+  const inner = `
+    ${thumbFor(s.aspect, h)}
+    <span class="start-kind">${escapeHtml(s.aspectLabel)}</span>
+    <b class="start-title">${escapeHtml(s.title)}</b>
+    <span class="start-text">${escapeHtml(s.text)}</span>`;
+  return c
+    ? `<li><a class="start-card" href="#/aspect/${c.aspect}" style="--hue: ${c.hue}; --wash: ${c.wash};">${inner}</a></li>`
+    : `<li><div class="start-card">${inner}</div></li>`;
+}
+
 function newsSection(h) {
   if (!h.suggestions.length) return "";
   return `
-    <section class="panel news home-news">
-      <div class="wrap split news-block">
-        <div class="news-side">${label(t("Where to start"))}</div>
-        <ul class="newslist">${h.suggestions.map(s => newsRow({
-          kind: s.aspectLabel, thumb: thumbFor(s.aspect, h), title: s.title,
-          sub: s.text, href: `#/aspect/${s.aspect}`
-        })).join("")}</ul>
+    <section class="panel home-news">
+      <div class="wrap split">
+        ${label(t("Where to start"))}
+        <ul class="start-rail">${h.suggestions.map(s => startCard(s, h)).join("")}</ul>
       </div>
     </section>`;
 }
@@ -338,9 +361,26 @@ export function litSkySlots(kept) {
   return new Set(Array.from({ length: n }, (_, i) => Math.floor(((i + 0.5) * SKY_STARS) / n)));
 }
 
-// The pledges as a night sky: a dark band the cards sit on, with a gilt star
-// lit for each pledge kept and the rest drawn dim. It is decoration; the
-// caption above it says what it shows in words.
+// One active pledge as a card on the sky, its star gilt if it was kept at the
+// last review. The count line says the same in words.
+function pledgeCard(goal) {
+  const tmpl = goalTemplate(goal.templateId);
+  const kept = goal.lastResult?.met === true;
+  const star = kept
+    ? `<svg viewBox="0 0 100 100"><use href="${SPRITES}#star"/></svg>`
+    : `<svg viewBox="0 0 24 24"><use href="${SPRITES}#star-line"/></svg>`;
+  return `
+    <li class="pledge-card${kept ? " is-kept" : ""}">
+      <i class="pc-star" aria-hidden="true">${star}</i>
+      <b>${escapeHtml(t(tmpl.title))}</b>
+      <span>${tp(tmpl.desc, { target: escapeHtml(goal.target ?? tmpl.def) })}</span>
+    </li>`;
+}
+
+// The pledges on the night sky (v164: one dark sheet, where the count and
+// the sky used to be a strip and a band apart): the count, the pledges as
+// cards, and behind them a gilt star lit for each pledge kept and the rest
+// drawn dim. The sky is decoration; the count says what it shows in words.
 function wallSection(h) {
   const goals = h.state.goals.filter(g => goalTemplate(g.templateId));
   if (!goals.length) return "";
@@ -353,11 +393,16 @@ function wallSection(h) {
   const cols = SKY.map((col, c) => `<div class="wall-col">${col.map((p, k) => star(p, c * col.length + k)).join("")}</div>`).join("");
   const keptLine = reviewed ? ` · ${escapeHtml(tp("{kept} kept at your last review", { kept }))}` : "";
   return `
-    <section class="panel home-pledges"><div class="wrap split">
-      ${label(t("Your pledges"))}
-      <p class="pledge-count"><span>${escapeHtml(tp("{n} active this week", { n: goals.length }))}${keptLine}</span> <a class="pill pill-light" href="#/quests">${escapeHtml(t("Goals"))}</a></p>
-    </div></section>
-    <section class="wall" aria-hidden="true">${cols}</section>`;
+    <section class="panel home-pledges">
+      <div class="wall" aria-hidden="true">${cols}</div>
+      <div class="wrap split">
+        ${label(t("Your pledges"))}
+        <div class="pledge-body">
+          <p class="pledge-count"><span>${escapeHtml(tp("{n} active this week", { n: goals.length }))}${keptLine}</span> <a class="pill pill-light" href="#/quests">${escapeHtml(t("Goals"))}</a></p>
+          <ul class="pledge-cards">${goals.map(pledgeCard).join("")}</ul>
+        </div>
+      </div>
+    </section>`;
 }
 
 export function homeMarkup(h) {
@@ -419,6 +464,21 @@ function mountEffort(root, scope) {
   onAbort(scope.signal, () => figures.forEach((b, i) => { b.textContent = String(ends[i]); }));
 }
 
+// The sections as stacked sheets (views/sheets.js), and no lone last words.
+// Their window listeners outlive the page's motion (a calm page has none), so
+// they end with the route, or with the next render of this page.
+let homeSheets = null;
+function bindHomeSheets(container) {
+  homeSheets?.abort();
+  const page = container.querySelector(".home");
+  if (!page || typeof AbortController !== "function") return;
+  const ctl = new AbortController();
+  homeSheets = ctl;
+  onRouteEnd(() => ctl.abort());
+  bindSheets(page, ctl.signal);
+  tightenLoneWords(page, ctl.signal);
+}
+
 export function renderDashboard(containerId, state) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -433,7 +493,9 @@ export function renderDashboard(containerId, state) {
   // The switch works on a still page too; there it redraws without moving.
   adoptShape(container.querySelector(".home-star-mark svg.shape"), { view: h.view, you: h.scores });
   bindShapeSwitch(container, scope);
-  bindFootnotes(container);
+  // Folded at every width, as on the aspect pages (v164).
+  bindFootnotes(container, { fold: "always" });
+  bindHomeSheets(container);
   if (scope) {
     try {
       mountStar(container, scope, zoom);

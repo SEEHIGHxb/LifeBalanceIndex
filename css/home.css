@@ -46,6 +46,40 @@
 .home-top .balance-index { align-items: flex-end; }
 .home-top .balance-index-title { margin: 0 0 calc(12 * var(--px)); font-weight: 700; font-size: max(16px, calc(28 * var(--px))); }
 .home-headline { margin: 0 0 calc(30 * var(--px)); font-weight: 700; font-size: max(16px, calc(30 * var(--px))); line-height: 1.5; }
+/* The two regions the headline names, as chips (v164; a phone hides them). */
+.home-regions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; }
+.region-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 18px 6px 6px;
+  border-radius: 999px;
+  background: var(--wash);
+  color: var(--frame-ink);
+  font-size: max(13px, calc(20 * var(--px)));
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.region-chip img { display: block; width: 40px; height: 40px; border-radius: 50%; }
+.region-chip:hover span { text-decoration: underline; text-underline-offset: 0.15em; }
+.region-chip:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+
+/* v164: the sections as stacked sheets (views/sheets.js), as on the aspect
+   pages: each pins at --stick and the next slides up over it. The care
+   notice stays in the flow. */
+.home > .panel:not(.notice-panel) {
+  position: sticky;
+  top: var(--stick, 0px);
+  box-shadow: 0 calc(-14 * var(--px)) calc(40 * var(--px)) rgba(0, 0, 0, 0.16);
+}
+.home > .home-top { box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { .home > .panel:not(.notice-panel) { position: relative; } }
+html[data-reduce-motion] .home > .panel:not(.notice-panel) { position: relative; }
+/* The notes folded at every width; the fold stands in for the label. */
+.home .has-notes-fold .label { display: none; }
+.home .has-notes-fold .split > :last-child { grid-column: -2 / -1; }
 /* Under the star: the view switch, and share as a round icon (v157). */
 .home-tools { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .share-btn {
@@ -164,25 +198,78 @@
 .fn-sources { margin: 8px 0 0; padding-left: 1.2em; }
 @media (pointer: coarse) { .fn-ref a, .fn-mark { padding: 10px 6px; } }
 
-/* ------------------------------------------- where to start, and recent */
+/* ---------------------------------------------------- where to start */
+/* v164: a sideways rail of cards, each with its whole tip, the next one cut
+   at the edge to say there is more. */
 .home-news { padding: calc(100 * var(--px)) 0 calc(90 * var(--px)); }
-.home-news .news-block + .news-block { margin-top: calc(90 * var(--px)); }
-.home-news .newsrow,
-.home-news .newslist > li:first-child > .newsrow,
-.home-news .newslist > .newsrow:first-child {
-  grid-template-columns: calc(333 * var(--px)) calc(170 * var(--px)) minmax(0, 1fr);
-  align-items: center;
-  min-height: 0;
-  padding: calc(22 * var(--px)) 0;
+.start-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(78%, 380px);
+  gap: 14px;
+  margin: 0;
+  padding: 0 0 6px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  list-style: none;
+  scrollbar-width: none;
 }
-.home-news .newslist > li:first-child > .newsrow,
-.home-news .newslist > .newsrow:first-child { padding-top: 0; }
-.home-news .newsrow-thumb { width: calc(120 * var(--px)); border-radius: calc(14 * var(--px)); }
+.start-rail::-webkit-scrollbar { display: none; }
+.start-rail > li { display: grid; scroll-snap-align: start; }
+.start-card {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: max(18px, calc(40 * var(--px)));
+  border-radius: max(18px, calc(36 * var(--px)));
+  background: var(--frame-card);
+  color: inherit;
+  text-decoration: none;
+}
+.start-card .newsrow-thumb { width: 48px; margin-bottom: 4px; border-radius: 50%; }
+.start-kind { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #444444; }
+.start-title { font-size: max(16px, calc(26 * var(--px))); line-height: 1.3; }
+.start-text { font-size: max(13px, calc(19 * var(--px))); line-height: 1.55; color: #444444; }
+a.start-card:hover .start-title { text-decoration: underline; text-underline-offset: 0.15em; }
+a.start-card:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
 
-/* ------------------------------------------------------- the pledge wall */
-/* A strip, not a screen: the count, then one row of stickers drifting. */
-.home-pledges { padding: calc(70 * var(--px)) 0 calc(60 * var(--px)); }
-.home-pledges .split { --col: 704; }
+/* ------------------------------------------- the pledges on the night sky */
+/* v164: one dark sheet. The sky (.wall) fills it from behind; the count and
+   the pledges as cards sit on it. */
+.home > .home-pledges {
+  overflow: hidden;
+  padding: calc(90 * var(--px)) 0 calc(110 * var(--px));
+  background-color: var(--night);
+  background-image: var(--night-specks);
+  color: #f4efe4;
+}
+.home-pledges .split { --col: 704; position: relative; z-index: 1; }
+.home-pledges .label { color: rgba(244, 239, 228, 0.72); }
+.home-pledges .pledge-count { color: #ffffff; }
+.pledge-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 12px;
+  margin: calc(36 * var(--px)) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pledge-card {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 4px 12px;
+  align-content: start;
+  padding: 16px 18px;
+  border: 1px solid rgba(244, 239, 228, 0.14);
+  border-radius: 18px;
+  background: rgba(20, 18, 14, 0.55);
+  backdrop-filter: blur(3px);
+}
+.pc-star { grid-row: span 2; width: 30px; height: 30px; }
+.pc-star svg { display: block; width: 100%; height: 100%; fill: #6b6250; }
+.pledge-card.is-kept .pc-star svg { fill: #e2b866; filter: drop-shadow(0 0 8px rgba(240, 216, 168, 0.45)); }
+.pledge-card b { font-size: 15px; color: #ffffff; }
+.pledge-card span { font-size: 13px; line-height: 1.45; color: rgba(244, 239, 228, 0.72); }
 .pledge-count {
   display: flex;
   flex-wrap: wrap;
@@ -192,26 +279,18 @@
   font-weight: 700;
   font-size: max(15px, calc(26 * var(--px)));
 }
-/* The pledge sky (v127). Not a card: since v128 the whole table is night
-   (css/stage-page.css), and this band is simply a wider gap of it, running
-   under the rounded corners of the cards above and below (the negative
-   margins, and z-index -1 inside the page's stacking context). Its stars
-   drift with the scroll in six columns. On a phone, where the sections sit
-   flat on the page, it keeps a night of its own. */
+/* The pledge sky (v127): its stars drift with the scroll in six columns.
+   Since v164 it fills the pledges' sheet from behind. */
 .wall {
-  position: relative;
-  z-index: -1;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  height: calc(420 * var(--px));
-  margin: calc(-1 * var(--panel-r)) 0;
   overflow: hidden;
 }
-/* Each column is taller than the band by more than it drifts (WALL_DRIFT in
+/* Each column is taller than the sheet by more than it drifts (WALL_DRIFT in
    views/dashboard.js), so no drift empties an edge. */
-/* Last on Home: the sky runs on under the footer card’s rounded top
-   corners (its 24px radius in css/frame.css), which paints above it. */
-.wall:last-child { margin-bottom: -24px; }
 .wall-col { position: relative; margin: calc(-140 * var(--px)) 0; will-change: transform; }
 .sky-star {
   position: absolute;
@@ -336,41 +415,46 @@
   .ar-character { grid-area: name; align-self: end; justify-self: end; font-size: 12px; }
   .aspects-key { margin-top: 12px; font-size: 12px; }
 
-  /* Where to start and Recent: the icon, the title, one line under it, and
-     the kind and date last in small print. The full suggestion is on the
-     aspect page the row opens. */
-  .home-news .news-block + .news-block { margin-top: 24px; }
-  .home-news .newsrow,
-  .home-news .newslist > li:first-child > .newsrow,
-  .home-news .newslist > .newsrow:first-child {
-    grid-template-columns: 40px minmax(0, 1fr);
-    grid-template-areas:
-      "thumb title"
-      "thumb meta";
-    gap: 2px 12px;
-    align-items: start;
-    padding: 10px 0;
-  }
-  .home-news .newsrow-thumb { grid-area: thumb; width: 40px; border-radius: 10px; }
-  .home-news .newsrow-title { grid-area: title; min-width: 0; font-size: 15px; line-height: 1.4; }
-  .home-news .newsrow-title small {
-    overflow: hidden;
-    font-size: 13px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .home-news .newsrow-meta { grid-area: meta; gap: 8px; }
-  .home-news :is(.newsrow-date, .newsrow-kind) { font-size: 11px; color: #444444; }
+  /* v164: the region chips are the headline again on a phone. */
+  .home-regions { display: none; }
+  /* Rounded sheets now there is a sheet behind each one. */
+  .home > .panel + .panel { border-top: 0; border-radius: 22px 22px 0 0; }
 
-  /* Your pledges: the header row ends on "Goals"; the count is under it. */
+  /* Where to start: the rail runs to the screen's edges. */
+  .start-rail {
+    grid-auto-columns: 82%;
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+    scroll-padding-inline: var(--gutter);
+  }
+  .start-title { font-size: 15.5px; }
+  .start-text { font-size: 13.5px; }
+
+  /* Your pledges: the header row ends on "Goals"; the count is under it,
+     then the pledges as a rail. */
+  .home > .home-pledges { padding: 24px 0 40px; }
   .home-pledges .split { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; }
+  .pledge-body,
   .pledge-count { display: contents; }
   .pledge-count > span { grid-column: 1 / -1; font-size: 15px; }
-  .pledge-count a.pill { grid-row: 1; grid-column: 2; }
-  .wall { height: calc(300 * var(--px)); margin: 0; background-color: var(--night); background-image: var(--night-specks); }
+  .pledge-count a.pill { grid-row: 1; grid-column: 2; color: #f4efe4; }
+  .pledge-cards {
+    grid-column: 1 / -1;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 78%;
+    margin: 12px calc(-1 * var(--gutter)) 0;
+    padding: 0 var(--gutter);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .pledge-cards::-webkit-scrollbar { display: none; }
+  .pledge-card { scroll-snap-align: start; }
 }
 
 /* ------------------------------------------------------------- Thai
    No tracking and no uppercase for Thai (the Thai block in index.css). */
-html[lang="th"] .ar-name b { letter-spacing: 0; text-transform: none; }
+html[lang="th"] :is(.ar-name b, .region-chip, .start-kind) { letter-spacing: 0; text-transform: none; }
 

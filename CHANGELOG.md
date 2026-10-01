@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `163`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `164`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.95.0] - 2026-10-01 (app version 164)
+
+### Changed
+- Overview's sections are stacked sheets, as on the aspect pages: your star pins under the header and each section slides up over the last (views/sheets.js, now shared with the aspect pages). The care notice stays in the flow; reduced motion keeps the page flat.
+- Where to start is a sideways rail of cards, each with its whole tip; the phone's rows cut it to one line.
+- Your pledges sit on the night sky: one dark sheet, the count and each active pledge as a card, its star gilt if it was kept at the last review. On a phone the cards are a rail.
+- Notes and sources is folded on a laptop too.
+
+### Added
+- On a laptop, the two regions the headline names as chips under it, each opening its page.
 
 ## [2.94.0] - 2026-10-01 (app version 163)
 

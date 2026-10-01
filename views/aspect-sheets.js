@@ -11,7 +11,7 @@
 //             a tap on a part shows its card.
 //   words     no paragraph ends on a lone word (views/lone-words.js).
 //
-// CSS does the pinning (css/weekly.css .aspect-page .panel); this file only
+// CSS does the pinning (css/weekly.css .aspect-page .panel); views/sheets.js
 // measures where each sheet may pin. Reduced motion turns the pinning off in
 // CSS, and the stepper then follows taps alone.
 
@@ -19,54 +19,22 @@ import { isReduced } from "../motion.js";
 import { tightenLoneWords } from "./lone-words.js";
 import { burst } from "./stage.js";
 import { bindRibbon } from "./aspect-ribbon.js";
-
-const PHONE = "(max-width: 900px)";
-const isPhone = () => typeof matchMedia === "function" && matchMedia(PHONE).matches;
+import { bindSheets, frame, isPhone } from "./sheets.js";
 
 // One page at a time: a new render tears down the last one's listeners.
 let teardown = null;
 
 // --- sheets ------------------------------------------------------------------
 
-function cssPx(name) {
-  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
-  return Number.isFinite(v) ? v : 0;
-}
-
-function frame() {
-  const header = document.querySelector(".site-header")?.offsetHeight || 0;
-  const bottom = isPhone() ? cssPx("--nav-bar-h") : 0;
-  return { header, bottom, room: innerHeight - header - bottom };
-}
-
-// Where each sheet may pin: under the header, or higher by however much the
-// sheet is taller than the room between the header and the bottom bar.
-// First the stepper's pinned block is measured (v162): the section is sized
-// round it, so the last part stays on screen a while before the next sheet
-// rises over it, and the block pins where it fits whole.
-function measureSheets(page) {
-  const { header, room } = frame();
-  page.style.setProperty("--head-h", `${header}px`);
-  page.style.setProperty("--room", `${room}px`);
+// The sheets themselves are views/sheets.js. First the stepper's pinned block
+// is measured (v162): the section is sized round it, so the last part stays
+// on screen a while before the next sheet rises over it, and the block pins
+// where it fits whole.
+function measureStepper(page) {
   page.querySelectorAll(".aspect-parts").forEach(section => {
     const pin = section.querySelector(".ps-pin");
     if (pin) section.style.setProperty("--pin-h", `${pin.offsetHeight}px`);
   });
-  page.querySelectorAll(":scope > .panel").forEach(sheet => {
-    const over = Math.max(0, sheet.offsetHeight - room);
-    sheet.style.setProperty("--stick", `${header - over}px`);
-  });
-}
-
-function bindSheets(page, signal) {
-  const measure = () => measureSheets(page);
-  measure();
-  addEventListener("resize", measure, { signal });
-  if (typeof ResizeObserver === "function") {
-    const ro = new ResizeObserver(measure);
-    page.querySelectorAll(":scope > .panel").forEach(s => ro.observe(s));
-    signal.addEventListener("abort", () => ro.disconnect());
-  }
 }
 
 // --- the parts stepper ---------------------------------------------------------
@@ -332,7 +300,7 @@ export function bindAspectSheets(root) {
   for (const type of ["scroll", "resize", "touchstart", "touchend"]) {
     addEventListener(type, guard, { signal, capture: true, passive: true });
   }
-  bindSheets(page, signal);
+  bindSheets(page, signal, { before: measureStepper });
   bindRibbon(page, signal);
   page.querySelectorAll(".parts-stepper").forEach(s => bindStepper(s, signal));
   page.querySelectorAll(".next-aspect").forEach(s => bindPull(s, signal));

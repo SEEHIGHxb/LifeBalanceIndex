@@ -773,7 +773,10 @@ try {
   // (this flow's answers cross the screening cutoff), so the hero must follow
   // the notice, or the header when there is none, directly, and hold the
   // Balance Index within one screen of its top.
+  // Measured from the top of the page: since v164 the star's sheet pins
+  // under the header while the notice scrolls on past it.
   const fold = await page.evaluate(() => {
+    scrollTo({ top: 0, behavior: "instant" });
     const box = (sel) => document.querySelector(sel)?.getBoundingClientRect();
     const hero = box(".home .home-top");
     const above = box(".home .notice-panel") || box("#site-header");

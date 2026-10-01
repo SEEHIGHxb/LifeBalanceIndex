@@ -7,7 +7,7 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
-  // v159, draft awaiting the owner's review: the Re-assessment in three screens.
+  // v159, approved by the owner: the Re-assessment in three screens.
   "Answer for the last few weeks.": "ตอบตามช่วงไม่กี่สัปดาห์ที่ผ่านมา",
   "Re-assessment · {i} / {n}": "การประเมินซ้ำ · {i} / {n}",
   "This re-assessment re-scores Mental, Relationships and Personal Goals with short questionnaires.": "การประเมินซ้ำนี้ให้คะแนนด้านจิตใจ ความสัมพันธ์ และเป้าหมายส่วนตัวใหม่ด้วยแบบประเมินชุดสั้น",

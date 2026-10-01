@@ -312,15 +312,32 @@ test("v162: the page ends on the next region's sheet, in Overview's order, the l
   assert.ok(out.lastIndexOf("next-aspect") > out.lastIndexOf("aspect-notes"));
 });
 
-test("v162: the pull is 0 at the peek and 1 once the sheet is up or the page has ended", async () => {
+test("v163: the pull is 0 at the peek, full after one short pull, and full where the page ends", async () => {
   const { pullProgress } = await import("../views/aspect-sheets.js");
-  const f = { header: 70, room: 700 };
-  assert.equal(pullProgress({ ...f, top: 770, left: 700 }), 0);
-  assert.equal(pullProgress({ ...f, top: 770 - 112, left: 700 }), 0);
-  assert.equal(pullProgress({ ...f, top: 70, left: 0 }), 1);
-  assert.equal(pullProgress({ ...f, top: 300, left: 0 }), 1, "the page has ended");
-  const half = pullProgress({ ...f, top: 70 + (700 - 112) / 2, left: 999 });
-  assert.ok(Math.abs(half - 0.5) < 0.01);
+  assert.equal(pullProgress({ shown: 0, pull: 180, left: 900 }), 0);
+  assert.equal(pullProgress({ shown: 112, pull: 180, left: 900 }), 0);
+  assert.equal(pullProgress({ shown: 112 + 90, pull: 180, left: 900 }), 0.5);
+  assert.equal(pullProgress({ shown: 112 + 180, pull: 180, left: 900 }), 1);
+  assert.equal(pullProgress({ shown: 112 + 400, pull: 180, left: 900 }), 1);
+  assert.equal(pullProgress({ shown: 112 + 40, pull: 260, left: 0 }), 1, "the page has ended");
+  assert.equal(pullProgress({ shown: 112 + 10, pull: 260, left: 0 }), 10 / 260, "but not on the peek's own edge");
+});
+
+test("v163: the ribbon, the hint on the right, round emblems, and the page's listeners end with the route", () => {
+  renderAspectPage(MAIN, STATE, "mental");
+  const out = html();
+  assert.match(out, /<button type="button" class="aspect-ribbon" hidden style="--hue: #[0-9a-f]{6};" aria-label="Back to the top of [^"]+">/);
+  const dots = out.match(/<span class="ribbon-dots" aria-hidden="true">(.*?)<\/span>/)[1];
+  assert.equal((dots.match(/<i/g) || []).length, 8);
+  assert.equal((dots.match(/class="on"/g) || []).length, 1);
+  assert.match(out, /<span class="next-name"[^>]*>[\s\S]*?<span class="next-chev" aria-hidden="true"><i><\/i><i><\/i><\/span>\s*<span class="next-mark">/);
+  const css = read("css/weekly.css");
+  assert.match(css, /\.aspect-page \.page-top \.mark img \{ border-radius: 50%; \}/);
+  assert.match(css, /html\[data-reduce-motion\] \.next-aspect \.next-chev i \{ animation: none; \}/);
+  assert.match(css, /::view-transition-group\(lbi-emblem\)/);
+  const app = read("app.js");
+  assert.equal((app.match(/disposeMotion\(\);\n.*\n  endRoute\(\);/g) || []).length, 2);
+  assert.match(read("views/aspect.js"), /onRouteEnd\(disposeAspectSheets\)/);
 });
 
 test("v162: notes folded at every width, footer off the aspect pages, the stepper sized round its block", () => {
@@ -329,7 +346,6 @@ test("v162: notes folded at every width, footer off the aspect pages, the steppe
   assert.match(css, /body:has\(\.aspect-page\) \.site-footer \{ display: none; \}/);
   assert.match(css, /\.parts-stepper \{ position: relative; height: calc\(var\(--steps\) \* 26vh \+ var\(--pin-h, 240px\) \+ 10vh\); \}/);
   assert.match(css, /\.ps-card\[hidden\] \{ display: grid; visibility: hidden; \}/);
-  assert.match(css, /html\[data-reduce-motion\] \.next-aspect \.next-mark \{ animation: none; \}/);
 });
 
 // --- Goals --------------------------------------------------------------------

@@ -7,7 +7,7 @@ import { ASPECT_KEYS, ASPECT_META } from "./aspects.js";
 import { t, tp, getLang, setLang, loadLang } from "./i18n.js";
 import { APP_VERSION } from "./version.js";
 import { syncReduceMotionAttr } from "./motion.js";
-import { disposeMotion } from "./views/motion-mount.js";
+import { disposeMotion, endRoute } from "./views/motion-mount.js";
 import { bindMenu, renderMenu, closeMenu, syncMenuRoute } from "./views/menu.js";
 import { bindMagnet } from "./views/magnet.js";
 import { withCarriedScreen } from "./views/lang-carry.js";
@@ -226,6 +226,8 @@ function initializeApp() {
 // Resolves once the screen is drawn (false when a later route replaced it).
 function renderFirstRun() {
   disposeMotion();
+  // So does what a page left running past its motion (v163: the aspect page).
+  endRoute();
   const onJourney = routeHashPath() === "journey";
   document.body.classList.toggle("on-journey", onJourney);
   // renderOnboarding fills and shows the progress pill; the Landing has none.
@@ -302,6 +304,8 @@ function renderActiveTab() {
   // Whatever the last view set moving ends here, before the next one draws:
   // its springs, frame loops and window listeners all hang off this mount.
   disposeMotion();
+  // So does what a page left running past its motion (v163: the aspect page).
+  endRoute();
   const state = stateManager.state;
   const route = routeFromHash();
   const activeTab = route.type === "tab" ? route.tab : null;

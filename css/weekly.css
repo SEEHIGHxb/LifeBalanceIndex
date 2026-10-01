@@ -517,7 +517,10 @@ html[lang="th"] .aspect-page .statement .character-name { letter-spacing: 0; tex
 .aspect-page .criterion-name { font-size: var(--t-sm); font-weight: 600; color: var(--frame-ink); }
 
 /* Rounded edges: the emblem, the cards, the chips. */
-.aspect-page .page-top .mark img { border-radius: 26%; }
+/* v163: circles (the owner), the top's, the next sheet's and the ribbon's. */
+.aspect-page .page-top .mark,
+.aspect-page .page-top .mark img { border-radius: 50%; }
+.aspect-page .page-top .mark { overflow: hidden; }
 
 /* The sheets. Each pins at --stick (views/aspect-sheets.js: under the header,
    or as high as a tall sheet needs to show its end) and the next, later in
@@ -527,7 +530,7 @@ html[lang="th"] .aspect-page .statement .character-name { letter-spacing: 0; tex
   top: var(--stick, 0px);
   box-shadow: 0 calc(-14 * var(--px)) calc(40 * var(--px)) rgba(0, 0, 0, 0.16);
 }
-.aspect-page > .panel:first-child { box-shadow: none; }
+.aspect-page > .panel:not(.panel ~ .panel) { box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .aspect-page > .panel { position: relative; } }
 html[data-reduce-motion] .aspect-page > .panel { position: relative; }
 
@@ -668,6 +671,8 @@ body:has(.aspect-page) .site-footer { display: none; }
   display: flex;
   align-items: center;
   gap: 16px;
+  justify-content: flex-end;
+  text-align: right;
   min-height: 112px;
   padding: 18px var(--gutter);
   color: var(--frame-ink);
@@ -679,7 +684,7 @@ body:has(.aspect-page) .site-footer { display: none; }
   inset: 9px;
   width: 58px;
   height: 58px;
-  border-radius: 26%;
+  border-radius: 50%;
   transform: scale(calc(0.9 + 0.2 * var(--pull, 0)));
 }
 .next-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
@@ -715,14 +720,94 @@ body:has(.aspect-page) .site-footer { display: none; }
   background-position: center;
   opacity: calc(0.55 + 0.45 * var(--pull, 0));
 }
-/* The hint without words: before the pull, the emblem nods upward now and
-   then, the way a thing does when it wants lifting. */
-@keyframes next-nod {
-  0%, 70%, 100% { transform: translateY(0); }
-  80% { transform: translateY(-7px); }
-  90% { transform: translateY(0); }
-  95% { transform: translateY(-3px); }
+/* The hint without words (v163, the owner: on the right, with ">>"): two
+   chevrons run toward the emblem, over and over, until the pull begins. */
+.next-chev { display: flex; flex: none; gap: 2px; color: var(--next-hue); }
+.next-chev i {
+  display: block;
+  width: 11px;
+  height: 11px;
+  border-top: 3px solid currentColor;
+  border-right: 3px solid currentColor;
+  transform: rotate(45deg);
 }
-.next-aspect:not(.is-pulling) .next-mark { animation: next-nod 2.6s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { .next-aspect .next-mark { animation: none; } }
-html[data-reduce-motion] .next-aspect .next-mark { animation: none; }
+@keyframes next-chev {
+  0%, 100% { opacity: 0.25; translate: -3px 0; }
+  50% { opacity: 1; translate: 3px 0; }
+}
+.next-aspect:not(.is-pulling) .next-chev i { animation: next-chev 1.4s ease-in-out infinite; }
+.next-aspect:not(.is-pulling) .next-chev i + i { animation-delay: 0.18s; }
+@media (prefers-reduced-motion: reduce) { .next-aspect .next-chev i { animation: none; } }
+html[data-reduce-motion] .next-aspect .next-chev i { animation: none; }
+
+/* The ribbon (views/aspect-ribbon.js): in the wordmark's place once the
+   page's top has gone by. */
+.site-header .aspect-ribbon {
+  position: absolute;
+  top: 50%;
+  left: var(--ribbon-x, 120px);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 4px 9px;
+  max-width: var(--ribbon-w, 220px);
+  padding: 5px 14px 5px 5px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--hue) 16%, #ffffff);
+  color: var(--frame-ink);
+  font: inherit;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(calc(-50% + 8px));
+  transition: opacity 200ms ease, transform 200ms ease;
+  pointer-events: none;
+}
+.site-header.ribbon-on .aspect-ribbon { opacity: 1; transform: translateY(-50%); pointer-events: auto; }
+.site-header .wordmark { transition: opacity 200ms ease, transform 200ms ease; }
+.site-header.ribbon-on .wordmark { opacity: 0; transform: translateY(-8px); pointer-events: none; }
+body.menu-open .site-header.ribbon-on .wordmark { opacity: 1; transform: none; pointer-events: auto; }
+body.menu-open .site-header .aspect-ribbon { opacity: 0; pointer-events: none; }
+.ribbon-mark { grid-row: 1 / 3; width: 32px; height: 32px; border-radius: 50%; }
+.ribbon-name {
+  overflow: hidden;
+  font-family: var(--frame-word);
+  font-size: 17px;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+.ribbon-dots { display: flex; gap: 4px; }
+.ribbon-dots i { width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--frame-ink) 22%, transparent); }
+.ribbon-dots i.on { background: var(--hue); box-shadow: 0 0 0 2px color-mix(in srgb, var(--hue) 30%, transparent); }
+.aspect-ribbon:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .site-header .aspect-ribbon, .site-header .wordmark { transition: none; } }
+html[data-reduce-motion] .site-header .aspect-ribbon,
+html[data-reduce-motion] .site-header .wordmark { transition: none; }
+@container (max-width: 900px) {
+  .site-header .aspect-ribbon { left: 50%; max-width: calc(100% - 150px); gap: 3px 8px; padding-right: 12px; translate: -50% 0; }
+  .ribbon-mark { width: 28px; height: 28px; }
+  .ribbon-name { font-size: 15px; }
+  .ribbon-dots { gap: 3px; }
+  .ribbon-dots i { width: 5px; height: 5px; }
+}
+
+/* The switch to the next region (views/aspect-sheets.js openNext): the
+   named pairs morph, the rest of the page crossfades quickly. */
+::view-transition-group(lbi-sheet),
+::view-transition-group(lbi-plate),
+::view-transition-group(lbi-emblem),
+::view-transition-group(lbi-name) {
+  animation-duration: 560ms;
+  animation-timing-function: cubic-bezier(0.22, 0.8, 0.24, 1);
+}
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: 260ms; }
+::view-transition-old(lbi-name),
+::view-transition-new(lbi-name) { height: 100%; object-fit: contain; }
+/* A snapshot is not clipped by its element's own rounding, so the emblem's
+   circle is kept on the morph's layer. */
+::view-transition-group(lbi-emblem) { border-radius: 50%; overflow: hidden; }

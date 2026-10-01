@@ -46,7 +46,8 @@ import { t, tp, percentileLabel } from "../i18n.js";
 import { gradeForAspect } from "../grades.js";
 import { criteriaForAspect } from "../criteria.js";
 import { CHAPTERS } from "./journey.js";
-import { bindAspectSheets } from "./aspect-sheets.js";
+import { bindAspectSheets, disposeAspectSheets } from "./aspect-sheets.js";
+import { onRouteEnd } from "./motion-mount.js";
 import { topMarkup, label, renderStagePage } from "./stage-page.js";
 import { dotDate } from "./news.js";
 import {
@@ -444,14 +445,31 @@ function nextSection(a) {
     <section class="panel next-aspect" style="background: ${next.wash}; --next-hue: ${next.hue};" data-next="${escapeHtml(next.aspect)}">
       <div class="burst-layer" aria-hidden="true"></div>
       <a class="next-pull" href="#/aspect/${escapeHtml(next.aspect)}" aria-label="${escapeHtml(tp("Next: {region}, {aspect}", { region: next.region, aspect: name }))}">
+        <span class="next-name" aria-hidden="true">${escapeHtml(next.region)} <small>${escapeHtml(name)}</small></span>
+        <span class="next-chev" aria-hidden="true"><i></i><i></i></span>
         <span class="next-mark">
           <svg class="next-ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="47" pathLength="100"/></svg>
           <img src="./assets/emblems/${next.art}.webp" alt="" width="224" height="224" decoding="async">
         </span>
-        <span class="next-name" aria-hidden="true">${escapeHtml(next.region)} <small>${escapeHtml(name)}</small></span>
       </a>
       <div class="next-plate" style="background-image: url('./assets/regions/${next.art}.jpg');" aria-hidden="true"></div>
     </section>`;
+}
+
+// "You are here" (v163, the owner: "a ribbon for the current aspect page",
+// so a reader pulled from region to region knows where they are). It stands
+// in for the wordmark once the page's top has gone by (views/aspect-ribbon.js
+// moves it into the header); the dots are the eight regions, this one filled.
+function ribbonMarkup(a) {
+  const { chapter } = a;
+  const at = CHAPTERS.indexOf(chapter);
+  const dots = CHAPTERS.map((c, i) => `<i${i === at ? ' class="on"' : ""}></i>`).join("");
+  return `
+      <button type="button" class="aspect-ribbon" hidden style="--hue: ${chapter.hue};" aria-label="${escapeHtml(tp("Back to the top of {region}", { region: chapter.region }))}">
+        <img class="ribbon-mark" src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" decoding="async">
+        <span class="ribbon-name" aria-hidden="true">${escapeHtml(chapter.region)}</span>
+        <span class="ribbon-dots" aria-hidden="true">${dots}</span>
+      </button>`;
 }
 
 export function aspectMarkup(a) {
@@ -464,7 +482,8 @@ export function aspectMarkup(a) {
   const parts = partsSection(a, book);
   const focus = focusSection(a);
   return `
-    <div class="stage-page aspect-page" data-aspect="${escapeHtml(a.key)}">
+    <div class="stage-page aspect-page" data-aspect="${escapeHtml(a.key)}" data-hue="${chapter.hue}">
+      ${ribbonMarkup(a)}
       ${noticeSection(a)}
       ${topMarkup({
         mark: `<img src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" decoding="async">`,
@@ -498,6 +517,7 @@ export function renderAspectPage(containerId, state, aspectKey) {
   // Folded on a laptop too (the owner, v162), as on a phone.
   bindFootnotes(container, { fold: "always" });
   bindAspectSheets(container);
+  onRouteEnd(disposeAspectSheets);
   // Opened from a row halfway down Overview, the page starts at its top
   // (the owner, v143), as the star page does.
   globalThis.scrollTo?.(0, 0);

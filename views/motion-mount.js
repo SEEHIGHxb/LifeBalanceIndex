@@ -50,6 +50,17 @@ export function disposeMotion() {
   current = null;
 }
 
+// What a page leaves running past its own motion (v163: the aspect page's
+// window listeners and header ribbon), ended when the route changes, not when
+// the page restarts its motion. app.js calls endRoute beside disposeMotion.
+const routeEnders = new Set();
+export function onRouteEnd(fn) { routeEnders.add(fn); }
+export function endRoute() {
+  const fns = [...routeEnders];
+  routeEnders.clear();
+  fns.forEach(fn => fn());
+}
+
 // Starts a fresh lifetime, ending the previous one first.
 export function mountMotion() {
   disposeMotion();

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `162`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `163`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.94.0] - 2026-10-01 (app version 163)
+
+### Fixed
+- Overview, Weekly Review, Goals and Side by Side snapped back to their top after any aspect page had been opened: the v162 pull's window listeners outlived the aspect page. They now end with the route (views/motion-mount.js onRouteEnd), and a listener finding its page gone ends them too.
+
+### Changed
+- The pull to the next region takes one ordinary swipe (180px on a phone, 260px on a laptop) instead of the sheet's full height. A fling still stops at the peek, now only armed at rest on the peek itself.
+- The switch morphs: the sheet becomes the next page's top, its emblem, name and photograph flying to their places (View Transitions); the new star bursts on landing. Browsers without View Transitions keep the burst and change.
+- The peek's hint sits on the right: the name, two running chevrons, then the emblem in its ring.
+- Aspect emblems are circles: the top's, the next sheet's and the ribbon's.
+
+### Added
+- A ribbon in the wordmark's place once the top is covered: the region's emblem, its name and eight dots with this region's filled. A tap goes back to the top.
 
 ## [2.93.0] - 2026-10-01 (app version 162)
 

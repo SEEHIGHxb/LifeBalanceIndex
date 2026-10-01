@@ -18,6 +18,7 @@
 import { isReduced } from "../motion.js";
 import { tightenLoneWords } from "./lone-words.js";
 import { burst } from "./stage.js";
+import { bindRibbon } from "./aspect-ribbon.js";
 
 const PHONE = "(max-width: 900px)";
 const isPhone = () => typeof matchMedia === "function" && matchMedia(PHONE).matches;
@@ -139,20 +140,26 @@ function bindStepper(stepper, signal) {
 // Reduced motion: no hold, no pull; the sheet is a link to tap.
 
 const PEEK_PX = 112;
+// The pull from the peek to a full ring: one ordinary swipe on a phone (v163,
+// the owner: the old pull, the whole sheet's height, was near impossible
+// there), a short wheel or trackpad stroke on a laptop.
+const PULL_PX = { phone: 180, laptop: 260 };
+const END_SLACK_PX = 24;
 const REST_MS = 220;
 const OPEN_DELAY_MS = 360;
 const LOCK_AFTER_MS = 450;
 const HOLD_MAX_MS = 2500;
+const ARRIVE_MAX_MS = 1500;
+const LANDED_SLACK_PX = 160;
 
-// How far the pull has gone, 0 at the peek and 1 at the full ring, from where
-// the sheet's top stands (`top`, from the top of the screen), the frame, and
-// the scroll still left in the page (`left`).
-export function pullProgress({ top, header, room, left }) {
-  const shown = header + room - top;
+// How far the pull has gone, 0 at the peek and 1 at the full ring, from how
+// much of the sheet shows (`shown`, px above the bottom of the screen), the
+// pull a full ring takes (`pull`), and the scroll still left in the page
+// (`left`): a page that ends before the ring is full counts as full.
+export function pullProgress({ shown, pull, left }) {
   if (shown <= PEEK_PX) return 0;
-  const toFull = Math.min(Math.max(0, top - header), left);
-  const pulled = shown - PEEK_PX;
-  return Math.min(1, pulled / (pulled + toFull || 1));
+  if (left <= 1 && shown > PEEK_PX + END_SLACK_PX) return 1;
+  return Math.min(1, (shown - PEEK_PX) / pull);
 }
 
 // The scroll is held while the region opens and until the wheel or the finger
@@ -179,16 +186,77 @@ function holdScroll() {
   setTimeout(check, 100);
 }
 
+// The pairs the switch morphs (v163, the owner: "not feel true smooth and
+// seamless"): the sheet becomes the next page's top, its emblem flies to the
+// top's emblem, its name grows into the title, its photograph into the plate.
+const MORPH = [
+  ["lbi-sheet", ":scope", ".page-top"],
+  ["lbi-plate", ".next-plate", ".page-top-plate"],
+  ["lbi-emblem", ".next-mark img", ".page-top .mark img"],
+  ["lbi-name", ".next-name", ".page-top-word"]
+];
+
+// Names one side's elements for the morph; returns them, to unname later.
+function nameMorph(root, side) {
+  const named = [];
+  for (const pair of MORPH) {
+    const el = side === 1 && pair[1] === ":scope" ? root : root?.querySelector(pair[side]);
+    if (!el) continue;
+    el.style.viewTransitionName = pair[0];
+    named.push(el);
+  }
+  return named;
+}
+
+// Resolves once the region's page is drawn (or after a while regardless, so
+// a slow load never strands the switch).
+function arrived(key) {
+  const find = () => document.querySelector(`.aspect-page[data-aspect="${key}"]`);
+  return new Promise((resolve) => {
+    if (find()) { resolve(find()); return; }
+    const mo = new MutationObserver(() => { if (find()) { mo.disconnect(); resolve(find()); } });
+    mo.observe(document.body, { childList: true, subtree: true });
+    setTimeout(() => { mo.disconnect(); resolve(find()); }, ARRIVE_MAX_MS);
+  });
+}
+
+// The new page's star bursts once it has landed.
+function landBurst(page, key) {
+  const top = page?.querySelector(".page-top");
+  if (!top) return;
+  const hue = page.dataset.hue || "";
+  burst(top.querySelector(".burst-layer"), top.querySelector(".mark"), { motifs: [{ motif: key, hue }] });
+}
+
 function openNext(sheet, link, signal) {
   if (sheet.dataset.opening) return;
   sheet.dataset.opening = "1";
   sheet.style.setProperty("--pull", "1");
+  const key = sheet.dataset.next;
   const go = () => { location.hash = link.getAttribute("href"); };
   if (isReduced()) { go(); return; }
   holdScroll();
+  if (typeof document.startViewTransition === "function") {
+    nameMorph(sheet, 1);
+    let landed = null;
+    let named = [];
+    const vt = document.startViewTransition(async () => {
+      go();
+      landed = await arrived(key);
+      named = nameMorph(landed, 2);
+    });
+    vt.finished.finally(() => {
+      named.forEach(el => { el.style.viewTransitionName = ""; });
+      // The new page opens at its top, whatever the tail of the pull did.
+      if (scrollY < LANDED_SLACK_PX) scrollTo({ top: 0, behavior: "instant" });
+      landBurst(landed, key);
+    });
+    return;
+  }
+  // No View Transitions: the old switch, a burst and the page changing.
   const hue = getComputedStyle(sheet).getPropertyValue("--next-hue").trim();
   burst(sheet.querySelector(".burst-layer"), link.querySelector(".next-mark"), {
-    motifs: [{ motif: sheet.dataset.next, hue }], signal
+    motifs: [{ motif: key, hue }], signal
   });
   setTimeout(go, OPEN_DELAY_MS);
 }
@@ -208,18 +276,21 @@ function bindPull(sheet, signal) {
     const { header, room } = frame();
     const top = sheet.getBoundingClientRect().top;
     const left = document.documentElement.scrollHeight - innerHeight - scrollY;
-    return { top, header, room, left, shown: header + room - top };
+    return { left, shown: header + room - top, pull: isPhone() ? PULL_PX.phone : PULL_PX.laptop };
   };
   const toPeek = (f, smooth) => scrollTo({ top: scrollY - (f.shown - PEEK_PX), behavior: smooth ? "smooth" : "instant" });
   const settle = () => {
     if (touching || sheet.dataset.opening) return;
     const f = read();
     if (f.shown <= 0) { armed = false; return; }
+    // Armed only at rest on the peek itself: a stop short of it leaves the
+    // next scroll to be held there too.
+    if (f.shown < PEEK_PX - 4) return;
     if (f.shown <= PEEK_PX + 2) { armed = true; return; }
     if (armed && pullProgress(f) < 1) toPeek(f, true);
   };
   const onScroll = () => {
-    if (isReduced() || sheet.dataset.opening) return;
+    if (!sheet.isConnected || isReduced() || sheet.dataset.opening) return;
     const f = read();
     if (f.shown <= 0) armed = false;
     // A fling into the sheet stops at the peek; a fresh scroll pulls on.
@@ -241,13 +312,28 @@ function bindPull(sheet, signal) {
   signal.addEventListener("abort", () => clearTimeout(rest));
 }
 
-export function bindAspectSheets(root) {
+// Ends the page's listeners, observers and ribbon. The router calls it on
+// every route change (views/aspect.js registers it with onRouteEnd), since the window listeners would otherwise
+// outlive the page: v162's pull went on snapping every other page back to
+// its top. A listener finding its page gone ends them too (below).
+export function disposeAspectSheets() {
   teardown?.abort();
+  teardown = null;
+}
+
+export function bindAspectSheets(root) {
+  disposeAspectSheets();
   const page = root.querySelector(".aspect-page");
   if (!page || typeof AbortController !== "function") return;
   teardown = new AbortController();
   const { signal } = teardown;
+  // Registered first, in the capture phase, so it runs before the others.
+  const guard = () => { if (!page.isConnected) disposeAspectSheets(); };
+  for (const type of ["scroll", "resize", "touchstart", "touchend"]) {
+    addEventListener(type, guard, { signal, capture: true, passive: true });
+  }
   bindSheets(page, signal);
+  bindRibbon(page, signal);
   page.querySelectorAll(".parts-stepper").forEach(s => bindStepper(s, signal));
   page.querySelectorAll(".next-aspect").forEach(s => bindPull(s, signal));
   tightenLoneWords(page, signal);

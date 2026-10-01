@@ -320,6 +320,7 @@ export const TH = {
   "Start over": "เริ่มใหม่",
   "Next": "ถัดไป",
   "Next: {region}, {aspect}": "ถัดไป: {region} · {aspect}",
+  "Back to the top of {region}": "กลับขึ้นไปบนสุดของ {region}",
   "Assessment Error: ": "แบบประเมินผิดพลาด: ",
 
   // --- Survey option scales ---

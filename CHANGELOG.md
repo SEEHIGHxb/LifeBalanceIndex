@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `167`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `168`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.98.0] - 2026-10-01 (app version 168)
+
+### Changed
+- The region icons, the owner's choice: each is now its emblem drawn in one line (the basket with a coin and rice, the mountain with its sun and path, the lotus on water, two teacups steaming, the pot on its wheel, the signpost and lantern, the tree, the telescope). The Still Water's "Wi-Fi" ripples, The Commons' two people, The Workshop's ladder and The Lookout's star are gone. They show in the small places: thumbnails and pledge stickers.
+- The bursts (the Landing, Overview's star, the region pages, the endings) fly each region as an asterism: its emblem traced in a few gilt stars joined by lines in the region's colour, a size larger than the gilt stars so the two weigh the same.
 
 ## [2.97.0] - 2026-10-01 (app version 167)
 

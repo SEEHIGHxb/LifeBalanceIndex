@@ -93,9 +93,10 @@ export function settleIn(el, { scale = 0.86, drop = 0, stiffness = 300, damping 
   });
 }
 
-// One burst particle: every third a gilt star, the rest a region's motif in
-// its hue, taken in turn from `motifs` ({ motif, hue } pairs). The motif comes
-// from the sprite sheet, so no path data is inlined.
+// One burst particle: every third a gilt star, the rest a region's asterism
+// (its emblem traced in gilt stars, v168) with lines in its hue, taken in turn
+// from `motifs` ({ motif, hue } pairs). It comes from the sprite sheet, so no
+// path data is inlined.
 function particle(i, motifs) {
   const el = document.createElement("span");
   const { motif, hue } = motifs.length ? motifs[i % motifs.length] : {};
@@ -103,7 +104,7 @@ function particle(i, motifs) {
   el.className = star ? "spr" : "spr spr--motif";
   el.innerHTML = star
     ? `<svg viewBox="0 0 100 100" aria-hidden="true"><use href="${SPRITES}#star"/></svg>`
-    : `<svg viewBox="0 0 24 24" aria-hidden="true" stroke="${escapeHtml(hue)}"><use href="${SPRITES}#motif-${escapeHtml(motif)}"/></svg>`;
+    : `<svg viewBox="0 0 24 24" aria-hidden="true" stroke="${escapeHtml(hue)}"><use href="${SPRITES}#asterism-${escapeHtml(motif)}"/></svg>`;
   return el;
 }
 

@@ -63,6 +63,24 @@ test("sprites: one motif per aspect, identical to the chapter's own", () => {
   }
 });
 
+// v168, the owner: the bursts fly each region's emblem as a small pattern of
+// gilt stars (an asterism), and the line motifs are the emblems in one line.
+test("sprites: one asterism per aspect, gilt stars on lines in the region's hue, and the bursts use them", () => {
+  for (const chapter of CHAPTERS) {
+    const open = `<symbol id="asterism-${chapter.aspect}"`;
+    const at = SPRITES.indexOf(open);
+    const body = at < 0 ? null : [null, SPRITES.slice(at, SPRITES.indexOf("</symbol>", at))];
+    assert.ok(body, `#asterism-${chapter.aspect} is missing`);
+    assert.match(body[1], /<path d="M[^"]+" fill="none"[^>]*stroke-width="1\.7"/, `${chapter.aspect}: no lines`);
+    const stars = (body[1].match(/fill="#C99A3E"[^>]*/) || []).length;
+    assert.equal(stars, 1, `${chapter.aspect}: no gilt stars`);
+    assert.doesNotMatch(body[1], / stroke="#/, `${chapter.aspect}: the lines must take the region's hue from the <svg>`);
+  }
+  const stage = read("views/stage.js");
+  assert.match(stage, /#asterism-\$\{escapeHtml\(motif\)\}/, "the burst particles draw the asterisms");
+  assert.doesNotMatch(read("views/journey.js"), /M2 11a10 5 0 0 1 20 0/, "the Still Water's old ripples are gone");
+});
+
 test("sprites: every <use> in the app points at a symbol that exists", () => {
   const ids = new Set([...SPRITES.matchAll(/<symbol id="([^"]+)"/g)].map(m => m[1]));
   const files = ["index.html", "views/stage.js", "views/landing.js", "views/dashboard.js", "views/onboarding.js"];

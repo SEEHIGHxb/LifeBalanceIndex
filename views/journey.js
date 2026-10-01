@@ -133,7 +133,7 @@ const buildChapters = () => [
     hue: "#d9a441",
     art: "market",
     wash: "#f2e2bb",
-    motif: "M4 7a8 3 0 1 0 16 0a8 3 0 1 0-16 0 M4 12a8 3 0 1 0 16 0a8 3 0 1 0-16 0 M4 17a8 3 0 1 0 16 0a8 3 0 1 0-16 0",
+    motif: "M3.5 11h17l-2.2 9H5.7z M5.2 15.5h13.6 M8 11a3 3 0 0 1 6 0 M15.5 11c.6-3.6 2.6-6 5.5-7",
     screens: [
       fieldsScreen(
         "money",
@@ -177,7 +177,7 @@ const buildChapters = () => [
     hue: "#3fa796",
     art: "highlands",
     wash: "#d9eeea",
-    motif: "M2 19 L8 8 L12 14 L16 6 L22 19",
+    motif: "M2 20h20 M3.5 20l6-10.5 4 5.5 2.5-3.2 4.5 8.2 M9.5 20c-1.6-2.2 1.6-3.4 0-6 M15 5.5a2.5 2.5 0 1 1 5 0a2.5 2.5 0 1 1-5 0",
     screens: [
       fieldsScreen(
         "body",
@@ -262,7 +262,7 @@ const buildChapters = () => [
     hue: "#5b8dd9",
     art: "still-water",
     wash: "#dde8f8",
-    motif: "M2 11a10 5 0 0 1 20 0 M5 15a7 3.5 0 0 1 14 0 M8 19a4 2 0 0 1 8 0",
+    motif: "M12 3.5c2.6 3.2 2.6 8 0 11.5c-2.6-3.5-2.6-8.3 0-11.5z M12 15c-4 0-7-2.2-8.5-6c3.8 0 6.5 1.8 8.5 6z M12 15c4 0 7-2.2 8.5-6c-3.8 0-6.5 1.8-8.5 6z M5 19.5h14",
     screens: [
       instrumentScreen("st5", t("Stress"), t("The past 2 to 4 weeks. Nothing here is a diagnosis.")),
       instrumentScreen("who5", t("Well-being"), t("The past 2 weeks."))
@@ -297,7 +297,7 @@ const buildChapters = () => [
     hue: "#d9738f",
     art: "commons",
     wash: "#f7dfe6",
-    motif: "M8 9a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5 M16 9a2.5 2.5 0 1 0 0-5a2.5 2.5 0 0 0 0 5 M3 20c0-3.5 2.2-6 5-6s5 2.5 5 6 M11 20c0-3.5 2.2-6 5-6s5 2.5 5 6",
+    motif: "M3.5 11.5h7v2.4a3.3 3.3 0 0 1-3.3 3.3h-.4a3.3 3.3 0 0 1-3.3-3.3z M3.5 12.4h-.5a1.4 1.4 0 0 0 0 2.8h.8 M13.5 11.5h7v2.4a3.3 3.3 0 0 1-3.3 3.3h-.4a3.3 3.3 0 0 1-3.3-3.3z M20.5 12.4h.5a1.4 1.4 0 0 1 0 2.8h-.8 M1.5 20.5h21 M7 8.5c-1-1.1 1-2.2 0-3.5 M17 8.5c-1-1.1 1-2.2 0-3.5",
     screens: [
       instrumentScreen("lsns", t("The people around you"), t("Three about family, three about friends.")),
       instrumentScreen("ucla", t("Loneliness"), t("Asked of everyone, including people with plenty of company.")),
@@ -334,7 +334,7 @@ const buildChapters = () => [
     hue: "#e08a3c",
     art: "workshop",
     wash: "#f8e4cf",
-    motif: "M8 3 L8 21 M16 3 L16 21 M8 8 L16 8 M8 13 L16 13 M8 18 L16 18",
+    motif: "M9.5 3.5h5 M10.3 3.5c.3 2.1-4.8 3.3-4.8 7.4 0 2.7 2.6 4.1 6.5 4.1s6.5-1.4 6.5-4.1c0-4.1-5.1-5.3-4.8-7.4 M3.5 18.2h17 M7.5 21h9",
     screens: [
       instrumentScreen("gse", t("Handling difficulty")),
       instrumentScreen("citacc", t("Finishing things")),
@@ -377,7 +377,7 @@ const buildChapters = () => [
     hue: "#8d6fd1",
     art: "crossroads",
     wash: "#e6dff8",
-    motif: "M12 21 L12 4 M12 6 L19 6 L17 8.5 L12 8.5 M12 12 L5 12 L7 14.5 L12 14.5",
+    motif: "M11 21V3 M11 5h7.5l2 2.2-2 2.2H11 M11 12H4.5l-2 2.2 2 2.2H11 M17 9.4v2 M15.8 11.4h2.4v3.4h-2.4z M7 21h8",
     screens: [
       instrumentScreen("ptm", t("Helping others"), t("A typical month.")),
       fieldsScreen(
@@ -426,7 +426,7 @@ const buildChapters = () => [
     hue: "#2e9e5b",
     art: "wildwood",
     wash: "#d8eddf",
-    motif: "M12 21 L12 16 M5 16 L12 5 L19 16 Z M8 11 L16 11",
+    motif: "M7 14.5c-2.8 0-4.6-2-4.1-4.3.3-1.6 1.6-2.5 3-2.6C6.4 4.7 8.8 3 12 3s5.6 1.7 6.1 4.6c1.4.1 2.7 1 3 2.6.5 2.3-1.3 4.3-4.1 4.3z M12 14.5V21 M12 17.8l-2.4-2.2 M12 17.4l2.4-2.4 M7.5 21h9",
     screens: [
       instrumentScreen("geb", t("Everyday green habits"), t("Six everyday habits. Answer for what you actually do, not what you mean to.")),
       fieldsScreen(
@@ -466,7 +466,7 @@ const buildChapters = () => [
     hue: "#5a63b8",
     art: "lookout",
     wash: "#e0e2f5",
-    motif: "M2 20 L22 20 M12 3 L13.8 8.2 L19 8.2 L14.8 11.6 L16.4 17 L12 13.8 L7.6 17 L9.2 11.6 L5 8.2 L10.2 8.2 Z",
+    motif: "M4 13.4l11-5.5 1.7 3.4-11 5.5z M16.8 7l1.6-.8 1.7 3.4-1.6.8z M11 13.6V16 M11 16l-3.8 5 M11 16l3.8 5 M21 1.8v3.4 M19.3 3.5h3.4",
     screens: [
       instrumentScreen("lfis", t("Looking ahead"))
     ],

@@ -160,7 +160,8 @@ The subjects are **ours, not the reference's**. Where the reference drew scales,
 | S8.7 | The Wildwood · environment | A broad tree with visible roots, a fern at its base and two falling leaves, inside a thin circle | canopy, fern, circle | two leaves, sun dapples | The living world around you |
 | S8.8 | The Lookout · humanityFuture | A small telescope on a tripod on a hill, pointed at three sparkles | hill, tube body | tube bands, lens, tripod, sparkles | Looking ahead. It replaces the old 5-point star motif |
 
-- **The ring and tab icons.** They keep the shipped one-line `motif` paths for now; a 24 px illustration would turn to mud. After the emblems are approved, each motif is redrawn as a single-line simplification of its new subject. The Still Water's "Wi-Fi" ripples and The Commons' "face" go away then.
+- **The ring and tab icons.** Since v168 (the owner) each `motif` is a one-line simplification of its emblem: the basket with a coin and rice, the mountain with its sun and path, the lotus on water, two teacups steaming, the pot on its wheel, the signpost and lantern, the tree, the telescope and a sparkle. The Still Water's "Wi-Fi" ripples and The Commons' "face" are gone. They serve the small places (thumbnails, pledge stickers).
+- **S9 asterisms (v168).** The bursts fly each emblem traced as a few gilt stars (#C99A3E) joined by lines in the region's hue: `asterism-<aspect>` in the sprite sheet. The app is named for exactly that, a small pattern of stars.
 - **Minimum size.** 64 px for the illustration. Below that, use the line motif.
 - **Never:**
   - region subjects mixed

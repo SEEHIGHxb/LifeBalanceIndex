@@ -17,6 +17,7 @@
 
 import { isReduced } from "../motion.js";
 import { tightenLoneWords } from "./lone-words.js";
+import { burst } from "./stage.js";
 
 const PHONE = "(max-width: 900px)";
 const isPhone = () => typeof matchMedia === "function" && matchMedia(PHONE).matches;
@@ -31,12 +32,25 @@ function cssPx(name) {
   return Number.isFinite(v) ? v : 0;
 }
 
-// Where each sheet may pin: under the header, or higher by however much the
-// sheet is taller than the room between the header and the bottom bar.
-function measureSheets(page) {
+function frame() {
   const header = document.querySelector(".site-header")?.offsetHeight || 0;
   const bottom = isPhone() ? cssPx("--nav-bar-h") : 0;
-  const room = innerHeight - header - bottom;
+  return { header, bottom, room: innerHeight - header - bottom };
+}
+
+// Where each sheet may pin: under the header, or higher by however much the
+// sheet is taller than the room between the header and the bottom bar.
+// First the stepper's pinned block is measured (v162): the section is sized
+// round it, so the last part stays on screen a while before the next sheet
+// rises over it, and the block pins where it fits whole.
+function measureSheets(page) {
+  const { header, room } = frame();
+  page.style.setProperty("--head-h", `${header}px`);
+  page.style.setProperty("--room", `${room}px`);
+  page.querySelectorAll(".aspect-parts").forEach(section => {
+    const pin = section.querySelector(".ps-pin");
+    if (pin) section.style.setProperty("--pin-h", `${pin.offsetHeight}px`);
+  });
   page.querySelectorAll(":scope > .panel").forEach(sheet => {
     const over = Math.max(0, sheet.offsetHeight - room);
     sheet.style.setProperty("--stick", `${header - over}px`);
@@ -115,6 +129,118 @@ function bindStepper(stepper, signal) {
   signal.addEventListener("abort", () => io.disconnect());
 }
 
+// --- the pull to the next region ---------------------------------------------
+//
+// The last sheet is the next region's. Its top edge rising into view is the
+// peek; a scroll that reaches the peek in one fling stops there, and only a
+// fresh scroll pulls on. From the peek the ring round its emblem fills with
+// the pull, and a full ring (the sheet under the header, or the page's end)
+// opens the region. Let go short of it and the sheet slides back to the peek.
+// Reduced motion: no hold, no pull; the sheet is a link to tap.
+
+const PEEK_PX = 112;
+const REST_MS = 220;
+const OPEN_DELAY_MS = 360;
+const LOCK_AFTER_MS = 450;
+const HOLD_MAX_MS = 2500;
+
+// How far the pull has gone, 0 at the peek and 1 at the full ring, from where
+// the sheet's top stands (`top`, from the top of the screen), the frame, and
+// the scroll still left in the page (`left`).
+export function pullProgress({ top, header, room, left }) {
+  const shown = header + room - top;
+  if (shown <= PEEK_PX) return 0;
+  const toFull = Math.min(Math.max(0, top - header), left);
+  const pulled = shown - PEEK_PX;
+  return Math.min(1, pulled / (pulled + toFull || 1));
+}
+
+// The scroll is held while the region opens and until the wheel or the finger
+// has been still a moment, so a fling still running when the ring closes does
+// not carry on down the next region's page. Not tied to the page's signal:
+// the hold outlives the page it started on.
+function holdScroll() {
+  const html = document.documentElement;
+  const since = performance.now();
+  let input = since;
+  const stir = () => { input = performance.now(); };
+  const opts = { passive: true, capture: true };
+  addEventListener("wheel", stir, opts);
+  addEventListener("touchmove", stir, opts);
+  html.style.overflow = "hidden";
+  const check = () => {
+    const now = performance.now();
+    const held = now - since;
+    if (held < HOLD_MAX_MS && (held < OPEN_DELAY_MS + LOCK_AFTER_MS || now - input < LOCK_AFTER_MS)) { setTimeout(check, 100); return; }
+    removeEventListener("wheel", stir, opts);
+    removeEventListener("touchmove", stir, opts);
+    html.style.overflow = "";
+  };
+  setTimeout(check, 100);
+}
+
+function openNext(sheet, link, signal) {
+  if (sheet.dataset.opening) return;
+  sheet.dataset.opening = "1";
+  sheet.style.setProperty("--pull", "1");
+  const go = () => { location.hash = link.getAttribute("href"); };
+  if (isReduced()) { go(); return; }
+  holdScroll();
+  const hue = getComputedStyle(sheet).getPropertyValue("--next-hue").trim();
+  burst(sheet.querySelector(".burst-layer"), link.querySelector(".next-mark"), {
+    motifs: [{ motif: sheet.dataset.next, hue }], signal
+  });
+  setTimeout(go, OPEN_DELAY_MS);
+}
+
+function bindPull(sheet, signal) {
+  const link = sheet.querySelector(".next-pull");
+  if (!link) return;
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    openNext(sheet, link, signal);
+  }, { signal });
+
+  let armed = false;
+  let touching = false;
+  let rest = 0;
+  const read = () => {
+    const { header, room } = frame();
+    const top = sheet.getBoundingClientRect().top;
+    const left = document.documentElement.scrollHeight - innerHeight - scrollY;
+    return { top, header, room, left, shown: header + room - top };
+  };
+  const toPeek = (f, smooth) => scrollTo({ top: scrollY - (f.shown - PEEK_PX), behavior: smooth ? "smooth" : "instant" });
+  const settle = () => {
+    if (touching || sheet.dataset.opening) return;
+    const f = read();
+    if (f.shown <= 0) { armed = false; return; }
+    if (f.shown <= PEEK_PX + 2) { armed = true; return; }
+    if (armed && pullProgress(f) < 1) toPeek(f, true);
+  };
+  const onScroll = () => {
+    if (isReduced() || sheet.dataset.opening) return;
+    const f = read();
+    if (f.shown <= 0) armed = false;
+    // A fling into the sheet stops at the peek; a fresh scroll pulls on.
+    if (!armed && f.shown > PEEK_PX) toPeek(f, false);
+    const p = armed ? pullProgress(f) : 0;
+    sheet.style.setProperty("--pull", p.toFixed(3));
+    sheet.classList.toggle("is-pulling", p > 0);
+    if (armed && p >= 0.995) { openNext(sheet, link, signal); return; }
+    clearTimeout(rest);
+    rest = setTimeout(settle, REST_MS);
+  };
+  addEventListener("scroll", onScroll, { signal, passive: true });
+  addEventListener("touchstart", () => { touching = true; }, { signal, passive: true });
+  addEventListener("touchend", () => {
+    touching = false;
+    clearTimeout(rest);
+    rest = setTimeout(settle, REST_MS);
+  }, { signal, passive: true });
+  signal.addEventListener("abort", () => clearTimeout(rest));
+}
+
 export function bindAspectSheets(root) {
   teardown?.abort();
   const page = root.querySelector(".aspect-page");
@@ -123,5 +249,6 @@ export function bindAspectSheets(root) {
   const { signal } = teardown;
   bindSheets(page, signal);
   page.querySelectorAll(".parts-stepper").forEach(s => bindStepper(s, signal));
+  page.querySelectorAll(".next-aspect").forEach(s => bindPull(s, signal));
   tightenLoneWords(page, signal);
 }

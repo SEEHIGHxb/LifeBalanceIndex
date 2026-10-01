@@ -298,6 +298,40 @@ test("the stepper picks the last part to enter the middle, and keeps its card on
   assert.equal(stepFromEntries([{ step: -1, isIntersecting: true }], 1), 1);
 });
 
+test("v162: the page ends on the next region's sheet, in Overview's order, the last wrapping", async () => {
+  const { nextChapter } = await import("../views/aspect.js");
+  const { CHAPTERS } = await import("../views/journey.js");
+  CHAPTERS.forEach((c, i) => assert.equal(nextChapter(c.aspect).aspect, CHAPTERS[(i + 1) % CHAPTERS.length].aspect));
+  assert.equal(nextChapter("humanityFuture").aspect, "finance");
+  assert.equal(nextChapter("nope"), null);
+  renderAspectPage(MAIN, STATE, "finance");
+  const out = html();
+  assert.match(out, /<section class="panel next-aspect"[^>]*data-next="physical">[\s\S]*?<a class="next-pull" href="#\/aspect\/physical" aria-label="Next: [^"]+, Physical">/);
+  assert.match(out, /class="next-ring"[^>]*><circle[^>]*pathLength="100"\/><\/svg>/);
+  // The last section on the page.
+  assert.ok(out.lastIndexOf("next-aspect") > out.lastIndexOf("aspect-notes"));
+});
+
+test("v162: the pull is 0 at the peek and 1 once the sheet is up or the page has ended", async () => {
+  const { pullProgress } = await import("../views/aspect-sheets.js");
+  const f = { header: 70, room: 700 };
+  assert.equal(pullProgress({ ...f, top: 770, left: 700 }), 0);
+  assert.equal(pullProgress({ ...f, top: 770 - 112, left: 700 }), 0);
+  assert.equal(pullProgress({ ...f, top: 70, left: 0 }), 1);
+  assert.equal(pullProgress({ ...f, top: 300, left: 0 }), 1, "the page has ended");
+  const half = pullProgress({ ...f, top: 70 + (700 - 112) / 2, left: 999 });
+  assert.ok(Math.abs(half - 0.5) < 0.01);
+});
+
+test("v162: notes folded at every width, footer off the aspect pages, the stepper sized round its block", () => {
+  const css = read("css/weekly.css");
+  assert.match(read("views/aspect.js"), /bindFootnotes\(container, \{ fold: "always" \}\)/);
+  assert.match(css, /body:has\(\.aspect-page\) \.site-footer \{ display: none; \}/);
+  assert.match(css, /\.parts-stepper \{ position: relative; height: calc\(var\(--steps\) \* 26vh \+ var\(--pin-h, 240px\) \+ 10vh\); \}/);
+  assert.match(css, /\.ps-card\[hidden\] \{ display: grid; visibility: hidden; \}/);
+  assert.match(css, /html\[data-reduce-motion\] \.next-aspect \.next-mark \{ animation: none; \}/);
+});
+
 // --- Goals --------------------------------------------------------------------
 
 test("the catalog offers every pledge type you do not have yet, one row each", () => {

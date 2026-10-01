@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `161`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `162`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.93.0] - 2026-10-01 (app version 162)
+
+### Changed
+- Aspect pages, laptop: the parts stepper is sized round its pinned block, which pins where it fits whole; the last part stays on screen a while before "Where to start" rises over it. The cards share one cell, so the block no longer jumps between parts.
+- Aspect pages: "Notes and sources" is folded at every width, as on a phone.
+- Aspect pages: the footer is gone (its links are in the menu).
+
+### Added
+- Aspect pages end on the next region's sheet, in Overview's order, the last wrapping to the first. Its edge peeks up with the emblem in a ring that nods; pulling on fills the ring, and a full ring bursts and opens the region. A fling stops at the peek, a pull let go short slides back, and a tap opens it too. Reduced motion: tap only.
 
 ## [2.92.0] - 2026-10-01 (v161)
 

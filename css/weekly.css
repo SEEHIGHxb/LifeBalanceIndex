@@ -534,18 +534,25 @@ html[data-reduce-motion] .aspect-page > .panel { position: relative; }
 /* The parts stepper. On a laptop the section is a few screens tall; the tabs
    and the card stay pinned while the track's markers scroll past the middle
    of the screen and pick the card. */
-.parts-stepper { position: relative; height: calc(var(--steps) * 26vh + 46vh); }
-/* The section's label rides along with the pinned stepper, mid-screen. */
-.aspect-parts .split > .label { position: sticky; top: calc(50vh - 120px); }
+/* v162: sized round the pinned block (--pin-h, views/aspect-sheets.js). The
+   block pins centred, or under the header if it is too tall for that; a step
+   takes 26vh of scroll, the last one as long again, and only then does the
+   next sheet rise, so the last part is read before it is covered. */
+.aspect-parts {
+  --pin-top: max(calc(var(--head-h, 72px) + 16px), calc(50vh - var(--pin-h, 240px) / 2));
+}
+.parts-stepper { position: relative; height: calc(var(--steps) * 26vh + var(--pin-h, 240px) + 10vh); }
+/* The section's label rides along with the pinned stepper. */
+.aspect-parts .split > .label { position: sticky; top: var(--pin-top); }
 .ps-pin {
   position: sticky;
-  top: calc(50vh - 120px);
+  top: var(--pin-top);
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   gap: calc(48 * var(--px));
   align-items: start;
 }
-.ps-track { position: absolute; inset: 0; display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; pointer-events: none; }
+.ps-track { position: absolute; top: calc(var(--pin-h, 240px) / 2); right: 0; left: 0; height: calc(var(--steps) * 26vh); display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; pointer-events: none; }
 .aspect-page .statement .ps-track li { flex: 1 1 0; margin: 0; }
 .ps-tabs { display: grid; gap: 4px; }
 .ps-tab {
@@ -575,7 +582,11 @@ html[data-reduce-motion] .aspect-page > .panel { position: relative; }
   border-radius: var(--card-round);
   background: var(--frame-card);
 }
-.ps-card[hidden] { display: none; }
+/* The cards share one cell, so the block is as tall as the tallest and does
+   not jump between parts; the ones not on show are hidden from everyone. */
+.ps-cards { display: grid; }
+.ps-card { grid-area: 1 / 1; }
+.ps-card[hidden] { display: grid; visibility: hidden; }
 .aspect-page .ps-card .card-title { margin: 0; }
 .ps-card .meter { grid-column: 1 / -1; width: 100%; max-width: none; margin: 0; }
 .aspect-page .statement .ps-card .pr-desc { grid-column: 1 / -1; margin: 0; }
@@ -632,3 +643,86 @@ html[data-reduce-motion] .aspect-page > .panel { position: relative; }
   .aspect-page .focus-rail { grid-auto-columns: 82%; margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); }
 }
 
+
+/* v162 (the owner): the notes folded at every width; the fold stands in for
+   the section's label. The footer's links are in the menu, so the aspect
+   pages, which end on the next region's sheet, drop the footer. */
+.aspect-page .has-notes-fold .label { display: none; }
+.aspect-page .has-notes-fold .split > div:last-child { grid-column: -2 / -1; }
+body:has(.aspect-page) .site-footer { display: none; }
+
+/* The next region's sheet (views/aspect.js nextSection): its top edge peeks
+   up with the emblem in a ring, and --pull (0 to 1, views/aspect-sheets.js)
+   fills the ring as the sheet is pulled up. */
+.aspect-page > .next-aspect {
+  display: flex;
+  flex-direction: column;
+  min-height: var(--room, 100vh);
+  padding: 0;
+  overflow: hidden;
+  border-radius: calc(36 * var(--px)) calc(36 * var(--px)) 0 0;
+}
+.next-pull {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 112px;
+  padding: 18px var(--gutter);
+  color: var(--frame-ink);
+  text-decoration: none;
+}
+.next-mark { position: relative; flex: none; width: 76px; height: 76px; }
+.next-mark img {
+  position: absolute;
+  inset: 9px;
+  width: 58px;
+  height: 58px;
+  border-radius: 26%;
+  transform: scale(calc(0.9 + 0.2 * var(--pull, 0)));
+}
+.next-ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.next-ring circle {
+  fill: none;
+  stroke: var(--next-hue);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: calc(100 - 100 * var(--pull, 0));
+}
+/* An empty ring still shows as a faint track, so there is a ring to fill. */
+.next-mark::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 4px solid color-mix(in srgb, var(--next-hue) 25%, transparent);
+  border-radius: 50%;
+}
+.next-name {
+  font-family: var(--frame-word);
+  font-size: max(26px, calc(56 * var(--px)));
+  line-height: 1;
+  text-transform: uppercase;
+}
+.next-name small { display: block; margin-top: 4px; font-family: inherit; font-size: 0.5em; }
+.next-pull:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: -6px; }
+.next-plate {
+  flex: 1;
+  margin: 0 var(--gutter) var(--gutter);
+  border-radius: var(--card-round, 24px);
+  background-size: cover;
+  background-position: center;
+  opacity: calc(0.55 + 0.45 * var(--pull, 0));
+}
+/* The hint without words: before the pull, the emblem nods upward now and
+   then, the way a thing does when it wants lifting. */
+@keyframes next-nod {
+  0%, 70%, 100% { transform: translateY(0); }
+  80% { transform: translateY(-7px); }
+  90% { transform: translateY(0); }
+  95% { transform: translateY(-3px); }
+}
+.next-aspect:not(.is-pulling) .next-mark { animation: next-nod 2.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .next-aspect .next-mark { animation: none; } }
+html[data-reduce-motion] .next-aspect .next-mark { animation: none; }

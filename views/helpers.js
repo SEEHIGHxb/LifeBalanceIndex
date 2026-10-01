@@ -167,10 +167,11 @@ export function footnoteList(notes) {
 
 // On a phone the notes fold into one row, "Notes and sources (N)", opened
 // on a tap (the owner, v155); the fold stands in for the section's label
-// (css/phone.css). A mark jumping into it opens it (below).
+// (css/phone.css). A mark jumping into it opens it (below). `always` folds
+// them at any width (the aspect page, v162).
 const PHONE = "(max-width: 900px)";
-function foldNotes(root) {
-  if (typeof matchMedia !== "function" || !matchMedia(PHONE).matches) return;
+function foldNotes(root, always) {
+  if (!always && (typeof matchMedia !== "function" || !matchMedia(PHONE).matches)) return;
   root.querySelectorAll(".fn-list").forEach(list => {
     if (list.closest("details")) return;
     const fold = document.createElement("details");
@@ -183,8 +184,8 @@ function foldNotes(root) {
   });
 }
 
-export function bindFootnotes(root) {
-  foldNotes(root);
+export function bindFootnotes(root, { fold } = {}) {
+  foldNotes(root, fold === "always");
   root.querySelectorAll("a[data-jump]").forEach(link => link.addEventListener("click", (e) => {
     const target = document.getElementById(link.dataset.jump);
     if (!target) return;

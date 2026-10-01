@@ -39,7 +39,7 @@
 // care notice is quiet too: nothing bursts there.
 
 import { stateManager } from "../state.js";
-import { getAspectDetail } from "../aspects.js";
+import { getAspectDetail, ASPECT_META } from "../aspects.js";
 import { getAspectSuggestions, getMentalHealthNotice } from "../suggestions.js";
 import { characterFor, characterDisclaimer } from "../characters.js";
 import { t, tp, percentileLabel } from "../i18n.js";
@@ -426,6 +426,34 @@ function notesSection(notes) {
     </div></section>`;
 }
 
+// The next region's sheet at the foot of the page (v162, the owner: "a way to
+// go to the next aspect page", by pulling rather than a button). Its top edge
+// peeks up with the emblem in a ring; pulling further fills the ring, and a
+// full ring opens that region (views/aspect-sheets.js). A tap does the same.
+// Overview's order, the last wrapping round to the first.
+export function nextChapter(key) {
+  const at = CHAPTERS.findIndex(c => c.aspect === key);
+  return at < 0 ? null : CHAPTERS[(at + 1) % CHAPTERS.length];
+}
+
+function nextSection(a) {
+  const next = nextChapter(a.key);
+  if (!next) return "";
+  const name = t(ASPECT_META[next.aspect].label);
+  return `
+    <section class="panel next-aspect" style="background: ${next.wash}; --next-hue: ${next.hue};" data-next="${escapeHtml(next.aspect)}">
+      <div class="burst-layer" aria-hidden="true"></div>
+      <a class="next-pull" href="#/aspect/${escapeHtml(next.aspect)}" aria-label="${escapeHtml(tp("Next: {region}, {aspect}", { region: next.region, aspect: name }))}">
+        <span class="next-mark">
+          <svg class="next-ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="47" pathLength="100"/></svg>
+          <img src="./assets/emblems/${next.art}.webp" alt="" width="224" height="224" decoding="async">
+        </span>
+        <span class="next-name" aria-hidden="true">${escapeHtml(next.region)} <small>${escapeHtml(name)}</small></span>
+      </a>
+      <div class="next-plate" style="background-image: url('./assets/regions/${next.art}.jpg');" aria-hidden="true"></div>
+    </section>`;
+}
+
 export function aspectMarkup(a) {
   const { detail, chapter } = a;
   const book = noteBook();
@@ -453,6 +481,7 @@ export function aspectMarkup(a) {
       ${trendSection(a)}
       ${focus}
       ${notesSection(book.notes)}
+      ${nextSection(a)}
     </div>`;
 }
 
@@ -466,7 +495,8 @@ export function renderAspectPage(containerId, state, aspectKey) {
     motifs: [{ motif: a.key, hue: a.chapter.hue }],
     still: !!a.notice
   });
-  bindFootnotes(container);
+  // Folded on a laptop too (the owner, v162), as on a phone.
+  bindFootnotes(container, { fold: "always" });
   bindAspectSheets(container);
   // Opened from a row halfway down Overview, the page starts at its top
   // (the owner, v143), as the star page does.

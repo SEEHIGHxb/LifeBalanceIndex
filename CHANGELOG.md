@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `158`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `159`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.90.0] - 2026-10-01 (v159)
+
+The Re-assessment, trimmed to the owner's cut list.
+
+- Three screens, one region each (The Still Water, The Hearth, The Workshop), as the Weekly Review: "Re-assessment · 1 / 3", a progress bar on phones, Back and Next pinned above the bottom bar, "Finish" on phones. Next checks the screen it leaves; the draft remembers the screen; a failed submit shows the first screen in error.
+- An answered question folds to its answer (the question on one line, the answer a button that opens it again). A tap folds at once; by keyboard it folds when focus leaves.
+- The head is "Answer for the last few weeks."; what it re-scores, the 15-point cap with the review bonus, and the 40 points are a note at the page's end.
+- Not yet due: the Overview button sits in the head's gutter, and is hidden on phones.
+- The region's name is off the panel's top line on phones.
+- Thai: v158 approved; five v159 drafts await review.
 
 ## [2.89.0] - 2026-10-01 (v158)
 

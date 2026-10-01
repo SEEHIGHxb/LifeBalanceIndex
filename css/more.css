@@ -404,3 +404,35 @@ html[lang="th"] .sbs-name { letter-spacing: normal; text-transform: none; }
    privacy.html: the text page with no scripts, so no menu and no language
    button; the wordmark and the pill lead back to the app. */
 .privacy-page .pagehead .privacy-updated { font-size: 15px; color: #444444; }
+
+/* v159, the owner's cut list: an answered Re-assessment question folds to
+   its answer, the question on one line and the answer a button that opens
+   it again (views/assessments.js). */
+.checkin-view fieldset.q-folded { margin-bottom: 12px; }
+.checkin-view fieldset.q-folded legend {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.checkin-view fieldset.q-folded .radio-group,
+.checkin-view fieldset.q-folded .field-error { display: none; }
+.checkin-view fieldset:not(.q-folded) .q-summary { display: none; }
+.q-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 18px 8px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--chapter-hue, #8a8a8a) 30%, #ffffff);
+  color: var(--frame-ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.q-summary::after { content: "\203A"; }
+.q-summary:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }

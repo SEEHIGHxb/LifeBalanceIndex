@@ -15,7 +15,7 @@ import {
 } from "./instrument-forms.js";
 import { escapeHtml, scrollIntoViewGently, noteBook, footnoteList, bindFootnotes } from "./helpers.js";
 import { applyDraft, saveDraft, clearDraft } from "../draft.js";
-import { isCarrying } from "./lang-carry.js";
+import { isCarrying, carriedStep } from "./lang-carry.js";
 import { pageHead, textSection } from "./stage-page.js";
 import { emblemImg } from "./onboarding.js";
 import { chapterOf, aspectName } from "./news.js";
@@ -24,10 +24,10 @@ import { chapterOf, aspectName } from "./news.js";
 // its emblem on the left, the questions on the right, in the region's wash.
 // data-quiet keeps the answer pills from rising as they do in the journey.
 // `inner` and `sideExtra` are markup the caller built.
-function assessPanel(aspect, inner, { id = "", sideExtra = "" } = {}) {
+function assessPanel(aspect, inner, { id = "", cls = "", sideExtra = "" } = {}) {
   const chapter = chapterOf(aspect);
   return `
-    <section class="survey-page assess-panel" data-quiet${id ? ` id="${id}"` : ""}
+    <section class="survey-page assess-panel${cls ? ` ${cls}` : ""}" data-quiet${id ? ` id="${id}"` : ""}
       style="--chapter-hue: ${chapter.hue}; --chapter-wash: ${chapter.wash};">
       <div class="q-split">
         <div class="q-side">
@@ -41,6 +41,149 @@ function assessPanel(aspect, inner, { id = "", sideExtra = "" } = {}) {
 }
 
 // 2c. RENDER THE MONTHLY MINI RE-ASSESSMENT (#/checkin)
+//
+// v159, the owner's cut list: three screens, one region each, as the Weekly
+// Review (the count, a progress bar on phones, Back and Next pinned above the
+// bottom bar); an answered question folds to its answer; the head is one line
+// and the rules are a note at the page's end. Still quiet: no wipes.
+
+const CHECKIN_DRAFT = "checkin";
+// A tap folds its question at once; a change this long after a press is the
+// arrow keys moving through the answers, which fold when focus leaves.
+const FOLD_TAP_MS = 600;
+
+// The seven instruments, grouped by the aspect each one re-scores.
+function checkinGroups(state) {
+  const isCoupled = state.profile.relationshipStatus !== "Single";
+  return [
+    ["mental", ["who5", "st5"]],
+    ["relationships", isCoupled ? ["ucla", "ras"] : ["ucla"]],
+    ["personalGoals", ["gse", "citacc", "citlearn"]]
+  ];
+}
+
+function checkinNav(i, n) {
+  // The phone shows the short word (css/weekly.css); a screen reader always
+  // hears the long one.
+  const submit = `<span class="pill-long">${t("Complete Re-assessment")}</span><span class="pill-short" aria-hidden="true">${t("Finish")}</span>`;
+  return `
+    <div class="onb-nav">
+      ${i > 0 ? `<button type="button" class="btn btn-onb-prev ck-back">${t("Back")}</button>` : "<span></span>"}
+      <div class="onb-nav-right">
+        ${i === n - 1
+          ? `<button type="submit" class="btn btn-primary">${submit}</button>`
+          : `<button type="button" class="btn btn-primary ck-next">${t("Next")}</button>`}
+      </div>
+    </div>`;
+}
+
+function checkinScreen([aspect, keys], i, n) {
+  const progress = Math.round(((i + 1) / n) * 100);
+  const side = `
+    <p class="q-count">${escapeHtml(tp("Re-assessment · {i} / {n}", { i: i + 1, n }))}</p>
+    <span class="rv-progress" aria-hidden="true"><i style="width: ${progress}%;"></i></span>`;
+  return assessPanel(aspect, `
+    <h3 class="q-title" tabindex="-1">${escapeHtml(aspectName(aspect))}</h3>
+    ${keys.map(k => instrumentBlock(k)).join("")}
+    ${checkinNav(i, n)}`,
+  { id: `ck-step-${i}`, cls: i ? "d-none" : "", sideExtra: side });
+}
+
+// An answered question folds to its answer: the question on one line and the
+// answer as a button that opens it again (css/more.css).
+function foldQuestion(fs) {
+  const chosen = fs.querySelector('input[type="radio"]:checked');
+  if (!chosen) return;
+  let summary = fs.querySelector(".q-summary");
+  if (!summary) {
+    summary = document.createElement("button");
+    summary.type = "button";
+    summary.className = "q-summary";
+    fs.querySelector(".radio-group").after(summary);
+  }
+  summary.textContent = chosen.closest("label").textContent.trim();
+  summary.setAttribute("aria-expanded", "false");
+  fs.classList.add("q-folded");
+}
+
+function unfoldQuestion(fs) {
+  fs.classList.remove("q-folded");
+  fs.querySelector(".q-summary")?.setAttribute("aria-expanded", "true");
+  fs.querySelector('input[type="radio"]:checked')?.focus();
+}
+
+function bindFolding(form) {
+  let pressedAt = 0;
+  form.addEventListener("pointerdown", (e) => {
+    if (e.target.closest(".radio-option")) pressedAt = Date.now();
+  });
+  form.addEventListener("change", (e) => {
+    const fs = e.target.closest("fieldset.survey-question");
+    if (fs && Date.now() - pressedAt < FOLD_TAP_MS) foldQuestion(fs);
+  });
+  form.addEventListener("focusout", (e) => {
+    const fs = e.target.closest("fieldset.survey-question");
+    if (fs && !fs.contains(e.relatedTarget)) foldQuestion(fs);
+  });
+  form.addEventListener("click", (e) => {
+    const summary = e.target.closest(".q-summary");
+    if (summary) unfoldQuestion(summary.closest("fieldset"));
+  });
+  // A draft picked up again shows how far it got.
+  form.querySelectorAll("fieldset.survey-question").forEach(foldQuestion);
+}
+
+// The screens: Next checks the screen it leaves, focus follows the screen, and
+// the draft remembers which one the reader was on.
+function bindCheckinScreens(form, count, errorEl) {
+  const page = (i) => document.getElementById(`ck-step-${i}`);
+  let current = 0;
+  const save = () => saveDraft(CHECKIN_DRAFT, form, { step: current });
+  const show = (i, { announce = true } = {}) => {
+    current = i;
+    // Published for views/lang-carry.js, so a language switch keeps the screen.
+    form.dataset.step = String(i);
+    for (let k = 0; k < count; k++) page(k).classList.toggle("d-none", k !== i);
+    if (!announce) return;
+    save();
+    scrollIntoViewGently(form, { block: "start" });
+    page(i).querySelector(".q-title")?.focus({ preventScroll: true });
+  };
+  // An answer is the reader acting on the message, so it goes; the inline
+  // "Required." stays on whatever is still unanswered.
+  form.addEventListener("change", () => errorEl.classList.add("d-none"));
+  form.addEventListener("click", (e) => {
+    if (e.target.closest(".ck-next")) {
+      const invalid = validateScope(page(current));
+      if (invalid) {
+        errorEl.textContent = t("Please fix the highlighted fields before continuing.");
+        errorEl.classList.remove("d-none");
+        scrollIntoViewGently(invalid, { block: "center" });
+        return;
+      }
+      errorEl.classList.add("d-none");
+      show(current + 1);
+    } else if (e.target.closest(".ck-back")) {
+      errorEl.classList.add("d-none");
+      show(current - 1);
+    }
+  });
+  return { show, save };
+}
+
+function checkinNotDue(container) {
+  const next = stateManager.nextCheckinDate();
+  const line = next
+    ? tp("The next re-assessment opens on {date}.", {
+        date: next.toLocaleDateString(dateLocale(), { day: "numeric", month: "short" })
+      })
+    : t("Re-assessment needs a baseline — complete the initial assessment first.");
+  container.innerHTML = `
+    <div class="stage-page textpage assess checkin-view">
+      ${pageHead(t("Re-assessment"), [escapeHtml(line), `<a class="pill rv-done-home" href="#/dashboard">${t("Overview")}</a>`])}
+    </div>`;
+}
+
 export function renderCheckin(containerId, state, onComplete) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -48,77 +191,63 @@ export function renderCheckin(containerId, state, onComplete) {
   // Opened by hand before one is due: say when it opens, and ask nothing.
   // state.js refuses the submission anyway; this saves answering for nothing.
   if (!stateManager.isCheckinDue()) {
-    const next = stateManager.nextCheckinDate();
-    const line = next
-      ? tp("The next re-assessment opens on {date}.", {
-          date: next.toLocaleDateString(dateLocale(), { day: "numeric", month: "short" })
-        })
-      : t("Re-assessment needs a baseline — complete the initial assessment first.");
-    container.innerHTML = `
-      <div class="stage-page textpage assess checkin-view">
-        ${pageHead(t("Re-assessment"), [escapeHtml(line)])}
-        <p class="rv-done-links"><a class="pill" href="#/dashboard">${t("Overview")}</a></p>
-      </div>`;
+    checkinNotDue(container);
     return;
   }
 
   const isCoupled = state.profile.relationshipStatus !== "Single";
-  // The seven instruments, grouped by the aspect each one re-scores.
-  const groups = [
-    ["mental", ["who5", "st5"]],
-    ["relationships", isCoupled ? ["ucla", "ras"] : ["ucla"]],
-    ["personalGoals", ["gse", "citacc", "citlearn"]]
-  ];
-
-  // The one submit closes the last panel rather than sitting on the frame.
-  const submit = `
-    <div class="assess-submit">
-      <button type="submit" class="pill">${t("Complete Re-assessment")}</button>
-    </div>`;
+  const groups = checkinGroups(state);
+  const book = noteBook();
+  const aboutRef = book.ref("checkin-about", [
+    t("This re-assessment re-scores Mental, Relationships and Personal Goals with short questionnaires."),
+    t("Each aspect moves by at most 15 points per re-assessment, and consistent weekly reviews since the last one add a small bonus."),
+    t("Finishing it earns 40 points.")
+  ].map(p => `<p>${escapeHtml(p)}</p>`).join(""));
 
   container.innerHTML = `
     <div class="stage-page textpage assess checkin-view">
-      ${pageHead(t("Re-assessment"), [
-        escapeHtml(t("Short instruments only • recalibrates Mental, Relationships & Personal Goals")),
-        escapeHtml(t("Answer for the recent weeks, not how you felt at onboarding. Scores shift by at most ±15 points per re-assessment, and consistent weekly reviews since the last one add a small bonus. Reward: +40 points."))
-      ])}
+      ${pageHead(t("Re-assessment"), [`${escapeHtml(t("Answer for the last few weeks."))}${aboutRef}`])}
       <div class="journey assess-journey">
         <div id="checkin-resume" class="onb-resume d-none">
           <span>${t("Picked up where you left off.")}</span>
         </div>
-        <form id="checkin-form">
-          ${groups.map(([aspect, keys], i) => assessPanel(aspect, `
-            <h3 class="q-title">${escapeHtml(aspectName(aspect))}</h3>
-            ${keys.map(k => instrumentBlock(k)).join("")}
-            ${i === groups.length - 1 ? submit : ""}`)).join("")}
+        <form id="checkin-form" novalidate>
+          ${groups.map((group, i) => checkinScreen(group, i, groups.length)).join("")}
         </form>
         <p id="checkin-error" class="onboarding-error d-none" role="alert"></p>
       </div>
+      ${textSection(t("Notes and sources"), footnoteList(book.notes), "checkin-notes")}
     </div>
   `;
+  bindFootnotes(container);
 
-  // Draft persistence, same contract as onboarding. Shorter form, same failure:
-  // seven instruments answered on a phone, one interruption, all of it gone.
-  //
-  // No coverage bookkeeping to seed here -- unlike onboarding, the check-in
-  // reads every instrument straight off the DOM at submit time and tracks no
-  // "touched" sets, so restoring the controls is the whole job.
+  // Draft persistence, same contract as onboarding: seven instruments answered
+  // on a phone, one interruption, all of it gone. The check-in reads every
+  // instrument straight off the DOM at submit, so restoring the controls (and
+  // the screen) is the whole job.
   const checkinForm = document.getElementById("checkin-form");
+  const errorEl = document.getElementById("checkin-error");
+  const screens = bindCheckinScreens(checkinForm, groups.length, errorEl);
+  const restored = applyDraft(CHECKIN_DRAFT, checkinForm);
   // Not after a language switch, which re-renders from this same draft: the
   // reader never left, so there is nothing to have picked up.
-  if (applyDraft("checkin", checkinForm) && !isCarrying()) {
+  if (restored && !isCarrying()) {
     document.getElementById("checkin-resume").classList.remove("d-none");
   }
-  const saveCheckin = () => saveDraft("checkin", checkinForm, {});
-  checkinForm.addEventListener("input", saveCheckin);
-  checkinForm.addEventListener("change", saveCheckin);
+  const step = carriedStep("checkin-form") ?? restored?.step;
+  if (Number.isInteger(step) && step > 0 && step < groups.length) screens.show(step, { announce: false });
+  checkinForm.addEventListener("input", screens.save);
+  checkinForm.addEventListener("change", screens.save);
+  bindFolding(checkinForm);
 
-  document.getElementById("checkin-form").addEventListener("submit", (e) => {
+  checkinForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const errorEl = document.getElementById("checkin-error");
     errorEl.classList.add("d-none");
-    const invalid = validateScope(document.getElementById("checkin-form"));
+    // Every screen, not only this one; the first in error is shown.
+    const invalid = validateScope(checkinForm);
     if (invalid) {
+      const screen = Number(invalid.closest(".assess-panel")?.id.replace("ck-step-", ""));
+      if (Number.isInteger(screen)) screens.show(screen);
       errorEl.textContent = t("Please answer every question before submitting.");
       errorEl.classList.remove("d-none");
       scrollIntoViewGently(invalid, { block: "center" });
@@ -134,7 +263,7 @@ export function renderCheckin(containerId, state, onComplete) {
         citacc: collectInstrument("citacc"),
         citlearn: collectInstrument("citlearn")
       });
-      clearDraft("checkin");
+      clearDraft(CHECKIN_DRAFT);
       onComplete(shifts);
     } catch (err) {
       console.error("Check-in submission failed:", err);

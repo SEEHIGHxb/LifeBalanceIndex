@@ -23,7 +23,7 @@ stateManager.isCheckinDue = () => true;
 
 const STATE = { ...DEFAULT_STATE, onboarded: true, profile: { ...DEFAULT_STATE.profile, relationshipStatus: "Single" } };
 const html = () => dom.html[MAIN] || "";
-const panels = (out) => out.split('class="survey-page assess-panel"').slice(1);
+const panels = (out) => out.split(/class="survey-page assess-panel(?: d-none)?"/).slice(1);
 const between = (out, from, to) => out.slice(out.indexOf(`id="${from}"`), out.indexOf(`id="${to}"`));
 
 // --- the Re-assessment --------------------------------------------------------
@@ -40,6 +40,34 @@ test("the Re-assessment asks each aspect's questionnaires in that region's panel
   assert.equal((out.match(/<form /g) || []).length, 1);
   assert.equal((out.match(/type="submit"/g) || []).length, 1);
   assert.match(out, /id="checkin-error" class="onboarding-error d-none" role="alert"/);
+});
+
+// v159, the owner's cut list: three screens, one region each, the first
+// shown; a one-line head with the rules in a note at the page's end.
+test("the Re-assessment is three screens with Next, Back and one submit", () => {
+  renderCheckin(MAIN, STATE, () => {});
+  const out = html();
+  const screens = [...out.matchAll(/class="survey-page assess-panel( d-none)?" data-quiet id="ck-step-(\d)"/g)];
+  assert.deepEqual(screens.map(m => [m[2], Boolean(m[1])]), [["0", false], ["1", true], ["2", true]]);
+  assert.equal((out.match(/class="btn btn-primary ck-next"/g) || []).length, 2);
+  assert.equal((out.match(/class="btn btn-onb-prev ck-back"/g) || []).length, 2);
+  assert.match(out, /Re-assessment · 1 \/ 3/);
+  assert.match(out, /<span class="pill-long">Complete Re-assessment<\/span><span class="pill-short" aria-hidden="true">Finish<\/span>/);
+  assert.match(out, /<p>Answer for the last few weeks\.<sup/);
+  assert.doesNotMatch(out, /Short instruments only|±15/);
+  assert.match(out, /id="fn-checkin-about"[\s\S]*at most 15 points[\s\S]*earns 40 points/);
+});
+
+test("a Re-assessment not yet due names the day and keeps Overview off the phone", () => {
+  const due = stateManager.isCheckinDue;
+  stateManager.isCheckinDue = () => false;
+  try {
+    renderCheckin(MAIN, STATE, () => {});
+  } finally {
+    stateManager.isCheckinDue = due;
+  }
+  assert.match(html(), /<p><a class="pill rv-done-home" href="#\/dashboard">Overview<\/a><\/p>/, "inside the head's gutter");
+  assert.match(read("css/weekly.css"), /\.checkin-view \.rv-done-home \{ display: none; \}/);
 });
 
 test("no panel on the assessments moves", () => {

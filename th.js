@@ -7,7 +7,14 @@
 // Benchmark SOURCE labels stay in English on purpose (literature citations).
 
 export const TH = {
-  // v158, draft awaiting the owner's review: the Weekly Review's folded answers.
+  // v159, draft awaiting the owner's review: the Re-assessment in three screens.
+  "Answer for the last few weeks.": "ตอบตามช่วงไม่กี่สัปดาห์ที่ผ่านมา",
+  "Re-assessment · {i} / {n}": "การประเมินซ้ำ · {i} / {n}",
+  "This re-assessment re-scores Mental, Relationships and Personal Goals with short questionnaires.": "การประเมินซ้ำนี้ให้คะแนนด้านจิตใจ ความสัมพันธ์ และเป้าหมายส่วนตัวใหม่ด้วยแบบประเมินชุดสั้น",
+  "Each aspect moves by at most 15 points per re-assessment, and consistent weekly reviews since the last one add a small bonus.": "แต่ละด้านขยับได้ไม่เกิน 15 คะแนนต่อการประเมินซ้ำ และการทบทวนรายสัปดาห์อย่างสม่ำเสมอตั้งแต่ครั้งก่อนจะได้โบนัสเล็กน้อย",
+  "Finishing it earns 40 points.": "ทำเสร็จได้ 40 คะแนน",
+
+  // v158, approved by the owner: the Weekly Review's folded answers.
   "Change": "เปลี่ยน",
 
   // v157, approved by the owner: Overview's effort row.
@@ -595,9 +602,6 @@ export const TH = {
     "คะแนนนี้มาจากคำตอบเริ่มต้น ตอบคำถามด้าน{aspect}หรือส่งการทบทวนรายสัปดาห์เพื่อยืนยัน",
 
   // --- Monthly re-sync page ---
-  "Short instruments only • recalibrates Mental, Relationships & Personal Goals": "แบบประเมินชุดสั้น • ปรับเทียบด้านจิตใจ ความสัมพันธ์ และเป้าหมายส่วนตัว",
-  "Answer for the recent weeks, not how you felt at onboarding. Scores shift by at most ±15 points per re-assessment, and consistent weekly reviews since the last one add a small bonus. Reward: +40 points.":
-    "ตอบตามช่วงสัปดาห์ที่ผ่านมา ไม่ใช่ความรู้สึกตอนเริ่มต้น คะแนนขยับได้ไม่เกิน ±15 คะแนนต่อการประเมินซ้ำ และการทบทวนรายสัปดาห์อย่างสม่ำเสมอตั้งแต่ครั้งก่อนจะได้โบนัสเล็กน้อย รางวัล: +40 คะแนน",
   "Complete Re-assessment": "เสร็จสิ้นการประเมินซ้ำ",
   "Re-assessment Error: ": "การประเมินซ้ำผิดพลาด: ",
   // v110, approved by the owner.

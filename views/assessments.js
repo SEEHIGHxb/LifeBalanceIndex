@@ -18,7 +18,11 @@ import { applyDraft, saveDraft, clearDraft } from "../draft.js";
 import { isCarrying, carriedStep } from "./lang-carry.js";
 import { pageHead, textSection } from "./stage-page.js";
 import { emblemImg } from "./onboarding.js";
-import { chapterOf, aspectName } from "./news.js";
+import { chapterOf, aspectName, dotDate, shiftSummary, motifThumb, biggestShift } from "./news.js";
+import { stepperMarkup } from "./stepper.js";
+import { endingMarkup, playEnding } from "./ending.js";
+import { mountMotion } from "./motion-mount.js";
+import { isReduced } from "../motion.js";
 
 // One aspect's questionnaires in the journey's mission panel: the region and
 // its emblem on the left, the questions on the right, in the region's wash.
@@ -46,11 +50,15 @@ function assessPanel(aspect, inner, { id = "", cls = "", sideExtra = "" } = {}) 
 // Review (the count, a progress bar on phones, Back and Next pinned above the
 // bottom bar); an answered question folds to its answer; the head is one line
 // and the rules are a note at the page's end. Still quiet: no wipes.
+// v167, the owner's plan: the Weekly Review's list of screens down the side,
+// and its ending in place of a toast on Overview.
 
 const CHECKIN_DRAFT = "checkin";
 // A tap folds its question at once; a change this long after a press is the
 // arrow keys moving through the answers, which fold when focus leaves.
 const FOLD_TAP_MS = 600;
+// What finishing one earns (state.js's CHECKIN_XP), for the ending.
+const CHECKIN_POINTS = 40;
 
 // The seven instruments, grouped by the aspect each one re-scores.
 function checkinGroups(state) {
@@ -77,10 +85,12 @@ function checkinNav(i, n) {
     </div>`;
 }
 
-function checkinScreen([aspect, keys], i, n) {
+function checkinScreen([aspect, keys], i, aspects) {
+  const n = aspects.length;
   const progress = Math.round(((i + 1) / n) * 100);
   const side = `
-    <p class="q-count">${escapeHtml(tp("Re-assessment · {i} / {n}", { i: i + 1, n }))}</p>
+    <p class="q-count sr-only">${escapeHtml(tp("Re-assessment · {i} / {n}", { i: i + 1, n }))}</p>
+    ${stepperMarkup(aspects, i)}
     <span class="rv-progress" aria-hidden="true"><i style="width: ${progress}%;"></i></span>`;
   return assessPanel(aspect, `
     <h3 class="q-title" tabindex="-1">${escapeHtml(aspectName(aspect))}</h3>
@@ -133,8 +143,18 @@ function bindFolding(form) {
   form.querySelectorAll("fieldset.survey-question").forEach(foldQuestion);
 }
 
+// The top of the form, under the header: the head above it stays scrolled
+// past (the form's top used to go under the header, with the list of
+// screens).
+function toForm(form) {
+  const header = document.querySelector(".site-header")?.offsetHeight || 0;
+  const top = Math.max(0, form.getBoundingClientRect().top + scrollY - header);
+  scrollTo({ top, behavior: isReduced() ? "instant" : "smooth" });
+}
+
 // The screens: Next checks the screen it leaves, focus follows the screen, and
-// the draft remembers which one the reader was on.
+// the draft remembers which one the reader was on. An answered screen in the
+// list is a way back to it, as Back is.
 function bindCheckinScreens(form, count, errorEl) {
   const page = (i) => document.getElementById(`ck-step-${i}`);
   let current = 0;
@@ -146,7 +166,7 @@ function bindCheckinScreens(form, count, errorEl) {
     for (let k = 0; k < count; k++) page(k).classList.toggle("d-none", k !== i);
     if (!announce) return;
     save();
-    scrollIntoViewGently(form, { block: "start" });
+    toForm(form);
     page(i).querySelector(".q-title")?.focus({ preventScroll: true });
   };
   // An answer is the reader acting on the message, so it goes; the inline
@@ -166,22 +186,71 @@ function bindCheckinScreens(form, count, errorEl) {
     } else if (e.target.closest(".ck-back")) {
       errorEl.classList.add("d-none");
       show(current - 1);
+    } else if (e.target.closest(".rv-jump")) {
+      errorEl.classList.add("d-none");
+      show(Number(e.target.closest(".rv-jump").dataset.to));
     }
   });
   return { show, save };
 }
 
-function checkinNotDue(container) {
+// One past re-assessment as a card (v167, as the Weekly Review's past
+// weeks): its date, the region that moved most, and what moved.
+function checkinCard(c) {
+  return `
+    <li class="rv-week">
+      <span class="rv-week-date">${escapeHtml(dotDate(c.date))}</span>
+      ${motifThumb(biggestShift(c.shifts))}
+      <b class="rv-week-title">${escapeHtml(shiftSummary(c.shifts))}</b>
+    </li>`;
+}
+
+// How far the month between re-assessments has run, as a bar; the line above
+// it says the date in words, so the bar is not read out.
+function monthBar(next) {
+  const last = new Date(stateManager.lastCalibrationDate()).getTime();
+  const span = next.getTime() - last;
+  const done = span > 0 ? Math.min(1, Math.max(0, (Date.now() - last) / span)) : 0;
+  return `<span class="ck-month" aria-hidden="true"><i style="width: ${Math.round(done * 100)}%;"></i></span>`;
+}
+
+function checkinNotDue(container, state) {
   const next = stateManager.nextCheckinDate();
   const line = next
     ? tp("The next re-assessment opens on {date}.", {
         date: next.toLocaleDateString(dateLocale(), { day: "numeric", month: "short" })
       })
     : t("Re-assessment needs a baseline — complete the initial assessment first.");
+  const past = (state.checkins || []).slice().reverse();
+  const recent = past.length
+    ? textSection(t("Recent"), `<ul class="rv-weeks">${past.map(checkinCard).join("")}</ul>`, "ck-recent")
+    : "";
   container.innerHTML = `
     <div class="stage-page textpage assess checkin-view">
-      ${pageHead(t("Re-assessment"), [escapeHtml(line), `<a class="pill rv-done-home" href="#/dashboard">${t("Overview")}</a>`])}
+      ${pageHead(t("Re-assessment"), [
+        escapeHtml(line),
+        ...(next ? [monthBar(next)] : []),
+        `<a class="pill rv-done-home" href="#/dashboard">${t("Overview")}</a>`
+      ])}
+      ${recent}
     </div>`;
+}
+
+// The ending (views/ending.js) in place of the page: what moved in each
+// region, the points, and Continue on to Overview.
+function showCheckinEnding(container, aspects, shifts, onContinue) {
+  const page = container.querySelector(".checkin-view");
+  const ending = document.getElementById("rv-ending");
+  ending.innerHTML = endingMarkup({ title: t("Re-assessment"), lines: [shiftSummary(shifts)], xp: CHECKIN_POINTS });
+  [...page.children].forEach(el => el.classList.toggle("d-none", !el.classList.contains("assess-journey")));
+  document.getElementById("checkin-form").classList.add("d-none");
+  ending.classList.remove("d-none");
+  scrollTo({ top: 0, behavior: "instant" });
+  ending.querySelector("#rv-ending-title")?.focus({ preventScroll: true });
+  ending.querySelector(".rv-continue")?.addEventListener("click", onContinue, { once: true });
+  const scope = mountMotion();
+  if (isReduced()) return;
+  playEnding(ending, aspects, scope.signal).catch(err => console.error("Re-assessment motion failed:", err));
 }
 
 export function renderCheckin(containerId, state, onComplete) {
@@ -191,7 +260,7 @@ export function renderCheckin(containerId, state, onComplete) {
   // Opened by hand before one is due: say when it opens, and ask nothing.
   // state.js refuses the submission anyway; this saves answering for nothing.
   if (!stateManager.isCheckinDue()) {
-    checkinNotDue(container);
+    checkinNotDue(container, state);
     return;
   }
 
@@ -212,9 +281,10 @@ export function renderCheckin(containerId, state, onComplete) {
           <span>${t("Picked up where you left off.")}</span>
         </div>
         <form id="checkin-form" novalidate>
-          ${groups.map((group, i) => checkinScreen(group, i, groups.length)).join("")}
+          ${groups.map((group, i) => checkinScreen(group, i, groups.map(([a]) => a))).join("")}
         </form>
         <p id="checkin-error" class="onboarding-error d-none" role="alert"></p>
+        <section class="rv-ending d-none" id="rv-ending" aria-labelledby="rv-ending-title"></section>
       </div>
       ${textSection(t("Notes and sources"), footnoteList(book.notes), "checkin-notes")}
     </div>
@@ -264,7 +334,10 @@ export function renderCheckin(containerId, state, onComplete) {
         citlearn: collectInstrument("citlearn")
       });
       clearDraft(CHECKIN_DRAFT);
-      onComplete(shifts);
+      // Refused (no baseline, or not due): app.js says why. Recorded: the
+      // ending says what moved, and Continue goes on.
+      if (!shifts) onComplete(shifts);
+      else showCheckinEnding(container, groups.map(([a]) => a), shifts, () => onComplete(shifts));
     } catch (err) {
       console.error("Check-in submission failed:", err);
       errorEl.textContent = t("Re-assessment Error: ") + err.message;

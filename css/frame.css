@@ -373,3 +373,33 @@ html[data-reduce-motion] .wordmark a,
 html[data-reduce-motion] .navpill,
 html[data-reduce-motion] .site-menu,
 html[data-reduce-motion] #page { transition: none; }
+
+/* ------------------------------------------------------------- toasts
+   v167, the owner: a short message, in the site's own face and dark, centred
+   over the foot of the page and clear of the phone's bottom bar (app.js
+   showToast moves and fades it). */
+.toast {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 28px;
+  z-index: 1100;
+  width: fit-content;
+  max-width: min(440px, calc(100% - 32px));
+  margin-inline: auto;
+  padding: 12px 20px;
+  border-radius: 16px;
+  background: var(--frame-dark);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+  pointer-events: none;
+}
+.toast-warning { background: var(--color-crimson); }
+@media (max-width: 900px) {
+  .toast { bottom: calc(var(--nav-bar-h, 64px) + env(safe-area-inset-bottom, 0px) + 12px); }
+}

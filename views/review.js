@@ -34,7 +34,9 @@ import {
 } from "../connections.js";
 import { isoWeekKey } from "../season.js";
 import { mountMotion, writeMotionStyle } from "./motion-mount.js";
-import { typedMarkup, typeIn, settleIn, burst, onAbort, SPRITES, isQuietChapter } from "./stage.js";
+import { typedMarkup, typeIn, settleIn, onAbort, SPRITES, isQuietChapter } from "./stage.js";
+import { stepperMarkup } from "./stepper.js";
+import { endingMarkup, playEnding } from "./ending.js";
 import { label } from "./stage-page.js";
 import { chapterOf, dotDate, shiftSummary, motifThumb, biggestShift } from "./news.js";
 import { goalTemplate } from "../goals.js";
@@ -121,14 +123,12 @@ const EASY_FIELDS = {
 };
 
 // The prototype's timings: the title types at this pace; the next region's
-// photograph wipes up, holds, then wipes away; the ending's curtain lifts and
-// each reviewed region bursts a beat after the one before.
+// photograph wipes up, holds, then wipes away (the ending's own timings are in
+// views/ending.js).
 const TYPE_MS_PER_CHAR = 32;
 const WIPE_IN_MS = 560;
 const WIPE_HOLD_MS = 260;
 const WIPE_OUT_MS = 520;
-const ENDING_MS = 700;
-const BURST_STAGGER_MS = 140;
 const PAST_ROWS = 8;
 
 const stepChapter = (i) => chapterOf(STEPS[i].aspect);
@@ -259,25 +259,6 @@ export function nextReviewDate() {
 
 // --- the screens --------------------------------------------------------------
 
-// v166, the owner's plan: the six screens down the side, each with its
-// region's emblem (a second screen in the same region, a dot). The screens
-// already answered are buttons back to themselves; the ones ahead are only
-// shown. A phone shows the emblems in a row (css/weekly.css).
-function stepperMarkup(i) {
-  const items = STEPS.map((step, k) => {
-    const c = stepChapter(k);
-    const repeat = k > 0 && STEPS[k - 1].aspect === step.aspect;
-    const art = repeat
-      ? `<i class="rv-dot" aria-hidden="true"></i>`
-      : `<img src="./assets/emblems/${c.art}.webp" alt="" width="32" height="32" loading="lazy" decoding="async">`;
-    const inner = `${art}<span>${escapeHtml(c.region)}</span>`;
-    if (k < i) return `<li class="is-done"><button type="button" class="rv-jump" data-to="${k}">${inner}</button></li>`;
-    if (k === i) return `<li class="is-now" aria-current="step"><span class="rv-stop">${inner}</span></li>`;
-    return `<li><span class="rv-stop">${inner}</span></li>`;
-  }).join("");
-  return `<ol class="rv-steps">${items}</ol>`;
-}
-
 // The box a pledge is graded from, where that is not the pledge's own field:
 // the savings rate is worked out from the baht box, and the exercise pledges
 // from the painted week, which stands at the first exercise box.
@@ -321,7 +302,7 @@ function stepMarkup(step, i, { box, intro, goals }) {
           <p class="label">(${escapeHtml(chapter.region)})</p>
           <img class="q-emblem" src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async">
           <p class="q-count sr-only">${escapeHtml(tp("Weekly Review · {i} / {n}", { i: i + 1, n: STEPS.length }))}</p>
-          ${stepperMarkup(i)}
+          ${stepperMarkup(STEPS.map(st => st.aspect), i)}
           <span class="rv-progress" aria-hidden="true"><i style="width: ${progress}%;"></i></span>
         </div>
         <div class="q-main">
@@ -450,21 +431,6 @@ function doneMarkup(state) {
     </div>`;
 }
 
-function endingMarkup(record) {
-  const met = record.goals.filter(g => g.met).length;
-  return `
-    <i class="rv-ending-curtain" aria-hidden="true"></i>
-    <div class="burst-layer" aria-hidden="true"></div>
-    <div class="rv-ending-in">
-      <span class="rv-ending-star" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="${SPRITES}#star"/></svg></span>
-      <h2 id="rv-ending-title" tabindex="-1">${t("Reviewed this week.")}</h2>
-      <p>${escapeHtml(shiftSummary(record.shifts))}</p>
-      ${record.goals.length ? `<p>${escapeHtml(tp("{met}/{total} pledges met", { met, total: record.goals.length }))}</p>` : ""}
-      <p class="rv-ending-xp">${escapeHtml(tp("+{xp} points", { xp: record.xp }))}</p>
-      <button type="button" class="rv-continue">${t("Continue")}</button>
-    </div>`;
-}
-
 // --- motion -------------------------------------------------------------------
 
 // The next region's photograph wipes up over the screen, the screen changes
@@ -496,23 +462,6 @@ function wipeTo(overlay, chapter, land, signal) {
     })
     .then(done => done && animate({ duration: WIPE_OUT_MS, ease: easeStar, signal, reduced: "end", update: p => pose(-p) }))
     .finally(clear);
-}
-
-// The ending: a curtain lifts off it, then every reviewed region bursts from
-// the star in turn. The regions are the screens', not the answers'.
-function playEnding(ending, signal) {
-  const curtain = ending.querySelector(".rv-ending-curtain");
-  const layer = ending.querySelector(".burst-layer");
-  const star = ending.querySelector(".rv-ending-star");
-  onAbort(signal, () => writeMotionStyle(curtain, { transform: "" }));
-  writeMotionStyle(curtain, { transform: "scaleY(1)" });
-  const regions = [...new Set(STEPS.map(s => s.aspect))].map(chapterOf).filter(c => c && !isQuietChapter(c));
-  return animate({
-    duration: ENDING_MS, ease: easeStar, signal, reduced: "end",
-    update: (p) => writeMotionStyle(curtain, { transform: p >= 1 ? "" : `scaleY(${(1 - p).toFixed(4)})` })
-  }).then(done => done && Promise.all(regions.map((c, k) => animate({
-    duration: 1, delay: k * BURST_STAGGER_MS, update: () => {}, signal, reduced: "end"
-  }).then(go => go && burst(layer, star, { motifs: [{ motif: c.aspect, hue: c.hue }], signal })))));
 }
 
 // --- the view -----------------------------------------------------------------
@@ -634,7 +583,15 @@ export function renderReview(containerId, state, onComplete) {
 
   const showEnding = (record, onContinue) => {
     const ending = document.getElementById("rv-ending");
-    ending.innerHTML = endingMarkup(record);
+    const met = record.goals.filter(g => g.met).length;
+    ending.innerHTML = endingMarkup({
+      title: t("Reviewed this week."),
+      lines: [
+        shiftSummary(record.shifts),
+        record.goals.length && tp("{met}/{total} pledges met", { met, total: record.goals.length })
+      ],
+      xp: record.xp
+    });
     form.classList.add("d-none");
     hideError();
     ending.classList.remove("d-none");
@@ -643,7 +600,7 @@ export function renderReview(containerId, state, onComplete) {
     ending.querySelector(".rv-continue")?.addEventListener("click", onContinue, { once: true });
     const scope = mountMotion();
     if (isReduced()) return;
-    playEnding(ending, scope.signal).catch(reportMotion);
+    playEnding(ending, STEPS.map(st => st.aspect), scope.signal).catch(reportMotion);
   };
 
   const next = () => {

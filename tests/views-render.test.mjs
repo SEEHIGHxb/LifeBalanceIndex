@@ -25,6 +25,7 @@
 
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import { DEFAULT_STATE } from "../defaults.js";
 import { installDom } from "./dom-stub.mjs";
@@ -129,6 +130,51 @@ test("the check-in asks a coupled user about their relationship and a single use
 
   const coupled = render(() => renderCheckin(MAIN, { ...STATE, profile: { ...STATE.profile, relationshipStatus: "Married" } }, () => {}));
   assert.ok(coupled.includes('name="ras-q0"'), "RAS not asked of a coupled user");
+});
+
+// v167, the owner's plan: the Weekly Review's list of screens, its ending in
+// place of a toast, and a not-due page with the month's bar and the past ones.
+test("v167: the re-assessment's step list, ending, not-due page and toasts", async () => {
+  const { renderCheckin } = await import("../views/assessments.js");
+  const { stateManager } = await import("../state.js");
+  const due = stateManager.isCheckinDue;
+  stateManager.isCheckinDue = () => true;
+  const form = render(() => renderCheckin(MAIN, STATE, () => {}));
+  const screens = form.split('<section class="survey-page assess-panel').slice(1);
+  assert.equal(screens.length, 3);
+  screens.forEach((sec, i) => {
+    assert.equal((sec.match(/<ol class="rv-steps">/g) || []).length, 1, `screen ${i} has one step list`);
+    assert.equal((sec.match(/class="rv-jump" data-to="/g) || []).length, i, `screen ${i}: only earlier screens are buttons`);
+    assert.match(sec, /class="q-count sr-only"/);
+  });
+  assert.match(form, /<section class="rv-ending d-none" id="rv-ending"/);
+
+  stateManager.isCheckinDue = () => false;
+  const last = stateManager.lastCalibrationDate;
+  const next = stateManager.nextCheckinDate;
+  stateManager.lastCalibrationDate = () => new Date(Date.now() - 14 * 864e5).toISOString();
+  stateManager.nextCheckinDate = () => new Date(Date.now() + 14 * 864e5);
+  try {
+    const page = render(() => renderCheckin(MAIN, { ...STATE, checkins: [
+      { date: "2026-08-01T00:00:00.000Z", sums: {}, shifts: { mental: 2 } },
+      { date: "2026-09-01T00:00:00.000Z", sums: {}, shifts: { mental: -3, relationships: 1 } }
+    ] }, () => {}));
+    assert.match(page, /class="ck-month" aria-hidden="true"><i style="width: 50%;">/);
+    const dates = [...page.matchAll(/class="rv-week-date">([^<]*)</g)].map(m => m[1]);
+    assert.deepEqual(dates, ["2026.09.01", "2026.08.01"], "newest first");
+    const none = render(() => renderCheckin(MAIN, { ...STATE, checkins: [] }, () => {}));
+    assert.doesNotMatch(none, /ck-recent/, "nothing to list before the first one");
+  } finally {
+    stateManager.isCheckinDue = due;
+    stateManager.lastCalibrationDate = last;
+    stateManager.nextCheckinDate = next;
+  }
+
+  const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
+  const app = read("app.js");
+  assert.doesNotMatch(app, /Re-assessment complete: \{parts\}/, "the ending says what moved, not a toast");
+  assert.doesNotMatch(app, /popup\.style\./, "the toast's look is the stylesheet's");
+  assert.match(read("css/frame.css"), /\.toast \{[^}]*font-family: var\(--font-sans\)/);
 });
 
 test("the in-depth assessment renders its sections", async () => {

@@ -239,7 +239,6 @@ export const TH = {
   "Data exported.": "ส่งออกข้อมูลแล้ว",
   "Data imported successfully.": "นำเข้าข้อมูลสำเร็จ",
   "Import failed: {msg}": "นำเข้าไม่สำเร็จ: {msg}",
-  "Re-assessment complete: {parts} (+40 points)": "ประเมินซ้ำเสร็จสิ้น: {parts} (+40 คะแนน)",
   "Re-assessment needs a baseline — complete the initial assessment first.": "การประเมินซ้ำต้องมีข้อมูลพื้นฐานก่อน — กรุณาทำแบบประเมินเริ่มต้นให้เสร็จก่อน",
   // Level is the user's age now, so this moment is a birthday, not an
   // achievement. The copy carries no grading and no "you earned this".

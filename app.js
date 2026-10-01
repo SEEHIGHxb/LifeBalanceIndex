@@ -395,12 +395,10 @@ function announceRoute(route) {
   el.textContent = tp("{view} view", { view: label });
 }
 
+// A recorded re-assessment was already told on its own ending (v167,
+// views/ending.js), which said what moved; Continue brings the reader here.
 function handleCheckinComplete(shifts) {
-  if (shifts) {
-    const parts = Object.entries(shifts)
-      .map(([key, v]) => `${t(ASPECT_META[key]?.label || key)} ${v >= 0 ? "+" : ""}${v}`);
-    showToast(tp("Re-assessment complete: {parts} (+40 points)", { parts: parts.join(", ") }));
-  } else {
+  if (!shifts) {
     showToast(t("Re-assessment needs a baseline — complete the initial assessment first."), "warning");
   }
   window.location.hash = "#/dashboard";
@@ -579,19 +577,9 @@ function showToast(text, variant = "success") {
   // and short-lived (finding #12).
   popup.setAttribute("role", "status");
   popup.setAttribute("aria-live", variant === "warning" ? "assertive" : "polite");
-  popup.style.position = "fixed";
-  popup.style.bottom = "80px";
-  popup.style.right = "80px";
-  popup.style.maxWidth = "320px";
-  popup.style.background = variant === "warning" ? "var(--color-crimson)" : "var(--color-navy)";
-  popup.style.color = "#fff";
-  popup.style.padding = "8px 16px";
-  popup.style.borderRadius = "20px";
-  popup.style.fontFamily = "var(--font-mono)";
-  popup.style.fontSize = "var(--text-base)";
-  popup.style.zIndex = "1100";
-  popup.style.pointerEvents = "none";
-  popup.style.boxShadow = "0 4px 10px rgba(31, 45, 68, 0.3)";
+  // The look is css/frame.css's (v167, the owner: the old navy pill in a
+  // typewriter face, from before the redesign).
+  popup.className = variant === "warning" ? "toast toast-warning" : "toast";
 
   document.body.appendChild(popup);
 

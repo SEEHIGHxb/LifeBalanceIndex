@@ -332,6 +332,18 @@
 .rv-done-links { margin: calc(80 * var(--px)) 0 0; }
 .rv-done-cta { margin: 0 0 calc(40 * var(--px)); }
 
+/* v167: how far the month between re-assessments has run. */
+.ck-month {
+  display: block;
+  width: min(100%, 420px);
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.1);
+}
+.ck-month i { display: block; height: 100%; border-radius: inherit; background: var(--frame-dark); }
+.ck-recent .rv-weeks { margin-top: 0; }
+
 /* v166: this week, and the Monday the next review opens. */
 .rv-days {
   display: flex;
@@ -564,16 +576,17 @@
   /* The ticked row already says the count. */
   .review .tally-count { display: none; }
 
-  /* v166: the six screens as a row of emblems over the bar, the names read
-     out but not shown; the big emblem goes. */
-  .review .q-side {
+  /* v166 (the review) and v167 (the re-assessment): the screens as a row of
+     emblems over the bar, the names read out but not shown; the big emblem
+     goes. */
+  :is(.review, .checkin-view) .q-side {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "steps" "bar";
   }
-  .review .q-side .q-emblem { display: none; }
-  .review .rv-steps { grid-area: steps; display: flex; gap: 4px; }
-  .review .rv-steps :is(.rv-jump, .rv-stop) { position: relative; width: 44px; padding: 6px; justify-content: center; }
-  .review .rv-steps span:not(.rv-stop) {
+  :is(.review, .checkin-view) .q-side .q-emblem { display: none; }
+  :is(.review, .checkin-view) .rv-steps { grid-area: steps; display: flex; gap: 4px; }
+  :is(.review, .checkin-view) .rv-steps :is(.rv-jump, .rv-stop) { position: relative; width: 44px; padding: 6px; justify-content: center; }
+  :is(.review, .checkin-view) .rv-steps span:not(.rv-stop) {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -581,7 +594,7 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
-  .review .rv-jump::after {
+  :is(.review, .checkin-view) .rv-jump::after {
     position: absolute;
     right: 0;
     bottom: 0;
@@ -594,8 +607,8 @@
     line-height: 15px;
     text-align: center;
   }
-  .review .rv-steps .is-now .rv-stop { box-shadow: inset 0 0 0 2px var(--frame-ink); }
-  .review .rv-progress { max-width: none; }
+  :is(.review, .checkin-view) .rv-steps .is-now .rv-stop { box-shadow: inset 0 0 0 2px var(--frame-ink); }
+  :is(.review, .checkin-view) .rv-progress { max-width: none; }
   .rv-pledges ul {
     grid-template-columns: none;
     grid-auto-flow: column;

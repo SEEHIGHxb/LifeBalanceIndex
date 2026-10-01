@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `166`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `167`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.97.0] - 2026-10-01 (app version 167)
+
+### Changed
+- Re-assessment, the owner's plan: its three screens are a list down the side as in the Weekly Review, each with its region's emblem, the answered ones ticked and tappable; on a phone, a row of emblems over the bar. Answers stay one to a row.
+- Finishing a re-assessment ends on the Weekly Review's dark screen (the star, what moved in each region, +40 points, Continue) instead of a message on Overview. The old message's translation went with it.
+- Before one is due, the page shows how far the month has run as a bar, and the past re-assessments as cards in a sideways row (the date, the region that moved most, what moved).
+- Messages that pop up (saving, importing, storage warnings) use the site's own face, dark, centred at the foot of the screen and clear of the phone's bottom bar. They used a typewriter face in a navy pill from before the redesign.
+- The step list and the ending are shared modules (views/stepper.js, views/ending.js).
 
 ## [2.96.0] - 2026-10-01 (app version 166)
 

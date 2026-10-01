@@ -680,7 +680,11 @@ window.addEventListener("hashchange", () => {
     closeMenu({ restoreFocus: false });
     document.getElementById("main-view")?.focus({ preventScroll: true });
   }
+  // Every page opens at its top (v166, the owner): the next page kept the
+  // last one's scroll, so the Weekly Review opened at its bottom. Before the
+  // draw, so a page that measures where it is measures from the top.
   if (stateManager.state.onboarded) {
+    window.scrollTo({ top: 0, behavior: "instant" });
     renderActiveTab();
     return;
   }

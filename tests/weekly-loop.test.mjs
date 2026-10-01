@@ -81,7 +81,7 @@ test("a review done for the week lists the past reviews newest first", () => {
   } finally {
     stateManager.isWeeklyReviewDue = isDue;
   }
-  const dates = [...html().matchAll(/class="newsrow-date">([^<]*)</g)].map(m => m[1]);
+  const dates = [...html().matchAll(/class="rv-week-date">([^<]*)</g)].map(m => m[1]);
   assert.deepEqual(dates, ["2026.09.08", "2026.09.01"]);
   assert.match(html(), /id="rv-done-head"/);
   // v144: a week with no pledges shows its points alone, not "0/0 pledges met";
@@ -93,6 +93,62 @@ test("a review done for the week lists the past reviews newest first", () => {
   // v158: each row shows the region that moved most; a steady week the star.
   assert.match(html(), /newsrow-thumb" style="[^"]*"><svg[^>]*><use href="[^"]*#motif-physical"/);
   assert.match(html(), /newsrow-thumb newsrow-star/);
+  // v166: the past reviews are cards in a sideways row, not tall rows, and
+  // no card repeats "Weekly Review".
+  assert.match(html(), /<ul class="rv-weeks">/);
+  assert.doesNotMatch(html(), /class="newslist"|newsrow-kind/);
+});
+
+// v166, the owner's plan for the Weekly Review: the six screens as a list of
+// emblems with the answered ones tappable, each screen's pledges under its
+// boxes, a strip of the week on the done page, and every page at its top.
+test("v166: the review's step list, pledges, week strip, and a route change at the top", () => {
+  stateManager.state.onboarded = true;
+  stateManager.state.baseline = { date: "2020-01-01T00:00:00.000Z" };
+  stateManager.state.reviews = [];
+  const goals = [
+    { id: "g1", templateId: "water", target: 2.5, lastResult: { met: true } },
+    { id: "g2", templateId: "exerciseDays", target: 3 },
+    { id: "g3", templateId: "savings", target: 15 }
+  ];
+  renderReview(MAIN, { ...STATE, goals }, () => {});
+  const out = html();
+  const sections = out.split('<section class="survey-page rv-step').slice(1);
+  assert.equal(sections.length, REVIEW_STEPS.length);
+  sections.forEach((sec, i) => {
+    assert.equal((sec.match(/<ol class="rv-steps">/g) || []).length, 1, `screen ${i} has one step list`);
+    assert.equal((sec.match(/class="rv-jump" data-to="/g) || []).length, i, `screen ${i}: only the screens before it are buttons`);
+    assert.match(sec, /<li class="is-now" aria-current="step">/);
+  });
+  // The second Body screen is a dot, not the emblem again.
+  assert.equal((sections[0].match(/class="rv-dot"/g) || []).length, 1);
+  assert.match(sections[0], /class="q-count sr-only"/, "the count is still read out");
+  // Each pledge on the screen whose answers grade it, and nowhere else.
+  const pledgesOn = (sec) => [...sec.matchAll(/<li class="rv-pledge[^"]*">\s*<i[^>]*>[\s\S]*?<b>([^<]+)<\/b>/g)].map(m => m[1]);
+  assert.deepEqual(sections.map(pledgesOn), [["Savings"], ["Exercise days"], ["Water"], [], [], []]);
+  assert.match(sections[2], /<li class="rv-pledge is-kept">/, "kept last week, starred");
+  assert.match(sections[2], /Average at least 2\.5 L of water per day\./);
+  assert.doesNotMatch(sections[3], /rv-pledges/, "no pledge, no heading");
+  const js = read("views/review.js");
+  assert.match(js, /closest\("\.rv-jump"\)/);
+
+  const isDue = stateManager.isWeeklyReviewDue;
+  stateManager.isWeeklyReviewDue = () => false;
+  try {
+    renderReview(MAIN, { ...STATE, reviews: [{ date: new Date().toISOString(), goals: [], xp: 50, shifts: {} }] }, () => {});
+  } finally {
+    stateManager.isWeeklyReviewDue = isDue;
+  }
+  const strip = html().match(/<ol class="rv-days" aria-hidden="true">([\s\S]*?)<\/ol>/);
+  assert.ok(strip, "the done page shows the week");
+  assert.equal((strip[1].match(/<li/g) || []).length, 8, "Monday to Sunday, then next Monday");
+  assert.equal((strip[1].match(/is-today/g) || []).length, 1);
+  assert.match(strip[1], /class="is-today is-done"><span>[^<]+<\/span><b>\d+<\/b><svg/, "reviewed today: ringed and starred");
+  assert.match(strip[1], /<li class="is-next"><span>[^<]+<\/span><b>\d+<\/b><\/li>$/, "the last day is when the next review opens");
+
+  // A route change starts the next page at its top, before it draws.
+  const app = read("app.js");
+  assert.match(app, /if \(stateManager\.state\.onboarded\) \{\s*window\.scrollTo\(\{ top: 0, behavior: "instant" \}\);\s*renderActiveTab\(\);/);
 });
 
 test("a due re-assessment on the done page is a button, not a bare link", () => {

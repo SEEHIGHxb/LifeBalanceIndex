@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `165`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `166`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.96.0] - 2026-10-01 (app version 166)
+
+### Changed
+- Weekly Review, the owner's plan: the screens are a list down the side, each with its region's emblem, the open one in bold and the answered ones ticked; tapping an answered one goes back to it. On a phone they are a row of emblems over the progress bar.
+- Each review screen shows the pledges its answers will grade, starred if kept last week. No new text: the pledges' own titles and descriptions.
+- The done page shows this week, Monday to Sunday, with today ringed and the day reviewed starred, and the Monday the next review opens. The past reviews are cards in a sideways row instead of tall rows, without "Weekly Review" on each.
+- Each review screen opens at the top of the page; it used to scroll to its own top, under the header.
+
+### Fixed
+- A page opened from the menu or the bottom bar kept the last page's scroll, so the Weekly Review could open at its bottom. Every page now opens at its top.
 
 ## [2.95.1] - 2026-10-01 (app version 165)
 

@@ -332,6 +332,62 @@
 .rv-done-links { margin: calc(80 * var(--px)) 0 0; }
 .rv-done-cta { margin: 0 0 calc(40 * var(--px)); }
 
+/* v166: this week, and the Monday the next review opens. */
+.rv-days {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 calc(24 * var(--px));
+  padding: 0;
+  list-style: none;
+}
+.rv-days li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  flex: 0 1 52px;
+  min-width: 0;
+  padding: 8px 0;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+.rv-days b { font-size: 18px; }
+.rv-days .is-past { opacity: 0.45; }
+.rv-days .is-today { box-shadow: inset 0 0 0 2px var(--frame-ink); }
+.rv-days .is-done { opacity: 1; }
+.rv-days svg { position: absolute; top: -6px; right: -2px; width: 16px; height: 16px; fill: #c99a3e; }
+.rv-days .is-next { margin-left: 14px; background: var(--frame-dark); color: #ffffff; }
+
+/* v166: the past reviews as cards in a sideways row. */
+.rv-weeks {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(78%, 280px);
+  gap: 14px;
+  margin: calc(40 * var(--px)) 0 0;
+  padding: 0 0 6px;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.rv-weeks::-webkit-scrollbar { display: none; }
+.rv-week {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--frame-card);
+  scroll-snap-align: start;
+}
+.rv-week .newsrow-thumb { width: 48px; border-radius: 50%; }
+.rv-week-date { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #444444; }
+.rv-week-title { font-size: 16px; line-height: 1.35; }
+.rv-week-sub { font-size: 13.5px; line-height: 1.5; color: #444444; }
+
 /* v158, the owner's cut list. A monthly habit shows only last week's answer
    until "Change" opens the list (views/activity-fields.js). Only while
    something is chosen: with nothing chosen, every answer shows. */
@@ -363,6 +419,74 @@
 /* The phone's progress bar under the count; the desktop has room for both
    the region's name and the count. */
 .rv-progress { display: none; }
+
+/* v166, the owner's plan: the six screens down the side, the one open in
+   bold, the ones answered ticked and tappable. */
+.rv-steps {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rv-steps :is(.rv-jump, .rv-stop) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 4px 10px 4px 4px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--journey-muted);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.3;
+  text-align: left;
+}
+.rv-steps img,
+.rv-dot {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 22%;
+}
+.rv-dot { display: grid; place-items: center; }
+.rv-dot::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.rv-steps li:not(.is-done, .is-now) img { opacity: 0.45; }
+.rv-steps .is-now .rv-stop { background: rgba(255, 255, 255, 0.6); color: var(--frame-ink); font-weight: 700; }
+.rv-jump { color: var(--frame-ink); cursor: pointer; }
+.rv-jump::after { content: "\2713"; margin-left: auto; font-weight: 700; }
+.rv-jump:hover { background: rgba(0, 0, 0, 0.05); }
+.rv-jump:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
+
+/* v166: the pledges a screen's answers will grade, under its boxes. */
+.rv-pledges { margin-top: 32px; }
+.rv-pledges ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 12px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.rv-pledge {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 2px 12px;
+  align-content: start;
+  padding: 14px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
+}
+.rv-pledge-star { grid-row: span 2; width: 26px; height: 26px; }
+.rv-pledge-star svg { display: block; width: 100%; height: 100%; fill: none; stroke: var(--journey-muted); stroke-width: 1.6; }
+.rv-pledge.is-kept .rv-pledge-star svg { fill: #c99a3e; stroke: none; }
+.rv-pledge b { font-size: 15px; }
+.rv-pledge span { font-size: 14px; line-height: 1.5; color: var(--journey-muted); }
 
 /* ================================================================ phones */
 @container (max-width: 900px) {
@@ -440,6 +564,52 @@
   /* The ticked row already says the count. */
   .review .tally-count { display: none; }
 
+  /* v166: the six screens as a row of emblems over the bar, the names read
+     out but not shown; the big emblem goes. */
+  .review .q-side {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "steps" "bar";
+  }
+  .review .q-side .q-emblem { display: none; }
+  .review .rv-steps { grid-area: steps; display: flex; gap: 4px; }
+  .review .rv-steps :is(.rv-jump, .rv-stop) { position: relative; width: 44px; padding: 6px; justify-content: center; }
+  .review .rv-steps span:not(.rv-stop) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .review .rv-jump::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--frame-dark);
+    color: #ffffff;
+    font-size: 10px;
+    line-height: 15px;
+    text-align: center;
+  }
+  .review .rv-steps .is-now .rv-stop { box-shadow: inset 0 0 0 2px var(--frame-ink); }
+  .review .rv-progress { max-width: none; }
+  .rv-pledges ul {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 82%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .rv-pledges ul::-webkit-scrollbar { display: none; }
+  .rv-pledge { scroll-snap-align: start; }
+  .rv-days { gap: 4px; }
+  .rv-days .is-next { margin-left: 8px; }
+  .rv-weeks { grid-auto-columns: 78%; }
+
   /* Done: a headline on one line, and no Overview button, which the bottom
      bar already is. */
   .rv-done-head { font-size: 36px; }
@@ -450,7 +620,7 @@
 /* ================================================================= Thai
    No tracking for Thai, and the wordmark face has no Thai, so those headings
    fall back to Sarabun at a heavier weight. */
-html[lang="th"] .rv-continue { letter-spacing: normal; }
+html[lang="th"] :is(.rv-continue, .rv-week-date) { letter-spacing: normal; }
 html[lang="th"] .rv-ending h2,
 html[lang="th"] .rv-done-head,
 html[lang="th"] .rv-wipe-window span { font-weight: 700; }

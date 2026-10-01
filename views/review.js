@@ -26,7 +26,7 @@ import { stateManager } from "../state.js";
 import { validateProfile, FIELD_CONSTRAINTS } from "../validation.js";
 import { t, tp, dateLocale } from "../i18n.js";
 import { numberField, markField } from "./instrument-forms.js";
-import { escapeHtml, scrollIntoViewGently } from "./helpers.js";
+import { escapeHtml } from "./helpers.js";
 import { savingsAmountFrom, savingsRateFrom } from "../scoring.js";
 import {
   CONNECTION_SOURCES, SOURCE_NAMES, readConnection, readConnectionPrefs,
@@ -36,7 +36,8 @@ import { isoWeekKey } from "../season.js";
 import { mountMotion, writeMotionStyle } from "./motion-mount.js";
 import { typedMarkup, typeIn, settleIn, burst, onAbort, SPRITES, isQuietChapter } from "./stage.js";
 import { label } from "./stage-page.js";
-import { chapterOf, dotDate, shiftSummary, motifThumb, biggestShift, newsRow } from "./news.js";
+import { chapterOf, dotDate, shiftSummary, motifThumb, biggestShift } from "./news.js";
+import { goalTemplate } from "../goals.js";
 import { animate, easeStar, isReduced } from "../motion.js";
 import { carriedStep, isCarrying } from "./lang-carry.js";
 import { applyDraft, saveDraft, clearDraft, readDraft } from "../draft.js";
@@ -258,7 +259,52 @@ export function nextReviewDate() {
 
 // --- the screens --------------------------------------------------------------
 
-function stepMarkup(step, i, box, intro) {
+// v166, the owner's plan: the six screens down the side, each with its
+// region's emblem (a second screen in the same region, a dot). The screens
+// already answered are buttons back to themselves; the ones ahead are only
+// shown. A phone shows the emblems in a row (css/weekly.css).
+function stepperMarkup(i) {
+  const items = STEPS.map((step, k) => {
+    const c = stepChapter(k);
+    const repeat = k > 0 && STEPS[k - 1].aspect === step.aspect;
+    const art = repeat
+      ? `<i class="rv-dot" aria-hidden="true"></i>`
+      : `<img src="./assets/emblems/${c.art}.webp" alt="" width="32" height="32" loading="lazy" decoding="async">`;
+    const inner = `${art}<span>${escapeHtml(c.region)}</span>`;
+    if (k < i) return `<li class="is-done"><button type="button" class="rv-jump" data-to="${k}">${inner}</button></li>`;
+    if (k === i) return `<li class="is-now" aria-current="step"><span class="rv-stop">${inner}</span></li>`;
+    return `<li><span class="rv-stop">${inner}</span></li>`;
+  }).join("");
+  return `<ol class="rv-steps">${items}</ol>`;
+}
+
+// The box a pledge is graded from, where that is not the pledge's own field:
+// the savings rate is worked out from the baht box, and the exercise pledges
+// from the painted week, which stands at the first exercise box.
+const PLEDGE_BOX = { savingsRate: "monthlySavings", "@exerciseDays": "weeklyVigorousDays", "@metMinutes": "weeklyVigorousDays" };
+
+// v166: the pledges this screen's answers will grade, as on Overview, each
+// starred if it was kept last week. No pledge here, nothing shown.
+function pledgesMarkup(step, goals) {
+  const cards = (goals || []).flatMap(goal => {
+    const tmpl = goalTemplate(goal.templateId);
+    if (!tmpl || !step.fields.includes(PLEDGE_BOX[tmpl.field] ?? tmpl.field)) return [];
+    const kept = goal.lastResult?.met === true;
+    const star = kept
+      ? `<svg viewBox="0 0 100 100"><use href="${SPRITES}#star"/></svg>`
+      : `<svg viewBox="0 0 24 24"><use href="${SPRITES}#star-line"/></svg>`;
+    return [`
+      <li class="rv-pledge${kept ? " is-kept" : ""}">
+        <i class="rv-pledge-star" aria-hidden="true">${star}</i>
+        <b>${escapeHtml(t(tmpl.title))}</b>
+        <span>${tp(tmpl.desc, { target: escapeHtml(goal.target ?? tmpl.def) })}</span>
+      </li>`];
+  });
+  if (!cards.length) return "";
+  return `<div class="rv-pledges"><p class="label">${t("Your pledges")}</p><ul>${cards.join("")}</ul></div>`;
+}
+
+function stepMarkup(step, i, { box, intro, goals }) {
   const chapter = stepChapter(i);
   const last = i === STEPS.length - 1;
   const title = step.title ? t(step.title) : tp("How was {region} this week?", { region: chapter.region });
@@ -274,13 +320,15 @@ function stepMarkup(step, i, box, intro) {
         <div class="q-side">
           <p class="label">(${escapeHtml(chapter.region)})</p>
           <img class="q-emblem" src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async">
-          <p class="q-count">${escapeHtml(tp("Weekly Review · {i} / {n}", { i: i + 1, n: STEPS.length }))}</p>
+          <p class="q-count sr-only">${escapeHtml(tp("Weekly Review · {i} / {n}", { i: i + 1, n: STEPS.length }))}</p>
+          ${stepperMarkup(i)}
           <span class="rv-progress" aria-hidden="true"><i style="width: ${progress}%;"></i></span>
         </div>
         <div class="q-main">
           <h3 class="q-title" tabindex="-1">${typedMarkup(title)}</h3>
           ${i === 0 ? intro : ""}
           <div class="rv-fields">${step.fields.map(box).join("")}</div>
+          ${pledgesMarkup(step, goals)}
           <div class="onb-nav">
             ${i > 0 ? `<button type="button" class="btn btn-onb-prev rv-back">${t("Back")}</button>` : "<span></span>"}
             <div class="onb-nav-right">
@@ -308,7 +356,7 @@ function formMarkup(state) {
         <span>${t("Picked up where you left off.")}</span>
       </div>
       <form id="weekly-review-form" novalidate>
-        ${STEPS.map((step, i) => stepMarkup(step, i, box, intro)).join("")}
+        ${STEPS.map((step, i) => stepMarkup(step, i, { box, intro, goals: state.goals })).join("")}
       </form>
       <p id="review-error" class="onboarding-error d-none" role="alert"></p>
       <section class="rv-ending d-none" id="rv-ending" aria-labelledby="rv-ending-title"></section>
@@ -324,16 +372,53 @@ export function pledgesAndPoints(r) {
   return `${tp("{met}/{total} pledges met", { met: r.goals.filter(g => g.met).length, total: r.goals.length })} · ${points}`;
 }
 
-// The review is done for the week: the past reviews as a dated list, each
-// with the region that moved most (v158, as Your year's Recent).
+// v166, the owner's plan: this week Monday to Sunday and then the Monday the
+// next review opens. The days gone are faint, today is ringed, the day of the
+// latest review this week is starred. The line under it says the date in
+// words, so the strip is not read out.
+function weekStrip(reviews, now = new Date()) {
+  const day = (k) => new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7) + k);
+  const today = day((now.getDay() + 6) % 7).getTime();
+  const last = reviews.length ? new Date(reviews.at(-1).date) : null;
+  const doneDay = last && !Number.isNaN(last.getTime())
+    ? new Date(last.getFullYear(), last.getMonth(), last.getDate()).getTime()
+    : null;
+  const letter = new Intl.DateTimeFormat(dateLocale(), { weekday: "narrow" });
+  const cells = Array.from({ length: 8 }, (_, k) => {
+    const d = day(k);
+    const at = d.getTime();
+    const cls = [
+      at < today && "is-past",
+      at === today && "is-today",
+      at === doneDay && k < 7 && "is-done",
+      k === 7 && "is-next"
+    ].filter(Boolean).join(" ");
+    const star = at === doneDay && k < 7
+      ? `<svg viewBox="0 0 100 100"><use href="${SPRITES}#star"/></svg>`
+      : "";
+    return `<li${cls ? ` class="${cls}"` : ""}><span>${escapeHtml(letter.format(d))}</span><b>${d.getDate()}</b>${star}</li>`;
+  }).join("");
+  return `<ol class="rv-days" aria-hidden="true">${cells}</ol>`;
+}
+
+// One past review as a card in a sideways row (v166, where tall rows filled
+// more than a screen): its date, the region that moved most, the shifts, and
+// the pledges met and points.
+function weekCard(r) {
+  return `
+    <li class="rv-week">
+      <span class="rv-week-date">${escapeHtml(dotDate(r.date))}</span>
+      ${motifThumb(biggestShift(r.shifts))}
+      <b class="rv-week-title">${escapeHtml(shiftSummary(r.shifts))}</b>
+      <span class="rv-week-sub">${escapeHtml(pledgesAndPoints(r))}</span>
+    </li>`;
+}
+
+// The review is done for the week: the week so far, and the past reviews
+// newest first, each with the region that moved most (v158).
 function doneMarkup(state) {
-  const rows = (state.reviews || []).slice(-PAST_ROWS).reverse().map(r => newsRow({
-    date: dotDate(r.date),
-    kind: t("Weekly Review"),
-    thumb: motifThumb(biggestShift(r.shifts)),
-    title: shiftSummary(r.shifts),
-    sub: pledgesAndPoints(r)
-  })).join("");
+  const reviews = state.reviews || [];
+  const rows = reviews.slice(-PAST_ROWS).reverse().map(weekCard).join("");
   const checkin = stateManager.isCheckinDue() ? `
     <p class="rv-done-note">${t("Your monthly re-assessment is due.")}</p>
     <p class="rv-done-cta"><a class="pill" href="#/checkin">${t("Start Re-assessment")}</a></p>` : "";
@@ -354,9 +439,10 @@ function doneMarkup(state) {
           <div class="news-side">${label(first ? t("Weekly Review") : t("Past Reviews"))}</div>
           <div>
             <h2 class="rv-done-head" id="rv-done-head" tabindex="-1">${head}</h2>
+            ${weekStrip(reviews)}
             ${note}
             ${checkin}
-            ${rows ? `<ul class="newslist">${rows}</ul>` : ""}
+            ${rows ? `<ul class="rv-weeks">${rows}</ul>` : ""}
             <p class="rv-done-links"><a class="pill" href="#/dashboard">${t("Overview")}</a></p>
           </div>
         </div>
@@ -445,6 +531,10 @@ export function renderReview(containerId, state, onComplete) {
   const errorEl = document.getElementById("review-error");
   const page = (i) => document.getElementById(`rv-step-${i}`);
   const reportMotion = (err) => console.error("Review motion failed:", err);
+  // Each screen opens at the top of the page, under the header (v166: the
+  // review scrolled itself to the top of its box, which the header covered,
+  // and the list of screens sits there now).
+  const toTop = () => scrollTo({ top: 0, behavior: isReduced() ? "instant" : "smooth" });
   let current = 0;
   let busy = false;
 
@@ -487,7 +577,7 @@ export function renderReview(containerId, state, onComplete) {
     // writes nothing until a box holds something, and every box is prefilled.
     save();
     STEPS.forEach((_, k) => page(k).classList.toggle("d-none", k !== i));
-    scrollIntoViewGently(container, { block: "start" });
+    toTop();
     page(i).querySelector(".q-title")?.focus({ preventScroll: true });
     const live = signal || mountMotion().signal;
     if (!forward || isReduced() || isQuietChapter(stepChapter(i))) return;
@@ -548,7 +638,7 @@ export function renderReview(containerId, state, onComplete) {
     form.classList.add("d-none");
     hideError();
     ending.classList.remove("d-none");
-    scrollIntoViewGently(container, { block: "start" });
+    toTop();
     ending.querySelector("#rv-ending-title")?.focus({ preventScroll: true });
     ending.querySelector(".rv-continue")?.addEventListener("click", onContinue, { once: true });
     const scope = mountMotion();
@@ -564,11 +654,17 @@ export function renderReview(containerId, state, onComplete) {
 
   form.addEventListener("click", (e) => {
     if (busy) return;
+    const jump = e.target.closest(".rv-jump");
     if (e.target.closest(".rv-next")) {
       next();
     } else if (e.target.closest(".rv-back")) {
       hideError();
       land(current - 1, { forward: false });
+    } else if (jump) {
+      // Only screens already answered are buttons, so going back to one needs
+      // no check.
+      hideError();
+      land(Number(jump.dataset.to), { forward: false });
     }
   });
 

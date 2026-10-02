@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `171`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `172`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.101.0] - 2026-10-02 · v172
+
+### Changed
+- Your constellation is the code only (the owner: with 32 characters already, 16 type names were redundant and framed you as less of one). Overview shows the code large, "1 of 65,536 possible constellations" and note 3, now one line on how the code is read; the share card draws the code alone. The type names, their lines and their Thai are gone (`constellation.js`, `views/dashboard.js`, `story-card.js`, `th.js`).
+- Overview's top keeps to the star, the Balance Index and the constellation: the "Strongest in … / … is asking for more" headline and its region chips are gone, to keep the top minimal (`views/dashboard.js`, `css/home.css`).
+- Where to start on a laptop is three cards side by side with nothing to scroll; a phone keeps the sideways rail (`css/home.css`).
 
 ## [2.100.0] - 2026-10-02 · v171
 

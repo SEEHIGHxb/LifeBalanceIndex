@@ -10,8 +10,8 @@
 // Top to bottom:
 //   notice      the duty-of-care notice, only past the screening cutoff; still
 //   top         your star beside the Balance Index, the view switch and share
-//               under the star, your strongest region and the one asking for
-//               more, your constellation (v171)
+//               under the star, your constellation (v171; v172 dropped the
+//               strongest and weakest headline)
 //   effort      what you have done: regions explored, questions answered,
 //               weekly reviews, pledges kept
 //   aspects     one row per region: score against the average, your
@@ -33,7 +33,7 @@ import { getTopSuggestions, getMentalHealthNotice } from "../suggestions.js";
 import { characterFor } from "../characters.js";
 import { constellationFor } from "../constellation.js";
 import {
-  balanceIndex, weakestAspect, gradeAllAspects, isBottomGrade, relativeToPopulation
+  balanceIndex, weakestAspect, gradeAllAspects, isBottomGrade
 } from "../grades.js";
 import { goalTemplate } from "../goals.js";
 import { openShareSheet } from "./share.js";
@@ -133,7 +133,6 @@ export function readHome(state) {
   const p = state.profile;
   const benchmarks = getAllBenchmarks(state);
   const index = balanceIndex(state.aspects);
-  const rel = (k) => relativeToPopulation(state.aspects[k], AVERAGE_ASPECT_SCORES[k]);
   const estimated = estimatedAspects(state);
   return {
     state,
@@ -146,8 +145,6 @@ export function readHome(state) {
     grades: gradeAllAspects(benchmarks, state.aspects),
     index,
     weakest: weakestAspect(state.aspects),
-    // Measured the same way as the weakest: against the population average.
-    strongest: ASPECT_KEYS.reduce((a, b) => (rel(b) > rel(a) ? b : a)),
     // Scored from default answers so far: marked † and explained in the notes.
     estimated,
     effort: effortCounts(state, estimated),
@@ -172,43 +169,30 @@ function noticeSection(h) {
 // words stay as its accessible name (css/home.css).
 const SHARE_ICON = `<svg class="share-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.4M8.3 13.2l7.4 4.4"/></g></svg>`;
 
-// The two regions the headline names, as chips that open their pages (v164:
-// on a laptop they fill the room beside the star; a phone hides them).
-function regionChips(keys) {
-  const chips = [...new Set(keys)].map(chapterOf).filter(Boolean).map(c => `
-    <a class="region-chip" href="#/aspect/${c.aspect}" style="--hue: ${c.hue}; --wash: ${c.wash};">
-      <img src="./assets/emblems/${c.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async"><span>${escapeHtml(c.region)}</span>
-    </a>`).join("");
-  return chips ? `<p class="home-regions">${chips}</p>` : "";
-}
-
-// Your constellation (v171, the owner: "code + 16 types", on Overview and the
-// card): the type and its code, its line, and how many there could be, never
-// how rare it is. How it is worked out is note 3. Short of a character in
-// every region it says how many regions are left.
+// Your constellation (v171; the code only since v172, the owner): its code
+// and how many there could be, never how rare it is. How it is worked out is
+// note 3. Short of a character in every region it says how many are left.
 export function constellationBlock(c) {
   if (!c) return "";
   const title = `<p class="home-type-label">${escapeHtml(t("Your constellation"))}${footnoteRef("type", "3")}</p>`;
   if (!c.complete) {
-    return `<div class="home-type">${title}<p class="home-type-line">${escapeHtml(tp("Your constellation appears once all eight regions have a character. {n} to go.", { n: c.left }))}</p></div>`;
+    return `<div class="home-type">${title}<p class="home-type-count">${escapeHtml(tp("Your constellation appears once all eight regions have a character. {n} to go.", { n: c.left }))}</p></div>`;
   }
   return `
     <div class="home-type">
       ${title}
-      <p class="home-type-name"><b>${escapeHtml(c.name)}</b> <span class="home-type-code">${escapeHtml(c.code)}</span></p>
-      <p class="home-type-line">${escapeHtml(c.line)} <span class="home-type-count">${escapeHtml(t("1 of 65,536 possible constellations"))}</span></p>
+      <p class="home-type-code">${escapeHtml(c.code)}</p>
+      <p class="home-type-count">${escapeHtml(t("1 of 65,536 possible constellations"))}</p>
     </div>`;
 }
 
-// Your star beside what it adds up to: the Balance Index, then where you are
-// strongest and what asks for more. Under the star, the view switch and
-// share (v157). How the index is worked out is note 1 (v141, the owner: a
+// Your star beside what it adds up to: the Balance Index, then your
+// constellation (v172, the owner: the headline and its region chips left, to
+// keep the top minimal). Under the star, the view switch and share (v157). How the index is worked out is note 1 (v141, the owner: a
 // first-time reader gets the number and the plain reading, the method is one
 // tap away). The star is a link to its own page (views/star-page.js), which
 // it zooms into.
 function topSection(h) {
-  const strong = chapterOf(h.strongest)?.region || "";
-  const weak = chapterOf(h.weakest?.aspect)?.region || "";
   return `
     <section class="panel home-top">
       <div class="wrap home-top-grid">
@@ -231,9 +215,7 @@ function topSection(h) {
             </div>
             <p class="balance-index-title">${t("Balance Index")}${footnoteRef("index", "1")}</p>
           </div>
-          <p class="home-headline">${escapeHtml(tp("Strongest in {strong}.", { strong }))} ${escapeHtml(tp("{weak} is asking for more.", { weak }))}</p>
           ${constellationBlock(h.constellation)}
-          ${regionChips([h.strongest, h.weakest?.aspect])}
         </div>
       </div>
     </section>`;
@@ -334,7 +316,7 @@ function notesSection(h) {
     { id: "average", mark: "2", body: `<p>${t("Each average is the score of a reference person built from published population statistics and scored the same way as you. Where no statistic exists, a reasonable default stands in.")}</p>${sources}` }
   ];
   if (h.constellation) {
-    notes.push({ id: "type", mark: "3", body: `<p>${t("Your code has one letter per region, from your character there. Your type comes from the answers behind the characters, in two groups: outside, what you do or have (earning, moving, circle, finishing, growing, giving, green habits, plastic, safety net and skills), and inside, how it feels (money control, rest, mood, pressure, bonds and the urge to help). The share of each group you meet picks one of 16 types. Made up for fun, not a professional assessment.")}</p>` });
+    notes.push({ id: "type", mark: "3", body: `<p>${t("One letter per region, from your character there, in Overview's order. Made up for fun, not a professional assessment.")}</p>` });
   }
   if (h.estimated.length) {
     notes.push({

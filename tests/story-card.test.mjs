@@ -337,14 +337,13 @@ test("one draw's canvas state never carries into the next (the sheet reuses its 
   assert.deepEqual(strokes(reused), strokes(fresh), "a second draw on the same context came out different");
 });
 
-// The owner, v171: the card carries the type and its code, never the answers.
+// The owner, v171-v172: the card carries the code only, never the answers.
 test("the card draws your constellation inside the safe band, and only when complete", () => {
-  const constellation = { complete: true, name: "Lighthouse", code: "TGPE-AWRC", line: "Strong outside, steady inside.", outside: 4, inside: 3 };
+  const constellation = { complete: true, code: "TGPE-AWRC", left: 0 };
   const ctx = draw({ detail: "full" }, { constellation });
-  assert.ok(ctx.texts.includes("Lighthouse · TGPE-AWRC"));
-  assert.ok(!ctx.texts.some(s => s.includes("Strong outside")), "the line stays off the card");
+  assert.ok(ctx.texts.includes("TGPE-AWRC"));
   assert.deepEqual(ctx.points.filter(p => p.y < SAFE_TOP || p.y > SAFE_LOW), []);
   const partial = draw({ detail: "full" }, { constellation: { complete: false, code: null, left: 3 } });
-  assert.ok(!partial.texts.some(s => s.includes("·")), "no constellation before all eight regions");
-  assert.equal(storyCardData({ constellation: { complete: true, name: 5, code: "X" } }).constellation, null);
+  assert.ok(!partial.texts.some(s => /^[A-Z]{4}-[A-Z]{4}$/.test(s)), "no constellation before all eight regions");
+  assert.equal(storyCardData({ constellation: { complete: true, code: 5 } }).constellation, null);
 });

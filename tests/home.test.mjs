@@ -84,9 +84,8 @@ test("v164: Overview's chips, rail and pledge cards, on a static page", async ()
     { id: "b", templateId: "water", target: 2 }
   ];
   const html = render({ ...STATE, goals });
-  const chips = [...html.matchAll(/class="region-chip" href="#\/aspect\/(\w+)"/g)].map(m => m[1]);
-  assert.ok(chips.length >= 1 && chips.length <= 2, `chips: ${chips}`);
-  assert.equal(new Set(chips).size, chips.length, "a region is never chipped twice");
+  // v172 (the owner): the region chips left with the headline.
+  assert.doesNotMatch(html, /region-chip|home-regions/);
   assert.match(html, /<ul class="start-rail">/);
   assert.doesNotMatch(html, /class="newslist"/);
   // The whole tip is in the card, not a one-line excerpt.
@@ -104,14 +103,18 @@ test("v164: Overview's chips, rail and pledge cards, on a static page", async ()
   assert.match(src, /onRouteEnd\(\(\) => ctl\.abort\(\)\)/);
 });
 
-test("the top names the Balance Index for readers, and the headline names real regions", () => {
+test("the top names the Balance Index for readers, and keeps no headline (v172)", async () => {
   const html = render(STATE);
   assert.match(html, /<h2 class="sr-only">Your star — Balance Index \d+<\/h2>/);
-  const head = html.match(/class="home-headline">(Strongest in [^<]+)</);
-  assert.ok(head, "the headline is missing");
-  assert.ok(CHAPTERS.some(c => head[1].includes(c.region)), `no region named in "${head[1]}"`);
-  assert.match(head[1], /is asking for more\./);
+  // The owner, v172: the top stays minimal, the star, the index, the constellation.
+  assert.doesNotMatch(html, /home-headline|Strongest in|is asking for more/);
   assert.match(html, /<a class="star-hit" href="#\/star" aria-label="Open your star">/);
+  // On a laptop Where to start is three cards side by side; only a phone scrolls.
+  const { readFile } = await import("node:fs/promises");
+  const css = await readFile(new URL("../css/home.css", import.meta.url), "utf8");
+  const base = css.match(/\n\.start-rail \{[^}]*\}/)[0];
+  assert.match(base, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
+  assert.doesNotMatch(base, /overflow-x/);
 });
 
 test("every aspect is one row that links to its aspect and ticks its average", () => {
@@ -282,14 +285,15 @@ test("your effort counts every pledge kept at every review", () => {
 
 // --- your constellation (v171) --------------------------------------------------
 
-test("Overview shows your constellation's type and code once every region has a character", () => {
+test("Overview shows your constellation's code, and only the code, once every region has a character", () => {
   const full = {
     ...STATE,
     profile: { ...STATE.profile, sleepHours: 8, weeklyLearningHours: 3, singleUsePlastics: 2 },
     baseline: { ...STATE.baseline, citacc: 12, citlearn: 12, ptm: 14, geb: 14 }
   };
   const html = render(full);
-  assert.match(html, /class="home-type-name"><b>[^<]+<\/b> <span class="home-type-code">[A-Z]{4}-[A-Z]{4}<\/span>/);
+  assert.match(html, /<p class="home-type-code">[A-Z]{4}-[A-Z]{4}<\/p>/);
+  assert.doesNotMatch(html, /home-type-name|home-type-line/);
   assert.ok(html.includes("1 of 65,536 possible constellations"), "says how many there could be");
   assert.ok(!/rare/i.test(html), "claims no rarity");
   assert.ok(html.includes('id="fn-type"'), "explains how it is worked out in a note");

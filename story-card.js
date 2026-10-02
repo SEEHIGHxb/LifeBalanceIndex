@@ -477,20 +477,19 @@ export function drawStoryCard(ctx, data, opts = {}) {
   ctx.fillStyle = theme.ink;
   ctx.fillText(String(data.index ?? ""), mid, LAYOUT.indexValue);
 
-  // The type and its code only, never the answers behind them (the owner,
-  // v171: "code + 16 types" on the card).
+  // The code only, never the answers behind it (the owner, v171-v172).
   if (data.constellation) {
     ctx.font = font(700, 36, SERIF);
     ctx.fillStyle = theme.accent;
-    ctx.fillText(fitText(ctx, `${data.constellation.name} · ${data.constellation.code}`, maxWidth), mid, LAYOUT.type);
+    ctx.fillText(fitText(ctx, data.constellation.code, maxWidth), mid, LAYOUT.type);
   }
 }
 
-// The type's name and code as plain strings, or none: a card short of a
-// character in any region has no constellation.
+// The code as a plain string, or none: a card short of a character in any
+// region has no constellation.
 function cardConstellation(c) {
-  if (!c || !c.complete || typeof c.name !== "string" || typeof c.code !== "string") return null;
-  return { name: c.name, code: c.code };
+  if (!c || !c.complete || typeof c.code !== "string") return null;
+  return { code: c.code };
 }
 
 // Each region's name and character, as plain strings, or none at all.

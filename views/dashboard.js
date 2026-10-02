@@ -431,8 +431,11 @@ function mountStar(root, scope, from) {
   const mark = root.querySelector(".home-top .home-star-mark");
   const hit = root.querySelector(".home-top .star-hit");
   if (!mark || !hit) return;
-  scope.listen(hit, "click", () => markZoom(mark));
-  zoomFrom(mark, from, scope);
+  // The figure is what both ends measure, not the ring round it (v180), so
+  // the star leaves and lands at its own size.
+  const figure = mark.querySelector("svg.shape") ?? mark;
+  scope.listen(hit, "click", () => markZoom(figure));
+  zoomFrom(mark, from, scope, [], figure);
 }
 
 // The wall's columns drift with the scroll, alternate ones up and down. Tied

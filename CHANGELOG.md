@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `179`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `180`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.106.0] - 2026-10-03 · v180
+
+### Changed
+- The dial's ring moves with your star on the way to Your star and back (the owner: the static ring was "really off"; picked from four prototypes).
+- Star: the ring flies with the star tipped over in orbit round it, like the ring of a celestial globe, and swings level as the star lands. Going back it tips up again and lands level on Home's ring.
+- Radar: as the grid grows, a beam sweeps round once and leaves the ring behind it; the symbols pop on, then the marker. Going back the beam erases it, and a quick sweep draws it again on Home.
+- Asterism: while the line joins your stars, the ring's ticks come on as stars twinkling round it, then cool into ticks as the sky settles. Going back they spark and go out.
+
+### Fixed
+- Since v179 the star flew from Home and landed back about a quarter too big (Home measured the whole dial, the page only the star). Both ends measure the star now.
 
 ## [2.105.0] - 2026-10-02 · v179
 

@@ -135,6 +135,7 @@ const motionParts = (container) => ({
   streaks: [...container.querySelectorAll(".sp-streak")],
   rings: [...container.querySelectorAll(".sp-ring")],
   star: container.querySelector(".sp-mark svg.shape"),
+  ring: container.querySelector(".sp-mark .dial-ring"),
   labels: [...container.querySelectorAll(".sp-label-in")],
   fades: [...container.querySelectorAll(".sp-fade")]
 });

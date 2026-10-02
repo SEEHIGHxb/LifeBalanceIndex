@@ -28,6 +28,7 @@
 import { animate, easeStar, linear } from "../motion.js";
 import { writeMotionStyle } from "./motion-mount.js";
 import { onAbort } from "./stage.js";
+import { ringParts, restRing, paintRingPose, orbitPose, orbitIn, orbitOut } from "./dial-zoom.js";
 
 const ZOOM_MS = 560;
 const ENTER_MS = 1500;
@@ -199,6 +200,7 @@ function measure(parts, from) {
     dawn: discFrom(bloom, centre(star.getBoundingClientRect()), 0),
     paths: labelPaths(labels, star),
     fades,
+    ring: ringParts(parts.ring),
     moved: [star, night, bloom, ...labels, ...fades, ...streaks, ...rings]
   };
 }
@@ -226,6 +228,7 @@ export function enterStar(note, parts, scope) {
   const { stage, star } = parts;
   const rest = () => {
     restAll(m.moved);
+    restRing(m.ring);
     stage?.removeAttribute("data-blooming");
   };
   onAbort(scope.signal, rest);
@@ -235,6 +238,8 @@ export function enterStar(note, parts, scope) {
     const pop = Math.sin(Math.PI * clamp01((t - LAND_MS) / POP_MS)) * POP;
     paintDisc(m.night, grow(t, NIGHT));
     writeMotionStyle(star, { transform: flightPose(m.flight, fly, SPIN_DEG * (1 - fly), pop) });
+    // The ring flies with it in orbit and swings level as it lands (v180).
+    paintRingPose(m.ring, orbitPose(flightPose(m.flight, fly, 0, pop), orbitIn(t)));
     paintWarp(m, t);
     paintDisc(m.dawn, grow(t, DAWN));
     m.paths.forEach((path, i) => paintLabel(path, span(t, LABEL_FROM_MS + i * LABEL_STEP_MS, LABEL_MS)));
@@ -267,6 +272,7 @@ export function leaveStar(note, parts, scope) {
     if (m.fx) m.fx.streaks.forEach(s => paintStreak(m.fx, s, 1 - clamp01((t - 260 - s.lag / 2) / 360)));
     const home = span(t, 380, LEAVE_MS - 380);
     writeMotionStyle(star, { transform: flightPose(m.flight, 1 - home, SPIN_DEG * home) });
+    paintRingPose(m.ring, orbitPose(flightPose(m.flight, 1 - home), orbitOut(t, LEAVE_MS)));
     paintDisc(m.night, 1 - span(t, 460, LEAVE_MS - 460));
   };
   return animate({ duration: LEAVE_MS, ease: linear, update: paint, signal: scope.signal, reduced: "end" })
@@ -278,8 +284,10 @@ export function leaveStar(note, parts, scope) {
 
 // Home's end of a trip that began elsewhere (the page was opened by its
 // address, so there is no way back to fly): the star settles from the note.
-export function zoomFrom(el, from, scope, fade = []) {
-  const flight = el && from ? flightFrom(el, from) : null;
+// `gauge` is what the note measured (the figure, not its ring: v180), when
+// `el` is bigger than it about the same centre.
+export function zoomFrom(el, from, scope, fade = [], gauge = el) {
+  const flight = el && gauge && from ? flightFrom(gauge, from) : null;
   if (!scope || !flight) return Promise.resolve(false);
   const rest = () => restAll([el, ...fade]);
   onAbort(scope.signal, rest);

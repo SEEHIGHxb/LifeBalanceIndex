@@ -88,6 +88,12 @@
 .dial-ticks line { stroke: #c9b892; stroke-width: 0.35; }
 .dial-ticks .major { stroke-width: 0.6; }
 .dial-mark { fill: var(--frame-ink); }
+/* Laid on only while the ring comes and goes (views/dial-zoom.js, v180): the
+   radar's beam and the asterism's twinkling stars. */
+.dial-beam path { fill: #e2b866; }
+.dial-beam line { stroke: #a88752; stroke-width: 0.6; }
+.dial-stars { filter: drop-shadow(0 0 1.2px #f6e3b8); }
+.dial-stars circle { fill: #fff3cf; }
 /* The grip: a clear band over the ring and in over the rays' outer part
    (24 units, about 30px on a phone's small Home star), and the only part of
    the dial a pointer can take; the middle still opens Your star. */

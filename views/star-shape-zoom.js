@@ -31,6 +31,10 @@ import {
   clamp01, span, centre, flightFrom, flightPose, discFrom, paintDisc, grow,
   labelPaths, paintLabel, paintRise, restAll
 } from "./star-zoom.js";
+import {
+  ringParts, prepareRing, restRing, paintRingPose, paintSymbols, staggered,
+  paintSweep, paintTwinkles, paintSparks
+} from "./dial-zoom.js";
 
 const RADAR_MS = 1750;
 const RADAR_LEAVE_MS = 1000;
@@ -63,6 +67,19 @@ const SETTLE = [2000, 450];
 
 const RISE_STEP_MS = 65;
 const RISE_MS = 400;
+
+// The ring (v180, views/dial-zoom.js): the radar's beam goes round from the
+// grid's start, then fades; the symbols come on one after another and the
+// marker last, for each shape at its own time.
+const BEAM = [420, 650];
+const BEAM_FADE_MS = 220;
+const SYMBOL_STEP_MS = 60;
+const SYMBOL_MS = 160;
+const MARK_MS = 150;
+const RADAR_SYMBOLS_FROM_MS = 980;
+const RADAR_MARK_FROM_MS = 1150;
+const ASTER_SYMBOLS_FROM_MS = 1700;
+const ASTER_MARK_FROM_MS = 1850;
 
 const fmt = (n) => n.toFixed(2);
 const scaleBy = (s) => ({ transform: `scale(${s.toFixed(4)})` });
@@ -122,8 +139,10 @@ function measure(parts, from, shape) {
   const dots = [...you.querySelectorAll(".sh-stars circle")];
   const fill = you.querySelector(".sh-fill");
   const line = you.querySelector(".sh-line");
+  const ring = ringParts(parts.ring);
+  prepareRing(ring, shape);
   return {
-    flight, you, dots, fill, line, labels, fades,
+    flight, you, dots, fill, line, labels, fades, ring,
     specks: shape === "asterism" ? specks : null,
     tips: dots.map(d => ({ x: Number(d.getAttribute("cx")), y: Number(d.getAttribute("cy")) })),
     points: line?.getAttribute("points") ?? "",
@@ -137,6 +156,7 @@ function measure(parts, from, shape) {
 // Puts everything back as the page drew it.
 function restore(m, stage) {
   restAll(m.moved);
+  restRing(m.ring);
   if (m.line) m.line.setAttribute("points", m.points);
   stage?.removeAttribute("data-blooming");
   stage?.removeAttribute("data-sky");
@@ -167,6 +187,13 @@ export function enterRadar(note, parts, scope) {
     writeMotionStyle(parts.star, home ? homePose(m.flight, span(t, ...SHRINK)) : scaleBy(span(t, ...GRID)));
     writeMotionStyle(m.you, scaleBy(home ? 1 : span(t, ...SHAPE)));
     paintDisc(m.bloom, grow(t, GRID));
+    // The ring shrinks away with the radar, then its beam goes round once as
+    // the grid grows and leaves the ring behind it (v180).
+    paintRingPose(m.ring, home ? homePose(m.flight, span(t, ...SHRINK)).transform : "none");
+    if (!home) {
+      paintSweep(m.ring, clamp01((t - BEAM[0]) / BEAM[1]), 1 - clamp01((t - BEAM[0] - BEAM[1]) / BEAM_FADE_MS));
+      paintSymbols(m.ring, staggered(t, RADAR_SYMBOLS_FROM_MS, SYMBOL_STEP_MS, SYMBOL_MS), clamp01((t - RADAR_MARK_FROM_MS) / MARK_MS));
+    }
     m.paths.forEach((path, i) => paintLabel(path, span(t, SHAPE[0] + i * RADAR_LABEL_STEP_MS, SHAPE[1])));
     m.fades.forEach((el, i) => paintRise(el, span(t, RADAR_RISE_FROM_MS + i * RISE_STEP_MS, RISE_MS)));
   };
@@ -189,6 +216,18 @@ export function leaveRadar(note, parts, scope) {
     writeMotionStyle(m.you, scaleBy(page ? 1 - span(t, 0, 280) : 1));
     writeMotionStyle(parts.star, page ? scaleBy(1 - span(t, 240, 300)) : homePose(m.flight, 1 - span(t, 600, 400)));
     paintDisc(m.bloom, 1 - span(t, 240, 320));
+    // The beam goes back round and takes the ring with it; at Home a quick
+    // sweep draws it again as the radar grows there.
+    const out = (i) => 1 - clamp01((t - i * 30) / 150);
+    if (page) {
+      paintRingPose(m.ring, "none");
+      paintSweep(m.ring, 1 - clamp01(t / 300), 1);
+      paintSymbols(m.ring, [out(0), out(1), out(2)], 1 - clamp01(t / 120));
+    } else {
+      paintRingPose(m.ring, homePose(m.flight, 1 - span(t, 600, 400)).transform);
+      paintSweep(m.ring, clamp01((t - 700) / 240), 1 - clamp01((t - 940) / 60));
+      paintSymbols(m.ring, staggered(t, 880, 30, 100), clamp01((t - 940) / 60));
+    }
   };
   return play(scope, RADAR_LEAVE_MS, paint, "Radar exit");
 }
@@ -218,6 +257,15 @@ export function enterAsterism(note, parts, scope) {
     m.fades.forEach((el, i) => paintRise(el, span(t, ASTER_RISE_FROM_MS + i * RISE_STEP_MS, RISE_MS)));
     if (m.bloom) writeMotionStyle(m.bloom, { opacity: span(t, ...SETTLE).toFixed(3) });
     markSky(parts.stage, t < SETTLE[0]);
+    // The ring goes out with Home's sky; on the page its ticks come on as
+    // stars twinkling round it while the constellation draws, and cool into
+    // ticks as the sky settles into the page's style (v180).
+    if (home) paintRingPose(m.ring, homePose(m.flight).transform, 1 - span(t, ...FADE));
+    else {
+      paintRingPose(m.ring, "none");
+      paintTwinkles(m.ring, t - DRAW_FROM_MS, span(t, ...SETTLE));
+      paintSymbols(m.ring, staggered(t, ASTER_SYMBOLS_FROM_MS, SYMBOL_STEP_MS, SYMBOL_MS), clamp01((t - ASTER_MARK_FROM_MS) / MARK_MS));
+    }
   };
   return play(scope, ASTER_MS, paint, "Asterism entrance").finally(rest);
 }
@@ -230,6 +278,7 @@ export function leaveAsterism(note, parts, scope) {
   const m = scope && back ? measure(parts, back, "asterism") : null;
   if (!m) return Promise.resolve(false);
   const n = m.tips.length;
+  let ringHome = false;
   const paint = (p) => {
     const t = p * ASTER_LEAVE_MS;
     const page = t < 820;
@@ -245,6 +294,20 @@ export function leaveAsterism(note, parts, scope) {
     writeMotionStyle(parts.star, page
       ? { transform: "none", opacity: (1 - span(t, 660, 140)).toFixed(3) }
       : { ...homePose(m.flight), opacity: span(t, 840, 260).toFixed(3) });
+    // The ticks spark and go out, the last to come on first; at Home the
+    // ring is whole again and fades in with the figure.
+    if (page) {
+      const out = (i) => 1 - clamp01((t - i * 30) / 150);
+      paintRingPose(m.ring, "none");
+      paintSymbols(m.ring, [out(0), out(1), out(2)], 1 - clamp01(t / 120));
+      paintSparks(m.ring, t, 40, 420);
+    } else {
+      if (!ringHome) {
+        restRing(m.ring);
+        ringHome = true;
+      }
+      paintRingPose(m.ring, homePose(m.flight).transform, span(t, 840, 260));
+    }
   };
   return play(scope, ASTER_LEAVE_MS, paint, "Asterism exit");
 }

@@ -45,7 +45,7 @@
 .shape-duo[data-view="asterism"] .sh-them .sh-line { stroke: #b8c8f0; }
 .shape-duo[data-view="asterism"] .sh-them .sh-stars circle { fill: #dfe7ff; filter: drop-shadow(0 0 1.4px #b8c8f0); }
 
-/* The switch under a figure. */
+/* A group of pills (the Your star page's options). */
 .shape-switch {
   display: inline-flex;
   gap: 4px;
@@ -53,7 +53,6 @@
   border-radius: 999px;
   background: rgba(27, 27, 27, 0.06);
 }
-.shape-opt,
 .sp-opt {
   min-height: 44px;
   padding: 0 16px;
@@ -67,16 +66,76 @@
   cursor: pointer;
   transition: background-color 160ms linear, color 160ms linear;
 }
-:is(.shape-opt, .sp-opt)[aria-pressed="true"] { background: var(--frame-ink); color: #ffffff; }
-/* The view switch's symbols (v157): round 44px buttons. */
-.shape-opt { display: inline-grid; place-items: center; width: 44px; padding: 0; }
-.shape-opt svg { display: block; width: 22px; height: 22px; }
-:is(.shape-opt, .sp-opt):focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
+.sp-opt[aria-pressed="true"] { background: var(--frame-ink); color: #ffffff; }
+.sp-opt:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
+
+/* The dial (v179, views/shape.js): the figure inside a ring that turns. The
+   ring's box is the figure's plus 12 units each side, 124 for its 100, so
+   the figure sits 12/124 in from each edge. */
+.shape-dial { position: relative; width: 100%; aspect-ratio: 1; }
+.shape-dial .dial-fig { position: absolute; inset: 9.677%; }
+.dial-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  color: #a88752;
+}
+.dial-band { fill: none; stroke: #efe8da; stroke-width: 7; }
+.dial-ticks line { stroke: #c9b892; stroke-width: 0.35; }
+.dial-ticks .major { stroke-width: 0.6; }
+.dial-mark { fill: var(--frame-ink); }
+/* The grip: a clear band over the ring and in over the rays' outer part
+   (24 units, about 30px on a phone's small Home star), and the only part of
+   the dial a pointer can take; the middle still opens Your star. */
+.dial-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 24;
+  pointer-events: stroke;
+  cursor: grab;
+  touch-action: none;
+}
+.shape-dial.is-turning .dial-hit { cursor: grabbing; }
+
+/* Under it, a dot per view. */
+.shape-dots { position: relative; display: inline-flex; }
+.shape-dot {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--frame-ink);
+  cursor: pointer;
+}
+.shape-dot i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: 0.3; transition: transform 160ms ease, opacity 160ms ease; }
+.shape-dot[aria-pressed="true"] i { opacity: 1; transform: scale(1.5); }
+.shape-dot:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: -4px; }
+.dial-hint {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: max-content;
+  max-width: min(80vw, 320px);
+  transform: translateX(-50%);
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--frame-muted);
+}
+.dial-hint[hidden] { display: none; }
 
 html[data-reduce-motion] .shape *,
-html[data-reduce-motion] :is(.shape-opt, .sp-opt) { transition: none; }
+html[data-reduce-motion] :is(.sp-opt, .shape-dot i) { transition: none; }
 @media (prefers-reduced-motion: reduce) {
   .shape *,
-  .shape-opt,
-  .sp-opt { transition: none; }
+  .sp-opt,
+  .shape-dot i { transition: none; }
 }

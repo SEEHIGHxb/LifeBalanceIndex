@@ -79,7 +79,8 @@ test("the page draws the star, its switches and Share your star", () => {
   const html = dom.html[MAIN] || "";
   assert.match(html, /class="stage-page star-page" data-theme="(paper|navy)"/);
   assert.match(html, /<svg class="shape" data-view="(star|radar|asterism)"/);
-  assert.match(html, /class="shape-switch" role="group"/);
+  assert.match(html, /class="shape-dial"/, "the star sits in its dial (v179)");
+  assert.match(html, /class="shape-dots" role="group"/);
   for (const level of DETAIL_LEVELS) assert.match(html, new RegExp(`data-group="detail" data-value="${level}"`));
   assert.match(html, /data-group="theme" data-value="navy"/);
   assert.match(html, /id="sp-share"/);

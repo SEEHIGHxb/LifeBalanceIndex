@@ -198,6 +198,8 @@ export const TH = {
   "Radar": "เรดาร์",
   "Asterism": "กลุ่มดาว",
   "Show your eight aspects as": "แสดง 8 ด้านของคุณเป็น",
+  // v179, the dial's first-sight hint (approved by the owner).
+  "Turn the ring to change the view": "หมุนวงแหวนเพื่อเปลี่ยนมุมมอง",
   "Shape": "รูปทรง",
   "Open your star": "เปิดดาวของคุณ",
   // v135 drafts approved by the owner 2026-09-29: your star's own page.

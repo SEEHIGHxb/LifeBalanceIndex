@@ -13,7 +13,7 @@
 // it survives an erase and follows the reader to Home, Side by Side and the
 // share card.
 import { shapeKite, shapeRim, asterismStarRadius, SHAPE_VIEWS } from "../chart.js";
-import { animate, easeStar } from "../motion.js";
+import { animate, anySignal, easeStar } from "../motion.js";
 import { t } from "../i18n.js";
 import { escapeHtml } from "./helpers.js";
 
@@ -167,29 +167,263 @@ const SHAPE_ICONS = {
   asterism: `<g fill="currentColor"><path d="M4.5 17.5L9 9.5l6 3 4.5-8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4.5" cy="17.5" r="2"/><circle cx="9" cy="9.5" r="2"/><circle cx="15" cy="12.5" r="2"/><circle cx="19.5" cy="4.5" r="2"/></g>`
 };
 
+// --- the dial (v179) ---------------------------------------------------------
+// The owner, 2026-10-02: rather than a bar of buttons, a ring round the figure
+// to turn like a compass bezel. A third of a turn is one view, and it goes
+// round for ever: past the asterism the star comes back (its kites morph
+// straight from the asterism's), so either way round is a way there. The
+// kites follow the hand; the layers (the ground, the grid, the night) cross
+// over at halfway with the fades css/shape.css already has, which keeps Side
+// by Side's two readings in their own colours. The ring is the only grip: the
+// figure inside it still scrolls the page and, on Home, opens Your star.
+const TURN = (2 * Math.PI) / 3;
+// A release this fast carries on to the next view: the turn it would reach
+// in this many milliseconds decides where it lands.
+const FLING_MS = 200;
+const SETTLE_MS = 420;
+// The first sight of a ring sways it this far (a fraction of a view), twice.
+const SWAY = 0.22;
+const SWAY_MS = 1400;
+const SWAY_DELAY_MS = 1800;
+const HINT_MS = 6000;
+const HINT_KEY = "lifequest_dial_hint_seen";
+const TICK_DEG = 7.5;
+const RING_R = 55;
+
+const mod3 = (n) => ((n % 3) + 3) % 3;
+export const viewAtTurn = (turn) => SHAPE_VIEWS[mod3(Math.round(turn))];
+
+// The nearest turn from `turn` that shows `view`.
+export function turnFor(view, turn) {
+  const base = Math.round(turn);
+  const want = SHAPE_VIEWS.indexOf(view);
+  return [base, base + 1, base - 1].find(v => mod3(v) === want) ?? base;
+}
+
+// Where a released ring lands: the nearest view, or the next one along when
+// it was let go moving fast. Never more than one view from where it was.
+export function settleTurn(turn, velocity = 0) {
+  const near = Math.round(turn);
+  const projected = Math.round(turn + velocity * FLING_MS);
+  return Math.max(near - 1, Math.min(near + 1, projected));
+}
+
+// The ring: a band of ticks with the three symbols on it, turned so the
+// current view's symbol sits under the marker at the top. Its box is the
+// figure's plus 12 units each side (css/shape.css insets the figure to
+// match). The wide clear circle over the band, reaching in over the rays'
+// outer part, is what the hand takes hold of.
+function ringMarkup(turn) {
+  const ticks = [];
+  for (let deg = 0; deg < 360; deg += TICK_DEG) {
+    const a = (deg * Math.PI) / 180;
+    const major = deg % 30 === 0;
+    const inner = major ? 52.2 : 53.2;
+    ticks.push(`<line${major ? ' class="major"' : ""} x1="${fmt(C + Math.cos(a) * inner)}" y1="${fmt(C + Math.sin(a) * inner)}" x2="${fmt(C + Math.cos(a) * 54.6)}" y2="${fmt(C + Math.sin(a) * 54.6)}"/>`);
+  }
+  const icons = SHAPE_VIEWS.map((v, i) => {
+    const a = ((-90 - i * 120) * Math.PI) / 180;
+    const x = fmt(C + Math.cos(a) * RING_R);
+    const y = fmt(C + Math.sin(a) * RING_R);
+    return `<g class="dial-icon" transform="translate(${x} ${y}) rotate(${-i * 120}) scale(0.26) translate(-12 -12)">${SHAPE_ICONS[v]}</g>`;
+  }).join("");
+  return `<svg class="dial-ring" viewBox="-12 -12 124 124" aria-hidden="true" focusable="false">` +
+    `<g class="dial-turn" transform="rotate(${fmt(turn * 120)} ${C} ${C})">` +
+    `<circle class="dial-band" cx="${C}" cy="${C}" r="${RING_R}"/>` +
+    `<g class="dial-ticks">${ticks.join("")}</g>${icons}</g>` +
+    `<path class="dial-mark" d="M50 -8.4L46.6 -11.8L53.4 -11.8Z"/>` +
+    `<circle class="dial-hit" cx="${C}" cy="${C}" r="50"/>` +
+    `</svg>`;
+}
+
+// A figure (shapeFigure) inside its ring.
+export function shapeDial(figure, view = readShapeView()) {
+  const turn = Math.max(0, SHAPE_VIEWS.indexOf(view));
+  return `<div class="shape-dial"><div class="dial-fig">${figure}</div>${ringMarkup(turn)}</div>`;
+}
+
+// The figure part way round: between the views either side of `turn`, and
+// showing the layers of the nearer one.
+function drawTurn(svg, turn) {
+  const shape = svg?.__shape;
+  if (!shape) return;
+  const base = Math.floor(turn);
+  const p = turn - base;
+  const from = SHAPE_VIEWS[mod3(base)];
+  const to = SHAPE_VIEWS[mod3(base + 1)];
+  const duo = svg.classList.contains("shape-duo");
+  drawPerson(svg.querySelector(".sh-you"), duo ? "start" : "both", { view: from, scores: shape.you }, { view: to, scores: shape.you }, p);
+  if (duo) drawPerson(svg.querySelector(".sh-them"), "end", { view: from, scores: shape.them }, { view: to, scores: shape.them }, p);
+  const near = p < 0.5 ? from : to;
+  if (svg.dataset.view !== near) svg.dataset.view = near;
+}
+
+// Under the figure: a dot for each view, the buttons a tap, the keyboard and
+// a screen reader use, and the line the first sight of a ring shows.
 export function shapeSwitchMarkup(view = readShapeView()) {
   const names = { star: t("Star"), radar: t("Radar"), asterism: t("Asterism") };
-  return `<div class="shape-switch" role="group" aria-label="${escapeHtml(t("Show your eight aspects as"))}">` +
-    SHAPE_VIEWS.map(v => `<button type="button" class="shape-opt" data-shape="${v}" aria-pressed="${v === view}" aria-label="${escapeHtml(names[v])}" title="${escapeHtml(names[v])}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${SHAPE_ICONS[v]}</svg></button>`).join("") +
+  return `<div class="shape-dots" role="group" aria-label="${escapeHtml(t("Show your eight aspects as"))}">` +
+    SHAPE_VIEWS.map(v => `<button type="button" class="shape-dot" data-shape="${v}" aria-pressed="${v === view}" aria-label="${escapeHtml(names[v])}" title="${escapeHtml(names[v])}"><i aria-hidden="true"></i></button>`).join("") +
+    `<span class="dial-hint" hidden>${escapeHtml(t("Turn the ring to change the view"))}</span>` +
     `</div>`;
 }
 
-// Wires every switch under `root`: the choice is saved and every figure under
-// `root` moves to it, so a page with two figures keeps them in step. `scope`
-// is the page's motion scope, or null on a still page. The listeners sit on
-// the switches themselves, which each render draws afresh, so a redraw never
-// stacks a second one.
+const tick = () => {
+  try {
+    navigator.vibrate?.(8);
+  } catch {
+    // No vibration (a desktop, or not allowed yet): the turn still works.
+  }
+};
+
+function hintSeen() {
+  try {
+    return localStorage.getItem(HINT_KEY) === "1";
+  } catch {
+    return true;
+  }
+}
+
+function markHintSeen() {
+  try {
+    localStorage.setItem(HINT_KEY, "1");
+  } catch {
+    // Blocked storage: the hint may show again, which is harmless.
+  }
+}
+
+// Turning by hand. The angle swept round the ring's centre is the turn; a
+// pointer that leaves the ring keeps turning it until let go.
+function bindRing(dial, dialer) {
+  const hit = dial.querySelector(".dial-hit");
+  if (!hit) return;
+  let drag = null;
+  const angleAt = (e) => {
+    const box = dial.getBoundingClientRect();
+    return Math.atan2(e.clientY - (box.top + box.height / 2), e.clientX - (box.left + box.width / 2));
+  };
+  hit.addEventListener("pointerdown", (e) => {
+    if (e.button > 0) return;
+    e.preventDefault();
+    dialer.stop();
+    dialer.hideHint();
+    const now = performance.now();
+    drag = { angle: angleAt(e), start: dialer.turn(), swept: 0, last: dialer.turn(), lastAt: now, velocity: 0 };
+    hit.setPointerCapture?.(e.pointerId);
+    dial.classList.add("is-turning");
+  });
+  hit.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const angle = angleAt(e);
+    let delta = angle - drag.angle;
+    if (delta > Math.PI) delta -= 2 * Math.PI;
+    else if (delta < -Math.PI) delta += 2 * Math.PI;
+    const value = drag.start + (drag.swept + delta) / TURN;
+    const now = performance.now();
+    const speed = (value - drag.last) / Math.max(1, now - drag.lastAt);
+    drag = { ...drag, angle, swept: drag.swept + delta, last: value, lastAt: now, velocity: 0.6 * speed + 0.4 * drag.velocity };
+    const before = viewAtTurn(dialer.turn());
+    dialer.paint(value);
+    if (viewAtTurn(value) !== before) tick();
+  });
+  const release = () => {
+    if (!drag) return;
+    const { velocity } = drag;
+    drag = null;
+    dial.classList.remove("is-turning");
+    dialer.settle(settleTurn(dialer.turn(), velocity));
+  };
+  hit.addEventListener("pointerup", release);
+  hit.addEventListener("pointercancel", release);
+  // iOS scrolls the page under a touch unless the touch itself is held.
+  hit.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
+}
+
+// Wires the dials and dots under `root`: the choice is saved and every
+// figure under `root` moves to it, so a page with two figures keeps them in
+// step (one without a ring, Side by Side's small mark, follows by a morph).
+// `scope` is the page's motion scope, or null on a still page. The listeners
+// sit on elements each render draws afresh, so a redraw never stacks them.
 export function bindShapeSwitch(root, scope) {
   if (!root) return;
-  const choose = (view) => {
+  const dials = [...root.querySelectorAll(".shape-dial")];
+  const hint = root.querySelector(".dial-hint");
+  let turn = Math.max(0, SHAPE_VIEWS.indexOf(root.querySelector(".shape-dial svg.shape")?.dataset.view ?? readShapeView()));
+  let shown = viewAtTurn(turn);
+  let running = null;
+
+  const markDots = (view) => root.querySelectorAll(".shape-dot").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.shape === view)));
+  const paint = (value) => {
+    turn = value;
+    dials.forEach(d => d.querySelector(".dial-turn")?.setAttribute("transform", `rotate(${fmt(value * 120)} ${C} ${C})`));
+    dials.forEach(d => drawTurn(d.querySelector("svg.shape"), value));
+    const view = viewAtTurn(value);
+    if (view !== shown) {
+      shown = view;
+      markDots(view);
+    }
+  };
+  const commit = (value) => {
+    const view = viewAtTurn(value);
     saveShapeView(view);
-    root.querySelectorAll(".shape-opt").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.shape === view)));
+    dials.forEach(d => {
+      const svg = d.querySelector("svg.shape");
+      if (svg?.__shape) svg.__shape = { ...svg.__shape, view };
+    });
     root.querySelectorAll("svg.shape").forEach(svg => {
-      if (svg.dataset.view !== view) morphShape(svg, { view }, scope);
+      if (!svg.closest(".shape-dial") && svg.dataset.view !== view) morphShape(svg, { view }, scope);
     });
   };
-  root.querySelectorAll(".shape-switch").forEach(group => group.addEventListener("click", (e) => {
-    const view = e.target.closest(".shape-opt")?.dataset.shape;
-    if (SHAPE_VIEWS.includes(view)) choose(view);
-  }));
+  const stop = () => {
+    running?.abort();
+    running = null;
+  };
+  const settle = (target) => {
+    stop();
+    commit(target);
+    const from = turn;
+    if (!scope || from === target) {
+      paint(target);
+      return;
+    }
+    const ctl = new AbortController();
+    running = ctl;
+    animate({ duration: SETTLE_MS, ease: easeStar, update: (p) => paint(from + (target - from) * p), signal: anySignal([scope.signal, ctl.signal]), reduced: "end" })
+      .catch(err => {
+        console.error("Shape dial failed:", err);
+        paint(target);
+      });
+  };
+  const hideHint = () => {
+    if (hint) hint.hidden = true;
+  };
+  const dialer = { turn: () => turn, paint, settle, stop, hideHint };
+
+  dials.forEach(dial => bindRing(dial, dialer));
+  root.querySelectorAll(".shape-dots").forEach(group => {
+    group.addEventListener("click", (e) => {
+      const view = e.target.closest(".shape-dot")?.dataset.shape;
+      if (!SHAPE_VIEWS.includes(view)) return;
+      hideHint();
+      settle(turnFor(view, turn));
+    });
+    group.addEventListener("keydown", (e) => {
+      const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+      if (!step) return;
+      e.preventDefault();
+      hideHint();
+      const target = Math.round(turn) + step;
+      settle(target);
+      group.querySelector(`.shape-dot[data-shape="${viewAtTurn(target)}"]`)?.focus();
+    });
+  });
+
+  // The first ring a device shows sways, with a line under it, once.
+  if (!dials.length || !hint || !scope || hintSeen()) return;
+  markHintSeen();
+  hint.hidden = false;
+  const home = turn;
+  animate({ duration: SWAY_MS, delay: SWAY_DELAY_MS, update: (p) => paint(home + SWAY * Math.sin(p * Math.PI * 4)), signal: scope.signal, reduced: () => {} })
+    .then(() => setTimeout(hideHint, HINT_MS))
+    .catch(err => console.error("Shape dial hint failed:", err));
 }

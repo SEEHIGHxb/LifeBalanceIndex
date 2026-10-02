@@ -12,7 +12,7 @@ globalThis.localStorage = {
   setItem: (k, v) => store.set(k, String(v)),
   removeItem: k => store.delete(k)
 };
-const { shapeFigure, shapeSwitchMarkup, readShapeView, saveShapeView } = await import("../views/shape.js");
+const { shapeFigure, shapeSwitchMarkup, readShapeView, saveShapeView, shapeDial, viewAtTurn, turnFor, settleTurn } = await import("../views/shape.js");
 const { landingMarkup } = await import("../views/landing.js");
 
 const SCORES = [55, 62, 71, 48, 70, 44, 58, 51];
@@ -72,11 +72,49 @@ test("the figure draws eight kites per reading in the view asked for, with no Na
   assert.match(duo, /sh-avg-ring/);
 });
 
+// v179, the owner: a ring to turn rather than a bar of buttons, and it goes
+// round, so the asterism turns straight on into the star.
+test("the dial goes round: every whole turn is a view, and past the asterism comes the star", () => {
+  assert.deepEqual([0, 1, 2, 3, 4].map(viewAtTurn), ["star", "radar", "asterism", "star", "radar"]);
+  assert.deepEqual([-1, -2, -3].map(viewAtTurn), ["asterism", "radar", "star"]);
+  assert.equal(viewAtTurn(0.49), "star");
+  assert.equal(viewAtTurn(0.51), "radar");
+});
+
+test("a dot turns the short way: from the star, the asterism is one step back", () => {
+  assert.equal(turnFor("asterism", 0), -1);
+  assert.equal(turnFor("radar", 0), 1);
+  assert.equal(turnFor("star", 2), 3, "from the asterism, on round to the star");
+  assert.equal(turnFor("star", 0), 0);
+});
+
+test("a let-go ring lands on the nearest view, or one on when flung, never further", () => {
+  assert.equal(settleTurn(0.3), 0);
+  assert.equal(settleTurn(0.6), 1);
+  assert.equal(settleTurn(-0.6), -1, "backwards past halfway: the asterism");
+  assert.equal(settleTurn(0.2, 0.01), 1, "a fling carries on");
+  assert.equal(settleTurn(0.2, 1), 1, "however hard, one view at a time");
+  assert.equal(settleTurn(0.2, -1), -1);
+});
+
+test("the dial wraps the figure in a ring with a grip, its symbols and a marker", () => {
+  const html = shapeDial(shapeFigure({ view: "radar", you: SCORES }), "radar");
+  assert.match(html, /^<div class="shape-dial"><div class="dial-fig"><svg class="shape"/);
+  assert.match(html, /class="dial-turn" transform="rotate\(120\.00 50 50\)"/, "turned so the radar is at the top");
+  assert.equal((html.match(/class="dial-icon"/g) || []).length, 3);
+  assert.match(html, /class="dial-mark"/);
+  assert.match(html, /class="dial-hit"/);
+  assert.match(html, /class="dial-ring"[^>]*aria-hidden="true"/, "the dots are what a screen reader uses");
+  assert.doesNotMatch(html, /NaN/);
+});
+
 test("the switch offers the three views and marks the current one", () => {
   const html = shapeSwitchMarkup("asterism");
   for (const view of SHAPE_VIEWS) assert.match(html, new RegExp(`data-shape="${view}"`));
   assert.match(html, /data-shape="asterism" aria-pressed="true"/);
   assert.match(html, /data-shape="star" aria-pressed="false"/);
+  assert.match(html, /class="shape-dots" role="group"/);
+  assert.match(html, /class="dial-hint" hidden>/, "the hint waits for the first ring");
 });
 
 test("the chosen view is remembered, and anything else reads as the star", () => {

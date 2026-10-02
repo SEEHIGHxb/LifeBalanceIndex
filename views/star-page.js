@@ -15,7 +15,7 @@ import { t } from "../i18n.js";
 import { radarPoints } from "../chart.js";
 import { legendValue } from "../story-card.js";
 import { readSharePrefs, writeSharePrefs, DETAIL_LABELS } from "./share.js";
-import { shapeFigure, shapeSwitchMarkup, bindShapeSwitch, adoptShape } from "./shape.js";
+import { shapeFigure, shapeDial, shapeSwitchMarkup, bindShapeSwitch, adoptShape } from "./shape.js";
 import { readHome, regionLabels, shareStar } from "./dashboard.js";
 import { CHAPTERS } from "./journey.js";
 import { renderStagePage } from "./stage-page.js";
@@ -31,7 +31,7 @@ const shownView = (container) => container.querySelector(".sp-mark svg.shape")?.
 
 const THEMES = ["paper", "navy"];
 // Where the labels sit, in % of the figure from its centre: just past the
-// star's rim (the mark is inset 17% each side, the rim at 47/50 of it).
+// dial's ring (the mark is inset 17% each side and the ring fills it, v179).
 const LABEL_R = 37;
 // A label whose direction leans this far sideways reads from its point out.
 const SIDEWAYS = 0.3;
@@ -91,7 +91,7 @@ export function starPageMarkup(h, prefs) {
           </div>
           <div class="sp-figure">
             <div class="sp-square">
-              <div class="sp-mark">${shapeFigure({ view: h.view, you: h.scores })}</div>
+              <div class="sp-mark">${shapeDial(shapeFigure({ view: h.view, you: h.scores }), h.view)}</div>
               <ol class="sp-labels" aria-label="${escapeHtml(t("Your eight regions"))}">${starLabelsMarkup(h.state, prefs.detail)}</ol>
             </div>
           </div>

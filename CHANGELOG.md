@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `178`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `179`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.105.0] - 2026-10-02 · v179
+
+### Changed
+- The star / radar / asterism switch is a dial (the owner: the bar of buttons was "too much of button"). A ring with the three symbols sits round the figure on Home, Your star and Side by Side; turn it like a compass bezel, a third of a turn per view. It goes round both ways, so past the asterism the star comes straight back. The rays follow the hand and the layers cross over at halfway; a flick carries on to the next view; phones tick at each one.
+- Only the ring (and the rays' outer part) turns it: the middle of the star still scrolls the page and, on Home, opens Your star.
+- Under the figure, three dots replace the three buttons. They are still buttons (tap, keyboard, screen readers), and ← → on them turn the dial.
+- The first ring a device shows sways once, with "Turn the ring to change the view" (Thai approved).
+- The figure is a little smaller inside its ring.
 
 ## [2.104.1] - 2026-10-02 · v178
 

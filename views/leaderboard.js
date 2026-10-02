@@ -32,7 +32,7 @@ import { t, tp } from "../i18n.js";
 import { escapeHtml, aspectLabel, noteBook, footnoteList, bindFootnotes } from "./helpers.js";
 import { CHAPTERS } from "./journey.js";
 import { topMarkup, label, renderStagePage } from "./stage-page.js";
-import { shapeFigure, shapeSwitchMarkup, bindShapeSwitch, adoptShape, morphShape, readShapeView } from "./shape.js";
+import { shapeFigure, shapeDial, shapeSwitchMarkup, bindShapeSwitch, adoptShape, morphShape, readShapeView } from "./shape.js";
 import { aspectName } from "./news.js";
 
 const COPIED_MS = 1500;
@@ -97,7 +97,7 @@ function duoFigure(state, them, view) {
     const a = -Math.PI / 2 + i * Math.PI / 4;
     return `<circle cx="${(50 + 49 * Math.cos(a)).toFixed(2)}" cy="${(50 + 49 * Math.sin(a)).toFixed(2)}" r="1.3" fill="${c.hue}"/>`;
   }).join("");
-  return `<div class="duo-fig">${shapeFigure({ view, you: scoresOf(state.aspects), them: scoresOf(them.aspects), avg: AVERAGES, extra: dots })}</div>`;
+  return `<div class="duo-fig">${shapeDial(shapeFigure({ view, you: scoresOf(state.aspects), them: scoresOf(them.aspects), avg: AVERAGES, extra: dots }), view)}</div>`;
 }
 
 // Everyone added, in the order they were added. Each can be picked to lie over

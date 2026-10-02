@@ -37,7 +37,7 @@ import {
 } from "../grades.js";
 import { goalTemplate } from "../goals.js";
 import { openShareSheet } from "./share.js";
-import { shapeFigure, shapeSwitchMarkup, bindShapeSwitch, adoptShape, readShapeView } from "./shape.js";
+import { shapeFigure, shapeDial, shapeSwitchMarkup, bindShapeSwitch, adoptShape, readShapeView } from "./shape.js";
 import { CHAPTERS } from "./journey.js";
 import { SPRITES, onAbort } from "./stage.js";
 import { chapterOf, aspectName, motifThumb, starThumb } from "./news.js";
@@ -199,7 +199,7 @@ function topSection(h) {
         <h2 class="sr-only">${escapeHtml(tp("Your star — Balance Index {n}", { n: h.index }))}</h2>
         <div class="home-star-col">
           <div class="home-star">
-            <div class="home-star-mark">${shapeFigure({ view: h.view, you: h.scores })}</div>
+            <div class="home-star-mark">${shapeDial(shapeFigure({ view: h.view, you: h.scores }), h.view)}</div>
             <a class="star-hit" href="#/star" aria-label="${escapeHtml(t("Open your star"))}"></a>
           </div>
           <div class="home-tools">

@@ -10,7 +10,8 @@
 // Top to bottom:
 //   notice      the duty-of-care notice, only past the screening cutoff; still
 //   top         your star beside the Balance Index, the view switch and share
-//               under the star, your strongest region and the one asking for more
+//               under the star, your strongest region and the one asking for
+//               more, your constellation (v171)
 //   effort      what you have done: regions explored, questions answered,
 //               weekly reviews, pledges kept
 //   aspects     one row per region: score against the average, your
@@ -30,6 +31,7 @@ import { getAllBenchmarks, collectSources } from "../benchmarks.js";
 import { ASPECT_KEYS, isAspectDeepVerified } from "../aspects.js";
 import { getTopSuggestions, getMentalHealthNotice } from "../suggestions.js";
 import { characterFor } from "../characters.js";
+import { constellationFor } from "../constellation.js";
 import {
   balanceIndex, weakestAspect, gradeAllAspects, isBottomGrade, relativeToPopulation
 } from "../grades.js";
@@ -153,7 +155,9 @@ export function readHome(state) {
     // Star, radar or asterism (views/shape.js): the reader's last choice.
     view: readShapeView(),
     suggestions: getTopSuggestions(state, 3),
-    deepDone: ASPECT_KEYS.filter(k => isAspectDeepVerified(state, k)).length
+    deepDone: ASPECT_KEYS.filter(k => isAspectDeepVerified(state, k)).length,
+    // Your eight characters as one code and type (constellation.js, v171).
+    constellation: constellationFor(state)
   };
 }
 
@@ -176,6 +180,24 @@ function regionChips(keys) {
       <img src="./assets/emblems/${c.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async"><span>${escapeHtml(c.region)}</span>
     </a>`).join("");
   return chips ? `<p class="home-regions">${chips}</p>` : "";
+}
+
+// Your constellation (v171, the owner: "code + 16 types", on Overview and the
+// card): the type and its code, its line, and how many there could be, never
+// how rare it is. How it is worked out is note 3. Short of a character in
+// every region it says how many regions are left.
+export function constellationBlock(c) {
+  if (!c) return "";
+  const title = `<p class="home-type-label">${escapeHtml(t("Your constellation"))}${footnoteRef("type", "3")}</p>`;
+  if (!c.complete) {
+    return `<div class="home-type">${title}<p class="home-type-line">${escapeHtml(tp("Your constellation appears once all eight regions have a character. {n} to go.", { n: c.left }))}</p></div>`;
+  }
+  return `
+    <div class="home-type">
+      ${title}
+      <p class="home-type-name"><b>${escapeHtml(c.name)}</b> <span class="home-type-code">${escapeHtml(c.code)}</span></p>
+      <p class="home-type-line">${escapeHtml(c.line)} <span class="home-type-count">${escapeHtml(t("1 of 65,536 possible constellations"))}</span></p>
+    </div>`;
 }
 
 // Your star beside what it adds up to: the Balance Index, then where you are
@@ -210,6 +232,7 @@ function topSection(h) {
             <p class="balance-index-title">${t("Balance Index")}${footnoteRef("index", "1")}</p>
           </div>
           <p class="home-headline">${escapeHtml(tp("Strongest in {strong}.", { strong }))} ${escapeHtml(tp("{weak} is asking for more.", { weak }))}</p>
+          ${constellationBlock(h.constellation)}
           ${regionChips([h.strongest, h.weakest?.aspect])}
         </div>
       </div>
@@ -310,6 +333,9 @@ function notesSection(h) {
     { id: "index", mark: "1", body: `<p>${t("A harmonic mean of how your eight aspects compare with the population — 50 is the average person, and it rises fastest when your weakest aspect rises. This is this app's own summary figure, not a published measure.")}</p>` },
     { id: "average", mark: "2", body: `<p>${t("Each average is the score of a reference person built from published population statistics and scored the same way as you. Where no statistic exists, a reasonable default stands in.")}</p>${sources}` }
   ];
+  if (h.constellation) {
+    notes.push({ id: "type", mark: "3", body: `<p>${t("Your code has one letter per region, from your character there. Your type comes from the answers behind the characters, in two groups: outside, what you do or have (earning, moving, circle, finishing, growing, giving, green habits, plastic, safety net and skills), and inside, how it feels (money control, rest, mood, pressure, bonds and the urge to help). The share of each group you meet picks one of 16 types. Made up for fun, not a professional assessment.")}</p>` });
+  }
   if (h.estimated.length) {
     notes.push({
       id: "estimate",
@@ -526,7 +552,8 @@ export function shareStar(h) {
     aspects: h.state.aspects,
     index: h.index,
     shape: readShapeView(),
-    labels: regionLabels(h.state)
+    labels: regionLabels(h.state),
+    constellation: h.constellation
   }, { showMentalNote: isBottomGrade(h.grades.mental) });
 }
 

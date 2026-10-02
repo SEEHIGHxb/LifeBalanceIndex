@@ -46,6 +46,14 @@
 .home-top .balance-index { align-items: flex-end; }
 .home-top .balance-index-title { margin: 0 0 calc(12 * var(--px)); font-weight: 700; font-size: max(16px, calc(28 * var(--px))); }
 .home-headline { margin: 0 0 calc(30 * var(--px)); font-weight: 700; font-size: max(16px, calc(30 * var(--px))); line-height: 1.5; }
+/* Your constellation (v171): the type, its code, its line. */
+.home-type { margin: 0 0 calc(30 * var(--px)); }
+.home-type p { margin: 0; }
+.home-type-label { font-size: max(12px, calc(18 * var(--px))); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--frame-muted); }
+.home-type-name { font-family: var(--font-serif); font-size: max(20px, calc(40 * var(--px))); line-height: 1.3; }
+.home-type-code { margin-left: 0.4em; font-family: var(--font-sans); font-size: 0.6em; font-weight: 700; letter-spacing: 0.12em; }
+.home-type-line { font-size: max(14px, calc(22 * var(--px))); line-height: 1.5; }
+.home-type-count { display: block; color: var(--frame-muted); }
 /* The two regions the headline names, as chips (v164; a phone hides them). */
 .home-regions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; }
 .region-chip {
@@ -311,7 +319,8 @@ a.start-card:focus-visible { outline: 2px solid var(--frame-ink); outline-offset
     grid-template-areas:
       "star index"
       "tools tools"
-      "head head";
+      "head head"
+      "type type";
     gap: 12px 16px;
     align-items: center;
   }
@@ -321,6 +330,7 @@ a.start-card:focus-visible { outline: 2px solid var(--frame-ink); outline-offset
   .home-top .balance-index { grid-area: index; flex-direction: column; align-items: flex-start; gap: calc(10 * var(--px)); margin: 0; }
   .home-tools { grid-area: tools; justify-content: space-between; }
   .home-headline { grid-area: head; margin: 0; font-size: 15px; }
+  .home-type { grid-area: type; margin: 0; }
   .home-effort { padding: 24px 0; }
   .effort-list { gap: 12px; }
   .effort-value { font-size: 28px; }

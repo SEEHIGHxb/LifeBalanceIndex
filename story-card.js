@@ -123,7 +123,9 @@ const LAYOUT = {
   labelGap: 50,
   labelEdge: 40,
   indexLabel: 1440,
-  indexValue: 1530
+  indexValue: 1530,
+  // Your constellation, under the index (v171).
+  type: 1612
 };
 
 // The sticker's cut edge and lift, and how it sits: turned a little, as if
@@ -474,6 +476,21 @@ export function drawStoryCard(ctx, data, opts = {}) {
   ctx.font = font(400, 72, WORD);
   ctx.fillStyle = theme.ink;
   ctx.fillText(String(data.index ?? ""), mid, LAYOUT.indexValue);
+
+  // The type and its code only, never the answers behind them (the owner,
+  // v171: "code + 16 types" on the card).
+  if (data.constellation) {
+    ctx.font = font(700, 36, SERIF);
+    ctx.fillStyle = theme.accent;
+    ctx.fillText(fitText(ctx, `${data.constellation.name} · ${data.constellation.code}`, maxWidth), mid, LAYOUT.type);
+  }
+}
+
+// The type's name and code as plain strings, or none: a card short of a
+// character in any region has no constellation.
+function cardConstellation(c) {
+  if (!c || !c.complete || typeof c.name !== "string" || typeof c.code !== "string") return null;
+  return { name: c.name, code: c.code };
 }
 
 // Each region's name and character, as plain strings, or none at all.
@@ -489,7 +506,7 @@ function cardLabels(labels) {
 // Everything the card needs, assembled from state the dashboard already has.
 // `date` is formatted here rather than by the caller so the card follows the
 // active language's locale (Thai dates on a Thai card).
-export function storyCardData({ name, date, aspects, index, shape, labels }) {
+export function storyCardData({ name, date, aspects, index, shape, labels, constellation }) {
   const when = date instanceof Date ? date : new Date(date || Date.now());
   return {
     name: name || "",
@@ -499,7 +516,8 @@ export function storyCardData({ name, date, aspects, index, shape, labels }) {
     aspects: aspects || {},
     index,
     shape: SHAPE_VIEWS.includes(shape) ? shape : "star",
-    labels: cardLabels(labels)
+    labels: cardLabels(labels),
+    constellation: cardConstellation(constellation)
   };
 }
 

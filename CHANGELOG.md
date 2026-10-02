@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `170`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `171`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.100.0] - 2026-10-02 · v171
+
+### Added
+- Your constellation: the eight characters as one code and one of 16 types (the owner: "code + 16 types", on Overview and the share card). The code is one letter per region in Overview's order (TGPE-AWRC), unique for each of the 4^8 = 65,536 combinations. The type comes from the 16 sides behind the characters in two groups, outside (10) and inside (6), each cut into four levels. Overview shows the type, code, its line and "1 of 65,536 possible constellations", with how it is worked out as note 3; short of a character in every region it counts the regions left. The card draws the type and code under the Balance Index, never the answers (`constellation.js`, `views/dashboard.js`, `story-card.js`, `css/home.css`).
+- Thai for the 16 types, their lines and the note (lines and note await the owner's review).
 
 ## [2.99.0] - 2026-10-02 · v170
 

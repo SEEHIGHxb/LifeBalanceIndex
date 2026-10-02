@@ -279,3 +279,24 @@ test("your effort counts every pledge kept at every review", () => {
   assert.equal(counts.reviews, 3);
   assert.equal(counts.kept, 3);
 });
+
+// --- your constellation (v171) --------------------------------------------------
+
+test("Overview shows your constellation's type and code once every region has a character", () => {
+  const full = {
+    ...STATE,
+    profile: { ...STATE.profile, sleepHours: 8, weeklyLearningHours: 3, singleUsePlastics: 2 },
+    baseline: { ...STATE.baseline, citacc: 12, citlearn: 12, ptm: 14, geb: 14 }
+  };
+  const html = render(full);
+  assert.match(html, /class="home-type-name"><b>[^<]+<\/b> <span class="home-type-code">[A-Z]{4}-[A-Z]{4}<\/span>/);
+  assert.ok(html.includes("1 of 65,536 possible constellations"), "says how many there could be");
+  assert.ok(!/rare/i.test(html), "claims no rarity");
+  assert.ok(html.includes('id="fn-type"'), "explains how it is worked out in a note");
+});
+
+test("Overview counts the regions left until your constellation appears", () => {
+  const html = render({ ...STATE, baseline: null });
+  assert.ok(!html.includes("home-type-code"), "no code is drawn from missing answers");
+  assert.match(html, /Your constellation appears once all eight regions have a character\. \d to go\./);
+});

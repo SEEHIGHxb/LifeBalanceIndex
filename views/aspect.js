@@ -375,25 +375,20 @@ function trendSection(a) {
     </div></section>`;
 }
 
-// How the aspect is updated, and the call to do it.
+// How the aspect is updated, and the call to do it. A weekly region shows
+// only its button, and only while a review is due (v173, the owner: "Updated
+// by your weekly review. Reviewed this week ..." left every aspect page).
 function measuredRow(a) {
-  let head;
-  let action = "";
   if (WEEKLY_ASPECTS.includes(a.key)) {
-    head = t("Updated by your weekly review.");
-    action = stateManager.isWeeklyReviewDue()
-      ? `<a href="#/review" class="pill">${t("Start Weekly Review")}</a>`
-      : `<span class="careers-note">${t("Reviewed this week — the next review opens next week.")}</span>`;
-  } else {
-    head = t("Updated at the monthly re-assessment.");
-    if (a.state.baseline) action = `<a href="#/checkin" class="pill">${t("Start Re-assessment")}</a>`;
+    return stateManager.isWeeklyReviewDue()
+      ? `<div class="careers-row aspect-measured"><a href="#/review" class="pill">${t("Start Weekly Review")}</a></div>`
+      : "";
   }
-  // A note joins the sentence; a button keeps its own line.
-  const inline = action.startsWith("<span");
+  const action = a.state.baseline ? `<a href="#/checkin" class="pill">${t("Start Re-assessment")}</a>` : "";
   return `
     <div class="careers-row aspect-measured">
-      <p class="careers-head">${escapeHtml(head)}${inline ? ` ${action}` : ""}</p>
-      ${inline ? "" : action}
+      <p class="careers-head">${escapeHtml(t("Updated at the monthly re-assessment."))}</p>
+      ${action}
     </div>`;
 }
 
@@ -411,10 +406,12 @@ function focusSection(a) {
   const list = a.suggestions.length ? `
     <ul class="focus-list focus-rail">${a.suggestions.map(focusCard).join("")}
     </ul>` : "";
+  const measured = measuredRow(a);
+  if (!list && !measured) return "";
   return `
     <section class="panel statement aspect-focus"><div class="wrap split">
       ${label(a.suggestions.length ? t("Where to start") : t("Measured Weekly"))}
-      <div>${list}${measuredRow(a)}</div>
+      <div>${list}${measured}</div>
     </div></section>`;
 }
 

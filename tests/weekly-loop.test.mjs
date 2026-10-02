@@ -493,3 +493,16 @@ test("Overview's phone pledge rule stays on Overview", () => {
   assert.match(css, /\.home-pledges \.pledge-body,\n {2}\.pledge-count \{ display: contents; \}/);
   assert.doesNotMatch(css, /\n {2}\.pledge-body,\n/);
 });
+
+// v173, the owner: the weekly line left every aspect page, and Where to start
+// stands still on a laptop, as Overview's does.
+test("no aspect page says it is updated by the weekly review, and its cards only scroll on a phone", () => {
+  for (const key of ["finance", "physical", "mental", "relationships", "personalGoals", "socialContribution", "environment", "humanityFuture"]) {
+    renderAspectPage(MAIN, STATE, key);
+    assert.doesNotMatch(html(), /Updated by your weekly review|next review opens next week/, key);
+  }
+  const css = read("css/weekly.css");
+  const base = css.match(/\n\.aspect-page \.focus-rail \{[^}]*\}/)[0];
+  assert.match(base, /grid-template-columns: repeat\(auto-fill/);
+  assert.doesNotMatch(base, /overflow-x/);
+});

@@ -115,14 +115,12 @@
 .aspect-page .focus-list + .aspect-measured { margin-top: 0; border-top: 0; }
 .aspect-page .aspect-focus .wrap > div > .aspect-measured:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
 .aspect-page .aspect-measured .careers-head { margin: 0; font-size: max(15px, calc(26 * var(--px))); }
-.aspect-page .careers-head .careers-note { font-size: inherit; color: #444444; }
 
 .focus-list { margin: 0; padding: 0; list-style: none; }
 .aspect-page .focus-row { max-width: none; margin: 0; padding: calc(40 * var(--px)) 0; border-bottom: 1px dashed rgba(0, 0, 0, 0.25); }
 .aspect-page .focus-row:first-child { padding-top: 0; }
 .aspect-page .focus-row p { margin: 0; }
 .aspect-page .statement .focus-title { font-weight: 700; }
-.careers-note { margin: 0; font-weight: 600; font-size: max(14px, calc(22 * var(--px))); }
 
 /* ================================================================= goals */
 
@@ -768,16 +766,13 @@ html[data-reduce-motion] .aspect-page > .panel { position: relative; }
 .ps-card .meter { grid-column: 1 / -1; width: 100%; max-width: none; margin: 0; }
 .aspect-page .statement .ps-card .pr-desc { grid-column: 1 / -1; margin: 0; }
 
-/* The suggestions: a sideways rail of cards, the next one cut at the edge. */
+/* The suggestions (v173, the owner, as on Overview): on a laptop the cards
+   stand side by side and wrap, nothing to scroll; a phone keeps the sideways
+   rail, the next card cut at the edge. */
 .aspect-page .focus-rail {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: min(78%, 460px);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 14px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 6px;
-  scrollbar-width: none;
 }
 .aspect-page .focus-rail::-webkit-scrollbar { display: none; }
 .aspect-page .focus-rail .focus-row {
@@ -814,7 +809,7 @@ html[data-reduce-motion] .aspect-page > .panel { position: relative; }
   .ps-tabs::-webkit-scrollbar { display: none; }
   .ps-tab { flex: none; padding: 8px 14px; border: 1px solid #d8d4cc; font-size: var(--t-sm); }
   .ps-tab[aria-selected="true"] { border-color: var(--frame-ink); }
-  .aspect-page .focus-rail { grid-auto-columns: 82%; margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); }
+  .aspect-page .focus-rail { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 82%; padding-bottom: 6px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); }
 }
 
 

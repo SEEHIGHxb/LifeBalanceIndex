@@ -164,7 +164,6 @@ export const TH = {
   // v142, approved by the owner 2026-09-29: the aspect pages trimmed.
   "How you compare": "เทียบกับคนอื่น",
   "What it's made of": "มาจากอะไรบ้าง",
-  "Updated by your weekly review.": "อัปเดตจากการทบทวนรายสัปดาห์",
   "Updated at the monthly re-assessment.": "อัปเดตในการประเมินซ้ำประจำเดือน",
 
   // v141, approved by the owner 2026-09-29: Overview trimmed, notes and sources.
@@ -694,7 +693,6 @@ export const TH = {
   "hours/month": "ชั่วโมง/เดือน",
   // --- Aspect page: measured-weekly card ---
   "Measured Weekly": "วัดรายสัปดาห์",
-  "Reviewed this week — the next review opens next week.": "ทบทวนสัปดาห์นี้แล้ว — ครั้งถัดไปเปิดสัปดาห์หน้า",
   'Comparison codes start with "{prefix}".': 'รหัสเปรียบเทียบต้องขึ้นต้นด้วย "{prefix}"',
   "That code is damaged — ask the participant to copy it again.": "รหัสนี้เสียหาย — ให้ผู้เข้าร่วมคัดลอกส่งมาใหม่อีกครั้ง",
   "Unsupported comparison code version.": "เวอร์ชันรหัสเปรียบเทียบไม่รองรับ",

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `172`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `173`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.101.1] - 2026-10-02 · v173
+
+### Changed
+- The aspect pages drop "Updated by your weekly review. Reviewed this week — the next review opens next week." (the owner). A weekly region shows only the Start Weekly Review button, and only while a review is due; a section left with nothing in it is not drawn (`views/aspect.js`, `th.js`).
+- Where to start on the aspect pages stands still on a laptop, its cards side by side and wrapping, as Overview's does since v172; a phone keeps the sideways rail (`css/weekly.css`).
 
 ## [2.101.0] - 2026-10-02 · v172
 

@@ -58,6 +58,10 @@
 }
 .aspect-society .gauge-track { max-width: calc(1400 * var(--px)); }
 .aspect-page .fact-list.facts { margin-top: calc(24 * var(--px)); }
+.aspect-page .statement .aspect-compare-link { margin: calc(28 * var(--px)) 0 0; font-weight: 700; color: var(--frame-ink); }
+.aspect-page .aspect-reading { margin-top: calc(28 * var(--px)); display: grid; gap: calc(16 * var(--px)); }
+.aspect-page .aspect-reading p { margin: 0; }
+.aspect-page .fn-body .criteria-card { margin: 0 0 12px; }
 
 /* One row per component: name, score, a meter in the region's hue, and what
    it is made of. */
@@ -705,41 +709,28 @@ html[lang="th"] .aspect-page .statement .character-name { letter-spacing: 0; tex
 .aspect-page .page-top .mark img { border-radius: 50%; }
 .aspect-page .page-top .mark { overflow: hidden; }
 
-/* The sheets. Each pins at --stick (views/aspect-sheets.js: under the header,
-   or as high as a tall sheet needs to show its end) and the next, later in
-   the page and so painted above it, slides up over it. */
-.aspect-page > .panel {
-  position: sticky;
-  top: var(--stick, 0px);
-  box-shadow: 0 calc(-14 * var(--px)) calc(40 * var(--px)) rgba(0, 0, 0, 0.16);
+/* The sheets, on a phone. Each pins at --stick (views/sheets.js: under the
+   header, or as high as a tall sheet needs to show its end) and the next,
+   later in the page and so painted above it, slides up over it. A laptop
+   reads the sections as static cards (v170, the owner). */
+@media (max-width: 900px) {
+  .aspect-page > .panel {
+    position: sticky;
+    top: var(--stick, 0px);
+    box-shadow: 0 calc(-14 * var(--px)) calc(40 * var(--px)) rgba(0, 0, 0, 0.16);
+  }
+  .aspect-page > .panel:not(.panel ~ .panel) { box-shadow: none; }
 }
-.aspect-page > .panel:not(.panel ~ .panel) { box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .aspect-page > .panel { position: relative; } }
 html[data-reduce-motion] .aspect-page > .panel { position: relative; }
 
-/* The parts stepper. On a laptop the section is a few screens tall; the tabs
-   and the card stay pinned while the track's markers scroll past the middle
-   of the screen and pick the card. */
-/* v162: sized round the pinned block (--pin-h, views/aspect-sheets.js). The
-   block pins centred, or under the header if it is too tall for that; a step
-   takes 26vh of scroll, the last one as long again, and only then does the
-   next sheet rise, so the last part is read before it is covered. */
-.aspect-parts {
-  --pin-top: max(calc(var(--head-h, 72px) + 16px), calc(50vh - var(--pin-h, 240px) / 2));
-}
-.parts-stepper { position: relative; height: calc(var(--steps) * 26vh + var(--pin-h, 240px) + 10vh); }
-/* The section's label rides along with the pinned stepper. */
-.aspect-parts .split > .label { position: sticky; top: var(--pin-top); }
+/* The parts stepper: the tabs beside the card on a laptop, a tap picking it. */
 .ps-pin {
-  position: sticky;
-  top: var(--pin-top);
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   gap: calc(48 * var(--px));
   align-items: start;
 }
-.ps-track { position: absolute; top: calc(var(--pin-h, 240px) / 2); right: 0; left: 0; height: calc(var(--steps) * 26vh); display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; pointer-events: none; }
-.aspect-page .statement .ps-track li { flex: 1 1 0; margin: 0; }
 .ps-tabs { display: grid; gap: 4px; }
 .ps-tab {
   display: flex;
@@ -811,10 +802,7 @@ html[data-reduce-motion] .aspect-page > .panel { position: relative; }
   .aspect-page .statement li { font-size: var(--t-sm); line-height: 1.55; }
   /* Rounded sheets on a phone now there is a sheet behind each one. */
   .aspect-page > .panel + .panel { border-top: 0; border-radius: 22px 22px 0 0; }
-  .parts-stepper { height: auto; }
-  .ps-track { display: none; }
-  .ps-pin { position: static; display: block; }
-  .aspect-parts .split > .label { position: static; }
+  .ps-pin { display: block; }
   .ps-tabs {
     display: flex;
     gap: 8px;
@@ -970,7 +958,9 @@ body.menu-open .site-header .aspect-ribbon { opacity: 0; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .site-header .aspect-ribbon, .site-header .wordmark { transition: none; } }
 html[data-reduce-motion] .site-header .aspect-ribbon,
 html[data-reduce-motion] .site-header .wordmark { transition: none; }
-@container (max-width: 900px) {
+/* v170 (the owner: "a bit too much to the right"): the phone header is not a
+   size container, so the old @container rule never applied; a media query does. */
+@media (max-width: 900px) {
   .site-header .aspect-ribbon { left: 50%; max-width: calc(100% - 150px); gap: 3px 8px; padding-right: 12px; translate: -50% 0; }
   .ribbon-mark { width: 28px; height: 28px; }
   .ribbon-name { font-size: 15px; }

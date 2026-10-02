@@ -1,41 +1,28 @@
 // views/aspect-sheets.js - the aspect page's scrolling (v161, the owner's
 // layout rules of 2026-10-01, after fastwork.com):
 //
-//   sheets    every section is a rounded sheet that pins once it has been
-//             read to its end, and the next one slides up over it. A sheet
-//             shorter than the screen pins under the header; a taller one
-//             pins when its bottom reaches the bottom of the screen, so
-//             nothing in it is ever covered before it is seen.
-//   stepper   "What it's made of" is a list of parts and one card. On a
-//             laptop the card follows the scroll; on a phone, and anywhere,
-//             a tap on a part shows its card.
+//   sheets    on a phone every section is a rounded sheet that pins once it
+//             has been read to its end, and the next one slides up over it.
+//             A sheet shorter than the screen pins under the header; a
+//             taller one pins when its bottom reaches the bottom of the
+//             screen, so nothing in it is ever covered before it is seen.
+//             A laptop reads them as static cards (v170, the owner).
+//   stepper   "What it's made of" is a list of parts and one card; a tap on
+//             a part shows its card (since v170 the scroll no longer picks
+//             it on a laptop).
 //   words     no paragraph ends on a lone word (views/lone-words.js).
 //
 // CSS does the pinning (css/weekly.css .aspect-page .panel); views/sheets.js
 // measures where each sheet may pin. Reduced motion turns the pinning off in
-// CSS, and the stepper then follows taps alone.
+// CSS.
 
 import { isReduced } from "../motion.js";
 import { tightenLoneWords } from "./lone-words.js";
-import { burst } from "./stage.js";
 import { bindRibbon } from "./aspect-ribbon.js";
 import { bindSheets, frame, isPhone } from "./sheets.js";
 
 // One page at a time: a new render tears down the last one's listeners.
 let teardown = null;
-
-// --- sheets ------------------------------------------------------------------
-
-// The sheets themselves are views/sheets.js. First the stepper's pinned block
-// is measured (v162): the section is sized round it, so the last part stays
-// on screen a while before the next sheet rises over it, and the block pins
-// where it fits whole.
-function measureStepper(page) {
-  page.querySelectorAll(".aspect-parts").forEach(section => {
-    const pin = section.querySelector(".ps-pin");
-    if (pin) section.style.setProperty("--pin-h", `${pin.offsetHeight}px`);
-  });
-}
 
 // --- the parts stepper ---------------------------------------------------------
 
@@ -48,17 +35,6 @@ function showStep(stepper, i) {
   stepper.dataset.step = String(i);
 }
 
-// Which step the scroll has reached, from the track's markers crossing the
-// middle band of the screen (the observer's rootMargin). `entries` holds only
-// the markers whose crossing changed since the last call, as
-// [{ step, isIntersecting }]; `current` is the step on show now.
-// The last marker to enter wins; a report of leavings alone (a fling past a
-// part) keeps the card on show, so it never flickers back.
-export function stepFromEntries(entries, current) {
-  const entered = entries.filter(e => e.isIntersecting && e.step >= 0);
-  return entered.length ? entered[entered.length - 1].step : current;
-}
-
 function bindStepper(stepper, signal) {
   const tabs = [...stepper.querySelectorAll(".ps-tab")];
   const go = (i) => {
@@ -69,12 +45,7 @@ function bindStepper(stepper, signal) {
   stepper.addEventListener("click", (e) => {
     const tab = e.target.closest(".ps-tab");
     if (!tab) return;
-    const i = go(tabs.indexOf(tab));
-    // On a laptop the card follows the scroll, so a tap scrolls there too.
-    const marker = stepper.querySelectorAll(".ps-track li")[i];
-    if (marker && !isPhone() && marker.offsetParent) {
-      marker.scrollIntoView({ block: "center", behavior: isReduced() ? "auto" : "smooth" });
-    }
+    go(tabs.indexOf(tab));
   }, { signal });
   // The arrow keys move along the parts, as in any tab list.
   stepper.addEventListener("keydown", (e) => {
@@ -85,17 +56,6 @@ function bindStepper(stepper, signal) {
     e.preventDefault();
     tabs[go(to)].focus();
   }, { signal });
-
-  if (typeof IntersectionObserver !== "function") return;
-  const markers = [...stepper.querySelectorAll(".ps-track li")];
-  const io = new IntersectionObserver((entries) => {
-    if (isPhone()) return;
-    const current = Number(stepper.dataset.step) || 0;
-    const next = stepFromEntries(entries.map(e => ({ step: markers.indexOf(e.target), isIntersecting: e.isIntersecting })), current);
-    if (next !== current) showStep(stepper, next);
-  }, { rootMargin: "-45% 0px -45% 0px" });
-  markers.forEach(m => io.observe(m));
-  signal.addEventListener("abort", () => io.disconnect());
 }
 
 // --- the pull to the next region ---------------------------------------------
@@ -118,7 +78,6 @@ const OPEN_DELAY_MS = 360;
 const LOCK_AFTER_MS = 450;
 const HOLD_MAX_MS = 2500;
 const ARRIVE_MAX_MS = 1500;
-const LANDED_SLACK_PX = 160;
 
 // How far the pull has gone, 0 at the peek and 1 at the full ring, from how
 // much of the sheet shows (`shown`, px above the bottom of the screen), the
@@ -188,15 +147,9 @@ function arrived(key) {
   });
 }
 
-// The new page's star bursts once it has landed.
-function landBurst(page, key) {
-  const top = page?.querySelector(".page-top");
-  if (!top) return;
-  const hue = page.dataset.hue || "";
-  burst(top.querySelector(".burst-layer"), top.querySelector(".mark"), { motifs: [{ motif: key, hue }] });
-}
+const toTop = () => scrollTo({ top: 0, behavior: "instant" });
 
-function openNext(sheet, link, signal) {
+function openNext(sheet, link) {
   if (sheet.dataset.opening) return;
   sheet.dataset.opening = "1";
   sheet.style.setProperty("--pull", "1");
@@ -215,18 +168,14 @@ function openNext(sheet, link, signal) {
     });
     vt.finished.finally(() => {
       named.forEach(el => { el.style.viewTransitionName = ""; });
-      // The new page opens at its top, whatever the tail of the pull did.
-      if (scrollY < LANDED_SLACK_PX) scrollTo({ top: 0, behavior: "instant" });
-      landBurst(landed, key);
+      // The new page opens at its top, whatever the tail of the pull did
+      // (v170, the owner: a phone used to land partway down).
+      toTop();
     });
     return;
   }
-  // No View Transitions: the old switch, a burst and the page changing.
-  const hue = getComputedStyle(sheet).getPropertyValue("--next-hue").trim();
-  burst(sheet.querySelector(".burst-layer"), link.querySelector(".next-mark"), {
-    motifs: [{ motif: key, hue }], signal
-  });
-  setTimeout(go, OPEN_DELAY_MS);
+  // No View Transitions: the page changes after the ring has closed.
+  setTimeout(() => { go(); toTop(); }, OPEN_DELAY_MS);
 }
 
 function bindPull(sheet, signal) {
@@ -234,7 +183,7 @@ function bindPull(sheet, signal) {
   if (!link) return;
   link.addEventListener("click", (e) => {
     e.preventDefault();
-    openNext(sheet, link, signal);
+    openNext(sheet, link);
   }, { signal });
 
   let armed = false;
@@ -266,7 +215,7 @@ function bindPull(sheet, signal) {
     const p = armed ? pullProgress(f) : 0;
     sheet.style.setProperty("--pull", p.toFixed(3));
     sheet.classList.toggle("is-pulling", p > 0);
-    if (armed && p >= 0.995) { openNext(sheet, link, signal); return; }
+    if (armed && p >= 0.995) { openNext(sheet, link); return; }
     clearTimeout(rest);
     rest = setTimeout(settle, REST_MS);
   };
@@ -300,7 +249,7 @@ export function bindAspectSheets(root) {
   for (const type of ["scroll", "resize", "touchstart", "touchend"]) {
     addEventListener(type, guard, { signal, capture: true, passive: true });
   }
-  bindSheets(page, signal, { before: measureStepper });
+  bindSheets(page, signal);
   bindRibbon(page, signal);
   page.querySelectorAll(".parts-stepper").forEach(s => bindStepper(s, signal));
   page.querySelectorAll(".next-aspect").forEach(s => bindPull(s, signal));

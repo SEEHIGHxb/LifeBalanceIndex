@@ -445,23 +445,17 @@ try {
   const { context, page } = await openJourney(browser);
   await finishJourney(page, { last: ["who5"] });
 
-  // An aspect page: its emblem bursts its region's motifs and comes home.
+  // A region page bursts nothing (v170, the owner): no tap on its emblem, and
+  // opening the next region lands at its top with no particles.
   await openHash(page, "#/aspect/physical", ".aspect-page .page-top .mark img");
-  await page.click(".aspect-page .mark-hit");
-  await advance(page, FRAME_MS * 3);
-  const tapped = await pieceState(page, ".aspect-page");
-  if (tapped.particles !== 16) problems.push(`aspect: ${tapped.particles} particles burst from the emblem, not 16`);
+  if (await page.$(".aspect-page .page-top .mark-hit")) problems.push("aspect: the emblem still has a tap to burst");
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.click(".aspect-page .next-pull");
+  await page.waitForSelector('.aspect-page[data-aspect="mental"]', { timeout: 5000 });
   await advance(page, 2500);
-  const rested = await pieceState(page, ".aspect-page");
-  if (rested.particles || rested.styled.length) problems.push(`aspect: the emblem did not come home (${rested.styled.join(" | ")})`);
-  // The Commons bursts too: no region is quiet since v161.
-  await openHash(page, "#/aspect/relationships", ".aspect-page .page-top .mark img");
-  await page.click(".aspect-page .mark-hit");
-  await advance(page, FRAME_MS * 3);
-  const commons = await pieceState(page, ".aspect-page");
-  if (commons.particles !== 16) problems.push(`aspect: The Commons burst ${commons.particles} particles, not 16`);
-  await advance(page, 2500);
-  if ((await pieceState(page, ".aspect-page")).particles) problems.push("aspect: The Commons' burst did not come home");
+  const nextTop = await page.evaluate(() => ({ y: scrollY, particles: document.querySelectorAll(".spr").length }));
+  if (nextTop.y !== 0) problems.push(`aspect: the next region opened ${nextTop.y}px down, not at its top`);
+  if (nextTop.particles) problems.push(`aspect: ${nextTop.particles} particles burst on the next region`);
 
   // Goals: the stickers stick on when the list comes into view, then settle.
   await openHash(page, "#/quests", ".goals .pledge-list .pledge");
@@ -620,4 +614,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water wipes and bursts too, Home's star warps into its own page and flies back (the care notice too), an aspect page bursts, The Commons' too, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi stays off, and reduced motion moves nothing");
+console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water wipes and bursts too, Home's star warps into its own page and flies back (the care notice too), a region page bursts nothing and opens the next at its top, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi stays off, and reduced motion moves nothing");

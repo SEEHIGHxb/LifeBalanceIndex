@@ -22,21 +22,24 @@
 // stepper with their details back; the suggestions are a sideways rail; no
 // region is quiet any more (views/aspect-sheets.js, css/weekly.css).
 //
+// v170 (the owner, 2026-10-02): "How you compare" repeated "What it's made
+// of", so the comparison and the guideline checks are a note, marked at the
+// foot of the parts; what changes how to read the score (an estimate, uniform
+// answers, a grade not given yet) stays open under the top line. Laptops
+// read the sections as static cards; nothing bursts on a region page.
+//
 // Top to bottom:
 //   notice      the Mental page's duty-of-care notice, past the cutoff; still
 //   top         the emblem and the name on the region's photograph, then the
 //               grade, the score and where it stands
 //   character   your character in this region
-//   compare     the percentile gauge and its figure, the notes that change
-//               how to read it, and the guideline checks
-//   parts       one row per component, then the facts measured but not scored
+//   parts       one row per component, the facts measured but not scored,
+//               and the mark to how you compare
 //   trend       the last few weekly snapshots, once there are two
 //   start       the suggestions for this aspect, then how it is updated
 //   notes       what the marks above point to: the grade's reasoning, the
 //               research, the comparison and the sources
 //
-// The Still Water and The Commons are quiet regions, and a page beside the
-// care notice is quiet too: nothing bursts there.
 
 import { stateManager } from "../state.js";
 import { getAspectDetail, ASPECT_META } from "../aspects.js";
@@ -205,7 +208,7 @@ function topBody(a, book) {
     <div class="aspect-top-read">${letter}
       <span class="aspect-score"><span class="aspect-score-value">${detail.score}</span><span class="aspect-score-max">/100</span></span>${sep}
       <p class="page-top-lead aspect-standing">${escapeHtml(standingLine(a))}${ref}</p>
-    </div>`;
+    </div>${readingNotes(a, book)}`;
 }
 
 // Your character in this region (characters.js): the name, the two sides it
@@ -246,17 +249,12 @@ function gauge(b) {
     </div>`;
 }
 
-// The gauge and its figure stay open, with anything that changes how to read
-// them (an estimate, uniform answers) and the guideline checks. A grade never
-// given keeps its sentence open, because that sentence is the reason and the
-// way to fix it. An unranked aspect has no comparison to show, so the section
-// goes when nothing else is in it (the owner, v143).
-function compareSection(a, book) {
+// What changes how to read the score stays open under the top line: no
+// baseline yet, a grade not given (its sentence is the reason and the way to
+// fix it), an estimate, uniform answers.
+function readingNotes(a, book) {
   const { b, detail, grade } = a;
   const reassess = a.canReassess ? ` <a href="#/checkin">${t("Start Re-assessment")}</a>` : "";
-  // The head already says where you stand, so the gauge carries no figure of
-  // its own, only the mark to its note (v160).
-  const figure = ranked(b) ? `<div class="gauge-row">${gauge(b)}${book.ref("compare", comparisonNote(b))}</div>` : "";
   let missing = "";
   if (!grade && !a.unranked) {
     const note = gradeNote(a);
@@ -268,25 +266,25 @@ function compareSection(a, book) {
     <p class="aspect-note"><strong>${t("Estimated score.")}</strong> ${tp("This score comes from default answers. Answer the {aspect} questions or submit a Weekly Review to confirm it.", { aspect: detail.label })}${reassess}</p>` : "";
   const uniform = detail.flaggedInstruments && detail.flaggedInstruments.length > 0 ? `
     <p class="aspect-note"><strong>${t("Uniform answers detected.")}</strong> ${t("Some questionnaire answers all sat on the same option, so they are not counted as a confirmed measurement. Re-answer them honestly to confirm this score.")}</p>` : "";
-  const checks = criteriaCard(a.criteria, book.ref("guidelines", criteriaNote(a.criteria)));
-  const body = `${figure}${noData}${missing}${estimated}${uniform}${checks}`;
-  if (!body.trim()) return "";
-  return `
-    <section class="panel statement aspect-society"><div class="wrap split">
-      ${label(t("How you compare"))}
-      <div>
-        ${figure}${noData}${missing}
-        ${estimated}${uniform}
-        ${checks}
-      </div>
-    </div></section>`;
+  const body = `${noData}${missing}${estimated}${uniform}`;
+  return body.trim() ? `<div class="aspect-reading">${body}</div>` : "";
+}
+
+// How you compare, as a note (v170): the gauge, what the percentile is and
+// where it comes from, and the guideline checks. An unranked aspect's
+// comparison is already in its grade note, so only its checks come here.
+function compareNote(a) {
+  const { b } = a;
+  const figure = ranked(b) ? `${gauge(b)}${comparisonNote(b)}` : "";
+  const checks = a.criteria && a.criteria.length ? `${criteriaCard(a.criteria)}${criteriaNote(a.criteria)}` : "";
+  return `${figure}${checks}`;
 }
 
 // "What it's made of" as a stepper (v161, the owner: "bring the details"):
 // the parts as tabs, each with its score, and one card at a time with the
-// score, a meter in the region's hue and what it is made of. The track is
-// the scroll a laptop reads the parts by (views/aspect-sheets.js); a phone
-// hides it and taps the tabs, which run sideways as chips.
+// score, a meter in the region's hue and what it is made of. A tap on a tab
+// shows its card (since v170 on a laptop too; the scroll no longer picks it);
+// on a phone the tabs run sideways as chips.
 function partTab(c, i) {
   return `
         <button type="button" class="ps-tab" role="tab" id="ps-tab-${i}" aria-controls="ps-card-${i}" aria-selected="${i === 0}" tabindex="${i === 0 ? 0 : -1}">
@@ -307,14 +305,13 @@ function partCard(c, i, chapter) {
 
 function partsStepper(components, chapter) {
   return `
-    <div class="parts-stepper" data-step="0" style="--steps: ${components.length};">
+    <div class="parts-stepper" data-step="0">
       <div class="ps-pin">
         <div class="ps-tabs" role="tablist" aria-label="${escapeHtml(t("What it's made of"))}">${components.map(partTab).join("")}
         </div>
         <div class="ps-cards">${components.map((c, i) => partCard(c, i, chapter)).join("")}
         </div>
       </div>
-      <ol class="ps-track" aria-hidden="true">${components.map(() => "<li></li>").join("")}</ol>
     </div>`;
 }
 
@@ -337,10 +334,13 @@ function partsSection(a, book) {
   const rows = detail.components.length
     ? partsStepper(detail.components, chapter)
     : `<p class="aspect-note">${t("Baseline survey data needed for this breakdown.")}</p>`;
+  const facts = factsBlock(detail, book);
+  const compare = compareNote(a);
+  const link = compare ? `<p class="aspect-compare-link">${t("How you compare")}${book.ref("compare", compare)}</p>` : "";
   return `
     <section class="panel statement aspect-parts"><div class="wrap split">
       ${label(t("What it's made of"))}
-      <div>${rows}${factsBlock(detail, book)}</div>
+      <div>${rows}${facts}${link}</div>
     </div></section>`;
 }
 
@@ -443,7 +443,6 @@ function nextSection(a) {
   const name = t(ASPECT_META[next.aspect].label);
   return `
     <section class="panel next-aspect" style="background: ${next.wash}; --next-hue: ${next.hue};" data-next="${escapeHtml(next.aspect)}">
-      <div class="burst-layer" aria-hidden="true"></div>
       <a class="next-pull" href="#/aspect/${escapeHtml(next.aspect)}" aria-label="${escapeHtml(tp("Next: {region}, {aspect}", { region: next.region, aspect: name }))}">
         <span class="next-name" aria-hidden="true">${escapeHtml(next.region)} <small>${escapeHtml(name)}</small></span>
         <span class="next-chev" aria-hidden="true"><i></i><i></i></span>
@@ -478,7 +477,6 @@ export function aspectMarkup(a) {
   // Written in reading order, so the notes number in reading order.
   const top = topBody(a, book);
   const character = characterSection(a, book);
-  const compare = compareSection(a, book);
   const parts = partsSection(a, book);
   const focus = focusSection(a);
   return `
@@ -489,13 +487,11 @@ export function aspectMarkup(a) {
         mark: `<img src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" decoding="async">`,
         word: chapter.region,
         inc: detail.label,
-        tapLabel: t("Play with the star"),
         wash: chapter.wash,
         plate: `./assets/regions/${chapter.art}.jpg`,
         body: top
       })}
       ${character}
-      ${compare}
       ${parts}
       ${trendSection(a)}
       ${focus}
@@ -510,10 +506,7 @@ export function renderAspectPage(containerId, state, aspectKey) {
   if (!container) return;
   const a = readAspect(state, aspectKey);
   if (!a || !a.chapter) return;
-  renderStagePage(container, () => aspectMarkup(a), {
-    motifs: [{ motif: a.key, hue: a.chapter.hue }],
-    still: !!a.notice
-  });
+  renderStagePage(container, () => aspectMarkup(a), { still: !!a.notice });
   // Folded on a laptop too (the owner, v162), as on a phone.
   bindFootnotes(container, { fold: "always" });
   bindAspectSheets(container);

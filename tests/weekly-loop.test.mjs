@@ -225,7 +225,8 @@ test("an aspect page is compact: the emblem on the region's photograph, rows, an
   assert.doesNotMatch(out, /class="photoband"/);
   assert.match(out, /<h2 class="page-top-word">The Market <small>[^<]+<\/small><\/h2>/);
   assert.match(out, /class="aspect-top-read">/, "the grade and score sit in the top");
-  assert.ok(out.indexOf("page-top") < out.indexOf("aspect-society"));
+  // v170: no "How you compare" section; the comparison is a note.
+  assert.doesNotMatch(out, /aspect-society/);
   // Where it stands is said once, in the top, not again under the gauge.
   assert.equal((out.match(/Ahead of about/g) || []).length, 1);
   assert.match(out, /class="parts-stepper"/);
@@ -244,25 +245,31 @@ test("an aspect page's explanations are numbered notes at its end, in reading or
   for (const gone of ["<details", "percentile-band", "focus-meta", "How this is worked out", "· typical range", "Standing vs Society", "Component Breakdown", "Suggested Focus", "re-measures this aspect from"]) {
     assert.ok(!out.split('class="panel statement aspect-notes"')[0].includes(gone), `${gone} is still in the page's main view`);
   }
-  for (const heading of ["How you compare", "What it(&#39;|')s made of", "Where to start", "Notes and sources"]) assert.match(out, new RegExp(heading));
+  for (const heading of ["What it(&#39;|')s made of", "Where to start", "Notes and sources"]) assert.match(out, new RegExp(heading));
   const marks = [...out.matchAll(/<a id="fnref-([a-z]+)" href="#fn-\1" data-jump="fn-\1" aria-label="Note (\d)">\2<\/a>/g)].map(m => [m[1], m[2]]);
-  assert.deepEqual(marks, [["grade", "1"], ["character", "2"], ["compare", "3"], ["guidelines", "4"]]);
+  assert.deepEqual(marks, [["grade", "1"], ["character", "2"], ["compare", "3"]]);
   // The character's mark ends its line, not its name (the owner, v143).
   assert.match(out, /class="character-line">[^<]+<sup class="fn-ref"><a id="fnref-character"/);
   const notes = out.slice(out.indexOf('class="panel statement aspect-notes"'));
-  assert.deepEqual([...notes.matchAll(/<li id="fn-([a-z]+)"/g)].map(m => m[1]), ["grade", "character", "compare", "guidelines"]);
+  assert.deepEqual([...notes.matchAll(/<li id="fn-([a-z]+)"/g)].map(m => m[1]), ["grade", "character", "compare"]);
   assert.match(notes, /made up for fun/, "the character's disclaimer is kept");
   assert.match(notes, /“Percentile” = the share of people you're ahead of/);
   assert.match(notes, /class="fn-sources"><li><a href="https:/, "the sources are listed");
   assert.ok(out.lastIndexOf("aspect-focus") < out.indexOf("aspect-notes"), "the notes come last");
 });
 
-test("the guideline checks show open, their explanation a note", () => {
+// v170 (the owner): "How you compare" repeated "What it's made of", so the
+// gauge, the comparison and the guideline checks are one note, marked at the
+// foot of the parts.
+test("how you compare is a note marked under the parts, with the guideline checks in it", () => {
   renderAspectPage(MAIN, STATE, "mental");
   const out = html();
-  assert.match(out, /<div class="criteria-card">\s*<p class="criteria-head"><span class="card-header">Guideline checks<\/span><sup class="fn-ref"><a id="fnref-guidelines"/);
+  const page = out.split('class="panel statement aspect-notes"')[0];
+  assert.doesNotMatch(page, /criteria-card|gauge-track/);
+  assert.match(page, /<p class="aspect-compare-link">How you compare<sup class="fn-ref"><a id="fnref-compare"/);
+  assert.ok(page.indexOf("aspect-compare-link") > page.indexOf("parts-stepper"));
   // The note's number is the way back; no "↑" (the owner, v143).
-  assert.match(out, /<li id="fn-guidelines"[^>]*><a class="fn-mark" href="#fnref-guidelines" data-jump="fnref-guidelines"[^>]*>\d<\/a><div class="fn-body"><p>These compare you with published health guidelines/);
+  assert.match(out, /<li id="fn-compare"[^>]*><a class="fn-mark" href="#fnref-compare" data-jump="fnref-compare"[^>]*>\d<\/a><div class="fn-body">[\s\S]*?class="gauge-track"[\s\S]*?Guideline checks[\s\S]*?These compare you with published health guidelines/);
   assert.doesNotMatch(out, /fn-back|↑/);
 });
 
@@ -298,9 +305,7 @@ test("an aspect page's top is one line: the letter, the score and where it stand
   const out = html();
   assert.match(out, /<div class="aspect-top-read">\s*<span class="aspect-grade-glyph grade-[a-f]">[A-F]<\/span>\s*<span class="sr-only">[^<]+<\/span><span class="aspect-top-sep" aria-hidden="true">·<\/span>\s*<span class="aspect-score"><span class="aspect-score-value">\d+<\/span><span class="aspect-score-max">\/100<\/span><\/span><span class="aspect-top-sep" aria-hidden="true">·<\/span>\s*<p class="page-top-lead aspect-standing">Ahead of about[^<]*<sup class="fn-ref"><a id="fnref-grade"/);
   assert.doesNotMatch(out, /aspect-score-badge|aspect-grade-band|benchmark-detail/);
-  // The gauge keeps no figure of its own; its mark sits beside it.
   assert.doesNotMatch(out, /\d+(st|nd|rd|th) percentile<sup/);
-  assert.match(out, /<div class="gauge-row">\s*<div class="gauge-track"[\s\S]*?<\/div>\s*<\/div><sup class="fn-ref"><a id="fnref-compare"/);
 });
 
 test("an unranked aspect's top starts at the score", () => {
@@ -314,9 +319,10 @@ test("each guideline check is one line, its figures in the note", () => {
   renderAspectPage(MAIN, STATE, "physical");
   const out = html();
   const page = out.split('class="panel statement aspect-notes"')[0];
+  const notes = out.slice(page.length);
   assert.doesNotMatch(page, /criterion-detail|criterion-body|The guideline is 150 min/);
-  assert.match(page, /<span class="criterion-chip criterion-chip-[a-z]+">[^<]+<\/span>\s*<span class="criterion-name">[^<]+<\/span>\s*<\/li>/);
-  assert.match(out, /<li id="fn-guidelines"[\s\S]*<li><strong>[^<]+<\/strong> · [^<]*The guideline is 150 min/);
+  assert.match(notes, /<span class="criterion-chip criterion-chip-[a-z]+">[^<]+<\/span>\s*<span class="criterion-name">[^<]+<\/span>\s*<\/li>/);
+  assert.match(out, /<li id="fn-compare"[\s\S]*<li><strong>[^<]+<\/strong> · [^<]*The guideline is 150 min/);
   assert.match(read("css/weekly.css"), /\.aspect-page \.criterion-name \{ order: -1; \}/);
 });
 
@@ -333,7 +339,7 @@ test("the four characters are a note; the parts are a stepper; the suggestions a
   assert.match(page, /<article class="ps-card" role="tabpanel" id="ps-card-0" aria-labelledby="ps-tab-0">/);
   assert.match(page, /<article class="ps-card" role="tabpanel" id="ps-card-1" aria-labelledby="ps-tab-1" hidden>/);
   assert.match(page, /class="ps-card"[\s\S]*?<p class="pr-desc">[^<]+<\/p>/);
-  assert.equal((page.match(/<ol class="ps-track" aria-hidden="true">(<li><\/li>)+<\/ol>/g) || []).length, 1);
+  assert.doesNotMatch(page, /ps-track/, "v170: a tap picks the part, not the scroll");
   assert.doesNotMatch(out, /fnref-parts|fnref-focus/);
   // Every suggestion in full, as cards on a rail.
   assert.match(page, /<ul class="focus-list focus-rail">/);
@@ -341,17 +347,21 @@ test("the four characters are a note; the parts are a stepper; the suggestions a
   assert.ok(rows.length >= 2);
   for (const r of rows) assert.match(r, /class="focus-text"/);
   const css = read("css/weekly.css");
-  assert.match(css, /\.aspect-page > \.panel \{\s*position: sticky;\s*top: var\(--stick, 0px\);/);
+  // v170: the sheets slide on a phone only; a laptop reads static cards.
+  assert.match(css, /@media \(max-width: 900px\) \{\s*\.aspect-page > \.panel \{\s*position: sticky;\s*top: var\(--stick, 0px\);/);
   assert.match(css, /html\[data-reduce-motion\] \.aspect-page > \.panel \{ position: relative; \}/);
   assert.match(read("index.css"), /text-wrap: pretty/);
 });
 
-test("the stepper picks the last part to enter the middle, and keeps its card on leavings alone", async () => {
-  const { stepFromEntries } = await import("../views/aspect-sheets.js");
-  assert.equal(stepFromEntries([{ step: 0, isIntersecting: false }, { step: 1, isIntersecting: true }], 0), 1);
-  assert.equal(stepFromEntries([{ step: 2, isIntersecting: false }], 2), 2);
-  assert.equal(stepFromEntries([{ step: 1, isIntersecting: true }, { step: 3, isIntersecting: true }], 0), 3);
-  assert.equal(stepFromEntries([{ step: -1, isIntersecting: true }], 1), 1);
+// v170 (the owner): nothing bursts on a region page; the next region lands at its top.
+test("a region page has no burst: no tap on its emblem, no burst layer on the next sheet", () => {
+  renderAspectPage(MAIN, STATE, "finance");
+  const out = html();
+  assert.doesNotMatch(out.slice(out.indexOf('class="panel page-top')), /mark-hit/);
+  assert.doesNotMatch(out.slice(out.indexOf("next-aspect")), /burst-layer/);
+  const sheets = read("views/aspect-sheets.js");
+  assert.doesNotMatch(sheets, /burst/);
+  assert.match(sheets, /toTop\(\);\n {4}\}\);/, "the landed page always opens at its top");
 });
 
 test("v162: the page ends on the next region's sheet, in Overview's order, the last wrapping", async () => {
@@ -396,11 +406,11 @@ test("v163: the ribbon, the hint on the right, round emblems, and the page's lis
   assert.match(read("views/aspect.js"), /onRouteEnd\(disposeAspectSheets\)/);
 });
 
-test("v162: notes folded at every width, footer off the aspect pages, the stepper sized round its block", () => {
+test("v162: notes folded at every width, footer off the aspect pages; v170: the stepper is a plain block", () => {
   const css = read("css/weekly.css");
   assert.match(read("views/aspect.js"), /bindFootnotes\(container, \{ fold: "always" \}\)/);
   assert.match(css, /body:has\(\.aspect-page\) \.site-footer \{ display: none; \}/);
-  assert.match(css, /\.parts-stepper \{ position: relative; height: calc\(var\(--steps\) \* 26vh \+ var\(--pin-h, 240px\) \+ 10vh\); \}/);
+  assert.doesNotMatch(css, /--pin-h|ps-track/);
   assert.match(css, /\.ps-card\[hidden\] \{ display: grid; visibility: hidden; \}/);
 });
 
@@ -473,4 +483,13 @@ test("removing a pledge asks on the page first", () => {
   renderQuests(MAIN, { ...STATE, goals }, { confirm: "g1" });
   assert.match(html(), /data-confirm-remove="g1"/);
   assert.match(html(), /data-cancel-remove="g1"/);
+});
+
+// v170 (the owner: "the Goals on mobile phone"): Overview's phone rule that
+// opens its pledge text into the header grid must not reach the Goals page,
+// where it pushed each pledge's title and Remove off the screen.
+test("Overview's phone pledge rule stays on Overview", () => {
+  const css = read("css/home.css");
+  assert.match(css, /\.home-pledges \.pledge-body,\n {2}\.pledge-count \{ display: contents; \}/);
+  assert.doesNotMatch(css, /\n {2}\.pledge-body,\n/);
 });

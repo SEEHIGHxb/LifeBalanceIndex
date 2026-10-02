@@ -421,7 +421,7 @@ a.start-card:focus-visible { outline: 2px solid var(--frame-ink); outline-offset
      then the pledges as a rail. */
   .home > .home-pledges { padding: 24px 0 40px; }
   .home-pledges .split { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; }
-  .pledge-body,
+  .home-pledges .pledge-body,
   .pledge-count { display: contents; }
   .pledge-count > span { grid-column: 1 / -1; font-size: 15px; }
   .pledge-count a.pill { grid-row: 1; grid-column: 2; color: #f4efe4; }

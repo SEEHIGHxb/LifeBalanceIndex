@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `169`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `170`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.99.0] - 2026-10-02 · v170
+
+### Changed
+- Region pages: "How you compare" is no longer a section. The gauge, the comparison and the guideline checks are one note, marked "How you compare" at the foot of "What it's made of"; an estimate, uniform answers or a grade not given yet stay open under the top line.
+- Region pages on a laptop read as static cards; the sheets slide over each other on a phone only. "What it's made of" changes part on a tap, not with the scroll.
+- Region pages burst nothing: no tap on the emblem, no burst when the next region opens. The next region always opens at its top.
+- The "you are here" ribbon is centred in the phone header (its phone rule was a container query the header never matched).
+
+### Fixed
+- Goals on a phone: Overview's pledge rule reached the Goals page and pushed each pledge's title and Remove off the screen.
 
 ## [2.98.1] - 2026-10-01 · v169
 

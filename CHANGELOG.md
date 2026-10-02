@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `175`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `176`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.103.1] - 2026-10-02 · v176
+
+### Fixed
+- Switching language keeps your place (the owner: the page jumped somewhere else). The switch now remembers the element under the top of the screen and how far into it you were, finds the same element in the redrawn page, and scrolls it back under the header; once more when the Thai font finishes loading, unless you have scrolled since. On a 15,000 px page the old scroll distance landed up to 1,600 px off; now within a few pixels.
 
 ## [2.103.0] - 2026-10-02 · v175
 

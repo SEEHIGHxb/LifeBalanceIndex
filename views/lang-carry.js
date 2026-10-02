@@ -91,8 +91,90 @@ export function carriedStep(formId) {
   return Number.isInteger(step) ? step : null;
 }
 
+// --- the place on the page ---------------------------------------------------
+//
+// v176, the owner: the page moved the reader somewhere else when the language
+// changed, because Thai and English lines run to different lengths and the
+// old scroll distance then points at other words. So the place is kept as the
+// element under the top of the screen, found again in the new render by its
+// position in the tree (both languages draw the same markup), and how far
+// down it the screen's top was. The page scrolls until that point is back
+// under the header.
+
+// How far below the header the reading line sits.
+const ANCHOR_INSET_PX = 12;
+
+// The element's child-index path from `root`, or null when it is not inside.
+export function pathTo(root, el) {
+  const path = [];
+  for (let node = el; node && node !== root; node = node.parentElement) {
+    const parent = node.parentElement;
+    if (!parent) return null;
+    path.unshift(Array.prototype.indexOf.call(parent.children, node));
+  }
+  return path;
+}
+
+// The element at `path` under `root`, or the deepest one still there when the
+// new render has fewer children somewhere along it.
+export function nodeAt(root, path) {
+  let node = root;
+  for (const i of path) {
+    const next = node.children?.[i];
+    if (!next) break;
+    node = next;
+  }
+  return node;
+}
+
+const readingLine = () => {
+  const header = document.getElementById("site-header");
+  return Math.max(0, header ? header.getBoundingClientRect().bottom : 0) + ANCHOR_INSET_PX;
+};
+
+export function captureAnchor(root) {
+  if (typeof document === "undefined" || typeof document.elementFromPoint !== "function") return null;
+  if (!root || (window.scrollY || 0) < 1) return null;
+  const y = readingLine();
+  const box = root.getBoundingClientRect();
+  // Near the left edge first: the middle can fall in the gap between columns.
+  for (const x of [box.left + 24, box.left + box.width / 2]) {
+    const el = document.elementFromPoint(x, y);
+    if (!el || el === root || !root.contains(el)) continue;
+    const path = pathTo(root, el);
+    if (!path) continue;
+    const r = el.getBoundingClientRect();
+    const fraction = r.height ? Math.min(1, Math.max(0, (y - r.top) / r.height)) : 0;
+    return { path, y, fraction };
+  }
+  return null;
+}
+
+// Scrolls so the anchored point is back on the reading line. Returns where it
+// scrolled to.
+export function restoreAnchor(root, anchor) {
+  const el = nodeAt(root, anchor.path);
+  if (!el || el === root) return null;
+  const r = el.getBoundingClientRect();
+  window.scrollBy({ top: r.top + anchor.fraction * r.height - anchor.y, behavior: "instant" });
+  return window.scrollY;
+}
+
+// The Thai font's glyphs can arrive after the switch and reflow the page
+// again, so the place is set once more when they are in, unless the reader
+// has scrolled since.
+function settleAnchor(root, anchor, at) {
+  const fonts = document.fonts?.ready;
+  if (!fonts || at === null) return;
+  fonts.then(() => {
+    if (Math.abs(window.scrollY - at) > 2) return;
+    restoreAnchor(root, anchor);
+  }).catch(() => {});
+}
+
 export function withCarriedScreen(root, rerender) {
   const snapshot = captureScreen(root);
+  const anchor = captureAnchor(root);
   carried = snapshot;
   try {
     rerender();
@@ -100,11 +182,11 @@ export function withCarriedScreen(root, rerender) {
     carried = null;
   }
   const restored = restoreScreen(root, snapshot);
-  // The page lengthens or shortens with the language, so this lands near the
-  // same place rather than exactly on it; without it a stepped form's own
-  // scroll to its top would leave the reader at the head of a long screen.
-  if (typeof window !== "undefined" && typeof window.scrollTo === "function") {
-    window.scrollTo({ top: snapshot.scrollY, behavior: "instant" });
-  }
+  if (typeof window === "undefined" || typeof window.scrollTo !== "function") return restored;
+  // Without an anchor (the top of the page, or no layout to read), the old
+  // distance: near the same place, and a stepped form's own scroll to its top
+  // does not leave the reader at the head of a long screen.
+  window.scrollTo({ top: snapshot.scrollY, behavior: "instant" });
+  if (anchor) settleAnchor(root, anchor, restoreAnchor(root, anchor));
   return restored;
 }

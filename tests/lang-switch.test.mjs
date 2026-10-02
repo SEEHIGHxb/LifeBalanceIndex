@@ -15,7 +15,7 @@ await loadLang("th");
 import { INSTRUMENTS } from "../surveys.js";
 import * as journey from "../views/journey.js";
 import {
-  captureScreen, restoreScreen, withCarriedScreen, carriedStep, isCarrying
+  captureScreen, restoreScreen, withCarriedScreen, carriedStep, isCarrying, pathTo, nodeAt
 } from "../views/lang-carry.js";
 
 globalThis.localStorage = {
@@ -128,4 +128,24 @@ test("capture and restore tolerate a missing root", () => {
   const snapshot = captureScreen(null);
   assert.equal(snapshot.controls.size, 0);
   assert.equal(restoreScreen(null, snapshot), 0);
+});
+
+// v176, the owner: the switch kept the scroll distance, and the other
+// language's line lengths put other words there. The place is now an element,
+// found again in the new render by its position in the tree.
+test("the element at the top of the screen is found again by its place in the tree", () => {
+  const tree = (shape, parent = null) => {
+    const node = { parentElement: parent, children: [] };
+    node.children = shape.map(s => tree(s, node));
+    return node;
+  };
+  const before = tree([[], [[], [], [[]]], []]);
+  const el = before.children[1].children[2].children[0];
+  const path = pathTo(before, el);
+  assert.deepEqual(path, [1, 2, 0]);
+  const after = tree([[], [[], [], [[]]], []]);
+  assert.equal(nodeAt(after, path), after.children[1].children[2].children[0]);
+  const shorter = tree([[], [[]]]);
+  assert.equal(nodeAt(shorter, path), shorter.children[1], "the deepest one still there");
+  assert.equal(pathTo(before, { parentElement: null, children: [] }), null, "not inside the root");
 });

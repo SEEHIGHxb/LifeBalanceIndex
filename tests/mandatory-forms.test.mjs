@@ -1,6 +1,6 @@
 // Tests for the blank-first form builders in views/instrument-forms.js.
 // These are pure string builders (no DOM), so they assert directly on markup:
-// required fields render blank with a "*" and data-required; instrument radios
+// required fields render blank with data-required and no "*" (v174); radios
 // are never pre-checked. i18n falls back to English keys in Node, so no DOM or
 // localStorage mock is needed.
 import { test } from "node:test";
@@ -14,13 +14,13 @@ test("numberField without opts stays pre-filled and optional (Profile/Review pat
   assert.doesNotMatch(html, /class="req"/, "no asterisk marker");
 });
 
-test("numberField with required renders blank, a * marker, and data-required", () => {
+test("numberField with required renders blank and data-required, with no * marker (v174)", () => {
   const html = numberField("x", "Age", "", 'min="15" max="100"', {
     required: true, field: "age", placeholder: "15–100"
   });
   assert.match(html, /value=""/, "starts blank");
   assert.match(html, /data-required="1"/, "marked required for validateScope");
-  assert.match(html, /class="req"/, "shows the * marker");
+  assert.doesNotMatch(html, /class="req"|\*</, "no * marker: every field is required");
   assert.match(html, /placeholder="15–100"/, "carries the hint");
   assert.match(html, /data-field="age"/, "ties back to a validation key");
 });
@@ -29,7 +29,7 @@ test("instrument questions render blank (nothing pre-checked) and required", () 
   const html = instrumentBlock("who5");
   assert.doesNotMatch(html, /checked/, "no radio may be pre-selected");
   assert.match(html, /data-required="1"/, "each question is required");
-  assert.match(html, /class="req"/, "each question shows a * marker");
+  assert.doesNotMatch(html, /class="req"/, "no question shows a * marker (v174)");
 });
 
 test("every instrument question gets its own inline error slot", () => {
@@ -42,9 +42,9 @@ test("every instrument question gets its own inline error slot", () => {
 
 // --- Requiredness reaches assistive tech (WCAG 3.3.2) ---
 //
-// The "*" is aria-hidden and data-required is inert to a screen reader, so
+// No "*" shows (v174), and data-required is inert to a screen reader, so
 // aria-required is the ONLY thing that tells a non-sighted user which fields
-// block Next. These assert it exists wherever the visual marker does, and —
+// block Next. These assert it exists wherever a field is required, and —
 // just as importantly — nowhere it doesn't, so the Profile and Weekly Review
 // edit screens keep announcing their pre-filled inputs as optional.
 

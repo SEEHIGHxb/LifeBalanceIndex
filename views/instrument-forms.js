@@ -2,7 +2,7 @@
 // instruments (onboarding, monthly check-in, and deep assessment).
 //
 // Blank-first policy: every instrument question and every required numeric /
-// select field renders BLANK, with a red "*" marker and a data-required flag.
+// select field renders BLANK, with a data-required flag (no "*" since v174).
 // Nothing is pre-checked or pre-filled, so a user can never coast past a
 // question on a silent default. validateScope() below enforces this — it blocks
 // Next / Submit until each visible required control is answered. (The Profile
@@ -19,12 +19,17 @@ import { t, tp } from "../i18n.js";
 // fact — the marker was hidden and no aria-required existed anywhere, so a
 // screen reader user got no signal at all and had to discover which fields
 // block Next by tripping the validator. Every builder below now emits it.
-const REQ_MARK = `<span class="req" aria-hidden="true">*</span>`;
+// What a portion or a litre looks like, under the field wherever it is asked
+// (v174, the owner: tell ordinary people what the amount is).
+export const FIELD_HINTS = {
+  vegetablePortions: "1 portion is about 80 g: a cupped handful of raw leafy greens, or 3 heaped tablespoons cooked. Vegetables only, not fruit.",
+  waterLiters: "1 litre is about 4 glasses. A small bottle of water is 0.6 L, a large one 1.5 L."
+};
 
 // A number/text input. Backward-compatible: called with (id, label, value,
 // attrs) it renders exactly as before (pre-filled, optional). The trailing
 // opts turn on the blank-first behavior:
-//   required    -> adds the "*" marker, aria-required, and data-required
+//   required    -> adds aria-required and data-required
 //                  (the last is the validateScope gate; aria-required is what
 //                  a screen reader actually announces, since data-* is inert)
 //   placeholder -> a language-neutral hint (digits only, no translation)
@@ -36,7 +41,6 @@ const REQ_MARK = `<span class="req" aria-hidden="true">*</span>`;
 //                  owns escaping, exactly as it already does for `label`.
 export function numberField(id, label, value, attrs = "", opts = {}) {
   const { required = false, placeholder = "", field = "", note = "" } = opts;
-  const req = required ? ` ${REQ_MARK}` : "";
   const ph = placeholder ? ` placeholder="${placeholder}"` : "";
   const dataField = field ? ` data-field="${field}"` : "";
   const dataReq = required ? ` data-required="1" aria-required="true"` : "";
@@ -44,7 +48,7 @@ export function numberField(id, label, value, attrs = "", opts = {}) {
   const noteEl = note ? `\n      <p class="field-note" id="${id}-note">${note}</p>` : "";
   return `
     <div class="form-group">
-      <label for="${id}">${label}${req}</label>
+      <label for="${id}">${label}</label>
       <input type="number" id="${id}" class="form-control" value="${value}"${ph}${dataField}${dataReq}${describedBy} ${attrs}>${noteEl}
       <span class="field-error d-none" id="${id}-err" aria-live="polite"></span>
     </div>`;
@@ -66,7 +70,7 @@ function radioQuestion(instrKey, itemIndex, item, displayIndex = itemIndex) {
   return `
     <fieldset class="survey-question" data-required="1"
       role="radiogroup" aria-required="true" aria-labelledby="${base}-legend">
-      <legend id="${base}-legend">${displayIndex + 1}. ${t(item.text)} ${REQ_MARK}</legend>
+      <legend id="${base}-legend">${displayIndex + 1}. ${t(item.text)}</legend>
       <div class="radio-group">
         ${item.options.map(o => `
           <label class="radio-option">
@@ -274,7 +278,7 @@ export function validateScope(scopeEl) {
 // A mandatory dropdown: starts on a disabled blank "Select", so the user
 // must make a conscious choice (gender keeps "Prefer not to say" as a real
 // option). Carries data-required + an inline error span for validateScope, and
-// aria-required so the "*" — which is aria-hidden — is not the only signal.
+// aria-required, which with no visible marker is the signal.
 //
 // MOVED HERE FROM views/onboarding.js in the chapter rewrite. It was always a
 // form builder sitting in a view by accident; views/journey.js needs it now,
@@ -283,7 +287,7 @@ export function validateScope(scopeEl) {
 export function selectField(id, label, options) {
   return `
     <div class="form-group">
-      <label for="${id}">${label} ${REQ_MARK}</label>
+      <label for="${id}">${label}</label>
       <select id="${id}" class="form-control" data-required="1" aria-required="true">
         <option value="" disabled selected>${t("Select")}</option>
         ${options.map(o => `<option value="${o.v}">${t(o.l)}</option>`).join("")}

@@ -22,7 +22,7 @@
 .journey .survey-page {
   position: relative;
   min-height: calc(100vh - var(--frame-header-h));
-  min-height: calc(100dvh - var(--frame-header-h));
+  min-height: calc(100svh - var(--frame-header-h));
   padding: clamp(40px, 7vw, 120px) 0 clamp(56px, 7vw, 120px);
   background: var(--chapter-wash, var(--frame-page));
   border-radius: var(--journey-r);
@@ -242,8 +242,9 @@
   display: grid;
   grid-template-columns: minmax(180px, 1fr) repeat(7, minmax(36px, 56px));
   gap: 8px 6px;
-  /* A drag paints; it must not scroll the page or select the letters. */
-  touch-action: none;
+  /* A sideways drag paints; an up-and-down swipe scrolls the page (v174,
+     the owner: the grid used to trap the scroll). */
+  touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
 }

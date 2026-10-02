@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `173`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `174`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.102.0] - 2026-10-02 · v174
+
+### Changed
+- The weekly review happens on Sunday (the owner). Its week runs Sunday to Saturday: it opens on Sunday and stays open until the next Sunday. The strip shows this week, Monday to Sunday, with Sunday marked; "opens on" names the coming Sunday. Monday to Saturday keep the ISO week key, so stored reviews still match (`season.js` reviewWeekKey, `state.js`, `views/review.js`).
+- The aspect pages carry no update row: no "Updated at the monthly re-assessment.", no Start Weekly Review or Start Re-assessment button there (`views/aspect.js`).
+- No "*" marks a required field; every field is required and Next still blocks a blank one (`views/instrument-forms.js`, `index.css`).
+- The vegetable and water questions say what the amount looks like: "1 portion is about 80 g: a cupped handful of raw leafy greens, or 3 heaped tablespoons cooked" and "1 litre is about 4 glasses. A small bottle of water is 0.6 L, a large one 1.5 L.", in the journey and the weekly review.
+- The social network answers are numerals: 0, 1, 2, 3 or 4, 5 to 8, 9 or more (`surveys.js`).
+
+### Fixed
+- The page no longer re-lays out as a phone browser's toolbar hides: page boxes take svh, which stays put; only fixed overlays keep dvh (`index.css`, `css/journey.css`, `css/weekly.css`, `css/star-page.css`).
+- "How you move": a finger swiping up or down over the day grid scrolls the page; a sideways drag paints, and a tap ticks a day (`views/activity-fields.js`, `css/journey.css`).
 
 ## [2.101.1] - 2026-10-02 · v173
 

@@ -18,7 +18,7 @@ import {
   sanitizeSeason, sanitizeLastLevelUp, sanitizeBirthday, sanitizeLevelYears
 } from "./sanitize.js";
 import {
-  isoWeekKey, accrueSeason, closeSeason, openSeason,
+  isoWeekKey, reviewWeekKey, accrueSeason, closeSeason, openSeason,
   mostRecentBirthday, birthdaysSince
 } from "./season.js";
 import {
@@ -573,10 +573,10 @@ export class GameStateManager {
   // measurement, so the first review comes due the following week.
   isWeeklyReviewDue() {
     if (!this.state.onboarded || !this.state.baseline) return false;
-    const currentWeek = isoWeekKey(new Date());
+    const currentWeek = reviewWeekKey(new Date());
     const last = this.lastReview();
     if (last) return last.week !== currentWeek;
-    return isoWeekKey(new Date(this.state.baseline.date)) !== currentWeek;
+    return reviewWeekKey(new Date(this.state.baseline.date)) !== currentWeek;
   }
 
   countReviewsSince(sinceIso) {
@@ -591,7 +591,7 @@ export class GameStateManager {
   // never offers one) so the base XP can't be farmed.
   submitWeeklyReview(inputs) {
     if (!this.state.onboarded || !this.state.baseline) return null;
-    const week = isoWeekKey(new Date());
+    const week = reviewWeekKey(new Date());
     const last = this.lastReview();
     if (last && last.week === week) return null;
 

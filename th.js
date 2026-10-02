@@ -68,7 +68,9 @@ export const TH = {
   "A typical day.": "วันธรรมดาทั่วไป",
   "Sleep a night (hours)": "นอนคืนละ (ชั่วโมง)",
   "Vegetable portions a day": "ผักต่อวัน (ส่วน)",
-  "One portion is about a handful. Vegetables only, not fruit.": "หนึ่งส่วนประมาณหนึ่งกำมือ นับเฉพาะผัก ไม่รวมผลไม้",
+  // v174, the portion hints (await the owner's review).
+  "1 portion is about 80 g: a cupped handful of raw leafy greens, or 3 heaped tablespoons cooked. Vegetables only, not fruit.": "1 ส่วนประมาณ 80 กรัม: ผักใบดิบหนึ่งกำมือ หรือผักสุก 3 ช้อนโต๊ะพูน นับเฉพาะผัก ไม่รวมผลไม้",
+  "1 litre is about 4 glasses. A small bottle of water is 0.6 L, a large one 1.5 L.": "1 ลิตรประมาณ 4 แก้ว น้ำขวดเล็ก 0.6 ลิตร ขวดใหญ่ 1.5 ลิตร",
   "Water a day (litres)": "น้ำต่อวัน (ลิตร)",
   "Time spent learning": "เวลาที่ใช้เรียนรู้",
   "Both can be zero.": "ใส่ศูนย์ได้ทั้งสองช่อง",
@@ -164,7 +166,6 @@ export const TH = {
   // v142, approved by the owner 2026-09-29: the aspect pages trimmed.
   "How you compare": "เทียบกับคนอื่น",
   "What it's made of": "มาจากอะไรบ้าง",
-  "Updated at the monthly re-assessment.": "อัปเดตในการประเมินซ้ำประจำเดือน",
 
   // v141, approved by the owner 2026-09-29: Overview trimmed, notes and sources.
   "Note {n}": "หมายเหตุ {n}",
@@ -415,11 +416,12 @@ export const TH = {
   "Some of the time": "เป็นบางครั้ง",
   "At no time": "ไม่มีเลย",
   "None": "ไม่มี",
-  "One": "1 คน",
-  "Two": "2 คน",
-  "Three or four": "3-4 คน",
-  "Five to eight": "5-8 คน",
-  "Nine or more": "9 คนขึ้นไป",
+  "0": "0 คน",
+  "1": "1 คน",
+  "2": "2 คน",
+  "3 or 4": "3-4 คน",
+  "5 to 8": "5-8 คน",
+  "9 or more": "9 คนขึ้นไป",
   "Hardly ever or never": "แทบไม่เคยหรือไม่เคยเลย",
   "Poorly": "ค่อนข้างแย่",
   // RAS per-item anchors (Hendrick labels A/C/E differently for every item).
@@ -692,7 +694,6 @@ export const TH = {
   "THB/month": "บาท/เดือน",
   "hours/month": "ชั่วโมง/เดือน",
   // --- Aspect page: measured-weekly card ---
-  "Measured Weekly": "วัดรายสัปดาห์",
   'Comparison codes start with "{prefix}".': 'รหัสเปรียบเทียบต้องขึ้นต้นด้วย "{prefix}"',
   "That code is damaged — ask the participant to copy it again.": "รหัสนี้เสียหาย — ให้ผู้เข้าร่วมคัดลอกส่งมาใหม่อีกครั้ง",
   "Unsupported comparison code version.": "เวอร์ชันรหัสเปรียบเทียบไม่รองรับ",

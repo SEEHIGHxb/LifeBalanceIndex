@@ -71,6 +71,16 @@ export function openSeason(date) {
 
 // --- WEEKS (shared by the weekly review and season accrual) ---
 
+// The weekly review's week: Sunday to Saturday, keyed as the ISO week that
+// starts the next day (v174, the owner: the review happens on Sunday). It
+// opens on Sunday and stays open until the next Sunday opens a new one. From
+// Monday to Saturday it is the ISO week itself, so every stored key still
+// matches.
+export function reviewWeekKey(date) {
+  const next = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+  return isoWeekKey(next);
+}
+
 // Thursday-based ISO week number, keyed as "YYYY-Www".
 export function isoWeekKey(date) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));

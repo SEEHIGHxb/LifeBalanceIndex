@@ -25,14 +25,14 @@
 import { stateManager } from "../state.js";
 import { validateProfile, FIELD_CONSTRAINTS } from "../validation.js";
 import { t, tp, dateLocale } from "../i18n.js";
-import { numberField, markField } from "./instrument-forms.js";
+import { numberField, markField, FIELD_HINTS } from "./instrument-forms.js";
 import { escapeHtml } from "./helpers.js";
 import { savingsAmountFrom, savingsRateFrom } from "../scoring.js";
 import {
   CONNECTION_SOURCES, SOURCE_NAMES, readConnection, readConnectionPrefs,
   connectionStatus, connectionPrefills, incomeDrifted
 } from "../connections.js";
-import { isoWeekKey } from "../season.js";
+import { isoWeekKey, reviewWeekKey } from "../season.js";
 import { mountMotion, writeMotionStyle } from "./motion-mount.js";
 import { typedMarkup, typeIn, settleIn, onAbort, SPRITES, isQuietChapter } from "./stage.js";
 import { stepperMarkup } from "./stepper.js";
@@ -228,7 +228,7 @@ function reviewField(field, profile, prefills = {}) {
   // The chip names the app in the label, so the source is visible before the
   // number is read. SOURCE_NAMES are our own literals, never payload text.
   const chip = pre ? ` <span class="prefill-chip">${SOURCE_NAMES[pre.source]}</span>` : "";
-  const note = pre ? prefillNote(pre) : "";
+  const note = pre ? prefillNote(pre) : (FIELD_HINTS[field] ? t(FIELD_HINTS[field]) : "");
   return numberField(
     FIELD_IDS[field],
     `${t(FIELD_LABELS[field])}${chip}`,
@@ -248,12 +248,10 @@ function focusField(id) {
   target?.focus();
 }
 
-// Next ISO week starts on the coming Monday.
-export function nextReviewDate() {
-  const d = new Date();
-  const sinceMonday = (d.getDay() + 6) % 7;
-  const next = new Date(d);
-  next.setDate(d.getDate() + (7 - sinceMonday));
+// The next review opens on the coming Sunday (v174): only asked while this
+// week's is done, so on a Sunday it is the Sunday after.
+export function nextReviewDate(now = new Date()) {
+  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (7 - now.getDay()));
   return next.toLocaleDateString(dateLocale(), { day: "numeric", month: "short" });
 }
 
@@ -353,9 +351,9 @@ export function pledgesAndPoints(r) {
   return `${tp("{met}/{total} pledges met", { met: r.goals.filter(g => g.met).length, total: r.goals.length })} · ${points}`;
 }
 
-// v166, the owner's plan: this week Monday to Sunday and then the Monday the
-// next review opens. The days gone are faint, today is ringed, the day of the
-// latest review this week is starred. The line under it says the date in
+// This week, Monday to Sunday (v174, the owner: seven days, the review on
+// Sunday, which is marked). The days gone are faint, today is ringed, the day
+// of the latest review this week is starred. The line under it says the date in
 // words, so the strip is not read out.
 function weekStrip(reviews, now = new Date()) {
   const day = (k) => new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7) + k);
@@ -365,16 +363,16 @@ function weekStrip(reviews, now = new Date()) {
     ? new Date(last.getFullYear(), last.getMonth(), last.getDate()).getTime()
     : null;
   const letter = new Intl.DateTimeFormat(dateLocale(), { weekday: "narrow" });
-  const cells = Array.from({ length: 8 }, (_, k) => {
+  const cells = Array.from({ length: 7 }, (_, k) => {
     const d = day(k);
     const at = d.getTime();
     const cls = [
       at < today && "is-past",
       at === today && "is-today",
-      at === doneDay && k < 7 && "is-done",
-      k === 7 && "is-next"
+      at === doneDay && "is-done",
+      k === 6 && "is-next"
     ].filter(Boolean).join(" ");
-    const star = at === doneDay && k < 7
+    const star = at === doneDay
       ? `<svg viewBox="0 0 100 100"><use href="${SPRITES}#star"/></svg>`
       : "";
     return `<li${cls ? ` class="${cls}"` : ""}><span>${escapeHtml(letter.format(d))}</span><b>${d.getDate()}</b>${star}</li>`;
@@ -511,7 +509,7 @@ export function renderReview(containerId, state, onComplete) {
     return bad;
   };
 
-  const week = isoWeekKey(new Date());
+  const week = reviewWeekKey(new Date());
   const save = () => saveDraft(DRAFT_KEY, form, { week, step: current });
 
   // Focus follows the screen, so a screen-reader user hears where they are.

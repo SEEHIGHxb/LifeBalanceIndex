@@ -13,7 +13,7 @@
 // Facts: the CHAPTER-ENDING FACTS block in benchmarks.js, verified 2026-09-11
 // and inventoried in docs/chapter-facts.md.
 
-import { numberField, selectField, instrumentBlock } from "./instrument-forms.js";
+import { numberField, selectField, instrumentBlock, FIELD_HINTS } from "./instrument-forms.js";
 import { learningMarkup, weekMarkup, donationMarkup, volunteerMarkup, tallyMarkup } from "./activity-fields.js";
 import { INSTRUMENTS } from "../surveys.js";
 import { t, tp, onLangChange } from "../i18n.js";
@@ -196,9 +196,9 @@ const buildChapters = () => [
         `
           <div class="grid-2">
             ${numberField("onb-sleep", t("Sleep a night (hours)"), "", 'min="0" max="16" step="0.5"', { required: true, field: "sleepHours", placeholder: "0–16" })}
-            ${numberField("onb-veg", t("Vegetable portions a day"), "", 'min="0" max="15"', { required: true, field: "vegetablePortions", placeholder: "0–15", note: t("One portion is about a handful. Vegetables only, not fruit.") })}
+            ${numberField("onb-veg", t("Vegetable portions a day"), "", 'min="0" max="15"', { required: true, field: "vegetablePortions", placeholder: "0–15", note: t(FIELD_HINTS.vegetablePortions) })}
           </div>
-          ${numberField("onb-water", t("Water a day (litres)"), "", 'min="0" max="10" step="0.1"', { required: true, field: "waterLiters", placeholder: "0–10" })}`
+          ${numberField("onb-water", t("Water a day (litres)"), "", 'min="0" max="10" step="0.1"', { required: true, field: "waterLiters", placeholder: "0–10", note: t(FIELD_HINTS.waterLiters) })}`
       ),
       fieldsScreen(
         "activity",

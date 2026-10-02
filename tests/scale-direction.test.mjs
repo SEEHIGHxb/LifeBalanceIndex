@@ -44,7 +44,7 @@ const LEAST_ANCHORS = new Set([
   "Not at all (0 days)",               // SLEEP_FREQ
   "Rarely / Not at all",               // ST5_FREQ
   "At no time",                        // WHO5_FREQ
-  "None",                              // LSNS_COUNT
+  "0",                                 // LSNS_COUNT (numerals since v174)
   "Hardly ever or never",              // UCLA_FREQ
   "Poorly",                            // RAS_NEEDS
   "Unsatisfied",                       // RAS_SATISFIED

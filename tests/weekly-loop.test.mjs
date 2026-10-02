@@ -141,10 +141,10 @@ test("v166: the review's step list, pledges, week strip, and a route change at t
   }
   const strip = html().match(/<ol class="rv-days" aria-hidden="true">([\s\S]*?)<\/ol>/);
   assert.ok(strip, "the done page shows the week");
-  assert.equal((strip[1].match(/<li/g) || []).length, 8, "Monday to Sunday, then next Monday");
+  assert.equal((strip[1].match(/<li/g) || []).length, 7, "Monday to Sunday (v174)");
   assert.equal((strip[1].match(/is-today/g) || []).length, 1);
   assert.match(strip[1], /class="is-today is-done"><span>[^<]+<\/span><b>\d+<\/b><svg/, "reviewed today: ringed and starred");
-  assert.match(strip[1], /<li class="is-next"><span>[^<]+<\/span><b>\d+<\/b><\/li>$/, "the last day is when the next review opens");
+  assert.match(strip[1], /<li class="[^"]*is-next[^"]*"><span>[^<]+<\/span><b>\d+<\/b>(<svg[\s\S]*?<\/svg>)?<\/li>$/, "Sunday, the last day, is review day");
 
   // A route change starts the next page at its top, before it draws.
   const app = read("app.js");
@@ -234,7 +234,8 @@ test("an aspect page is compact: the emblem on the region's photograph, rows, an
   // marked on the first; the runway is gone.
   assert.match(out, /<ul class="fact-list facts">\s*<li class="fact-row">\s*<span class="fact-label">Monthly saving<sup class="fn-ref"><a id="fnref-facts"/);
   assert.doesNotMatch(out, /Measured, Not Scored|Runway/);
-  assert.match(out, /class="careers-row aspect-measured"/);
+  // v174 (the owner): no row says how the aspect is updated.
+  assert.doesNotMatch(out, /aspect-measured|monthly re-assessment|Start Weekly Review/);
 });
 
 // v142, the owner's cut list: the page keeps what a first-time reader needs;
@@ -505,4 +506,29 @@ test("no aspect page says it is updated by the weekly review, and its cards only
   const base = css.match(/\n\.aspect-page \.focus-rail \{[^}]*\}/)[0];
   assert.match(base, /grid-template-columns: repeat\(auto-fill/);
   assert.doesNotMatch(base, /overflow-x/);
+});
+
+// v174, the owner: the review happens on Sunday. It opens on Sunday and stays
+// open through Saturday; Monday to Saturday keep the ISO week's own key.
+test("the review week runs Sunday to Saturday, opening on Sunday", async () => {
+  const { reviewWeekKey, isoWeekKey } = await import("../season.js");
+  const { nextReviewDate } = await import("../views/review.js");
+  const sat = new Date(2026, 9, 3);   // Saturday 3 Oct 2026
+  const sun = new Date(2026, 9, 4);   // Sunday 4 Oct
+  const mon = new Date(2026, 9, 5);   // Monday 5 Oct
+  assert.equal(reviewWeekKey(sat), isoWeekKey(sat), "Saturday keeps its ISO week");
+  assert.equal(reviewWeekKey(sun), isoWeekKey(mon), "Sunday opens the next review week");
+  assert.equal(reviewWeekKey(mon), reviewWeekKey(sun), "Sunday and the Monday after are one review week");
+  assert.match(nextReviewDate(new Date(2026, 9, 2)), /(^|\D)4(\D|$)/, "Friday's next review is that Sunday");
+  assert.match(nextReviewDate(sun), /11/, "on a Sunday already reviewed, the next is a week on");
+});
+
+// v174: the portions say what an amount looks like, in the journey and the review.
+test("the vegetable and water questions say what a portion and a litre look like", () => {
+  const journey = read("views/journey.js");
+  const review = read("views/review.js");
+  assert.match(journey, /note: t\(FIELD_HINTS\.vegetablePortions\)/);
+  assert.match(journey, /note: t\(FIELD_HINTS\.waterLiters\)/);
+  assert.match(review, /FIELD_HINTS\[field\]/);
+  assert.match(read("views/instrument-forms.js"), /80 g/);
 });

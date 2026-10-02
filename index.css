@@ -101,7 +101,7 @@ body {
   background-color: var(--bg-primary);
   color: var(--color-text-primary);
   min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100svh;
   overflow-x: hidden;
   line-height: 1.55;
   position: relative;
@@ -217,7 +217,7 @@ html {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100svh;
   position: relative;
 }
 #main-view { container-type: inline-size; }
@@ -406,12 +406,8 @@ html {
   font-weight: 600;
 }
 
-/* Blank-first forms: the red "*" mandatory marker and invalid-control cues. */
-.req {
-  color: var(--color-crimson);
-  font-weight: 700;
-  margin-left: 1px;
-}
+/* Blank-first forms: the invalid-control cues. Every field is required, so
+   no "*" marks one (v174, the owner). */
 .input-invalid {
   border-color: var(--color-crimson) !important;
 }

@@ -126,21 +126,31 @@ const STATE = {
   reviews: []
 };
 
-test("every 100vh is followed by a dvh override in the same rule", () => {
+test("every 100vh is followed by a dvh or svh override in the same rule", () => {
   // On iOS Safari and Chrome for Android, 100vh is the viewport with the
   // browser toolbar HIDDEN. While the toolbar shows, a 100vh box is taller than
   // the screen, so a full-height overlay's bottom edge (and anything pinned to
   // it) sits under the toolbar. dvh tracks the toolbar. vh stays as the
   // fallback line for browsers without dvh.
+  //
+  // v174 (the owner: the page jumped as the toolbar hid): a box in the page's
+  // flow takes svh, which never changes as the toolbar comes and goes, so
+  // nothing re-lays out mid-scroll. Only a fixed overlay, behind which the page
+  // does not scroll, keeps dvh.
   const css = read("index.css");
   const rules = css.split("}");
   for (const rule of rules) {
     const vh = rule.match(/^\s*(min-height|height):\s*100vh;/m);
     if (!vh) continue;
     assert.match(
-      rule, new RegExp(`${vh[1]}:\\s*100dvh;`),
-      `a ${vh[1]}: 100vh rule has no ${vh[1]}: 100dvh after it:\n${rule.trim().slice(0, 120)}`
+      rule, new RegExp(`${vh[1]}:\\s*100[ds]vh;`),
+      `a ${vh[1]}: 100vh rule has no ${vh[1]}: 100dvh/svh after it:\n${rule.trim().slice(0, 120)}`
     );
+    const fixed = /position:\s*fixed/.test(rule);
+    assert.match(rule, fixed ? /100dvh/ : /100svh/, `${fixed ? "an overlay" : "a box in the flow"} took the wrong unit:\n${rule.trim().slice(0, 120)}`);
+  }
+  for (const f of ["css/journey.css", "css/weekly.css", "css/star-page.css"]) {
+    assert.doesNotMatch(read(f), /100dvh/, `${f} sizes a page box by the moving viewport`);
   }
 });
 

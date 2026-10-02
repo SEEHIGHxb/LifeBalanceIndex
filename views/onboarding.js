@@ -23,7 +23,7 @@
 // touches an item (views/motion-mount.js STILL_SELECTOR).
 //
 // Blank-first policy (v2.3.0) is untouched: every field starts empty, every
-// mandatory field carries a red "*", and no screen can be left until each
+// mandatory field is required (no "*" since v174), and no screen can be left until each
 // visible required control is answered. A first baseline must be filled in
 // full, so no aspect is scored from a silent default.
 //

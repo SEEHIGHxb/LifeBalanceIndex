@@ -426,24 +426,48 @@ function setDay(box, on) {
 // Drag to paint: the first day pressed decides whether the drag paints or
 // clears, and every day the pointer crosses, in any row, follows. Keyboard and
 // screen readers use the days as the checkboxes they are.
+//
+// A finger starts painting only once it moves sideways (v174, the owner: the
+// grid trapped the page's scroll). An up-and-down swipe is left to the page
+// (touch-action: pan-y in css/journey.css), and a tap is the checkbox's own
+// click. A mouse paints from the press, as before.
+const PAINT_SLOP_PX = 8;
+
 function bindPainting(grid) {
   let paintOn = null;
   let endedAt = 0;
-  grid.addEventListener("pointerdown", (e) => {
-    const box = e.target.closest(".wk-cell")?.querySelector("input");
-    if (!box || e.button !== 0) return;
-    e.preventDefault();
+  let pending = null;
+  const begin = (box, e) => {
     paintOn = !box.checked;
     setDay(box, paintOn);
     box.focus({ preventScroll: true });
     grid.setPointerCapture?.(e.pointerId);
+  };
+  grid.addEventListener("pointerdown", (e) => {
+    const box = e.target.closest(".wk-cell")?.querySelector("input");
+    if (!box || e.button !== 0) return;
+    if (e.pointerType === "touch") {
+      pending = { box, x: e.clientX, y: e.clientY };
+      return;
+    }
+    e.preventDefault();
+    begin(box, e);
   });
   grid.addEventListener("pointermove", (e) => {
+    if (pending) {
+      const dx = Math.abs(e.clientX - pending.x);
+      const dy = Math.abs(e.clientY - pending.y);
+      if (dx < PAINT_SLOP_PX || dx < dy) return;
+      const { box } = pending;
+      pending = null;
+      begin(box, e);
+    }
     if (paintOn === null) return;
     const box = document.elementFromPoint(e.clientX, e.clientY)?.closest(".wk-cell")?.querySelector("input");
     if (box && grid.contains(box)) setDay(box, paintOn);
   });
   const end = () => {
+    pending = null;
     if (paintOn === null) return;
     paintOn = null;
     endedAt = Date.now();

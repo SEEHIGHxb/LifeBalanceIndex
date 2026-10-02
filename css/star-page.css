@@ -15,7 +15,7 @@ body:has(.star-page) .app-container { min-height: 0; }
 .star-page .sp-stage {
   position: relative;
   height: calc(100vh - var(--frame-header-h));
-  height: calc(100dvh - var(--frame-header-h));
+  height: calc(100svh - var(--frame-header-h));
   min-height: 460px;
   overflow: hidden;
   border-radius: 0;

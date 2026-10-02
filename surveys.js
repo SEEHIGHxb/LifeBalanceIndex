@@ -59,12 +59,13 @@ const WHO5_FREQ = [
 ];
 
 const LSNS_COUNT = [
-  { v: 0, l: "None" },
-  { v: 1, l: "One" },
-  { v: 2, l: "Two" },
-  { v: 3, l: "Three or four" },
-  { v: 4, l: "Five to eight" },
-  { v: 5, l: "Nine or more" }
+  // Numerals, not words (v174, the owner).
+  { v: 0, l: "0" },
+  { v: 1, l: "1" },
+  { v: 2, l: "2" },
+  { v: 3, l: "3 or 4" },
+  { v: 4, l: "5 to 8" },
+  { v: 5, l: "9 or more" }
 ];
 
 const UCLA_FREQ = [

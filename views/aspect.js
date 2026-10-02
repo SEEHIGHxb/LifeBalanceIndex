@@ -41,7 +41,6 @@
 //               research, the comparison and the sources
 //
 
-import { stateManager } from "../state.js";
 import { getAspectDetail, ASPECT_META } from "../aspects.js";
 import { getAspectSuggestions, getMentalHealthNotice } from "../suggestions.js";
 import { characterFor, characterDisclaimer } from "../characters.js";
@@ -58,10 +57,6 @@ import {
   criteriaCard, criteriaNote, sourceList, noteBook, footnoteList, bindFootnotes,
   CHECKIN_ASPECTS
 } from "./helpers.js";
-
-// The aspects the weekly review re-measures. Mental and relationships are
-// survey-measured (monthly re-assessment), not weekly.
-const WEEKLY_ASPECTS = ["finance", "physical", "personalGoals", "socialContribution", "environment", "humanityFuture"];
 
 // Four weeks fit across a phone; the trend is the direction, not the archive.
 const TREND_CELLS = 4;
@@ -375,23 +370,6 @@ function trendSection(a) {
     </div></section>`;
 }
 
-// How the aspect is updated, and the call to do it. A weekly region shows
-// only its button, and only while a review is due (v173, the owner: "Updated
-// by your weekly review. Reviewed this week ..." left every aspect page).
-function measuredRow(a) {
-  if (WEEKLY_ASPECTS.includes(a.key)) {
-    return stateManager.isWeeklyReviewDue()
-      ? `<div class="careers-row aspect-measured"><a href="#/review" class="pill">${t("Start Weekly Review")}</a></div>`
-      : "";
-  }
-  const action = a.state.baseline ? `<a href="#/checkin" class="pill">${t("Start Re-assessment")}</a>` : "";
-  return `
-    <div class="careers-row aspect-measured">
-      <p class="careers-head">${escapeHtml(t("Updated at the monthly re-assessment."))}</p>
-      ${action}
-    </div>`;
-}
-
 // The suggestions as a sideways rail of cards (v161, the owner's layout
 // rules: a rail, as YouTube Music does, rather than a column to read down).
 function focusCard(s) {
@@ -402,16 +380,18 @@ function focusCard(s) {
         </li>`;
 }
 
+// No row says how the aspect is updated, and none offers the review or the
+// re-assessment (v173-v174, the owner: unnecessary here; the menu and
+// Overview carry both). With no suggestions there is no section.
 function focusSection(a) {
-  const list = a.suggestions.length ? `
-    <ul class="focus-list focus-rail">${a.suggestions.map(focusCard).join("")}
-    </ul>` : "";
-  const measured = measuredRow(a);
-  if (!list && !measured) return "";
+  if (!a.suggestions.length) return "";
   return `
     <section class="panel statement aspect-focus"><div class="wrap split">
-      ${label(a.suggestions.length ? t("Where to start") : t("Measured Weekly"))}
-      <div>${list}${measured}</div>
+      ${label(t("Where to start"))}
+      <div>
+        <ul class="focus-list focus-rail">${a.suggestions.map(focusCard).join("")}
+        </ul>
+      </div>
     </div></section>`;
 }
 

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `177`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `178`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.104.1] - 2026-10-02 · v178
+
+### Changed
+- Thai wording of self-efficacy items 3 and 4 (the owner: the two read as the same question). Both now say "unexpected" the same way (เรื่องที่ไม่คาดคิด), so the difference sits where the English puts it: item 3 is confidence in coping (ฉันเชื่อมั่นว่าจะรับมือ…ได้ดี), item 4 is finding a way by one's own resourcefulness (ฉันคิดหาทางจัดการได้ด้วยไหวพริบของตัวเอง). English text and scoring unchanged.
 
 ## [2.104.0] - 2026-10-02 · v177
 

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `176`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `177`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.104.0] - 2026-10-02 · v177
+
+### Changed
+- Social Contribution is rescored (the owner: testers who help friends, family and colleagues every week scored low, because everyday helping was 16% of the aspect). Now 40% everyday helping (friends and family, colleagues and neighbours, strangers), 30% giving money (how often + amount vs income), 30% volunteering and community (hours, community activities, civic). Someone who often helps the people around them but gives no money or hours now scores 40, up from 16.
+- A new question, third in "Helping others": "How often do you help colleagues, classmates or neighbours (e.g., covering a task, lending something)?" The stored PTM sum is now out of 24; `baseline.ptmItems` records the count, and a baseline without it is read on the old 0-20 scale everywhere (the aspect bar, the benchmark, the character).
+- The weekly-review and profile-edit adjustments follow the new weights (a maxed donation moves the aspect 15, not 20; maxed hours 10, not 24).
+- The reference average for Social Contribution moves 32 → 41, so the Balance Index of a fixed set of scores can read a point lower.
+- Half-finished drafts from earlier releases are discarded once (`DRAFT_SCHEMA` 2), since the new question shifted the later ones down a place.
+
+### Not changed
+- Scores already saved stay as they are: a save holds only the PTM total, not each answer, so it cannot be rescored without inventing answers. The new formula applies from the next journey.
 
 ## [2.103.1] - 2026-10-02 · v176
 

@@ -324,6 +324,11 @@ export const INSTRUMENTS = {
     items: [
       { text: "How often do you donate money to charity, temples, or people in need?", options: FREQ_5, def: 2 },
       { text: "How often do you help friends or family members who are in need?", options: FREQ_5, def: 1 },
+      // v177, the owner: the people most of us help are close by, at work, in
+      // class, next door, and only family was asked. Third, beside the other
+      // helping items; stored baselines are sums, so no position is load-
+      // bearing (state.js records the item count, as it does for lfis).
+      { text: "How often do you help colleagues, classmates or neighbours (e.g., covering a task, lending something)?", options: FREQ_5, def: 2 },
       { text: "How often do you help strangers (e.g., giving directions, carrying things)?", options: FREQ_5, def: 2 },
       { text: "How often do you participate in community or neighborhood activities?", options: FREQ_5, def: 2 },
       { text: "How often do you engage in local civic issues (e.g., voting, community meetings)?", options: FREQ_5, def: 3 }

@@ -934,7 +934,9 @@ export class GameStateManager {
       // the count keeps every reader honest, and keeps a Phase 4 re-assessment
       // from comparing a 0-24 sum against a 0-20 baseline. Absent on older
       // saves, where every reader correctly reads it as 5.
-      lfisItems: (surveyData.lfis || []).length
+      lfisItems: (surveyData.lfis || []).length,
+      // Same reason, since v177: PTM went from 5 to 6 items (0-20 to 0-24).
+      ptmItems: (surveyData.ptm || []).length
     };
 
     // Coverage flags let later phases tell an answered instrument/field from a

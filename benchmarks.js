@@ -1204,7 +1204,9 @@ function socialContributionBenchmark(profile, baseline) {
   // asymmetry is deliberate and much smaller: among donors, a token giver who
   // reports income does rank below one who does not, because magnitude is the
   // thing this term measures and without income it cannot be measured.
-  const ptm = intensityOf((baseline || {}).ptm, 20);
+  // 4 points an item; six items since v177, five on a baseline without
+  // `ptmItems` (the same rule as lfis below).
+  const ptm = intensityOf((baseline || {}).ptm, ((baseline || {}).ptmItems || 5) * 4);
   const share = (income > 0 && donations > 0)
     ? Math.min(1, (donations / income) / GENEROUS_GIVING_SHARE)
     : null;

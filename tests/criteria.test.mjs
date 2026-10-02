@@ -295,10 +295,15 @@ test("AVERAGE_ASPECT_SCORES moved only where v46 and v64 intended", () => {
   // moved the typical person by a flat 5 points regardless of anything else
   // about their finances is a fair description of what was wrong with it.
   //
+  // v177 moved socialContribution 32 -> 41, when the owner's rebalance made
+  // everyday helping 40% of it (from 16%). The reference person answers every
+  // PTM item at the midpoint, gives and volunteers little, so the part that
+  // grew is the one they sit at the middle of.
+  //
   // Asserting the whole object is what proves the other five did NOT drift.
   assert.deepEqual({ ...AVERAGE_ASPECT_SCORES }, {
     finance: 49, physical: 62, mental: 69, relationships: 70,
-    personalGoals: 57, socialContribution: 32, environment: 50, humanityFuture: 50
+    personalGoals: 57, socialContribution: 41, environment: 50, humanityFuture: 50
   });
 });
 
@@ -313,9 +318,10 @@ test("the Balance Index and the at-or-above-average standing move only with the 
   // reads backwards at first glance: deleting the savings bonus LOWERED the
   // finance average to 49, and this fixture holds finance at 60, so the same
   // score now sits further above typical than it did. Criteria still leak
-  // nothing into it, which is the point.
-  assert.equal(balanceIndex(aspects), 47);
-  assert.deepEqual(aspectsAtOrAboveAverage(aspects), { count: 3, total: 8 });
+  // nothing into it, which is the point. 46 since v177: the Social
+  // Contribution average rose to 41, above this fixture's 40.
+  assert.equal(balanceIndex(aspects), 46);
+  assert.deepEqual(aspectsAtOrAboveAverage(aspects), { count: 2, total: 8 }); // 3 before v177: social 40 now sits under 41
 });
 
 test("evaluating criteria does not mutate the profile or move any grade", () => {

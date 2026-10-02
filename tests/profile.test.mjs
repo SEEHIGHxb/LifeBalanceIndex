@@ -80,9 +80,9 @@ test("enabling long-term investments no longer moves humanityFuture", () => {
 
 test("a lower income raises socialContribution via the donation-to-income ratio", () => {
   // donation 100/mo: at 15,000 the ratio is <2% (factor 20); at 3,000 it clears
-  // 2% (factor 100). Social delta = 0.4*0.5*(100-20) = 16.
+  // 2% (factor 100). Social delta = 0.3*0.5*(100-20) = 12 (0.4*0.5 before v177).
   const shifts = profileEditShifts(BASE_PROFILE, { ...BASE_PROFILE, income: 3000 }, BASELINE);
-  assert.equal(shifts.socialContribution, 16);
+  assert.equal(shifts.socialContribution, 12);
 });
 
 test("no change yields no shifts", () => {

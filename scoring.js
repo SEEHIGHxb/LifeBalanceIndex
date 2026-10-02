@@ -518,24 +518,40 @@ export function calculatePersonalGoalsScore(profile, gseAnswers, citAnswers, cit
   return clampScore(personalGoalsComposite(profile, rawSum(gseAnswers), citRaw, citLearnRaw));
 }
 
+// Social Contribution's three parts (v177, the owner: testers who help the
+// people around them every day scored low, because everyday helping was 16% of
+// the aspect and money and formal hours were 64%). Everyday helping now leads.
+export const SOCIAL_HELP_WEIGHT = 0.4;
+export const SOCIAL_GIVING_WEIGHT = 0.3;
+export const SOCIAL_COMMUNITY_WEIGHT = 0.3;
+
+// The PTM sum's maximum: 4 points an item, six items since v177. A baseline
+// carrying no `ptmItems` predates it and is on the five-item 0-20 scale.
+export function ptmMax(ptmItems) {
+  return Number(ptmItems || 5) * 4;
+}
+
 export function calculateSocialContributionScore(profile, ptmAnswers) {
-  // PTM Behavior (5 items, each 0-4)
+  // PTM Behavior (6 items since v177, 5 before it, each 0-4)
   const qValues = ptmAnswers.map(v => parseInt(v || 0));
+  const six = qValues.length >= 6;
 
-  // Donation Score
-  const frequencyFactor = qValues[0] * 25; // max 100
-  const S_donation = (0.5 * frequencyFactor) + (0.5 * donationVolumeFactor(profile));
+  // Everyday helping: friends or family, colleagues, classmates or
+  // neighbours (since v177), and strangers. A five-answer set has the first
+  // and last of these.
+  const help = six ? qValues.slice(1, 4) : qValues.slice(1, 3);
+  const S_help = (help.reduce((a, b) => a + b, 0) / (4 * help.length)) * 100;
 
-  // Volunteering & Prosocial. Both PTM helping items count toward prosocial
-  // behavior: Q2 "help friends/family in need" (previously collected but never
-  // scored) and Q3 "help strangers".
-  const prosocialFactor = ((qValues[1] + qValues[2]) / 8) * 100; // Q2 + Q3
-  const S_action = (0.6 * volunteerFactor(profile)) + (0.4 * prosocialFactor);
+  // Giving money: how often, and how much against income.
+  const S_giving = (0.5 * qValues[0] * 25) + (0.5 * donationVolumeFactor(profile));
 
-  // Civic & Local (Q4 & Q5)
-  const S_civic = ((qValues[3] + qValues[4]) / 8) * 100;
+  // Volunteering and community: hours, community activities, civic life.
+  const [community, civic] = six ? [qValues[4], qValues[5]] : [qValues[3], qValues[4]];
+  const S_community = (volunteerFactor(profile) + (community * 25) + (civic * 25)) / 3;
 
-  return clampScore((0.4 * S_donation) + (0.4 * S_action) + (0.2 * S_civic));
+  return clampScore(
+    (SOCIAL_HELP_WEIGHT * S_help) + (SOCIAL_GIVING_WEIGHT * S_giving) + (SOCIAL_COMMUNITY_WEIGHT * S_community)
+  );
 }
 
 export function calculateEnvironmentScore(profile, gebAnswers) {
@@ -646,8 +662,8 @@ export function weeklyAspectShifts(oldProfile, newProfile, baseline) {
     physical: calculatePhysicalScore(newProfile, jss) - calculatePhysicalScore(oldProfile, jss),
     personalGoals: learningWeight(baseline && baseline.citacc) * (learningScore(newProfile, baseline && baseline.citlearn) - learningScore(oldProfile, baseline && baseline.citlearn)),
     socialContribution:
-      (0.4 * 0.5) * (donationVolumeFactor(newProfile) - donationVolumeFactor(oldProfile))
-      + (0.4 * 0.6) * (volunteerFactor(newProfile) - volunteerFactor(oldProfile)),
+      (SOCIAL_GIVING_WEIGHT * 0.5) * (donationVolumeFactor(newProfile) - donationVolumeFactor(oldProfile))
+      + (SOCIAL_COMMUNITY_WEIGHT / 3) * (volunteerFactor(newProfile) - volunteerFactor(oldProfile)),
     environment: (0.4 * 0.5) * (plasticScore(newProfile) - plasticScore(oldProfile)),
     humanityFuture: (lfisWeight(baseline && baseline.lfisItems) * 0.5) * (futureStudyScore(newProfile) - futureStudyScore(oldProfile))
   };
@@ -715,8 +731,8 @@ export function profileEditShifts(oldProfile, newProfile, baseline) {
     // The weight follows the composite: a third since v72, or the pre-v72
     // 0.3/0.7 for a baseline with no Accomplishment reading.
     personalGoals: learningWeight(baseline && baseline.citacc) * (learningScore(newProfile, baseline && baseline.citlearn) - learningScore(oldProfile, baseline && baseline.citlearn)),
-    // income moves the donation-to-income ratio, 0.4*0.5 into the aspect
-    socialContribution: (0.4 * 0.5) * (donationVolumeFactor(newProfile) - donationVolumeFactor(oldProfile)),
+    // income moves the donation-to-income ratio, half of the giving part
+    socialContribution: (SOCIAL_GIVING_WEIGHT * 0.5) * (donationVolumeFactor(newProfile) - donationVolumeFactor(oldProfile)),
     // Shared learning hours (futureStudy term, w*0.5) are now the only future
     // field on this page: the pension term left the aspect in v64. The weight
     // follows the composite via lfisWeight -- 0.2 since v65, 0.25 for a

@@ -39,7 +39,8 @@ import {
   savingsAmountFrom,
   donationVolumeFactor,
   volunteerFactor,
-  DEEP_NORM
+  DEEP_NORM,
+  ptmMax
 } from "./scoring.js";
 import { DEEP_SECTIONS } from "./surveys.js";
 
@@ -327,7 +328,9 @@ function socialContributionComponents(p, b) {
     { key: "volunteering", label: t("Volunteering"), value: clamp100(volunteerFactor(p)), detail: tp("{h}h/month (4h+ maxes this)", { h: p.volunteeringHours || 0 }) }
   ];
   if (b && Number.isFinite(b.ptm)) {
-    items.push({ key: "ptm", label: t("Prosocial habits (PTM)"), value: clamp100((b.ptm / 20) * 100), detail: tp("Raw {n}/20 at baseline", { n: b.ptm }) });
+    // Five items before v177, six since: the same rule as lfis below.
+    const max = ptmMax(b.ptmItems);
+    items.push({ key: "ptm", label: t("Prosocial habits (PTM)"), value: clamp100((b.ptm / max) * 100), detail: tp("Raw {n}/{max} at baseline", { n: b.ptm, max }) });
   }
   return items;
 }

@@ -29,7 +29,9 @@ const PREFIX = "lifequest_draft_";
 //
 // Drafts written before this stamp existed (v87 and earlier) carry no `schema`
 // and are read as schema 1.
-export const DRAFT_SCHEMA = 1;
+// 2 since v177: Social Contribution's new item went in third, so a draft's
+// ptm-q2 onward would land on the wrong questions.
+export const DRAFT_SCHEMA = 2;
 
 // A draft older than this is not offered. Someone returning after a week is
 // starting again, not resuming, and a week-old half-answered mood scale is a

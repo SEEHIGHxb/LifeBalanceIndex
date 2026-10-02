@@ -21,7 +21,7 @@ import { t } from "./i18n.js";
 import { incomePercentile } from "./benchmarks.js";
 import {
   cfpbScore, metMinutes, learningScore,
-  donationVolumeFactor, volunteerFactor
+  donationVolumeFactor, volunteerFactor, ptmMax
 } from "./scoring.js";
 
 // --- where each side is cut, and why ----------------------------------------
@@ -49,8 +49,9 @@ const CITACC_AGREE = 11;
 const LEARNING_HALF = 50;
 // Half of either giving part: 250 THB a month (or 1% of income), or 2 hours.
 const GIVING_HALF = 50;
-// PTM 4 items: 12 of 20 is above the middle answer.
-const PTM_ABOVE_MIDDLE = 12;
+// PTM: 12 of 20 (five items) is above the middle answer; the same share of 24
+// since v177's sixth item.
+const PTM_ABOVE_MIDDLE_SHARE = 0.6;
 // GEB: half of 24.
 const GEB_HALF = 12;
 // Thailand's average is about 3 single-use pieces a day (scoring.js).
@@ -88,7 +89,7 @@ const SIDES = {
   ],
   socialContribution: (p, b) => [
     Math.max(donationVolumeFactor(p), volunteerFactor(p)) >= GIVING_HALF,
-    side(b.ptm, v => v >= PTM_ABOVE_MIDDLE)
+    side(b.ptm, v => v >= PTM_ABOVE_MIDDLE_SHARE * ptmMax(b.ptmItems))
   ],
   environment: (p, b) => [
     side(b.geb, v => v >= GEB_HALF),

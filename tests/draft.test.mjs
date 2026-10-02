@@ -123,7 +123,7 @@ test("a draft written by an earlier release is kept", () => {
   // skipped. Discarding cost a retake for a problem that no longer exists.
   const store = installStorage();
   store[KEY] = JSON.stringify({
-    v: "an older version", at: new Date().toISOString(),
+    v: "an older version", schema: DRAFT_SCHEMA, at: new Date().toISOString(),
     named: { "who5-q0": "3" }, ids: {}
   });
   const draft = readDraft("onboarding");
@@ -151,24 +151,26 @@ test("a draft is stamped with the answer schema it was written under", () => {
 });
 
 test("a draft written before the schema stamp existed counts as schema 1", () => {
-  // Every draft in a reader's storage today was written by v87 or earlier and
-  // carries no `schema`. Those answers mean what schema 1 says they mean.
+  // A draft written by v87 or earlier carries no `schema`; its answers mean
+  // what schema 1 says. v177 moved to schema 2 (Social Contribution's new
+  // third item), so such a draft is now discarded with every other schema-1
+  // one.
   const store = installStorage();
   store[KEY] = JSON.stringify({
     v: "87", at: new Date().toISOString(), named: { "who5-q0": "3" }, ids: {}
   });
-  assert.equal(DRAFT_SCHEMA, 1, "bumping DRAFT_SCHEMA must also decide what an unstamped draft is");
-  assert.ok(readDraft("onboarding"));
+  assert.equal(DRAFT_SCHEMA, 2, "bumping DRAFT_SCHEMA must also decide what an unstamped draft is");
+  assert.equal(readDraft("onboarding"), null);
 });
 
 test("a draft older than a week is discarded", () => {
   const store = installStorage();
   const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
-  store[KEY] = JSON.stringify({ v: APP_VERSION, at: eightDaysAgo, named: { "who5-q0": "3" }, ids: {} });
+  store[KEY] = JSON.stringify({ v: APP_VERSION, schema: DRAFT_SCHEMA, at: eightDaysAgo, named: { "who5-q0": "3" }, ids: {} });
   assert.equal(readDraft("onboarding"), null, "a week-old half-answered mood scale was offered");
 
   const sixDaysAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString();
-  store[KEY] = JSON.stringify({ v: APP_VERSION, at: sixDaysAgo, named: { "who5-q0": "3" }, ids: {} });
+  store[KEY] = JSON.stringify({ v: APP_VERSION, schema: DRAFT_SCHEMA, at: sixDaysAgo, named: { "who5-q0": "3" }, ids: {} });
   assert.ok(readDraft("onboarding"), "a six-day-old draft was wrongly discarded");
 });
 

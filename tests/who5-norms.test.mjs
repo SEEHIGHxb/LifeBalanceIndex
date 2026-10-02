@@ -215,9 +215,10 @@ test("age changes the mental percentile and nothing score-based", () => {
   // round 14 moved the finance average 54 -> 49 by deleting the savings bonus.
   // This fixture holds finance at 60, so a lower average means it now sits
   // further above typical, not less far. Both ages still produce the same
-  // number, which remains the actual assertion.
-  assert.equal(balanceIndex(aspects), 47);
-  assert.deepEqual(aspectsAtOrAboveAverage(aspects), { count: 3, total: 8 });
+  // number, which remains the actual assertion. 46 again since v177, when the
+  // Social Contribution average rose 32 -> 41, above this fixture's 40.
+  assert.equal(balanceIndex(aspects), 46);
+  assert.deepEqual(aspectsAtOrAboveAverage(aspects), { count: 2, total: 8 }); // 3 before v177: social 40 now sits under 41
   // finance re-pinned 55 -> 53 in v46 (income magnitude scale) and 53 -> 54 in
   // v69 (income weight 0.6 -> 0.15); personalGoals 59 -> 57 and humanityFuture
   // 44 -> 50 in v64 (grit and the pension left their composites). The other
@@ -228,7 +229,7 @@ test("age changes the mental percentile and nothing score-based", () => {
   // balanceIndex above, which is why it now reads 47.
   assert.deepEqual({ ...AVERAGE_ASPECT_SCORES }, {
     finance: 49, physical: 62, mental: 69, relationships: 70,
-    personalGoals: 57, socialContribution: 32, environment: 50, humanityFuture: 50
+    personalGoals: 57, socialContribution: 41, environment: 50, humanityFuture: 50
   });
   // Comparison codes encode the scores, so v2 codes stay valid across this
   // release and two users of different ages still share an identical code.

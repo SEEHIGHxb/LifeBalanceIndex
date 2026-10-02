@@ -97,15 +97,17 @@ test("v77: a post-v65 baseline moves humanityFuture on the 0.2 weight, not 0.25"
 });
 
 test("donations and volunteering shift socialContribution by their factor weights", () => {
-  // donationVolumeFactor: 500 THB/mo maxes it (0 -> 100); weight 0.4*0.5 => +20.
+  // donationVolumeFactor: 500 THB/mo maxes it (0 -> 100); half of the 0.3
+  // giving part since v177 => +15.
   assert.deepEqual(
     weeklyAspectShifts(BASE, { ...BASE, monthlyDonations: 500 }, JSS_BASELINE),
-    { socialContribution: 20 }
+    { socialContribution: 15 }
   );
-  // volunteerFactor: 4 h/mo maxes it (0 -> 100); weight 0.4*0.6 => +24.
+  // volunteerFactor: 4 h/mo maxes it (0 -> 100); a third of the 0.3
+  // volunteering-and-community part => +10.
   assert.deepEqual(
     weeklyAspectShifts(BASE, { ...BASE, volunteeringHours: 4 }, JSS_BASELINE),
-    { socialContribution: 24 }
+    { socialContribution: 10 }
   );
 });
 

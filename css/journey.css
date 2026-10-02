@@ -308,11 +308,12 @@
 .journey .wk-none input { width: 18px; height: 18px; margin: 0; accent-color: var(--frame-ink); }
 .journey .wk-len { margin-top: 24px; }
 
-/* The plastic tally: things to tick, not a scale, so a grid of cards in any
-   order. Ticked, a card takes the same soft tint as a chosen answer. */
+/* The plastic tally: things to count, not a scale, so a grid of cards in any
+   order, each with its count at the end (v175). Counted, a card takes the
+   same soft tint as a chosen answer. */
 .journey .tally-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
   gap: 8px;
 }
 .journey .tally-item {
@@ -330,7 +331,40 @@
   line-height: 1.3;
   cursor: pointer;
 }
-.journey .tally-item input { flex: none; width: 18px; height: 18px; margin: 0; accent-color: var(--frame-ink); }
+.journey .tally-item input[type="checkbox"] { flex: none; width: 18px; height: 18px; margin: 0; accent-color: var(--frame-ink); }
+.journey .tally-name { flex: 1 1 auto; min-width: 0; margin: 0; font: inherit; cursor: pointer; }
+.journey .tally-step { flex: none; display: inline-flex; align-items: center; gap: 2px; }
+.journey .tally-step button {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1.5px solid #c4c4c4;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--frame-ink);
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.journey .tally-item.is-on .tally-step button { border-color: transparent; }
+.journey .tally-item:not(.is-on) .tally-less { opacity: 0.45; }
+.journey .tally-step button:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
+.journey .tally-step input {
+  width: 2.4em;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--frame-ink);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+}
+.journey .tally-step input::placeholder { color: inherit; opacity: 0.45; }
+.journey .tally-item.is-on,
 .journey .tally-item:has(input:checked) {
   background: #d6d6d6;
   background: color-mix(in srgb, var(--chapter-hue, #8a8a8a) 45%, #ffffff);

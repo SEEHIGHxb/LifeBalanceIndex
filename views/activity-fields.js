@@ -12,7 +12,8 @@
 //   kind. Then one tap for how long a usual session of each kind lasts.
 //
 //   v120: donations and volunteering as everyday steps like learning, and
-//   single-use plastic as a tally of things a usual day brings.
+//   single-use plastic as a tally of things a usual day brings. Since v175
+//   each thing is counted, not ticked.
 //
 // THE STORED NUMBERS DO NOT CHANGE. Each question writes the same values the
 // old number boxes held into hidden number inputs with the old ids, so the
@@ -55,20 +56,26 @@ export const VOLUNTEER_STEPS = Object.freeze([
   { value: 24, label: "Most weekends, or more" }
 ]);
 
-// Plastic is counted, not estimated: tick what a usual day brings, one piece
-// each. Eight things, so the scoring's top band (8 or more, scoring.js) is
-// reachable and every lower band has room.
+// Plastic is counted, not estimated: how many of each thing a usual day
+// brings, with "Something else" for what the list misses (v175, the owner: a
+// day can bring five cups, and a tick counted them as one). The total is the
+// stored count, as the old box held it.
 export const PLASTIC_ITEMS = Object.freeze([
-  "A shopping bag",
-  "A bag for food to go (curry, soup, ice)",
-  "A straw",
-  "A plastic cup (iced coffee, bubble tea)",
-  "A food box or foam tray",
-  "A plastic spoon or fork",
-  "A bottle of water or a soft drink",
-  "A snack or sauce wrapper"
+  "Shopping bags",
+  "Bags for food to go (curry, soup, ice)",
+  "Straws",
+  "Plastic cups (iced coffee, bubble tea)",
+  "Food boxes or foam trays",
+  "Plastic spoons or forks",
+  "Bottles of water or soft drinks",
+  "Snack or sauce wrappers",
+  "Something else"
 ]);
 const PLASTIC_KEY = "lifequest_plastic_items";
+// Two digits a thing; the total is held to the stored field's own maximum
+// (validation.js).
+const ITEM_MAX = 99;
+const TALLY_MAX = 100;
 
 // Examples of what counts, in the IPAQ's own terms: vigorous is too hard to
 // chat through, moderate is faster breathing that still allows talk, and a
@@ -223,49 +230,65 @@ export function volunteerMarkup(id, current = null, { fold = false } = {}) {
 
 // --- the plastic tally ------------------------------------------------------
 
-function readItems() {
+// One thing's count from what is in its box: digits only, 0 to ITEM_MAX.
+export function clampCount(value) {
+  const n = Number.parseInt(String(value ?? ""), 10);
+  return Number.isFinite(n) ? Math.min(ITEM_MAX, Math.max(0, n)) : 0;
+}
+
+// Last time's counts, one a thing. Until v175 they were ticks (true is one
+// piece) and there was no "Something else", which comes back as 0.
+function readCounts() {
   try {
     const saved = JSON.parse(globalThis.localStorage?.getItem(PLASTIC_KEY) || "null");
-    return Array.isArray(saved) && saved.length === PLASTIC_ITEMS.length ? saved.map(Boolean) : null;
+    if (!Array.isArray(saved) || saved.length > PLASTIC_ITEMS.length) return null;
+    return PLASTIC_ITEMS.map((_, i) => clampCount(Number(saved[i]) || 0));
   } catch {
     return null;
   }
 }
 
-// The count, as the old box held it: blank until something is ticked or
-// "none" is, then the ticks plus an earlier answer kept whole.
-export function summarizeTally({ items, none, carried }) {
-  const count = items.filter(Boolean).length + carried;
-  return count || none ? count : "";
+// The count, as the old box held it: blank until something is counted or
+// "none" is ticked, then the counts plus an earlier answer kept whole.
+export function summarizeTally({ counts, none, carried }) {
+  const total = counts.reduce((sum, c) => sum + clampCount(c), 0) + carried;
+  return total || none ? Math.min(TALLY_MAX, total) : "";
 }
 
-// `current` (the review) is last week's count. The items ticked then come
+// One thing: its name, then a count to step with - and + or to type.
+const counterRow = (id, label, i, n) => `
+        <div class="tally-item${n ? " is-on" : ""}">
+          <label class="tally-name" for="${id}-i${i}">${t(label)}</label>
+          <span class="tally-step">
+            <button type="button" class="tally-less" data-step="-1" aria-label="${tp("One fewer: {item}", { item: t(label) })}">−</button>
+            <input type="text" id="${id}-i${i}" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="0"${n ? ` value="${n}"` : ""}>
+            <button type="button" class="tally-more" data-step="1" aria-label="${tp("One more: {item}", { item: t(label) })}">+</button>
+          </span>
+        </div>`;
+
+// `current` (the review) is last week's count. The counts given then come
 // back if they still add up to it; otherwise the count is kept whole as one
 // ticked line of its own, so confirming it changes nothing.
 export function tallyMarkup(id, current = null, { fold = false } = {}) {
   const n = isBlank(current) ? null : Math.max(0, Math.round(Number(current)));
-  const saved = n ? readItems() : null;
-  const ticked = saved && saved.filter(Boolean).length === n ? saved : [];
-  const carried = n && !ticked.length ? n : 0;
-  const items = PLASTIC_ITEMS.map((label, i) => `
-        <label class="tally-item">
-          <input type="checkbox" name="${id}-i${i}" value="1"${ticked[i] ? " checked" : ""}>
-          <span>${t(label)}</span>
-        </label>`).join("");
+  const saved = n ? readCounts() : null;
+  const counts = saved && saved.reduce((a, b) => a + b, 0) === n ? saved : [];
+  const carried = n && !counts.length ? n : 0;
+  const items = PLASTIC_ITEMS.map((label, i) => counterRow(id, label, i, counts[i] || 0)).join("");
   const kept = carried ? `
-        <label class="tally-item">
+        <label class="tally-item tally-last">
           <input type="checkbox" name="${id}-last" value="${carried}" checked>
           <span>${tp("{n} pieces a day · your last answer", { n: carried })}</span>
         </label>` : "";
   return `
     <div class="easy-field tally" data-easy="tally" data-out="${id}"${folded(fold, n)}>
       <fieldset class="survey-question" aria-labelledby="${id}-legend">
-        <legend id="${id}-legend">${t("Which of these does a usual day bring you? Tick each one you use once and throw away.")}</legend>
+        <legend id="${id}-legend">${t("How many of each does a usual day bring you? Count each one you use once and throw away.")}</legend>
         <div class="tally-grid" id="${id}-choices">${items}${kept}
         </div>
         <label class="wk-none">
           <input type="checkbox" name="${id}-none" value="1"${n === 0 ? " checked" : ""}>
-          ${t("None of these on a usual day")}
+          ${t("None")}
         </label>
         ${changeButton(fold, n, id)}
         <p class="tally-count" aria-live="polite"></p>
@@ -360,11 +383,12 @@ function syncSteps(field) {
 }
 
 function syncTally(field) {
-  const boxes = [...field.querySelectorAll(`.tally-item input[name^="${field.dataset.out}-i"]`)];
-  const items = boxes.map(b => b.checked);
+  const boxes = [...field.querySelectorAll(".tally-step input")];
+  const counts = boxes.map(b => clampCount(b.value));
+  boxes.forEach((b, i) => b.closest(".tally-item").classList.toggle("is-on", counts[i] > 0));
   const last = field.querySelector(`input[name="${field.dataset.out}-last"]`);
   const none = field.querySelector(".wk-none input").checked;
-  const count = summarizeTally({ items, none, carried: last?.checked ? Number(last.value) : 0 });
+  const count = summarizeTally({ counts, none, carried: last?.checked ? Number(last.value) : 0 });
   put(field.querySelector(`#${field.dataset.out}`), count);
   field.querySelector(".tally-count").textContent = count === "" ? ""
     : tp("{n} pieces a day", { n: count });
@@ -374,7 +398,7 @@ function syncTally(field) {
     err.classList.add("d-none");
   }
   try {
-    globalThis.localStorage?.setItem(PLASTIC_KEY, JSON.stringify(items));
+    globalThis.localStorage?.setItem(PLASTIC_KEY, JSON.stringify(counts));
   } catch {
     // Only a convenience for next week's review.
   }
@@ -481,12 +505,40 @@ function bindPainting(grid) {
   });
 }
 
+// A count and "None" rule each other out: "None" empties every count and the
+// kept answer, and any count above zero takes "None" off.
+function editTally(field, target) {
+  const none = field.querySelector(".wk-none input");
+  if (target === none) {
+    if (none.checked) {
+      field.querySelectorAll(".tally-step input").forEach(b => { b.value = ""; });
+      field.querySelectorAll(".tally-last input").forEach(b => { b.checked = false; });
+    }
+  } else if (target.type === "text" ? clampCount(target.value) > 0 : target.checked) {
+    none.checked = false;
+  }
+  syncTally(field);
+}
+
+// - and + step a count; typing keeps digits only.
+function stepTally(button) {
+  const box = button.closest(".tally-step").querySelector("input");
+  const n = clampCount(clampCount(box.value) + Number(button.dataset.step));
+  box.value = n ? String(n) : "";
+  box.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
 // Wires every activity field inside `root` and computes their values once.
 export function bindActivityFields(root) {
   root.querySelectorAll('[data-easy="week"] .wk-grid').forEach(bindPainting);
   // "Change" unfolds the whole list; focus goes to the answer already chosen,
   // so the arrow keys move straight on from it.
   root.addEventListener("click", (e) => {
+    const step = e.target.closest(".tally-step button");
+    if (step) {
+      stepTally(step);
+      return;
+    }
     const button = e.target.closest(".easy-change");
     const field = button?.closest("[data-easy]");
     if (!field) return;
@@ -502,15 +554,8 @@ export function bindActivityFields(root) {
       syncSteps(field);
       return;
     }
-    // A ticked thing and "none of these" rule each other out, here and in the
-    // week below.
     if (field.dataset.easy === "tally") {
-      if (e.target.closest(".wk-none")) {
-        if (e.target.checked) field.querySelectorAll(".tally-item input:checked").forEach(b => { b.checked = false; });
-      } else if (e.target.checked) {
-        field.querySelector(".wk-none input").checked = false;
-      }
-      syncTally(field);
+      editTally(field, e.target);
       return;
     }
     // Painting a day and "none of these" rule each other out.
@@ -520,6 +565,13 @@ export function bindActivityFields(root) {
       field.querySelector(".wk-none input").checked = false;
     }
     syncWeek(field);
+  });
+  root.addEventListener("input", (e) => {
+    const box = e.target.closest(".tally-step input");
+    if (!box) return;
+    const digits = box.value.replace(/[^0-9]/g, "").slice(0, 2);
+    if (digits !== box.value) box.value = digits;
+    editTally(box.closest("[data-easy]"), box);
   });
   syncActivityFields(root);
 }

@@ -39,8 +39,8 @@ test("plastics are asked, scored, and displayed in pieces per DAY everywhere", (
   const sources = sourceFiles().map(f => ({ f, src: read(f) }));
 
   // The question itself must be phrased per day…
-  // (since v120 a tally of what "a usual day" brings, counted "{n} pieces a day").
-  const asksPerDay = sources.some(({ src }) => src.includes("Which of these does a usual day bring you?") && src.includes("{n} pieces a day"));
+  // (since v120 a tally of what "a usual day" brings, counted "{n} pieces a day"; since v175 each thing counted).
+  const asksPerDay = sources.some(({ src }) => src.includes("How many of each does a usual day bring you?") && src.includes("{n} pieces a day"));
   assert.ok(asksPerDay, "the plastic tally must ask about a usual day and count pieces a day");
 
   // …and no file may reintroduce a weekly phrasing for plastics.

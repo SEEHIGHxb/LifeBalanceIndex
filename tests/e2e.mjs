@@ -312,13 +312,11 @@ try {
       day.checked = true;
       day.dispatchEvent(new Event("change", { bubbles: true }));
     }
-    // The plastic tally: a shopping bag and a straw, ticked as a reader would,
-    // so the count comes from the ticks and not from the box set above. And
-    // the fourth giving step, a regular gift of about 500 baht.
+    // The plastic tally: a shopping bag and a straw, counted with + as a
+    // reader would, so the count comes from the counts and not from the box
+    // set above. And the fourth giving step, a regular gift of about 500 baht.
     for (const i of [0, 2]) {
-      const item = document.querySelector(`input[name="onb-plastics-i${i}"]`);
-      item.checked = true;
-      item.dispatchEvent(new Event("change", { bubbles: true }));
+      document.getElementById(`onb-plastics-i${i}`).closest(".tally-item").querySelector(".tally-more").click();
     }
     const gift = document.querySelector('input[name="onb-donations-pick"][value="500"]');
     gift.checked = true;

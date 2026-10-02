@@ -406,7 +406,9 @@
    until "Change" opens the list (views/activity-fields.js). Only while
    something is chosen: with nothing chosen, every answer shows. */
 .easy-field[data-folded]:has(input:checked) .radio-option:not(:has(input:checked)),
-.easy-field[data-folded]:has(input:checked) .tally-item:not(:has(input:checked)),
+.easy-field[data-folded]:is(:has(input:checked), :has(.tally-item.is-on)) .tally-item:not(.is-on):not(:has(input:checked)),
+.easy-field[data-folded]:has(.tally-item.is-on) .wk-none,
+.easy-field[data-folded]:has(.tally-item.is-on) .tally-count,
 .easy-field[data-folded]:has(input:checked) .wk-none:not(:has(input:checked)),
 .easy-field[data-folded]:has(input:checked) .tally-count { display: none; }
 .journey .easy-field[data-folded]:has(input:checked) .radio-group { display: flex; }
@@ -575,8 +577,6 @@
   }
   .review .onb-nav .pill-short,
   .checkin-view .onb-nav .pill-short { display: inline; }
-  /* The ticked row already says the count. */
-  .review .tally-count { display: none; }
 
   /* v166 (the review) and v167 (the re-assessment): the screens as a row of
      emblems over the bar, the names read out but not shown; the big emblem

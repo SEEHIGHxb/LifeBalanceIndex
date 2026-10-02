@@ -554,13 +554,18 @@ export function renderReview(containerId, state, onComplete) {
   let draftStep = null;
   if (draft && draft.week !== week) clearDraft(DRAFT_KEY);
   else if (draft) {
-    // A draft records only the boxes that were ticked (days painted, plastic
-    // items), so one the reader cleared is absent from it: last week's ticks
-    // come off first, or the restore would leave them on.
+    // A draft records only the boxes that were ticked (days painted) and the
+    // counts that were given (plastic), so one the reader cleared is absent
+    // from it: last week's come off first, or the restore would leave them on.
     const painted = [...form.querySelectorAll(".wk-cell input:checked, .wk-none input:checked, .tally-item input:checked")];
+    const counted = [...form.querySelectorAll(".tally-step input")].map(box => [box, box.value]);
     painted.forEach(box => { box.checked = false; });
+    counted.forEach(([box]) => { box.value = ""; });
     const restored = applyDraft(DRAFT_KEY, form);
-    if (!restored) painted.forEach(box => { box.checked = true; });
+    if (!restored) {
+      painted.forEach(box => { box.checked = true; });
+      counted.forEach(([box, value]) => { box.value = value; });
+    }
     if (restored) {
       syncActivityFields(form);
       draftStep = Number.isInteger(restored.step) ? restored.step : null;

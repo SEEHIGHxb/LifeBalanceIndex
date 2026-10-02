@@ -92,12 +92,49 @@ test("the journey still writes every old field under its old id", () => {
 const more = await import("../views/activity-fields.js");
 const { plasticScore, donationVolumeFactor, volunteerFactor } = await import("../scoring.js");
 
-test("the plastic tally is blank until answered, then counts ticks plus a kept answer", () => {
-  const items = Array(8).fill(false);
-  assert.equal(more.summarizeTally({ items, none: false, carried: 0 }), "");
-  assert.equal(more.summarizeTally({ items, none: true, carried: 0 }), 0);
-  assert.equal(more.summarizeTally({ items: items.map((_, i) => i < 3), none: false, carried: 0 }), 3);
-  assert.equal(more.summarizeTally({ items, none: false, carried: 5 }), 5, "last week's 5 kept whole");
+test("the plastic tally is blank until answered, then adds the counts and a kept answer", () => {
+  const counts = Array(more.PLASTIC_ITEMS.length).fill(0);
+  assert.equal(more.summarizeTally({ counts, none: false, carried: 0 }), "");
+  assert.equal(more.summarizeTally({ counts, none: true, carried: 0 }), 0);
+  assert.equal(more.summarizeTally({ counts: counts.map((_, i) => i < 3 ? 1 : 0), none: false, carried: 0 }), 3);
+  assert.equal(more.summarizeTally({ counts, none: false, carried: 5 }), 5, "last week's 5 kept whole");
+});
+
+// v175, the owner: five cups a day are five pieces, not one, and a thing the
+// list misses still counts.
+test("each thing is counted, and 'Something else' takes what the list misses", () => {
+  assert.equal(more.PLASTIC_ITEMS.at(-1), "Something else");
+  const counts = Array(more.PLASTIC_ITEMS.length).fill(0);
+  counts[3] = 5;
+  counts[more.PLASTIC_ITEMS.length - 1] = 2;
+  assert.equal(more.summarizeTally({ counts, none: false, carried: 0 }), 7);
+  assert.equal(more.summarizeTally({ counts: counts.map(() => 99), none: false, carried: 0 }), 100, "held to the field's maximum");
+  assert.equal(more.clampCount("12"), 12);
+  assert.equal(more.clampCount(""), 0);
+  assert.equal(more.clampCount("-3"), 0);
+  assert.equal(more.clampCount(500), 99);
+});
+
+test("the tally offers -, a box to type in, and + for every thing, and 'None'", () => {
+  const html = more.tallyMarkup("onb-plastics");
+  assert.equal((html.match(/class="tally-less"/g) || []).length, more.PLASTIC_ITEMS.length);
+  assert.equal((html.match(/class="tally-more"/g) || []).length, more.PLASTIC_ITEMS.length);
+  assert.match(html, /<input type="text" id="onb-plastics-i3" inputmode="numeric" maxlength="2"/);
+  assert.match(html, /<label class="tally-name" for="onb-plastics-i3">/);
+  assert.match(html, /name="onb-plastics-none" value="1">\s*None\s*<\/label>/);
+  assert.doesNotMatch(html, /type="checkbox" name="onb-plastics-i/, "no ticks left");
+});
+
+test("last week's counts come back when they add up to its total, old ticks too", () => {
+  if (!globalThis.localStorage) return;
+  globalThis.localStorage.setItem("lifequest_plastic_items", JSON.stringify([0, 0, 0, 5, 0, 0, 0, 0, 2]));
+  assert.match(more.tallyMarkup("r", 7), /id="r-i3"[^>]*value="5"/);
+  // Until v175: eight ticks, each one piece.
+  globalThis.localStorage.setItem("lifequest_plastic_items", JSON.stringify([true, false, true, false, false, false, false, false]));
+  const old = more.tallyMarkup("r", 2);
+  assert.match(old, /id="r-i0"[^>]*value="1"/);
+  assert.doesNotMatch(old, /name="r-last"/);
+  globalThis.localStorage.removeItem("lifequest_plastic_items");
 });
 
 test("every plastic band in the scoring has a tally that lands in it", () => {

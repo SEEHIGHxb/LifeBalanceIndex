@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `180`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `181`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.107.0] - 2026-10-03 · v181
+
+### Changed
+- Your star's ring is Saturn's on the way to Your star and back (the owner: it was "a bit lifeless", and all of it sat in front of the star). Its far half passes behind the star and its near half in front, fading into each other across the middle; the far half is dimmer and a glint rides the near edge. It trails the star a little, wobbles as it circles, swings level as the star lands, and a pulse runs round it as the marker taps down.
+- The asterism's ring is quieter, so the constellation leads: nothing shows on it while the line joins your stars, then its ticks light as faint stars in one wave from the marker and settle into ticks with the sky. Going back it simply fades.
 
 ## [2.106.0] - 2026-10-03 · v180
 

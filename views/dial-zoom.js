@@ -1,16 +1,22 @@
 // views/dial-zoom.js - the ring round your star on its way in and out (v180;
 // the owner, 2026-10-03: "the static ring is really off", then picked from
 // four prototypes: the star's ring orbits it like an armillary sphere's, the
-// radar's is swept round by its beam, the asterism's twinkles on as stars).
+// radar's is swept round by its beam, the asterism's comes on as stars).
 //
 // The ways in and out (views/star-zoom.js, views/star-shape-zoom.js) call
-// these with their own clock. The star's ring flies with the star and tilts
-// into orbit round it, then swings level as it lands. The radar's beam goes
-// round once and leaves the band and the ticks behind it. The asterism's
-// ticks come on as stars twinkling round the ring, which cool into ticks as
-// the sky fades into the page's style. The ring is drawn finished; only
-// transform and opacity move, plus the band's dash and the beam and the
-// twinkles, which are laid on for the trip and taken off after it.
+// these with their own clock.
+//   Star (v181: "a bit lifeless", and all of it in front of the star): the
+//     ring is Saturn's. Its far half goes behind the star and its near half
+//     stays in front, the far half dimmer and a glint riding the near edge.
+//     It trails the star a little and wobbles as it circles, swings level as
+//     the star lands, and a pulse runs round it as it locks.
+//   Radar: a beam goes round once and leaves the band and the ticks behind.
+//   Asterism (v181: the ring caught the eye before the constellation): it
+//     waits until the line has closed, then its ticks come on as faint stars
+//     in one wave from the marker, and settle into ticks with the sky.
+// The ring is drawn finished; only transform and opacity move, plus the
+// band's dash, the ring's turn and what is laid on for the trip (the far
+// half, the glint, the pulse, the beam, the stars), taken off after it.
 import { easeStar } from "../motion.js";
 import { writeMotionStyle } from "./motion-mount.js";
 
@@ -18,19 +24,27 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 const C = 50;
 const RING_R = 55;
 const CIRC = 2 * Math.PI * RING_R;
-// The orbit: how far the ring tips over, and how far it leans while it does.
+// The orbit: how far the ring tips over, how far it leans while it does, and
+// how much it wobbles on the way.
 const TILT = 74;
 const LEAN = 30;
+const WOBBLE_TILT = 5;
+const WOBBLE_LEAN = 6;
+// The far half, seen through the star's light, at its dimmest.
+const FAR_DIM = 0.5;
+// The pulse round the ring as it locks: how long, and how far it swells.
+export const PULSE_MS = 280;
+const PULSE_GROW = 0.07;
 // The beam: its trailing glow in slices, each SLICE_DEG wide, out to BEAM_R.
 const SLICES = 10;
 const SLICE_DEG = 4;
 const BEAM_R = 58;
-// The twinkles: when each one comes on, spread over TWINKLE_MS, and its glow.
-const TWINKLE_MS = 620;
-const TWINKLE_R = 0.55;
-const FLARE = 1.8;
-const FLARE_MS = 140;
-const FADE_IN_MS = 90;
+// The asterism's wave: each tick lights as it passes, faint and small.
+const STAR_R = 0.45;
+const STAR_LIGHT = 0.32;
+const FLARE = 0.6;
+const FLARE_MS = 160;
+const FADE_IN_MS = 120;
 
 export const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const lerp = (a, b, u) => a + (b - a) * u;
@@ -43,15 +57,16 @@ export const backOut = (u) => {
 const fmt = (n) => n.toFixed(2);
 
 // The orbit at `t` ms into the way in: the ring tips over as it takes off,
-// circles the star in flight and swings level as it lands, flat and turned
-// whole by ORBIT_IN_MS.
+// circles the star wobbling a little and swings level as it lands, flat and
+// turned whole by ORBIT_IN_MS.
 export const ORBIT_IN_MS = 1200;
 export function orbitIn(t) {
   const up = ease(t / 240);
   const level = backOut((t - 560) / 640);
+  const free = up * (1 - level);
   return {
-    tilt: TILT * up * (1 - level),
-    lean: LEAN * up * (1 - level),
+    tilt: (TILT + WOBBLE_TILT * Math.sin(t / 150)) * free,
+    lean: (LEAN + WOBBLE_LEAN * Math.sin(t / 110)) * free,
     // Two whole turns, so the symbols start and end where Home had them.
     spin: -720 * (1 - ease(t / ORBIT_IN_MS))
   };
@@ -64,32 +79,33 @@ export function orbitOut(t, ms) {
   const fall = ms * 0.62;
   const up = ease(t / 300);
   const level = backOut((t - fall) / (ms - fall));
+  const free = up * (1 - level);
   const cruise = 0.75 * Math.min(t, fall);
   return {
-    tilt: TILT * up * (1 - level),
-    lean: LEAN * up * (1 - level),
+    tilt: (TILT + WOBBLE_TILT * Math.sin(t / 150)) * free,
+    lean: (LEAN + WOBBLE_LEAN * Math.sin(t / 110)) * free,
     spin: cruise + (720 - 0.75 * fall) * ease((t - fall) / (ms - fall))
   };
 }
 
 // The ring's pose: where the figure is (`base`, its flight or its spot on
-// Home), then the orbit about the ring's own centre.
+// Home), then the orbit's lean and tilt about the ring's own centre. The spin
+// is the ring's turn inside it, so the halves stay split across the tilt.
 export const orbitPose = (base, o) =>
-  `${base} rotateZ(${o.lean.toFixed(1)}deg) rotateX(${o.tilt.toFixed(1)}deg) rotateZ(${o.spin.toFixed(1)}deg)`;
+  `${base} rotateZ(${o.lean.toFixed(1)}deg) rotateX(${o.tilt.toFixed(1)}deg)`;
+
+// How bright the far half is: full when the ring is flat, dimmest on edge.
+export const farLight = (tilt) => lerp(1, FAR_DIM, clamp01(Math.abs(tilt) / TILT));
 
 // Where on the ring a tick sits, as a share of a turn clockwise from the
 // marker at the top, the ring turned `turnDeg`.
 export const tickShare = (k, n, turnDeg) => ((((k / n) * 360 + turnDeg + 90) % 360) + 360) % 360 / 360;
 
-// When twinkle k comes on, as a share of TWINKLE_MS: scattered round the ring,
-// the same each time.
-export const twinkleAt = (k, n) => ((k * 97) % n) / n;
-const brightness = (k) => 0.45 + ((k * 31) % 7) / 12;
-
-// A star coming on `dt` ms ago: its brightness and its size.
-export function twinkle(dt, k) {
+// A tick lighting as the wave reaches it, `dt` ms ago: faint, and only a
+// little bigger at first.
+export function waveLight(dt) {
   if (dt < 0) return { opacity: 0, scale: 1 };
-  return { opacity: brightness(k) * clamp01(dt / FADE_IN_MS), scale: 1 + FLARE * Math.exp(-dt / FLARE_MS) };
+  return { opacity: STAR_LIGHT * clamp01(dt / FADE_IN_MS), scale: 1 + FLARE * Math.exp(-dt / FLARE_MS) };
 }
 
 const svgEl = (name, attrs, parent) => {
@@ -102,22 +118,45 @@ const svgEl = (name, attrs, parent) => {
 // The ring's parts, read from its markup (views/shape.js ringMarkup).
 export function ringParts(ring) {
   if (!ring?.querySelector) return null;
-  const turnAttr = ring.querySelector(".dial-turn")?.getAttribute("transform") ?? "";
+  const turn = ring.querySelector(".dial-turn");
+  const turnAttr = turn?.getAttribute("transform") ?? "";
   const turnDeg = Number(/rotate\(\s*(-?[\d.]+)/.exec(turnAttr)?.[1]) || 0;
   const ticks = [...ring.querySelectorAll(".dial-ticks line")];
   return {
     ring,
     turnDeg,
-    turn: ring.querySelector(".dial-turn"),
+    turn,
+    turnAttr,
     band: ring.querySelector(".dial-band"),
     ticks,
     icons: [...ring.querySelectorAll(".dial-icon")],
     mark: ring.querySelector(".dial-mark"),
     shares: ticks.map((_, k) => tickShare(k, ticks.length, turnDeg)),
-    beam: null,
-    stars: null,
-    starLayer: null
+    laid: []
   };
+}
+
+// The star's trip: a copy of the ring behind the figure shows the far half,
+// the ring itself the near half; a glint on the near edge and the pulse for
+// the landing are laid on the ring.
+function layOrbit(rp) {
+  const back = rp.ring.cloneNode(true);
+  back.classList.add("is-far");
+  back.querySelector(".dial-mark")?.remove();
+  back.querySelector(".dial-hit")?.remove();
+  const dial = rp.ring.parentNode;
+  dial.insertBefore(back, dial.firstChild);
+  rp.ring.classList.add("is-near");
+  const glint = svgEl("path", {
+    class: "dial-glint",
+    d: `M${fmt(C + Math.cos(Math.PI / 3.6) * RING_R)} ${fmt(C + Math.sin(Math.PI / 3.6) * RING_R)}A${RING_R} ${RING_R} 0 0 1 ${fmt(C + Math.cos(Math.PI - Math.PI / 3.6) * RING_R)} ${fmt(C + Math.sin(Math.PI - Math.PI / 3.6) * RING_R)}`,
+    opacity: 0
+  }, rp.ring);
+  const pulse = svgEl("circle", { class: "dial-pulse", cx: C, cy: C, r: RING_R, opacity: 0 }, rp.ring);
+  rp.far = { el: back, turn: back.querySelector(".dial-turn") };
+  rp.glint = glint;
+  rp.pulse = pulse;
+  rp.laid.push(back, glint, pulse);
 }
 
 // The radar's beam: a wedge pointing up from the centre, its glow trailing
@@ -134,6 +173,7 @@ function layBeam(rp) {
   }
   svgEl("line", { x1: C, y1: C, x2: C, y2: C - BEAM_R }, g);
   rp.beam = g;
+  rp.laid.push(g);
 }
 
 // The asterism's stars, one on each tick, inside the ring's turn so they sit
@@ -143,16 +183,17 @@ function layStars(rp) {
   const n = rp.ticks.length;
   rp.stars = rp.ticks.map((_, k) => {
     const a = (k / n) * 2 * Math.PI;
-    const star = svgEl("circle", { cx: 0, cy: 0, r: TWINKLE_R, opacity: 0 }, g);
+    const star = svgEl("circle", { cx: 0, cy: 0, r: STAR_R, opacity: 0 }, g);
     return { el: star, x: fmt(C + Math.cos(a) * 54), y: fmt(C + Math.sin(a) * 54) };
   });
-  rp.starLayer = g;
+  rp.laid.push(g);
 }
 
 export function prepareRing(rp, kind) {
-  if (!rp) return;
-  if (kind === "radar" && !rp.beam) layBeam(rp);
-  if (kind === "asterism" && !rp.stars) layStars(rp);
+  if (!rp || rp.laid.length) return;
+  if (kind === "star") layOrbit(rp);
+  if (kind === "radar") layBeam(rp);
+  if (kind === "asterism") layStars(rp);
 }
 
 // Everything back as the page drew it.
@@ -164,16 +205,49 @@ export function restRing(rp) {
   rp.band?.removeAttribute("stroke-dasharray");
   rp.band?.removeAttribute("stroke-dashoffset");
   rp.band?.removeAttribute("transform");
-  rp.beam?.remove();
-  rp.starLayer?.remove();
+  if (rp.turnAttr) rp.turn?.setAttribute("transform", rp.turnAttr);
+  rp.ring.classList.remove("is-near", "is-flipped");
+  rp.laid.forEach(el => el.remove());
+  rp.laid = [];
+  rp.far = null;
+  rp.glint = null;
+  rp.pulse = null;
   rp.beam = null;
   rp.stars = null;
-  rp.starLayer = null;
 }
 
 // The whole ring: where it is and how much of it shows.
 export function paintRingPose(rp, transform, opacity = 1) {
   if (rp) writeMotionStyle(rp.ring, { transform, opacity: opacity.toFixed(3) });
+}
+
+const turnTo = (turn, deg) => turn?.setAttribute("transform", `rotate(${fmt(deg)} ${C} ${C})`);
+
+// The star's ring in orbit: both halves at the pose, turned by the spin, the
+// far half dimmer the more it is tipped, and the glint shimmering on the
+// near edge while it is. Once `landed`, the near ring shows whole again and
+// the pulse runs round it (`pulse` 0 to 1).
+export function paintOrbit(rp, base, o, { t = 0, landed = false, pulse = 0 } = {}) {
+  if (!rp) return;
+  const transform = orbitPose(base, o);
+  const tipped = clamp01(Math.abs(o.tilt) / TILT);
+  // Tipped past flat the other way, the halves trade places.
+  const flip = o.tilt < 0;
+  rp.ring.classList.toggle("is-near", !landed);
+  rp.ring.classList.toggle("is-flipped", flip);
+  writeMotionStyle(rp.ring, { transform, opacity: "1" });
+  turnTo(rp.turn, rp.turnDeg + o.spin);
+  if (rp.far) {
+    rp.far.el.classList.toggle("is-flipped", flip);
+    writeMotionStyle(rp.far.el, { transform, opacity: (landed ? 0 : farLight(o.tilt)).toFixed(3) });
+    turnTo(rp.far.turn, rp.turnDeg + o.spin);
+  }
+  if (rp.glint) rp.glint.setAttribute("opacity", fmt(landed ? 0 : 0.85 * tipped * (0.7 + 0.3 * Math.sin(t / 70))));
+  if (rp.pulse) {
+    const on = pulse > 0 && pulse < 1;
+    rp.pulse.setAttribute("opacity", fmt(on ? 0.8 * (1 - pulse) : 0));
+    rp.pulse.setAttribute("transform", `translate(${C} ${C}) scale(${fmt(1 + PULSE_GROW * ease(pulse))}) translate(${-C} ${-C})`);
+  }
 }
 
 // The three symbols and the marker coming on, each 0 to 1.
@@ -202,31 +276,16 @@ export function paintSweep(rp, drawn, glow) {
   }
 }
 
-// The twinkles at `tau` ms after the first can come on; `cool` (0 to 1) turns
-// them back into the ring's ticks and brings its band up full.
-export function paintTwinkles(rp, tau, cool) {
+// The asterism's wave: from the marker clockwise, each tick lights as a faint
+// star `wave` ms after the wave starts (`tau`), and `cool` (0 to 1) turns
+// them into the ring's ticks and brings the band up.
+export function paintWave(rp, tau, wave, cool) {
   if (!rp?.stars) return;
-  const n = rp.stars.length;
   rp.stars.forEach((star, k) => {
-    const lit = twinkle(tau - twinkleAt(k, n) * TWINKLE_MS, k);
+    const lit = waveLight(tau - rp.shares[k] * wave);
     star.el.setAttribute("opacity", fmt(lit.opacity * (1 - cool)));
     star.el.setAttribute("transform", `translate(${star.x} ${star.y}) scale(${fmt(lit.scale)})`);
   });
   rp.ticks.forEach(el => writeMotionStyle(el, { opacity: cool.toFixed(3) }));
-  if (rp.band) writeMotionStyle(rp.band, { opacity: lerp(0.35 * clamp01(tau / 600), 1, cool).toFixed(3) });
-}
-
-// The way out: each tick sparks and goes out, the last to come on first,
-// over the `ms` from `start`.
-export function paintSparks(rp, t, start, ms) {
-  if (!rp?.stars) return;
-  const n = rp.stars.length;
-  rp.stars.forEach((star, k) => {
-    const dt = t - start - (1 - twinkleAt(k, n)) * ms;
-    const glow = dt < 0 ? 0 : Math.exp(-dt / FLARE_MS);
-    star.el.setAttribute("opacity", fmt(brightness(k) * glow));
-    star.el.setAttribute("transform", `translate(${star.x} ${star.y}) scale(${fmt(1 + FLARE * glow)})`);
-    writeMotionStyle(rp.ticks[k], { opacity: dt < 0 ? "1" : "0" });
-  });
-  if (rp.band) writeMotionStyle(rp.band, { opacity: (1 - clamp01((t - start) / ms)).toFixed(3) });
+  if (rp.band) writeMotionStyle(rp.band, { opacity: cool.toFixed(3) });
 }

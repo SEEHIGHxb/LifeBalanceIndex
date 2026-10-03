@@ -1,10 +1,10 @@
 // The ring round your star on its way in and out (v180, views/dial-zoom.js):
-// the star's orbit lands level with the symbols where they started, the
-// radar's beam reveals the ring from the marker round, and the asterism's
-// twinkles each come on once.
+// the star's orbit lands level with the symbols where they started, its far
+// half dims as it tips (v181), the radar's beam reveals the ring from the
+// marker round, and the asterism's wave stays faint (v181).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { orbitIn, orbitOut, orbitPose, ORBIT_IN_MS, tickShare, twinkleAt, twinkle, staggered, backOut } from "../views/dial-zoom.js";
+import { orbitIn, orbitOut, orbitPose, farLight, ORBIT_IN_MS, tickShare, waveLight, staggered, backOut } from "../views/dial-zoom.js";
 
 const near = (a, b, eps = 1e-6) => Math.abs(a - b) < eps;
 const whole = (deg) => near(((deg % 360) + 360) % 360, 0) || near(((deg % 360) + 360) % 360, 360);
@@ -36,9 +36,15 @@ test("swinging level overshoots and comes back to rest", () => {
   assert.ok([0.6, 0.7, 0.8].some(u => backOut(u) > 1));
 });
 
-test("the ring's pose keeps the figure's place and adds the orbit", () => {
+test("the ring's pose keeps the figure's place and adds the lean and the tilt", () => {
   const pose = orbitPose("translate(4px, 5px) scale(0.5)", { lean: 10, tilt: 20, spin: 30 });
-  assert.match(pose, /^translate\(4px, 5px\) scale\(0\.5\) rotateZ\(10\.0deg\) rotateX\(20\.0deg\) rotateZ\(30\.0deg\)$/);
+  assert.match(pose, /^translate\(4px, 5px\) scale\(0\.5\) rotateZ\(10\.0deg\) rotateX\(20\.0deg\)$/);
+});
+
+test("the far half is full when flat and dimmer the more the ring tips", () => {
+  assert.equal(farLight(0), 1);
+  assert.ok(farLight(37) < 1 && farLight(37) > farLight(74));
+  assert.equal(farLight(-74), farLight(74));
 });
 
 test("the beam meets the ticks clockwise from the marker, however the ring is turned", () => {
@@ -52,14 +58,12 @@ test("the beam meets the ticks clockwise from the marker, however the ring is tu
   }
 });
 
-test("every tick twinkles on once, each at its own time", () => {
-  const times = Array.from({ length: 48 }, (_, k) => twinkleAt(k, 48));
-  assert.equal(new Set(times).size, 48);
-  assert.ok(times.every(v => v >= 0 && v < 1));
-  assert.equal(twinkle(-1, 3).opacity, 0);
-  const lit = twinkle(5000, 3);
-  assert.ok(lit.opacity > 0.4 && near(lit.scale, 1, 1e-6));
-  assert.ok(twinkle(10, 3).scale > 2);
+test("the asterism's wave lights each tick faintly, then settles", () => {
+  assert.equal(waveLight(-1).opacity, 0);
+  const lit = waveLight(5000);
+  assert.ok(lit.opacity > 0 && lit.opacity < 0.4);
+  assert.ok(Math.abs(lit.scale - 1) < 1e-6);
+  assert.ok(waveLight(10).scale < 1.7);
 });
 
 test("the symbols come on one after another", () => {

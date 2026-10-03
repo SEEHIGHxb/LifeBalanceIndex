@@ -92,8 +92,31 @@
    radar's beam and the asterism's twinkling stars. */
 .dial-beam path { fill: #e2b866; }
 .dial-beam line { stroke: #a88752; stroke-width: 0.6; }
-.dial-stars { filter: drop-shadow(0 0 1.2px #f6e3b8); }
-.dial-stars circle { fill: #fff3cf; }
+.dial-stars circle { fill: #f6e3b8; }
+/* The star's ring in orbit (v181): the ring shows its near half in front of
+   the figure, and a copy behind the figure its far half; tipped the other
+   way, they trade. The two fade into each other across the middle (the
+   owner: a soft seam, not a cut), so the ring passes behind the star
+   gradually. A glint rides the near edge; a pulse runs round as it locks. */
+.dial-ring.is-near {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 34%, #000 66%);
+  mask-image: linear-gradient(to bottom, transparent 34%, #000 66%);
+}
+.dial-ring.is-near.is-flipped {
+  -webkit-mask-image: linear-gradient(to top, transparent 34%, #000 66%);
+  mask-image: linear-gradient(to top, transparent 34%, #000 66%);
+}
+.dial-ring.is-far {
+  z-index: 0;
+  -webkit-mask-image: linear-gradient(to bottom, #000 34%, transparent 66%);
+  mask-image: linear-gradient(to bottom, #000 34%, transparent 66%);
+}
+.dial-ring.is-far.is-flipped {
+  -webkit-mask-image: linear-gradient(to top, #000 34%, transparent 66%);
+  mask-image: linear-gradient(to top, #000 34%, transparent 66%);
+}
+.dial-glint { fill: none; stroke: #fff3cf; stroke-width: 2.2; stroke-linecap: round; filter: drop-shadow(0 0 1.5px #f6e3b8); }
+.dial-pulse { fill: none; stroke: #e2b866; stroke-width: 2.5; }
 /* The grip: a clear band over the ring and in over the rays' outer part
    (24 units, about 30px on a phone's small Home star), and the only part of
    the dial a pointer can take; the middle still opens Your star. */

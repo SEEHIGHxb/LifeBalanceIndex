@@ -33,7 +33,7 @@ import {
 } from "./star-zoom.js";
 import {
   ringParts, prepareRing, restRing, paintRingPose, paintSymbols, staggered,
-  paintSweep, paintTwinkles, paintSparks
+  paintSweep, paintWave
 } from "./dial-zoom.js";
 
 const RADAR_MS = 1750;
@@ -78,8 +78,13 @@ const SYMBOL_MS = 160;
 const MARK_MS = 150;
 const RADAR_SYMBOLS_FROM_MS = 980;
 const RADAR_MARK_FROM_MS = 1150;
-const ASTER_SYMBOLS_FROM_MS = 1700;
-const ASTER_MARK_FROM_MS = 1850;
+// The asterism's ring waits for the line to close (v181), then lights in one
+// wave and settles into ticks by the end.
+const WAVE = [1850, 350];
+const COOL = [2150, 400];
+const ASTER_SYMBOLS_FROM_MS = 2200;
+const ASTER_MARK_FROM_MS = 2400;
+const RING_OUT_MS = 300;
 
 const fmt = (n) => n.toFixed(2);
 const scaleBy = (s) => ({ transform: `scale(${s.toFixed(4)})` });
@@ -257,14 +262,14 @@ export function enterAsterism(note, parts, scope) {
     m.fades.forEach((el, i) => paintRise(el, span(t, ASTER_RISE_FROM_MS + i * RISE_STEP_MS, RISE_MS)));
     if (m.bloom) writeMotionStyle(m.bloom, { opacity: span(t, ...SETTLE).toFixed(3) });
     markSky(parts.stage, t < SETTLE[0]);
-    // The ring goes out with Home's sky; on the page its ticks come on as
-    // stars twinkling round it while the constellation draws, and cool into
-    // ticks as the sky settles into the page's style (v180).
+    // The ring goes out with Home's sky; on the page it waits for the line
+    // to close, then its ticks light as faint stars in one wave from the
+    // marker and cool into ticks as the sky settles (v181).
     if (home) paintRingPose(m.ring, homePose(m.flight).transform, 1 - span(t, ...FADE));
     else {
       paintRingPose(m.ring, "none");
-      paintTwinkles(m.ring, t - DRAW_FROM_MS, span(t, ...SETTLE));
-      paintSymbols(m.ring, staggered(t, ASTER_SYMBOLS_FROM_MS, SYMBOL_STEP_MS, SYMBOL_MS), clamp01((t - ASTER_MARK_FROM_MS) / MARK_MS));
+      paintWave(m.ring, t - WAVE[0], WAVE[1], span(t, ...COOL));
+      paintSymbols(m.ring, staggered(t, ASTER_SYMBOLS_FROM_MS, 50, SYMBOL_MS), clamp01((t - ASTER_MARK_FROM_MS) / 130));
     }
   };
   return play(scope, ASTER_MS, paint, "Asterism entrance").finally(rest);
@@ -294,14 +299,10 @@ export function leaveAsterism(note, parts, scope) {
     writeMotionStyle(parts.star, page
       ? { transform: "none", opacity: (1 - span(t, 660, 140)).toFixed(3) }
       : { ...homePose(m.flight), opacity: span(t, 840, 260).toFixed(3) });
-    // The ticks spark and go out, the last to come on first; at Home the
-    // ring is whole again and fades in with the figure.
-    if (page) {
-      const out = (i) => 1 - clamp01((t - i * 30) / 150);
-      paintRingPose(m.ring, "none");
-      paintSymbols(m.ring, [out(0), out(1), out(2)], 1 - clamp01(t / 120));
-      paintSparks(m.ring, t, 40, 420);
-    } else {
+    // The ring just fades, so the stars going out stay the moment; at Home
+    // it is whole again and fades in with the figure (v181).
+    if (page) paintRingPose(m.ring, "none", 1 - span(t, 0, RING_OUT_MS));
+    else {
       if (!ringHome) {
         restRing(m.ring);
         ringHome = true;

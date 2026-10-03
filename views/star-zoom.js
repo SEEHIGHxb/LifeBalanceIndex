@@ -28,7 +28,7 @@
 import { animate, easeStar, linear } from "../motion.js";
 import { writeMotionStyle } from "./motion-mount.js";
 import { onAbort } from "./stage.js";
-import { ringParts, restRing, paintRingPose, orbitPose, orbitIn, orbitOut } from "./dial-zoom.js";
+import { ringParts, prepareRing, restRing, paintOrbit, paintSymbols, orbitIn, orbitOut, ORBIT_IN_MS, PULSE_MS } from "./dial-zoom.js";
 
 const ZOOM_MS = 560;
 const ENTER_MS = 1500;
@@ -61,6 +61,11 @@ const POP_MS = 420;
 // warp reads as depth rather than a ring.
 const STREAK_LAG_MS = 260;
 const STREAK_MS = 440;
+// The ring (views/dial-zoom.js) trails the star by this much, and its marker
+// taps down as it lands.
+const RING_LAG_MS = 70;
+const MARK_FROM_MS = 1100;
+const MARK_MS = 150;
 // A disc grows slowly at first so its opening is seen.
 const DISC_EASE = 2;
 // A note older than this belongs to some other navigation; it is dropped.
@@ -226,6 +231,7 @@ export function enterStar(note, parts, scope) {
   const m = scope && note ? measureBlooming(parts, note) : null;
   if (!m) return Promise.resolve(false);
   const { stage, star } = parts;
+  prepareRing(m.ring, "star");
   const rest = () => {
     restAll(m.moved);
     restRing(m.ring);
@@ -238,8 +244,12 @@ export function enterStar(note, parts, scope) {
     const pop = Math.sin(Math.PI * clamp01((t - LAND_MS) / POP_MS)) * POP;
     paintDisc(m.night, grow(t, NIGHT));
     writeMotionStyle(star, { transform: flightPose(m.flight, fly, SPIN_DEG * (1 - fly), pop) });
-    // The ring flies with it in orbit and swings level as it lands (v180).
-    paintRingPose(m.ring, orbitPose(flightPose(m.flight, fly, 0, pop), orbitIn(t)));
+    // The ring flies with it in orbit and swings level as it lands (v180),
+    // its far half behind the star and a pulse as it locks (v181).
+    paintOrbit(m.ring, flightPose(m.flight, span(t - RING_LAG_MS, ...FLIGHT), 0, pop), orbitIn(t), {
+      t, landed: t >= ORBIT_IN_MS, pulse: clamp01((t - ORBIT_IN_MS) / PULSE_MS)
+    });
+    paintSymbols(m.ring, [1, 1, 1], clamp01((t - MARK_FROM_MS) / MARK_MS));
     paintWarp(m, t);
     paintDisc(m.dawn, grow(t, DAWN));
     m.paths.forEach((path, i) => paintLabel(path, span(t, LABEL_FROM_MS + i * LABEL_STEP_MS, LABEL_MS)));
@@ -263,6 +273,7 @@ export function leaveStar(note, parts, scope) {
   const m = scope && back ? measureBlooming(parts, back) : null;
   if (!m) return Promise.resolve(false);
   const { star } = parts;
+  prepareRing(m.ring, "star");
   const n = m.paths.length;
   const paint = (p) => {
     const t = p * LEAVE_MS;
@@ -272,7 +283,8 @@ export function leaveStar(note, parts, scope) {
     if (m.fx) m.fx.streaks.forEach(s => paintStreak(m.fx, s, 1 - clamp01((t - 260 - s.lag / 2) / 360)));
     const home = span(t, 380, LEAVE_MS - 380);
     writeMotionStyle(star, { transform: flightPose(m.flight, 1 - home, SPIN_DEG * home) });
-    paintRingPose(m.ring, orbitPose(flightPose(m.flight, 1 - home), orbitOut(t, LEAVE_MS)));
+    const ringHome = span(t, 380 + RING_LAG_MS, LEAVE_MS - 380 - RING_LAG_MS);
+    paintOrbit(m.ring, flightPose(m.flight, 1 - ringHome), orbitOut(t, LEAVE_MS), { t });
     paintDisc(m.night, 1 - span(t, 460, LEAVE_MS - 460));
   };
   return animate({ duration: LEAVE_MS, ease: linear, update: paint, signal: scope.signal, reduced: "end" })

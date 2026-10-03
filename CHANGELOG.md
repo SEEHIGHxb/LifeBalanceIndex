@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `183`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `184`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.110.0] - 2026-10-03 · v184
+
+### Changed
+- Share your star, quieter: only what can't be done on the card stays beside it. The Score · Character switch and the Light · Dark labels are gone (tap the card to turn it over; swipe or tap the card behind to swap), and two dots under the card show there is a second card and which is in front.
+- The shapes are three unlabelled icons, muted until chosen; Save image and Share are pills, Save filled and Share outlined, at the foot of the side.
+- Phone: a small title, the card in the middle, its dots, the shapes, then Save image with a round Share icon beside it. Still one screen.
 
 ## [2.109.0] - 2026-10-03 · v183
 

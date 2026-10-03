@@ -141,7 +141,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
   gap: 32px;
-  align-items: start;
+  align-items: stretch;
   width: min(920px, calc(100vw - 32px));
   max-height: 92vh;
   max-height: 92dvh;
@@ -153,7 +153,9 @@
   color: var(--frame-ink);
   font-family: var(--font-sans);
 }
-.share-side { display: grid; gap: 24px; justify-items: start; order: -1; }
+/* Quiet (v184, the owner, 2026-10-03: "too dense"): only what cannot be done
+   on the card stays beside it, the shape and the two ways out, unlabelled. */
+.share-side { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; order: -1; }
 .share-title {
   margin: 0;
   padding-right: 52px;
@@ -163,33 +165,31 @@
   line-height: 1.05;
   text-transform: uppercase;
 }
-.share-option { display: grid; gap: 10px; }
-.share-option-label { font-size: 14px; font-weight: 700; letter-spacing: 0.03em; }
-.share-set { display: flex; flex-wrap: wrap; gap: 8px; }
+.share-set { display: flex; gap: 6px; }
 .share-care { margin: 0; font-size: 14px; line-height: 1.7; padding-left: 14px; border-left: 3px solid var(--frame-ink); font-weight: 600; }
-/* Save filled, Share outlined, the same size (v183): two bars that read as
-   a pair and as nothing like the switches. Close is the cross in the corner. */
-.share-actions { display: grid; gap: 10px; width: 100%; }
+/* Save filled, Share outlined, the same size (v183), as pills (v184).
+   Close is the cross in the corner. */
+.share-actions { display: grid; gap: 10px; width: 100%; margin-top: auto; }
 .share-act {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 64px;
-  padding: 0 22px;
-  border: 2px solid var(--frame-dark);
-  border-radius: 20px;
+  justify-content: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 24px;
+  border: 1.5px solid var(--frame-dark);
+  border-radius: 999px;
   background: var(--frame-dark);
   color: #ffffff;
-  font: 400 24px/1 var(--frame-word);
-  letter-spacing: 0.04em;
+  font: 400 20px/1 var(--frame-word);
+  letter-spacing: 0.05em;
   white-space: nowrap;
   text-transform: uppercase;
   cursor: pointer;
 }
 .share-act.is-send { background: transparent; color: var(--frame-ink); }
 .share-act.is-send:hover { background: var(--frame-card); }
-.share-act svg { flex: none; width: 26px; height: 26px; }
+.share-act svg { order: -1; flex: none; width: 22px; height: 22px; }
 .share-act:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
 .share-x {
   position: absolute;
@@ -210,29 +210,29 @@
 .share-x:hover { background: var(--frame-card); }
 .share-x svg { width: 18px; height: 18px; }
 .share-x:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
-/* The views as symbols (v182): round buttons, the icon at 26px so the radar's
-   inner ring and the asterism's dots stay apart. */
+/* The views as symbols (v182), quiet until chosen (v184): the chosen one
+   sits on a white chip, the others are muted. */
 .share-sheet .share-shape {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: var(--frame-card);
-  color: var(--frame-ink);
+  background: transparent;
+  color: var(--frame-muted);
   cursor: pointer;
 }
-.share-shape svg { display: block; width: 26px; height: 26px; }
-.share-sheet .share-shape[aria-pressed="true"] { background: var(--frame-dark); color: #ffffff; }
+.share-shape svg { display: block; width: 24px; height: 24px; }
+.share-sheet .share-shape:hover { color: var(--frame-ink); }
+.share-sheet .share-shape[aria-pressed="true"] { background: var(--frame-card); color: var(--frame-ink); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
 .share-sheet .share-shape:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
-.share-shape-name { font-size: 12px; color: var(--frame-muted); }
 
 /* THE STACK (v182): both cards, the other one tucked behind and turned with
    its edge showing (views/share.js BACK holds the same pose). A drag writes
    its own transform; at rest the stylesheet places them. */
-.share-stage { display: grid; justify-items: center; gap: 14px; user-select: none; -webkit-user-select: none; }
+.share-stage { display: grid; justify-items: center; align-content: center; gap: 16px; user-select: none; -webkit-user-select: none; }
 .share-stack {
   position: relative;
   width: min(84%, calc(70vh * 9 / 16));
@@ -258,23 +258,6 @@
 .share-stack.is-dragging .share-card { transition: none; cursor: grabbing; }
 /* The canvas carries a 1080x1920 backing store; the card only scales it. */
 .share-preview { display: block; width: 100%; height: 100%; pointer-events: none; }
-/* Under the stack, the card's own two switches (v183): its style, and what
-   it shows. */
-.share-under { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 14px; }
-.share-styles { display: flex; gap: 6px; }
-.share-details { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--frame-card); }
-.share-detail {
-  min-height: 32px;
-  padding: 0 14px;
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  color: var(--frame-ink);
-  font: 600 13px var(--font-sans);
-  cursor: pointer;
-}
-.share-detail[aria-pressed="true"] { background: var(--frame-dark); color: #ffffff; }
-.share-detail:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
 /* The turn over (views/share.js FLIP_HALF_MS is half of it). */
 .share-preview.is-flipping { animation: share-flip 340ms ease-in-out; }
 @keyframes share-flip {
@@ -293,22 +276,22 @@
 }
 .share-card[data-theme="navy"] .share-flip-hint { color: rgba(255, 255, 255, 0.55); }
 .share-card:not(.is-front) .share-flip-hint { display: none; }
+/* Two dots under the stack (v184): there is a second card, and which one is
+   in front. Each is a 24px button round an 8px dot; the front one stretches. */
+.share-dots { display: flex; gap: 4px; }
 .share-style {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 0 10px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 24px;
+  padding: 0;
   border: 0;
-  border-radius: 999px;
   background: none;
-  color: var(--frame-muted);
-  font: 600 13px var(--font-sans);
   cursor: pointer;
 }
-.share-style i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.share-style[aria-pressed="true"] { color: var(--frame-ink); }
-.share-style:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
+.share-style i { width: 8px; height: 8px; border-radius: 4px; background: var(--frame-muted); opacity: 0.45; transition: width 250ms ease, opacity 250ms ease; }
+.share-style[aria-pressed="true"] i { width: 22px; background: var(--frame-ink); opacity: 1; }
+.share-style:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; border-radius: 6px; }
 @media (prefers-reduced-motion: reduce) {
   .share-card { transition: none; }
   .share-preview.is-flipping { animation: none; }
@@ -498,37 +481,30 @@ html[data-reduce-motion] .share-preview.is-flipping { animation: none; }
   .textpage .component-detail { font-size: max(15px, calc(28 * var(--px))); }
 }
 @media (max-width: 720px) {
-  /* One screen, no scrolling (the owner, 2026-10-03): the title, the stack
-     sized from what is left of the height, its switches, the shape on one
-     row, and Save and Share side by side. --share-phone-rest is everything
-     but the stack: padding, title, switches, shape row, bars and gaps. */
-  .share-sheet { --share-phone-rest: 284px; display: flex; flex-direction: column; align-items: stretch; padding: 16px; gap: 12px; }
+  /* One screen, no scrolling (the owner, 2026-10-03), and not all at the
+     bottom: a small title, the card in the middle sized from what is left of
+     the height, its dots, the shapes, then Save with a round Share beside
+     it. --share-phone-rest is everything but the stack. */
+  .share-sheet { --share-phone-rest: 290px; display: flex; flex-direction: column; align-items: stretch; padding: 16px; gap: 14px; }
   .share-side { display: contents; }
-  .share-title { order: -1; font-size: 28px; min-height: 44px; display: flex; align-items: center; }
-  .share-x { top: 14px; right: 14px; }
-  .share-stage { gap: 10px; }
-  /* Both switches on one row, in Thai too: a second row would cost the card. */
-  .share-under { flex-wrap: nowrap; gap: 6px; }
-  .share-styles { gap: 0; }
-  .share-style { padding: 0 7px; }
-  .share-detail { padding: 0 11px; }
+  .share-title { order: -1; font-size: 24px; min-height: 40px; display: flex; align-items: center; }
+  .share-x { top: 14px; right: 14px; width: 40px; height: 40px; }
+  .share-stage { gap: 12px; }
   .share-stack {
-    width: min(76%, calc((92vh - var(--share-phone-rest)) * 9 / 16));
-    width: min(76%, calc((92dvh - var(--share-phone-rest)) * 9 / 16));
+    width: min(70%, calc((92vh - var(--share-phone-rest)) * 9 / 16));
+    width: min(70%, calc((92dvh - var(--share-phone-rest)) * 9 / 16));
   }
-  .share-option { display: flex; align-items: center; gap: 10px; }
-  .share-sheet .share-shape { width: 44px; height: 44px; }
-  .share-shape svg { width: 22px; height: 22px; }
-  .share-actions { grid-auto-flow: column; grid-auto-columns: 1fr; }
-  .share-act { min-height: 54px; padding: 0 16px; font-size: 20px; border-radius: 16px; }
-  .share-act svg { width: 22px; height: 22px; }
+  .share-option { align-self: center; }
+  .share-actions { display: flex; margin-top: 0; }
+  .share-act.is-save { flex: 1; }
+  .share-act.is-send { flex: none; width: 56px; padding: 0; }
+  .share-act.is-send .share-act-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 
 /* ================================================================= Thai
    No tracking for Thai, and the wordmark face has no Thai, so those headings
    fall back to Sarabun at a heavier weight. */
 html[lang="th"] .share-act,
-html[lang="th"] .share-option-label,
 html[lang="th"] .lumi .pill,
 html[lang="th"] .lumi-label,
 html[lang="th"] .assess-done { letter-spacing: normal; }

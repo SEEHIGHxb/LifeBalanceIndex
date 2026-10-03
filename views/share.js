@@ -47,7 +47,7 @@ const ASSEMBLE_MS = 1100;
 // buttons, "make the side swap to the dark card", with "a bit of hint that
 // there is dark card". Both cards are drawn; the other one is tucked behind,
 // turned, its edge showing. A swipe past SWIPE_SHARE of the card's width, a
-// tap on the one behind, the arrow keys or the labels under it swap them.
+// tap on the one behind, the arrow keys or the dots under it swap them.
 const THEMES = ["paper", "navy"];
 const SWIPE_SHARE = 0.22;
 // A press that moves less than this is a tap.
@@ -125,12 +125,9 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
   const prefs = readSharePrefs();
   const data = storyCardData(card);
   const shareable = canShareFiles();
-  const labels = DETAIL_LABELS();
   const shapeNames = { star: t("Star"), radar: t("Radar"), asterism: t("Asterism") };
   const themeNames = { paper: t("Light"), navy: t("Dark") };
 
-  const detailButton = (level) =>
-    `<button type="button" class="share-toggle share-detail" data-group="detail" data-value="${level}" aria-pressed="${prefs.detail === level}">${labels[level]}</button>`;
   // Each view as its symbol (views/shape.js), its name the button's name.
   const shapeButton = (view, active) =>
     `<button type="button" class="share-toggle share-shape" data-group="shape" data-value="${view}" aria-pressed="${active}" aria-label="${shapeNames[view]}" title="${shapeNames[view]}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${SHAPE_ICONS[view]}</svg></button>`;
@@ -139,7 +136,7 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
     `<canvas${theme === "paper" ? ' id="share-preview"' : ""} class="share-preview" data-theme="${theme}" width="${STORY_W}" height="${STORY_H}" role="img" aria-label="${t("Preview of your shareable card")}: ${themeNames[theme]}"></canvas>` +
     `<span class="share-flip-hint" aria-hidden="true">↻ ${t("Tap to flip")}</span></div>`;
   const action = (id, label, icon, kind) =>
-    `<button type="button" class="share-act ${kind}" id="${id}">${label}<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${icon}</svg></button>`;
+    `<button type="button" class="share-act ${kind}" id="${id}" aria-label="${label}"><span class="share-act-label">${label}</span><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${icon}</svg></button>`;
 
   // The poster sheet (R5; docs/prototype/redesign/social.js shareHTML): the
   // poster with its own switches on the left, the shape and the two ways out
@@ -150,26 +147,21 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
     <div class="share-sheet">
       <button type="button" class="share-x" id="share-close" aria-label="${t("Close")}" title="${t("Close")}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICON_CLOSE}</svg></button>
       <div class="share-stage">
-        <div class="share-stack" tabindex="0" role="group" aria-label="${t("Card style")}">
+        <div class="share-stack" data-detail="${prefs.detail}" tabindex="0" role="group" aria-label="${t("Card style")}" aria-describedby="share-flip-help">
           ${THEMES.map(stackCard).join("")}
         </div>
-        <div class="share-under">
-          <span class="share-styles" role="group" aria-label="${t("Card style")}">
-            ${THEMES.map(theme => `<button type="button" class="share-style" data-value="${theme}" aria-pressed="${prefs.theme === theme}"><i aria-hidden="true"></i>${themeNames[theme]}</button>`).join("")}
-          </span>
-          <span class="share-details" role="group" aria-label="${t("What to show")}">
-            ${DETAIL_LEVELS.map(detailButton).join("")}
-          </span>
-        </div>
+        <span class="sr-only" id="share-flip-help">${t("Tap to flip")}</span>
+        <span class="share-dots" role="group" aria-label="${t("Card style")}">
+          ${THEMES.map(theme => `<button type="button" class="share-style" data-value="${theme}" aria-pressed="${prefs.theme === theme}" aria-label="${themeNames[theme]}" title="${themeNames[theme]}"><i aria-hidden="true"></i></button>`).join("")}
+        </span>
       </div>
       <div class="share-side">
         <h2 class="share-title">${t("Share your star")}</h2>
         <div class="share-option" role="group" aria-labelledby="share-shape-label">
-          <span class="share-option-label" id="share-shape-label">${t("Shape")}</span>
+          <span class="sr-only" id="share-shape-label">${t("Shape")}</span>
           <span class="share-set">
             ${SHAPE_VIEWS.map(v => shapeButton(v, prefs.shape === v)).join("")}
           </span>
-          <span class="share-shape-name" aria-hidden="true">${shapeNames[prefs.shape]}</span>
         </div>
 
         ${showMentalNote ? `<p class="share-care">${t("This card shows your mental wellbeing alongside the other seven aspects. Choosing “Character” shows a character in place of each score where you have one.")}</p>` : ""}
@@ -329,7 +321,6 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
   });
 
   // The shape and what each region shows.
-  const shapeName = overlay.querySelector(".share-shape-name");
   const pick = (group, value) => {
     prefs[group] = value;
     writeSharePrefs(prefs);
@@ -344,6 +335,7 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
   function flip(detail = prefs.detail === "full" ? "character" : "full") {
     if (detail === prefs.detail) return;
     pick("detail", detail);
+    stack.dataset.detail = detail;
     if (isReduced()) return redraw();
     changes += 1;
     stopAssembly();
@@ -360,9 +352,7 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
     btn.addEventListener("click", () => {
       const { group, value } = btn.dataset;
       if (prefs[group] === value) return;
-      if (group === "detail") return flip(value);
       pick(group, value);
-      if (shapeName) shapeName.textContent = shapeNames[value];
       redraw();
     });
   });

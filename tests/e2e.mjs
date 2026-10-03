@@ -675,7 +675,9 @@ try {
   // Each control must visibly change the image. waitForFunction doubles as the
   // wait and the assertion, so a control that silently does nothing times out.
   const beforeDetail = await dataUrl();
-  await page.click('.share-toggle[data-value="character"]');
+  // What the card shows changes by turning it over (v184: the switch went).
+  await page.focus(".share-stack");
+  await page.keyboard.press("Enter");
   await page.waitForFunction(
     prev => document.getElementById("share-preview").toDataURL("image/png") !== prev,
     beforeDetail, { timeout: 5000 }
@@ -714,7 +716,7 @@ try {
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   });
   await page.mouse.click(middle.x, middle.y);
-  await page.waitForSelector('.share-detail[data-value="full"][aria-pressed="true"]', { timeout: 5000 });
+  await page.waitForSelector('.share-stack[data-detail="full"]', { timeout: 5000 });
   // Polled with evaluate: waitForFunction's polling trips the page's CSP
   // (no 'unsafe-eval') once the first wait is past.
   let redrawn = false;

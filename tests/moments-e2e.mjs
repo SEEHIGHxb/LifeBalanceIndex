@@ -377,10 +377,10 @@ try {
   await advance(page, 1200);
   const endCard = await preview();
   if (!midCard || midCard === endCard) problems.push("share card: the preview did not assemble");
-  const detail = await page.evaluate(() => document.querySelector('.share-toggle[data-group="detail"][aria-pressed="true"]').dataset.value);
-  const other = detail === "full" ? "character" : "full";
-  await page.click(`.share-toggle[data-value="${other}"]`);
-  await page.click(`.share-toggle[data-value="${detail}"]`);
+  // Turned over and back (Enter on the card, v184).
+  await page.focus(".share-stack");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
   await page.waitForTimeout(100);
   if ((await preview()) !== endCard) problems.push("share card: the assembly did not end on the finished card");
   await context.close();

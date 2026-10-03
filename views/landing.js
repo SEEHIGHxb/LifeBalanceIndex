@@ -2,7 +2,8 @@
 // taken the journey yet, and where the ASTERISM wordmark leads everyone else
 // (redesign R2; docs/prototype/redesign/proto.js landingHTML).
 //
-// Top to bottom: the hero (the gilt star over ASTERISM), WHY with its
+// Top to bottom: the hero (an asterism of the eight regions over ASTERISM,
+// views/asterism-mark.js), WHY with its
 // typed headline, HOW IT WORKS, the eight regions as cards, a photo band and
 // the call to begin. The regions (the owner, v151): one card each, which pin
 // and stack like the pages of a travel journal, beside a rail of their
@@ -11,7 +12,7 @@
 
 import { CHAPTERS } from "./journey.js";
 import { ASPECT_META } from "../aspects.js";
-import { SPRITES } from "./stage.js";
+import { asterismMarkup } from "./asterism-mark.js";
 import { heroMarkup, missionMarkup, bandMarkup, label, renderStagePage } from "./stage-page.js";
 import { escapeHtml } from "./helpers.js";
 import { t } from "../i18n.js";
@@ -66,7 +67,7 @@ export function landingMarkup({ resume = false, returning = false } = {}) {
   return `
     <div class="stage-page landing">
       ${heroMarkup({
-        mark: `<svg viewBox="0 0 100 100"><use href="${SPRITES}#star"/></svg>`,
+        mark: asterismMarkup(),
         word: "ASTERISM",
         inc: "LIFE BALANCE INDEX",
         srTitle: "Asterism: Life Balance Index",
@@ -114,6 +115,16 @@ export function renderLanding(containerId, { resume = false, returning = false }
   if (!container) return;
   renderStagePage(container, () => landingMarkup({ resume, returning }));
   bindRail(container);
+  bindAsterism(container);
+}
+
+// A tap on the mark draws a new asterism (the hero's own tap still bursts and
+// spins it). The listener goes with the page when the next route replaces it.
+function bindAsterism(container) {
+  const hit = container.querySelector(".hero .mark-hit");
+  const mark = container.querySelector(".hero .mark");
+  if (!hit || !mark) return;
+  hit.addEventListener("click", () => { mark.innerHTML = asterismMarkup(); });
 }
 
 // Where a card sits when it is not pinned: the block's top plus every card

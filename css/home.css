@@ -171,7 +171,29 @@
 .fn-ref a:hover,
 .fn-mark:hover { text-decoration: underline; }
 .home-notes .fn-body p { margin: 0; font-size: inherit; line-height: inherit; }
-.fn-sources { margin: 8px 0 0; padding-left: 1.2em; }
+.fn-sources { margin: 10px 0 0; padding: 0; list-style: none; }
+/* v187 (the owner): ink and hairlines, not browser blue. The bracketed detail
+   sits on a grey line under the name; the arrow says the page opens elsewhere. */
+.fn-sources li + li { border-top: 1px solid #e6e3de; }
+.fn-sources a {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1.2em;
+  gap: 14px;
+  padding: 10px 2px;
+  color: var(--frame-ink);
+  text-decoration: none;
+  line-height: 1.5;
+}
+.fn-src-text { min-width: 0; }
+.fn-src-name { text-wrap: pretty; }
+.fn-src-detail { display: block; font-size: 0.86em; color: var(--frame-muted); text-wrap: pretty; }
+.fn-src-arrow { color: var(--frame-muted); transition: transform 0.2s ease-out, color 0.2s ease-out; }
+.fn-sources a:hover .fn-src-name,
+.fn-sources a:focus-visible .fn-src-name { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.fn-sources a:hover .fn-src-arrow { transform: translate(2px, -2px); color: var(--frame-ink); }
+.fn-sources a:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { .fn-src-arrow { transition: none; } }
+html[data-reduce-motion] .fn-src-arrow { transition: none; }
 @media (pointer: coarse) { .fn-ref a, .fn-mark { padding: 10px 6px; } }
 
 /* ---------------------------------------------------- where to start */

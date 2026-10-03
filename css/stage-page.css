@@ -117,9 +117,10 @@ html[data-reduce-motion] .sky-fx { display: none; }
 }
 .stage-page .label {
   margin: 0;
-  font-size: max(11px, calc(17 * var(--px)));
+  /* v187 (the owner): 11px read too small; 15px and wider tracking. */
+  font-size: max(15px, calc(20 * var(--px)));
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -152,6 +153,35 @@ html[data-reduce-motion] .sky-fx { display: none; }
   aspect-ratio: 1;
 }
 .hero .mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+/* The Landing's asterism (v187, views/asterism-mark.js): the stars pop in one
+   by one, then the gold thread draws itself star to star. It plays once per
+   drawing; reduced motion shows the finished picture. */
+.asterism-thread {
+  stroke: #b58a4c;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  animation: asterism-draw 260ms calc(1400ms + var(--e) * 200ms) ease-in-out both;
+}
+.asterism-star { color: var(--hue); animation: asterism-pop 520ms calc(var(--i) * 140ms) ease-out both; }
+.asterism-star circle { fill: currentColor; opacity: 0.16; }
+.asterism-star path { fill: currentColor; }
+.asterism-core { fill: var(--frame-ink); }
+@keyframes asterism-pop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+@keyframes asterism-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .asterism-thread,
+  .asterism-star { animation: none; }
+}
+html[data-reduce-motion] .asterism-thread,
+html[data-reduce-motion] .asterism-star { animation: none; }
 /* The star can be tapped: on a phone there is no pointer for it to follow. */
 .hero .mark-hit {
   z-index: 2;
@@ -772,7 +802,7 @@ a.newsrow:hover .newsrow-title { text-decoration: underline; text-underline-offs
   .hero + .panel { border-top: 1px solid #e6e3de; }
   .stage-page .notice-panel + .panel { border-top: 0; }
   .stage-page .split { grid-template-columns: minmax(0, 1fr); gap: calc(40 * var(--px)); }
-  .stage-page .label { font-size: max(11px, calc(22 * var(--px))); }
+  .stage-page .label { font-size: max(15px, calc(22 * var(--px))); }
   .stage-page .headline { white-space: normal; font-size: calc(46 * var(--px)); }
   .mission { padding: calc(160 * var(--px)) 0; }
   .statement .label { margin-top: 0; }

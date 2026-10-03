@@ -285,10 +285,24 @@ export function criteriaNote(criteria) {
     ${sourceList(sources)}`;
 }
 
-// Links to sources, for a note.
+// A source's name and, when its label ends in a bracketed detail
+// ("NSO Labour Force Survey (avg. wage ~15,972 THB)"), that detail apart.
+export function splitSourceLabel(label) {
+  const open = label.indexOf(" (");
+  if (open <= 0 || !label.endsWith(")")) return { name: label, detail: "" };
+  return { name: label.slice(0, open), detail: label.slice(open + 2, -1) };
+}
+
+// Links to sources, for a note (v187, the owner: browser-blue links "look
+// cheap"): the name in ink, its detail on a grey line under it, an arrow for
+// a page that opens elsewhere (css/home.css).
 export function sourceList(sources) {
   if (!sources || !sources.length) return "";
-  return `<ul class="fn-sources">${sources.map(src => `<li><a href="${escapeHtml(src.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(src.label)}</a></li>`).join("")}</ul>`;
+  return `<ul class="fn-sources">${sources.map(src => {
+    const { name, detail } = splitSourceLabel(src.label);
+    const sub = detail ? `<span class="fn-src-detail">${escapeHtml(detail)}</span>` : "";
+    return `<li><a href="${escapeHtml(src.url)}" target="_blank" rel="noopener noreferrer"><span class="fn-src-text"><span class="fn-src-name">${escapeHtml(name)}</span>${sub}</span><span class="fn-src-arrow" aria-hidden="true">↗</span></a></li>`;
+  }).join("")}</ul>`;
 }
 
 // Localized method tag for a benchmark ("vs published norms", …). Was a

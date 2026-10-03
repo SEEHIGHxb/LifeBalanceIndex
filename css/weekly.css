@@ -807,7 +807,7 @@ html[lang="th"] .aspect-page .statement .character-name { letter-spacing: 0; tex
   .aspect-page .statement .split { gap: 16px; }
 
   /* The chapter's heading: its number, outlined, where the brackets were. */
-  .aspect-page .chapter-label { display: flex; align-items: baseline; gap: 12px; font-size: 11px; letter-spacing: 0.14em; }
+  .aspect-page .chapter-label { display: flex; align-items: baseline; gap: 12px; font-size: 15px; letter-spacing: 0.1em; }
   .aspect-page .chapter-label .label-paren { display: none; }
   .aspect-page > .panel.statement:not(.aspect-notes) .chapter-label { counter-increment: chapter; }
   .aspect-page > .panel.statement:not(.aspect-notes) .chapter-label::before {
@@ -869,7 +869,7 @@ html[lang="th"] .aspect-page .statement .character-name { letter-spacing: 0; tex
 }
 @media (prefers-reduced-motion: reduce) { .aspect-page > .panel.arrives { opacity: 1; transform: none; transition: none; } }
 html[data-reduce-motion] .aspect-page > .panel.arrives { opacity: 1; transform: none; transition: none; }
-html[lang="th"] .aspect-page .chapter-label { letter-spacing: normal; font-size: 13px; }
+html[lang="th"] .aspect-page .chapter-label { letter-spacing: normal; font-size: 16px; }
 
 
 /* v162 (the owner): the notes folded at every width; the fold stands in for

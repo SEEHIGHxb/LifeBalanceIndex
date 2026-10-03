@@ -44,9 +44,9 @@
 }
 .journey .label {
   margin: 0;
-  font-size: 13px;
+  font-size: 15px; /* v187: one size with the stage pages' labels */
   font-weight: 700;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .q-emblem {

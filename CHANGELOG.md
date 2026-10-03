@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `186`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `187`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.113.0] - 2026-10-03 · v187
+
+### Changed
+- The Landing's mark (the owner's pick "A · Join the dots"): the gilt star, which read too close to the site it was modelled on, is now an asterism. Eight small stars, one per region in its colour, pop in one by one and a gold thread joins them into a constellation, a new one on every visit and on every tap. Reduced motion shows it finished.
+- Section labels such as (WHY) are 15px instead of 11px, with wider tracking, on the stage pages, the journey and the phone region chapters (16px in Thai).
+- Sources in the notes are no longer browser-blue underlined links: each is a row in ink between hairlines, its bracketed detail on a grey line under the name, with an arrow for a page that opens elsewhere. The underline comes back on hover.
 
 ## [2.112.0] - 2026-10-03 · v186
 

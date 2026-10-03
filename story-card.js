@@ -121,7 +121,12 @@ const LAYOUT = {
   // The line under the star: its heading, then the Balance Index or, with
   // Character, your constellation (v182).
   footLabel: 1440,
-  footValue: 1530
+  footValue: 1530,
+  // With Character and a full constellation (v190): its name, the subtitle,
+  // then the code, small.
+  footName: 1518,
+  footSub: 1578,
+  footCode: 1630
 };
 
 // The sticker's cut edge and lift, and how it sits: turned a little, as if
@@ -472,6 +477,18 @@ function drawFoot(ctx, theme, data, detail, maxWidth) {
   ctx.font = font(700, 24, SANS);
   ctx.fillStyle = theme.muted;
   ctx.fillText(t(coded ? "Your constellation" : "Balance Index").toUpperCase(), mid, LAYOUT.footLabel);
+  const named = coded && data.constellation?.name;
+  if (named) {
+    ctx.font = font(400, 72, WORD);
+    ctx.fillStyle = theme.ink;
+    ctx.fillText(fitText(ctx, data.constellation.name.toUpperCase(), maxWidth), mid, LAYOUT.footName);
+    ctx.font = font("italic 400", 34, SANS);
+    ctx.fillText(fitText(ctx, data.constellation.subtitle, maxWidth), mid, LAYOUT.footSub);
+    ctx.font = font(700, 22, SANS);
+    ctx.fillStyle = theme.muted;
+    ctx.fillText(data.constellation.code, mid, LAYOUT.footCode);
+    return;
+  }
   ctx.font = font(400, 72, WORD);
   ctx.fillStyle = value === NONE ? theme.muted : theme.ink;
   ctx.fillText(fitText(ctx, value, maxWidth), mid, LAYOUT.footValue);
@@ -481,7 +498,9 @@ function drawFoot(ctx, theme, data, detail, maxWidth) {
 // region has no constellation.
 function cardConstellation(c) {
   if (!c || !c.complete || typeof c.code !== "string") return null;
-  return { code: c.code };
+  const n = c.name;
+  if (typeof n?.title !== "string" || typeof n.subtitle !== "string") return { code: c.code };
+  return { code: c.code, name: n.title, subtitle: n.subtitle };
 }
 
 // Each region's name and character, as plain strings, or none at all.

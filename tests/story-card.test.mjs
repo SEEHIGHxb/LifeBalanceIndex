@@ -353,6 +353,18 @@ test("the line under the star follows the labels: the index with Score, your con
   assert.deepEqual(ctx.points.filter(p => p.y < SAFE_TOP || p.y > SAFE_LOW), []);
 });
 
+// v190: with a name, Character shows it, the subtitle, then the code, small,
+// all inside the safe band.
+test("Character draws your constellation's name and subtitle above its code", () => {
+  const constellation = { complete: true, code: "TGPE-AWRC", left: 0, name: { title: "Pleiades", subtitle: "The Bright Hearth" } };
+  assert.deepEqual(storyCardData({ constellation }).constellation, { code: "TGPE-AWRC", name: "Pleiades", subtitle: "The Bright Hearth" });
+  const ctx = draw({ detail: "character" }, { constellation });
+  for (const s of ["YOUR CONSTELLATION", "PLEIADES", "The Bright Hearth", "TGPE-AWRC"]) assert.ok(ctx.texts.includes(s), `missing ${s}`);
+  assert.deepEqual(ctx.points.filter(p => p.y < SAFE_TOP || p.y > SAFE_LOW), []);
+  const score = draw({ detail: "full" }, { constellation }).texts;
+  assert.ok(!score.includes("PLEIADES"), "Score drew the name");
+});
+
 test("before every region has a character, Character shows a dash under the heading", () => {
   const partial = draw({ detail: "character" }, { constellation: { complete: false, code: null, left: 3 } }).texts;
   assert.ok(partial.includes("YOUR CONSTELLATION"));

@@ -285,15 +285,20 @@ test("your effort counts every pledge kept at every review", () => {
 
 // --- your constellation (v171) --------------------------------------------------
 
-test("Overview shows your constellation's code, and only the code, once every region has a character", () => {
+test("Overview shows your constellation's name, subtitle and code once every region has a character (v190)", () => {
   const full = {
     ...STATE,
     profile: { ...STATE.profile, sleepHours: 8, weeklyLearningHours: 3, singleUsePlastics: 2 },
     baseline: { ...STATE.baseline, citacc: 12, citlearn: 12, ptm: 14, geb: 14 }
   };
   const html = render(full);
+  assert.match(html, /<p class="home-type-name">[^<]+<\/p>\s*<p class="home-type-sub">The \w+ \w+<\/p>/);
   assert.match(html, /<p class="home-type-code">[A-Z]{4}-[A-Z]{4}<\/p>/);
-  assert.doesNotMatch(html, /home-type-name|home-type-line/);
+  // Note 3 tells the story of each part of the name, from the scores.
+  assert.match(html, /<ul class="home-type-why">(<li><b>[^<]+<\/b> [^<]+<\/li>){3}<\/ul>/);
+  assert.match(html, /Your two strongest regions are The [\w ]+ \(\d+\) and The [\w ]+ \(\d+\)\./);
+  assert.match(html, /\d+ points between your highest and lowest region: /);
+  assert.match(html, /In The [\w ]+, your strongest, you are the \w+: /);
   assert.ok(html.includes("1 of 65,536 possible constellations"), "says how many there could be");
   assert.ok(!/rare/i.test(html), "claims no rarity");
   assert.ok(html.includes('id="fn-type"'), "explains how it is worked out in a note");

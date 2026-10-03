@@ -169,9 +169,9 @@ function noticeSection(h) {
 // words stay as its accessible name (css/home.css).
 const SHARE_ICON = `<svg class="share-ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.4M8.3 13.2l7.4 4.4"/></g></svg>`;
 
-// Your constellation (v171; the code only since v172, the owner): its code
-// and how many there could be, never how rare it is. How it is worked out is
-// note 3. Short of a character in every region it says how many are left.
+// Your constellation (v171): its name and subtitle (v190), then its code and
+// how many there could be, never how rare it is. Why it is called that, and
+// how the code is worked out, is note 3. Short of a character in every region it says how many are left.
 export function constellationBlock(c) {
   if (!c) return "";
   const title = `<p class="home-type-label">${escapeHtml(t("Your constellation"))}${footnoteRef("type", "3")}</p>`;
@@ -181,9 +181,28 @@ export function constellationBlock(c) {
   return `
     <div class="home-type">
       ${title}
+      <p class="home-type-name">${escapeHtml(c.name.title)}</p>
+      <p class="home-type-sub">${escapeHtml(c.name.subtitle)}</p>
       <p class="home-type-code">${escapeHtml(c.code)}</p>
       <p class="home-type-count">${escapeHtml(t("1 of 65,536 possible constellations"))}</p>
     </div>`;
+}
+
+// Why your constellation is called what it is (v190, the owner: every word
+// of the name comes from your scores, and says so): the name from your two
+// strongest regions, the word from the gap, the thing from your character.
+export function constellationStory(c, state) {
+  if (!c?.complete) return "";
+  const n = c.name;
+  const region = (key) => CHAPTERS.find(ch => ch.aspect === key)?.region || "";
+  const [a, b] = n.strongest;
+  const character = characterFor(state, a)?.name || "";
+  const lines = [
+    [n.title, tp("Your two strongest regions are {a} ({x}) and {b} ({y}). {line}", { a: region(a), x: n.strongestScores[0], b: region(b), y: n.strongestScores[1], line: n.line })],
+    [n.word, tp("{n} points between your highest and lowest region: {why}", { n: n.gap, why: n.wordWhy })],
+    [n.thing, tp("In {region}, your strongest, you are the {character}: {why}.", { region: region(a), character, why: n.thingWhy })]
+  ];
+  return `<ul class="home-type-why">${lines.map(([head, text]) => `<li><b>${escapeHtml(head)}</b> ${escapeHtml(text)}</li>`).join("")}</ul>`;
 }
 
 // Your star beside what it adds up to: the Balance Index, then your
@@ -316,7 +335,7 @@ function notesSection(h) {
     { id: "average", mark: "2", body: `<p>${t("Each average is the score of a reference person built from published population statistics and scored the same way as you. Where no statistic exists, a reasonable default stands in.")}</p>${sources}` }
   ];
   if (h.constellation) {
-    notes.push({ id: "type", mark: "3", body: `<p>${t("One letter per region, from your character there, in Overview's order. Made up for fun, not a professional assessment.")}</p>` });
+    notes.push({ id: "type", mark: "3", body: `${constellationStory(h.constellation, h.state)}<p>${t("One letter per region, from your character there, in Overview's order. Made up for fun, not a professional assessment.")}</p>` });
   }
   if (h.estimated.length) {
     notes.push({

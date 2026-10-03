@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `189`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `190`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.115.0] - 2026-10-03 · v190
+
+### Added
+- Every constellation has a name, and every word of it comes from your scores (the owner). The name is a figure already in the sky, from your two strongest regions: 28 pairs, from Greek, Arabic, Chinese, Egyptian and Thai star lore (Pleiades, Polaris, Orion's Belt...). Under it, "The {word} {thing}": the word reads the gap between your highest and lowest region (Steady, Rising, Bright, Bold), the thing is your character in your strongest region (32 things, one per character). Overview shows the name and subtitle above the code; note 3 tells the story of each part; the share card's Character face carries the name, the subtitle and the code. The code stays the unique one.
+- Thai drafts for the 28 names, their lines, the words, the things and the story lines, awaiting the owner's review.
 
 ## [2.114.1] - 2026-10-03 · v189
 

@@ -127,6 +127,9 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
   const shareable = canShareFiles();
   const shapeNames = { star: t("Star"), radar: t("Radar"), asterism: t("Asterism") };
   const themeNames = { paper: t("Light"), navy: t("Dark") };
+  // The words round the card on a laptop (v185, the owner's pick "A"): what
+  // it shows, up its edge like a book's spine, and the shape it is drawn as.
+  const showingNames = { full: t("Balance Index"), character: t("Your constellation") };
 
   // Each view as its symbol (views/shape.js), its name the button's name.
   const shapeButton = (view, active) =>
@@ -147,6 +150,7 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
     <div class="share-sheet">
       <button type="button" class="share-x" id="share-close" aria-label="${t("Close")}" title="${t("Close")}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICON_CLOSE}</svg></button>
       <div class="share-stage">
+        <p class="share-spine" aria-hidden="true"><span>${t("Showing")}</span><b>${showingNames[prefs.detail]}</b></p>
         <div class="share-stack" data-detail="${prefs.detail}" tabindex="0" role="group" aria-label="${t("Card style")}" aria-describedby="share-flip-help">
           ${THEMES.map(stackCard).join("")}
         </div>
@@ -162,6 +166,10 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
           <span class="share-set">
             ${SHAPE_VIEWS.map(v => shapeButton(v, prefs.shape === v)).join("")}
           </span>
+        </div>
+        <div class="share-drawn" aria-hidden="true">
+          <span>${t("Drawn as")}</span>
+          <b>${shapeNames[prefs.shape]}</b>
         </div>
 
         ${showMentalNote ? `<p class="share-care">${t("This card shows your mental wellbeing alongside the other seven aspects. Choosing “Character” shows a character in place of each score where you have one.")}</p>` : ""}
@@ -320,7 +328,9 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
     });
   });
 
-  // The shape and what each region shows.
+  // The shape and what each region shows, and the words that name them.
+  const spineWord = overlay.querySelector(".share-spine b");
+  const drawnWord = overlay.querySelector(".share-drawn b");
   const pick = (group, value) => {
     prefs[group] = value;
     writeSharePrefs(prefs);
@@ -336,6 +346,7 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
     if (detail === prefs.detail) return;
     pick("detail", detail);
     stack.dataset.detail = detail;
+    spineWord.textContent = showingNames[detail];
     if (isReduced()) return redraw();
     changes += 1;
     stopAssembly();
@@ -353,6 +364,7 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
       const { group, value } = btn.dataset;
       if (prefs[group] === value) return;
       pick(group, value);
+      drawnWord.textContent = shapeNames[value];
       redraw();
     });
   });

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `184`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `185`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.111.0] - 2026-10-03 · v185
+
+### Changed
+- Share your star on a laptop: what the card shows runs up its left edge like a book's spine ("Showing · Balance Index" or "Your constellation"), and the shape it is drawn as stands as a big outlined word under the shapes ("Drawn as · Asterism"). Both follow the card as it turns and the shape as it changes.
+- On a phone Share leads: the big filled pill, with Save image a small round outline beside it. Without Share, Save fills the row.
+
+### Thai
+- Approved by the owner: "Tap to flip" → แตะเพื่อพลิก.
+- New drafts for the owner's review: "Showing" → กำลังแสดง, "Drawn as" → วาดเป็น.
 
 ## [2.110.0] - 2026-10-03 · v184
 

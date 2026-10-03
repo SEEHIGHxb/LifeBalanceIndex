@@ -276,6 +276,40 @@
 }
 .share-card[data-theme="navy"] .share-flip-hint { color: rgba(255, 255, 255, 0.55); }
 .share-card:not(.is-front) .share-flip-hint { display: none; }
+/* The words round the card (v185, laptop only): what it shows runs up the
+   card's left edge like a book's spine, and the shape it is drawn as stands
+   as a big outlined word under the shapes. */
+.share-stage { position: relative; padding-left: 52px; }
+.share-spine {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  writing-mode: vertical-rl;
+  transform: translateY(-50%) rotate(180deg);
+  white-space: nowrap;
+  font: 700 11px var(--font-sans);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--frame-muted);
+}
+.share-spine b { font: 400 30px/1 var(--frame-word); letter-spacing: 0.04em; color: var(--frame-ink); }
+.share-drawn { display: grid; gap: 6px; }
+.share-drawn span { font-size: 12px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--frame-muted); }
+.share-drawn b {
+  font: 400 clamp(56px, 8vw, 96px)/0.85 var(--frame-word);
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--frame-ink);
+}
+html[lang="th"] .share-spine,
+html[lang="th"] .share-drawn span { letter-spacing: normal; }
+html[lang="th"] .share-spine b,
+html[lang="th"] .share-drawn b { font-weight: 700; }
+
 /* Two dots under the stack (v184): there is a second card, and which one is
    in front. Each is a 24px button round an 8px dot; the front one stretches. */
 .share-dots { display: flex; gap: 4px; }
@@ -489,16 +523,20 @@ html[data-reduce-motion] .share-preview.is-flipping { animation: none; }
   .share-side { display: contents; }
   .share-title { order: -1; font-size: 24px; min-height: 40px; display: flex; align-items: center; }
   .share-x { top: 14px; right: 14px; width: 40px; height: 40px; }
-  .share-stage { gap: 12px; }
+  .share-stage { gap: 12px; padding-left: 0; }
+  .share-spine, .share-drawn { display: none; }
   .share-stack {
     width: min(70%, calc((92vh - var(--share-phone-rest)) * 9 / 16));
     width: min(70%, calc((92dvh - var(--share-phone-rest)) * 9 / 16));
   }
   .share-option { align-self: center; }
   .share-actions { display: flex; margin-top: 0; }
-  .share-act.is-save { flex: 1; }
-  .share-act.is-send { flex: none; width: 56px; padding: 0; }
-  .share-act.is-send .share-act-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* On a phone Share leads (the owner, 2026-10-03): the big filled pill, with
+     Save a small round outline beside it. With no Share, Save fills the row. */
+  .share-act.is-send { flex: 1; background: var(--frame-dark); color: #ffffff; }
+  .share-act.is-save:not(:only-child) { flex: none; width: 56px; padding: 0; background: transparent; color: var(--frame-ink); }
+  .share-act.is-save:only-child { flex: 1; }
+  .share-act.is-save:not(:only-child) .share-act-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 
 /* ================================================================= Thai

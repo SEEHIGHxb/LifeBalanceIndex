@@ -28,6 +28,7 @@ import {
   bmiScore,
   sleepQualityScore,
   sleepScore,
+  sleepDurationScore,
   nutritionScore,
   plasticScore,
   learningScore,
@@ -83,8 +84,9 @@ const PROFILES = {
   "no income at all": { income: 0, monthlyDonations: 300 },
 
   // --- sleep: absent duration must NOT fabricate a 50-point floor.
-  "sleep duration absent": { sleepHours: 0 },
-  "sleep duration absent, perfect quality": { sleepHours: 0 },
+  "sleep duration absent": { sleepHours: null },
+  "sleep duration absent, perfect quality": { sleepHours: null },
+  "no sleep at all (0h, an answer)": { sleepHours: 0 },
   "short night (5h)": { sleepHours: 5 },
   "borderline night (6.5h)": { sleepHours: 6.5 },
   "long night (10h)": { sleepHours: 10 },
@@ -172,7 +174,7 @@ test("regression: giving honours the 2%-of-income cap (was 40, scorer said 100)"
 });
 
 test("regression: an absent sleep duration does not fabricate a floor of 50", () => {
-  const profile = { ...BASE_PROFILE, sleepHours: 0 };
+  const profile = { ...BASE_PROFILE, sleepHours: null };
   const baseline = { ...BASELINE, jss: 0 }; // perfect measured quality -> 100
   const row = getAspectDetail(makeState(profile, baseline), "physical")
     .components.find(c => c.key === "sleep");
@@ -182,8 +184,20 @@ test("regression: an absent sleep duration does not fabricate a floor of 50", ()
 });
 
 test("sleep is omitted entirely when neither duration nor quality was measured", () => {
-  const profile = { ...BASE_PROFILE, sleepHours: 0 };
+  const profile = { ...BASE_PROFILE, sleepHours: null };
   const rows = getAspectDetail(makeState(profile, null), "physical").components;
   assert.equal(rows.find(c => c.key === "sleep"), undefined);
   assert.ok(rows.some(c => c.key === "activity"), "the rest of the aspect still renders");
+});
+
+test("0 hours of sleep counts: the short-night rung, with its duration in the row (v189)", () => {
+  const profile = { ...BASE_PROFILE, sleepHours: 0 };
+  const baseline = { ...BASELINE, jss: 0 }; // perfect measured quality -> 100
+  const row = getAspectDetail(makeState(profile, baseline), "physical")
+    .components.find(c => c.key === "sleep");
+  assert.equal(row.value, 75, "0.5 * 50 (short night) + 0.5 * 100");
+  assert.equal(row.label, "Sleep");
+  assert.equal(sleepDurationScore({ sleepHours: 0 }), 50);
+  assert.equal(sleepDurationScore({ sleepHours: null }), null);
+  assert.equal(sleepDurationScore({ sleepHours: -1 }), null);
 });

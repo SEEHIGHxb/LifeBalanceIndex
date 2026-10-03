@@ -127,7 +127,14 @@ test("the older-adult band narrows to 7-8 from age 65", () => {
 });
 
 test("sleep is unmeasured when the field is absent", () => {
-  assert.equal(statusOf({ ...BASE, sleepHours: 0 }, "sleepDuration"), UNMEASURED);
+  assert.equal(statusOf({ ...BASE, sleepHours: null }, "sleepDuration"), UNMEASURED);
+  assert.equal(statusOf({ ...BASE, sleepHours: undefined }, "sleepDuration"), UNMEASURED);
+  assert.equal(statusOf({ ...BASE, sleepHours: "" }, "sleepDuration"), UNMEASURED);
+});
+
+test("0 hours of sleep is an answer: outside the range, not unmeasured (v189)", () => {
+  assert.equal(statusOf({ ...BASE, sleepHours: 0 }, "sleepDuration"), UNMET);
+  assert.equal(statusOf({ ...BASE, sleepHours: "0" }, "sleepDuration"), UNMET);
 });
 
 // --- FRUIT AND VEGETABLES: 400 g = 5 portions ---

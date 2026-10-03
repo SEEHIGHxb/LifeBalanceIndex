@@ -158,10 +158,15 @@ export function bmiScore(profile) {
 
 // Reported sleep duration -> 0-100 ladder. Returns null when no duration is on
 // file, so callers OMIT it rather than fabricate a floor of 50 (finding #7) —
-// the same contract bmiScore uses above.
+// the same contract bmiScore uses above. A reported 0 is an answer (v189, the
+// owner: "we can count 0 hours of sleep") and sits on the short-night rung;
+// only a missing value is no answer. On load a missing value becomes the
+// default 7 (sanitize.js), so a stored 0 is always one somebody gave.
 export function sleepDurationScore(profile) {
-  const duration = parseFloat(profile.sleepHours || 0);
-  if (!(duration > 0)) return null;
+  const raw = profile.sleepHours;
+  if (raw === null || raw === undefined || raw === "") return null;
+  const duration = parseFloat(raw);
+  if (!Number.isFinite(duration) || duration < 0) return null;
   if (duration >= 7 && duration <= 9) return 100;
   if (duration >= 6 && duration < 7) return 75;
   return 50;

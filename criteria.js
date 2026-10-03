@@ -194,9 +194,13 @@ function bmiCriterion(profile) {
 //
 // A BAND check. Sleeping well past the range is outside the recommendation too,
 // and the wording stays neutral about it: long sleep is a signal worth noticing,
-// not a failure to scold.
+// not a failure to scold. Unlike the other checks, 0 is an answer here (v189,
+// the owner): a night with no sleep is outside the range, not unmeasured.
 function sleepCriterion(profile) {
-  if (!has(profile.sleepHours)) {
+  const raw = profile.sleepHours;
+  const given = parseFloat(raw);
+  const reported = raw !== null && raw !== undefined && raw !== "" && Number.isFinite(given) && given >= 0;
+  if (!reported) {
     return criterion(
       "sleepDuration", "physical", CRITERION_STATUS.UNMEASURED,
       t("Sleep duration"),

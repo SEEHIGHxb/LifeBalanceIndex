@@ -903,7 +903,9 @@ export class GameStateManager {
     p.weeklyWalkingMins = parseInt(surveyData.weeklyWalkingMins || 0);
     p.weight = parseFloat(surveyData.weight || 60);
     p.height = parseFloat(surveyData.height || 170);
-    p.sleepHours = parseFloat(surveyData.sleepHours || 7);
+    // 0 hours is an answer (v189); only a blank falls back to 7.
+    const sleep = parseFloat(surveyData.sleepHours);
+    p.sleepHours = Number.isFinite(sleep) ? sleep : 7;
     p.vegetablePortions = parseFloat(surveyData.vegetablePortions || 0);
     p.waterLiters = parseFloat(surveyData.waterLiters || 0);
     p.singleUsePlastics = parseInt(surveyData.singleUsePlastics || 0);

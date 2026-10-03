@@ -49,7 +49,8 @@ test("the Landing's hero is the asterism, and a tap draws a new one", async () =
   const hero = landingMarkup().match(/<section class="hero"[\s\S]*?<\/section>/)[0];
   assert.match(hero, /<div class="mark"><svg class="asterism"/);
   assert.doesNotMatch(hero, /#star"/, "the gilt star is gone from the Landing");
-  assert.match(read("views/landing.js"), /mark\.innerHTML = asterismMarkup\(\)/);
+  assert.match(read("views/landing.js"), /bindAsterismRedraw\(container\)/);
+  assert.match(read("views/asterism-mark.js"), /mark\.innerHTML = asterismMarkup\(\)/);
 });
 
 test("the asterism animates once and stands still under reduced motion", () => {
@@ -57,7 +58,7 @@ test("the asterism animates once and stands still under reduced motion", () => {
   assert.match(css, /\.asterism-thread \{[^}]*stroke-dasharray: 1;[^}]*animation: asterism-draw/);
   assert.doesNotMatch(css, /asterism-(?:draw|pop)[^;]*infinite/, "no endless loop");
   assert.match(css, /prefers-reduced-motion: reduce\) \{\s*\.asterism-thread,\s*\.asterism-star \{ animation: none; \}/);
-  assert.match(css, /html\[data-reduce-motion\] \.asterism-star \{ animation: none; \}/);
+  assert.match(css, /html\[data-reduce-motion\] \.asterism-thread,\s*html\[data-reduce-motion\] \.asterism-star,/);
 });
 
 test("section labels read at 15px or more", () => {
@@ -75,4 +76,17 @@ test("a source's bracketed detail moves to its own grey line", () => {
   assert.match(html, /<span class="fn-src-name">A &lt;b&gt;<\/span><span class="fn-src-detail">detail<\/span>/);
   assert.match(html, /<span class="fn-src-arrow" aria-hidden="true">↗<\/span>/);
   assert.doesNotMatch(read("css/home.css"), /\.fn-sources \{[^}]*padding-left/, "no bullet indent");
+});
+
+test("Goals and the Year review wear the asterism on their tops (v188)", () => {
+  for (const p of ["views/quests.js", "views/yearreview.js"]) {
+    const src = read(p);
+    assert.match(src, /mark: asterismMarkup\(\)|mark,\n/, `${p} top is not the asterism`);
+    assert.match(src, /bindAsterismRedraw\(/, `${p} does not redraw on tap`);
+    assert.doesNotMatch(src, /mark: STAR_SVG/, `${p} still wears the gilt star`);
+  }
+  // Goals redraws itself on every pledge change: it keeps its asterism, still.
+  assert.match(read("views/quests.js"), /asterismMarkup\(goalsSky, \{ still: Boolean\(redrawn\) \}\)/);
+  assert.match(asterismMarkup(asterismPoints(seeded()), { still: true }), /^<svg class="asterism is-still"/);
+  assert.match(read("css/stage-page.css"), /\.asterism\.is-still \.asterism-star \{ animation: none; \}/);
 });

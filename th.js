@@ -1490,7 +1490,7 @@ export const TH = {
   "Close": "ปิด",
   // v183, approved by the owner 2026-10-03: the hint on the front card.
   "Tap to flip": "แตะเพื่อพลิก",
-  // v185 drafts, awaiting the owner's review: the words round the card on a
+  // v185, approved by the owner 2026-10-03: the words round the card on a
   // laptop, "Showing · Balance Index" up its edge and "Drawn as · Star".
   "Showing": "กำลังแสดง",
   "Drawn as": "วาดเป็น",

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `187`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `188`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.114.0] - 2026-10-03 · v188
+
+### Changed
+- Goals and the Year review wear the asterism on their tops too, in place of the gilt star; a tap draws a new one. On Goals, adding or removing a pledge keeps the same asterism, still, instead of drawing it in again.
+- Thai approved by the owner: "Showing" (กำลังแสดง) and "Drawn as" (วาดเป็น) on the share card.
 
 ## [2.113.0] - 2026-10-03 · v187
 

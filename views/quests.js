@@ -22,8 +22,9 @@ import { gradeAllAspects } from "../grades.js";
 import { rankPledgesByGrade } from "../suggestions.js";
 import { SOURCES } from "../benchmarks.js";
 import { escapeHtml, noteBook, footnoteList, sourceList, bindFootnotes } from "./helpers.js";
-import { SPRITES, onAbort } from "./stage.js";
+import { onAbort } from "./stage.js";
 import { topMarkup, label, renderStagePage } from "./stage-page.js";
+import { asterismPoints, asterismMarkup, bindAsterismRedraw } from "./asterism-mark.js";
 import { chapterOf, motifIcon } from "./news.js";
 import { writeMotionStyle } from "./motion-mount.js";
 import { animate, spring } from "../motion.js";
@@ -34,7 +35,6 @@ const STICK = { scale: 1.35, turn: -30, stiffness: 420, damping: 16, fadeMs: 150
 const STICK_THRESHOLD = 0.3;
 const tiltOf = (k) => ((k * 37) % 13) - 6;
 
-const STAR_SVG = `<svg viewBox="0 0 100 100" aria-hidden="true"><use href="${SPRITES}#star"/></svg>`;
 
 function sticker(aspect, k) {
   const chapter = chapterOf(aspect);
@@ -122,7 +122,7 @@ function catalogRow(id, k, full, book) {
     </li>`;
 }
 
-export function goalsMarkup(state, { confirm = null } = {}) {
+export function goalsMarkup(state, { confirm = null, mark = asterismMarkup() } = {}) {
   const pledges = state.goals || [];
   // Order the catalog so pledges for the lowest-graded aspects lead. Grades
   // come from the same benchmarks Home grades on. A bare state (no profile,
@@ -144,7 +144,7 @@ export function goalsMarkup(state, { confirm = null } = {}) {
   return `
     <div class="stage-page goals">
       ${topMarkup({
-        mark: STAR_SVG,
+        mark,
         word: t("Weekly Pledges"),
         inc: active,
         tapLabel: t("Play with the star"),
@@ -230,11 +230,18 @@ function mountStickers(root, scope, fresh) {
 // 4. RENDER GOALS (weekly pledges). `view` is the page's own redraw: which
 // pledge is asking to be removed, which was just added, where focus goes and
 // what to say about it.
+let goalsSky = null;
+
 export function renderQuests(containerId, state, view = {}) {
   const container = document.getElementById(containerId);
   if (!container) return;
   const { confirm = null, fresh = null, focus = null, live = "" } = view;
-  const scope = renderStagePage(container, () => goalsMarkup(state, { confirm }));
+  // A visit draws a new asterism; the page's own redraws (a pledge added or
+  // removed) keep it, standing still, rather than replay it on every tap.
+  const redrawn = Object.keys(view).length > 0 && goalsSky;
+  if (!redrawn) goalsSky = asterismPoints();
+  const mark = asterismMarkup(goalsSky, { still: Boolean(redrawn) });
+  const scope = renderStagePage(container, () => goalsMarkup(state, { confirm, mark }));
   // Listeners go on the page, not the container: the container outlives every
   // view, and a redraw would stack a second set on it.
   const root = container.querySelector(".goals");
@@ -247,6 +254,7 @@ export function renderQuests(containerId, state, view = {}) {
     }
   }
   bindFootnotes(root);
+  bindAsterismRedraw(root);
   if (focus) root.querySelector(focus)?.focus();
   const liveEl = root.querySelector("#goals-live");
   if (live && liveEl) liveEl.textContent = live;

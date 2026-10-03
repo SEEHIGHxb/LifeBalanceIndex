@@ -4,4 +4,4 @@
 // busters in index.html and privacy.html, and CACHE_NAME in
 // sw.js — must carry the same number; tests/consistency.test.mjs fails CI
 // when any of them drift, so a release can no longer half-bump.
-export const APP_VERSION = "187";
+export const APP_VERSION = "188";

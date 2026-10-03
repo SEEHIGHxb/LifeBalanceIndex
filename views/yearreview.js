@@ -23,6 +23,7 @@ import { t, tp, dateLocale } from "../i18n.js";
 import { escapeHtml, birthdayFields } from "./helpers.js";
 import { SPRITES } from "./stage.js";
 import { heroMarkup, missionMarkup, label, renderStagePage } from "./stage-page.js";
+import { asterismMarkup, bindAsterismRedraw } from "./asterism-mark.js";
 import { aspectName, chapterOf, motifThumb, starThumb, newsRow, dotDate, shiftSummary, biggestShift } from "./news.js";
 import { pledgesAndPoints } from "./review.js";
 
@@ -188,7 +189,7 @@ export function yearMarkup(state, now = new Date()) {
   return `
     <div class="stage-page year-page">
       ${heroMarkup({
-        mark: STAR_SVG,
+        mark: asterismMarkup(),
         word: t("Year").toUpperCase(),
         inc: String(profile.level),
         srTitle: title,
@@ -207,6 +208,7 @@ export function renderYearReview(containerId, state, onChange) {
   const container = document.getElementById(containerId);
   if (!container) return;
   renderStagePage(container, () => yearMarkup(state));
+  bindAsterismRedraw(container);
 
   const form = document.getElementById("year-birthday-form");
   if (!form) return;

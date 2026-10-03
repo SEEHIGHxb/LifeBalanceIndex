@@ -181,7 +181,9 @@ html[data-reduce-motion] .sky-fx { display: none; }
   .asterism-star { animation: none; }
 }
 html[data-reduce-motion] .asterism-thread,
-html[data-reduce-motion] .asterism-star { animation: none; }
+html[data-reduce-motion] .asterism-star,
+.asterism.is-still .asterism-thread,
+.asterism.is-still .asterism-star { animation: none; }
 /* The star can be tapped: on a phone there is no pointer for it to follow. */
 .hero .mark-hit {
   z-index: 2;

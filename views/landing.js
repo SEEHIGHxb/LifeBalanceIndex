@@ -12,7 +12,7 @@
 
 import { CHAPTERS } from "./journey.js";
 import { ASPECT_META } from "../aspects.js";
-import { asterismMarkup } from "./asterism-mark.js";
+import { asterismMarkup, bindAsterismRedraw } from "./asterism-mark.js";
 import { heroMarkup, missionMarkup, bandMarkup, label, renderStagePage } from "./stage-page.js";
 import { escapeHtml } from "./helpers.js";
 import { t } from "../i18n.js";
@@ -115,16 +115,7 @@ export function renderLanding(containerId, { resume = false, returning = false }
   if (!container) return;
   renderStagePage(container, () => landingMarkup({ resume, returning }));
   bindRail(container);
-  bindAsterism(container);
-}
-
-// A tap on the mark draws a new asterism (the hero's own tap still bursts and
-// spins it). The listener goes with the page when the next route replaces it.
-function bindAsterism(container) {
-  const hit = container.querySelector(".hero .mark-hit");
-  const mark = container.querySelector(".hero .mark");
-  if (!hit || !mark) return;
-  hit.addEventListener("click", () => { mark.innerHTML = asterismMarkup(); });
+  bindAsterismRedraw(container);
 }
 
 // Where a card sits when it is not pinned: the block's top plus every card

@@ -348,9 +348,16 @@ test("the four characters are a note; the parts are a stepper; the suggestions a
   assert.ok(rows.length >= 2);
   for (const r of rows) assert.match(r, /class="focus-text"/);
   const css = read("css/weekly.css");
-  // v170: the sheets slide on a phone only; a laptop reads static cards.
-  assert.match(css, /@media \(max-width: 900px\) \{\s*\.aspect-page > \.panel \{\s*position: sticky;\s*top: var\(--stick, 0px\);/);
-  assert.match(css, /html\[data-reduce-motion\] \.aspect-page > \.panel \{ position: relative; \}/);
+  // v186 (the owner's pick "B"): nothing pins or slides on a phone any more.
+  // The sections are one sheet in numbered chapters, the parts all shown as
+  // rows, the suggestions a list; each chapter fades up once, never under
+  // reduced motion.
+  assert.doesNotMatch(css, /\.aspect-page > \.panel \{\s*position: sticky/);
+  assert.match(page, /<h2 class="label chapter-label"><span class="label-paren" aria-hidden="true">\(<\/span>Your character<span class="label-paren" aria-hidden="true">\)<\/span><\/h2>/);
+  assert.match(css, /\.chapter-label::before \{\s*content: counter\(chapter, decimal-leading-zero\);/);
+  assert.match(css, /\.aspect-page \.ps-tabs \{ display: none; \}/);
+  assert.match(css, /\.aspect-page \.focus-rail \{[^}]*grid-auto-flow: row;[^}]*overflow: visible;/);
+  assert.match(css, /html\[data-reduce-motion\] \.aspect-page > \.panel\.arrives \{ opacity: 1; transform: none; transition: none; \}/);
   assert.match(read("index.css"), /text-wrap: pretty/);
 });
 

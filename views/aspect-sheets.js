@@ -11,6 +11,9 @@
 //             a part shows its card (since v170 the scroll no longer picks
 //             it on a laptop).
 //   words     no paragraph ends on a lone word (views/lone-words.js).
+//   chapters  since v186 (the owner's pick "B") a phone no longer pins the
+//             sheets: the sections read as one sheet in numbered chapters,
+//             each fading up once as it arrives (bindChapters).
 //
 // CSS does the pinning (css/weekly.css .aspect-page .panel); views/sheets.js
 // measures where each sheet may pin. Reduced motion turns the pinning off in
@@ -56,6 +59,34 @@ function bindStepper(stepper, signal) {
     e.preventDefault();
     tabs[go(to)].focus();
   }, { signal });
+}
+
+// --- the chapters arriving (v186) ---------------------------------------------
+//
+// On a phone the sections are one sheet in numbered chapters, and each one
+// fades up once as it first comes into view: the only movement left in the
+// read (the owner, 2026-10-03: "too much of movement"). A laptop, reduced
+// motion or a browser without IntersectionObserver shows them as they are.
+
+const ARRIVE_SHARE = 0.15;
+
+function bindChapters(page, signal) {
+  if (!isPhone() || isReduced() || typeof IntersectionObserver !== "function") return;
+  const chapters = [...page.querySelectorAll(":scope > .panel.statement")];
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      e.target.classList.add("is-in");
+      io.unobserve(e.target);
+    }
+  }, { threshold: ARRIVE_SHARE });
+  for (const c of chapters) {
+    // Already on screen as the page opens: shown at once, no fade.
+    if (c.getBoundingClientRect().top < innerHeight) continue;
+    c.classList.add("arrives");
+    io.observe(c);
+  }
+  signal.addEventListener("abort", () => io.disconnect());
 }
 
 // --- the pull to the next region ---------------------------------------------
@@ -253,5 +284,6 @@ export function bindAspectSheets(root) {
   bindRibbon(page, signal);
   page.querySelectorAll(".parts-stepper").forEach(s => bindStepper(s, signal));
   page.querySelectorAll(".next-aspect").forEach(s => bindPull(s, signal));
+  bindChapters(page, signal);
   tightenLoneWords(page, signal);
 }

@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `185`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `186`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.112.0] - 2026-10-03 · v186
+
+### Changed
+- Region pages on a phone, calmer (the owner's pick "B"): the sections no longer pin and slide up over each other. Under the photograph they read straight down as one sheet, in numbered chapters (01 Your character, 02 What it's made of, 03 Where to start), with a hairline between, and each chapter fades up once as it first comes into view. Reduced motion shows them still.
+- What it's made of shows every part as a row, its name and score on one line and the meter under them, instead of tabs that scrolled sideways. Where to start is a list, each step marked by a short rule in the region's colour, instead of a sideways rail.
+- Type set for reading: the chapter's number and the character's name lead, titles next, the reading last; headings balanced and paragraphs set without a lone last word.
+- Laptops are unchanged.
 
 ## [2.111.0] - 2026-10-03 · v185
 

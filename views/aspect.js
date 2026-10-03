@@ -28,6 +28,11 @@
 // answers, a grade not given yet) stays open under the top line. Laptops
 // read the sections as static cards; nothing bursts on a region page.
 //
+// v186 (the owner's pick "B", 2026-10-03: "too much of movement"): on a phone
+// nothing pins or slides sideways. Under the photograph the sections read as
+// one sheet in numbered chapters, the parts as rows and the suggestions as a
+// list (css/weekly.css, views/aspect-sheets.js bindChapters).
+//
 // Top to bottom:
 //   notice      the Mental page's duty-of-care notice, past the cutoff; still
 //   top         the emblem and the name on the region's photograph, then the
@@ -50,13 +55,19 @@ import { criteriaForAspect } from "../criteria.js";
 import { CHAPTERS } from "./journey.js";
 import { bindAspectSheets, disposeAspectSheets } from "./aspect-sheets.js";
 import { onRouteEnd } from "./motion-mount.js";
-import { topMarkup, label, renderStagePage } from "./stage-page.js";
+import { topMarkup, renderStagePage } from "./stage-page.js";
 import { dotDate } from "./news.js";
 import {
   escapeHtml, percentilePhrase, methodTag, mentalHealthNotice,
   criteriaCard, criteriaNote, sourceList, noteBook, footnoteList, bindFootnotes,
   CHECKIN_ASPECTS
 } from "./helpers.js";
+
+// A chapter's heading (v186, the owner's pick "B"): the stage page's
+// "(Label)", its brackets apart so a phone can set the chapter's number in
+// their place (css/weekly.css, "one sheet, in chapters").
+const chapterLabel = (text) =>
+  `<h2 class="label chapter-label"><span class="label-paren" aria-hidden="true">(</span>${escapeHtml(text)}<span class="label-paren" aria-hidden="true">)</span></h2>`;
 
 // Four weeks fit across a phone; the trend is the direction, not the archive.
 const TREND_CELLS = 4;
@@ -214,7 +225,7 @@ function characterSection(a, book) {
   if (!c) return "";
   return `
     <section class="panel statement aspect-character"><div class="wrap split">
-      ${label(t("Your character"))}
+      ${chapterLabel(t("Your character"))}
       <div>
         <p class="character-name">${escapeHtml(c.name)}</p>
         <p class="character-line">${escapeHtml(c.line)}${book.ref("character", characterNote(c))}</p>
@@ -334,7 +345,7 @@ function partsSection(a, book) {
   const link = compare ? `<p class="aspect-compare-link">${t("How you compare")}${book.ref("compare", compare)}</p>` : "";
   return `
     <section class="panel statement aspect-parts"><div class="wrap split">
-      ${label(t("What it's made of"))}
+      ${chapterLabel(t("What it's made of"))}
       <div>${rows}${facts}${link}</div>
     </div></section>`;
 }
@@ -365,7 +376,7 @@ function trendSection(a) {
   const offset = series.length > TREND_CELLS ? 1 : 0;
   return `
     <section class="panel statement aspect-trend"><div class="wrap split">
-      ${label(t("Trend"))}
+      ${chapterLabel(t("Trend"))}
       <div><ol class="trend-strip">${series.slice(offset).map((s, k) => trendCell(s, series[k + offset - 1])).join("")}</ol></div>
     </div></section>`;
 }
@@ -387,7 +398,7 @@ function focusSection(a) {
   if (!a.suggestions.length) return "";
   return `
     <section class="panel statement aspect-focus"><div class="wrap split">
-      ${label(t("Where to start"))}
+      ${chapterLabel(t("Where to start"))}
       <div>
         <ul class="focus-list focus-rail">${a.suggestions.map(focusCard).join("")}
         </ul>
@@ -399,7 +410,7 @@ function notesSection(notes) {
   if (!notes.length) return "";
   return `
     <section class="panel statement aspect-notes"><div class="wrap split">
-      ${label(t("Notes and sources"))}
+      ${chapterLabel(t("Notes and sources"))}
       <div>${footnoteList(notes)}</div>
     </div></section>`;
 }
@@ -457,7 +468,7 @@ export function aspectMarkup(a) {
   const parts = partsSection(a, book);
   const focus = focusSection(a);
   return `
-    <div class="stage-page aspect-page" data-aspect="${escapeHtml(a.key)}" data-hue="${chapter.hue}">
+    <div class="stage-page aspect-page" data-aspect="${escapeHtml(a.key)}" data-hue="${chapter.hue}" style="--hue: ${chapter.hue};">
       ${ribbonMarkup(a)}
       ${noticeSection(a)}
       ${topMarkup({

@@ -268,23 +268,13 @@ test("the range band cannot paint over the percentile fill", () => {
   );
 });
 
-test("the share card draws Thai in the same serif as the app", () => {
-  // Canvas cannot read a CSS custom property, so story-card.js repeats the
-  // stack by hand — and it was still on the pre-v78 stack, so Thai headings on
-  // the shared PNG rendered in the sans while the same heading in the app
-  // rendered in the serif. The card is the only part of this app anyone else
-  // sees.
-  const token = readFileSync(join(root, "index.css"), "utf8").match(/--font-serif:\s*([^;]+);/)[1];
-  const card = readFileSync(join(root, "story-card.js"), "utf8").match(/const SERIF = "([^"]+)"/);
-  assert.ok(card, "story-card.js must name its serif stack in one place");
-  for (const family of new Set(thaiFaces().map(f => f.family))) {
-    if (!token.includes(`'${family}'`)) continue;
-    assert.ok(
-      card[1].includes(`'${family}'`),
-      `--font-serif resolves Thai to ${family}, but the share card's stack ` +
-      `(${card[1]}) does not name it`
-    );
-  }
+test("the share card names Sarabun in every stack, so Thai never renders as tofu", () => {
+  // Canvas cannot read a CSS custom property, so story-card.js repeats its
+  // stacks by hand. Since v182 it sets nothing in the serif.
+  const card = readFileSync(join(root, "story-card.js"), "utf8");
+  const stacks = [...card.matchAll(/^const (\w+) = "([^"]+)";$/gm)].filter(m => /serif|sans-serif/.test(m[2]));
+  assert.ok(stacks.length >= 2, "story-card.js should name its stacks in one place");
+  for (const [, name, stack] of stacks) assert.ok(stack.includes("'Sarabun'"), `${name} has no Thai face`);
 });
 
 

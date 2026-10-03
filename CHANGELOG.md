@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `181`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `182`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.108.0] - 2026-10-03 · v182
+
+### Changed
+- Share your star: Light and Dark are two cards in a stack instead of buttons (the owner picked it from two prototypes). The other card is tucked behind with its edge showing; swipe the front card, tap the one behind, or use the arrow keys or the Light · Dark labels to swap. Once the poster has assembled, the front card steps aside once to show there is another.
+- The shape choices are the star, radar and asterism symbols, as on the dial, with the chosen one's name under them.
+- The card no longer carries your name or the date, and the star is bigger in the room they left.
+- The line under the star follows what the labels show: Score shows the Balance Index; Character shows your constellation code under a YOUR CONSTELLATION heading, and no Balance Index. Until every region has a character it shows a dash.
+- A region with no character shows a dash under Character, on the card and on Your star, rather than its score, which read as if it were the character.
+- The line about Instagram is gone from the share sheet (the owner: unnecessary).
+
+### Fixed
+- The Highlands had no character, and the constellation stayed one short, for anyone who answered 0 hours of sleep: 0 was read as no answer. It counts now (Runs on little rest).
 
 ## [2.107.0] - 2026-10-03 · v181
 

@@ -1490,8 +1490,6 @@ export const TH = {
   "Close": "ปิด",
   "This card shows your mental wellbeing alongside the other seven aspects. Choosing “Character” shows a character in place of each score where you have one.":
     "การ์ดนี้แสดงด้านจิตใจของคุณรวมอยู่กับอีกเจ็ดด้าน หากเลือก “ตัวละคร” การ์ดจะแสดงตัวละครแทนคะแนนในด้านที่คุณมีตัวละคร",
-  "Instagram cannot accept a post directly from a website. Pick Instagram in the share sheet, or save the image and post it from the app.":
-    "อินสตาแกรมไม่รับโพสต์โดยตรงจากเว็บไซต์ กรุณาเลือกอินสตาแกรมในหน้าต่างแชร์ของเครื่อง หรือบันทึกรูปภาพแล้วโพสต์จากแอปโดยตรง",
 
   // --- THE EIGHT CHAPTERS (v81) --------------------------------------
   // The redesigned onboarding flow: region names, screen stems, the recap

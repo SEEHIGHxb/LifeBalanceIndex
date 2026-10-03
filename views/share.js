@@ -3,10 +3,9 @@
 // WHAT THIS DELIBERATELY DOES NOT CLAIM: there is no "post to my Instagram
 // story" button, because no web page can have one. Meta requires a native app
 // with a registered Facebook App ID for the Stories intent and says outright
-// that mobile websites cannot use it. So the sheet renders a PNG, offers it to
-// navigator.share(), and says in one line that Instagram has to be picked from
-// the system share sheet. Promising the one-tap would just fail silently on
-// the user's phone.
+// that mobile websites cannot use it. So the sheet renders a PNG and offers it
+// to navigator.share(), where Instagram is one of the choices. (The line that
+// said so left in v182: the owner found it unnecessary.)
 //
 // EXCLUDED FROM THE COVERAGE GATE, on purpose, with the reason here rather
 // than only in package.json where a comment cannot go.
@@ -21,8 +20,9 @@
 // It is NOT untested. tests/e2e.mjs flow 4 drives this sheet in a real browser
 // and asserts the strong facts a stub could not: the preview is exactly
 // 1080x1920, the exported PNG is over 5KB (a blank canvas still encodes to a
-// valid PNG, so the size is the proof it drew something), changing either
-// toggle changes the image data, and the chosen prefs survive in localStorage.
+// valid PNG, so the size is the proof it drew something), changing what the
+// card shows changes the image data, swapping the cards brings the other one
+// forward, and the chosen prefs survive in localStorage.
 //
 // So the exclusion moves this file to the check that actually covers it. It
 // does not stop covering it. If a future change adds pure logic here, test it
@@ -34,7 +34,7 @@ import { animate, linear, isReduced } from "../motion.js";
 import {
   renderStoryCard, drawStoryCard, storyCardData, DETAIL_LEVELS, STORY_W, STORY_H
 } from "../story-card.js";
-import { readShapeView, SHAPE_VIEWS } from "./shape.js";
+import { readShapeView, SHAPE_VIEWS, SHAPE_ICONS } from "./shape.js";
 
 // Kept OUT of the app's state schema, in its own key, for the same reason
 // `lifequest_lang` is: these are display preferences, not assessment data, so
@@ -42,6 +42,26 @@ import { readShapeView, SHAPE_VIEWS } from "./shape.js";
 const PREFS_KEY = "lifequest_share_prefs";
 // How long the preview takes to assemble the map when the sheet opens.
 const ASSEMBLE_MS = 1100;
+
+// THE STACK (v182). The owner, 2026-10-03: rather than Light and Dark
+// buttons, "make the side swap to the dark card", with "a bit of hint that
+// there is dark card". Both cards are drawn; the other one is tucked behind,
+// turned, its edge showing. A swipe past SWIPE_SHARE of the card's width, a
+// tap on the one behind, the arrow keys or the labels under it swap them.
+const THEMES = ["paper", "navy"];
+const SWIPE_SHARE = 0.22;
+// A press that moves less than this is a tap.
+const TAP_PX = 6;
+// How far a drag goes before the card behind has fully come forward.
+const LIFT_SHARE = 0.6;
+// The card behind (css/more.css .share-card:not(.is-front) holds the same).
+const BACK = { x: 15, scale: 0.9, turn: 4 };
+const DRAG_TURN_DEG = 8;
+// The hint: once the poster has assembled, the front card steps aside this
+// far, once, to show the one behind.
+const NUDGE_SHARE = 0.16;
+const NUDGE_DELAY_MS = 600;
+const NUDGE_HOLD_MS = 420;
 
 // The same two choices label the star on its own page (views/star-page.js).
 export const DETAIL_LABELS = () => ({
@@ -98,9 +118,16 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
   const shareable = canShareFiles();
   const labels = DETAIL_LABELS();
   const shapeNames = { star: t("Star"), radar: t("Radar"), asterism: t("Asterism") };
+  const themeNames = { paper: t("Light"), navy: t("Dark") };
 
   const toggle = (group, value, label, active) =>
     `<button type="button" class="pill pill-light share-toggle" data-group="${group}" data-value="${value}" aria-pressed="${active}">${label}</button>`;
+  // Each view as its symbol (views/shape.js), its name the button's name.
+  const shapeButton = (view, active) =>
+    `<button type="button" class="share-toggle share-shape" data-group="shape" data-value="${view}" aria-pressed="${active}" aria-label="${shapeNames[view]}" title="${shapeNames[view]}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${SHAPE_ICONS[view]}</svg></button>`;
+  const stackCard = (theme) =>
+    `<div class="share-card${theme === prefs.theme ? " is-front" : ""}" data-theme="${theme}">` +
+    `<canvas${theme === "paper" ? ' id="share-preview"' : ""} class="share-preview" data-theme="${theme}" width="${STORY_W}" height="${STORY_H}" role="img" aria-label="${t("Preview of your shareable card")}: ${themeNames[theme]}"></canvas></div>`;
 
   // The poster sheet (R5; docs/prototype/redesign/social.js shareHTML): the
   // choices beside, the poster itself on the right. On a phone the poster
@@ -110,23 +137,21 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
     html: `
     <div class="share-sheet">
       <div class="share-stage">
-        <canvas id="share-preview" class="share-preview" width="${STORY_W}" height="${STORY_H}"
-          role="img" aria-label="${t("Preview of your shareable card")}"></canvas>
+        <div class="share-stack" tabindex="0" role="group" aria-label="${t("Card style")}">
+          ${THEMES.map(stackCard).join("")}
+        </div>
+        <span class="share-styles" role="group" aria-label="${t("Card style")}">
+          ${THEMES.map(theme => `<button type="button" class="share-style" data-value="${theme}" aria-pressed="${prefs.theme === theme}"><i aria-hidden="true"></i>${themeNames[theme]}</button>`).join("")}
+        </span>
       </div>
       <div class="share-side">
         <h2 class="share-title">${t("Share your star")}</h2>
-        <div class="share-option" role="group" aria-labelledby="share-style-label">
-          <span class="share-option-label" id="share-style-label">${t("Card style")}</span>
-          <span class="share-set">
-            ${toggle("theme", "paper", t("Light"), prefs.theme === "paper")}
-            ${toggle("theme", "navy", t("Dark"), prefs.theme === "navy")}
-          </span>
-        </div>
         <div class="share-option" role="group" aria-labelledby="share-shape-label">
           <span class="share-option-label" id="share-shape-label">${t("Shape")}</span>
           <span class="share-set">
-            ${SHAPE_VIEWS.map(v => toggle("shape", v, shapeNames[v], prefs.shape === v)).join("")}
+            ${SHAPE_VIEWS.map(v => shapeButton(v, prefs.shape === v)).join("")}
           </span>
+          <span class="share-shape-name" aria-hidden="true">${shapeNames[prefs.shape]}</span>
         </div>
         <div class="share-option" role="group" aria-labelledby="share-show-label">
           <span class="share-option-label" id="share-show-label">${t("What to show")}</span>
@@ -138,8 +163,6 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
 
         ${showMentalNote ? `<p class="share-care">${t("This card shows your mental wellbeing alongside the other seven aspects. Choosing “Character” shows a character in place of each score where you have one.")}</p>` : ""}
 
-        <p class="share-note">${t("Instagram cannot accept a post directly from a website. Pick Instagram in the share sheet, or save the image and post it from the app.")}</p>
-
         <div class="share-actions">
           ${shareable ? `<button type="button" class="pill" id="share-send">${t("Share")}</button>` : ""}
           <button type="button" class="pill" id="share-save">${t("Save image")}</button>
@@ -149,55 +172,148 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
     </div>`
   });
 
-  const canvas = overlay.querySelector("#share-preview");
-  const ctx = canvas.getContext("2d");
+  const stack = overlay.querySelector(".share-stack");
+  const cards = [...stack.querySelectorAll(".share-card")];
+  const canvasOf = (theme) => stack.querySelector(`canvas[data-theme="${theme}"]`);
+  const contexts = Object.fromEntries(THEMES.map(theme => [theme, canvasOf(theme).getContext("2d")]));
+  const paintCard = (theme, grow = 1) => drawStoryCard(contexts[theme], data, { ...prefs, theme, grow });
+  const behind = () => THEMES.find(theme => theme !== prefs.theme);
   let blob = null;
   let objectUrl = null;
 
-  // The blob is refreshed EAGERLY on open and on every toggle, never inside
+  // The blob is refreshed EAGERLY on open and on every change, never inside
   // the Share click handler. On iOS, navigator.share() must be reached from
   // the user gesture, and awaiting canvas.toBlob() inside the handler breaks
   // that chain - the sheet then simply never opens, with no error. Keeping a
-  // ready blob means the handler can call share() straight away.
-  // The preview ASSEMBLES the poster once as the sheet opens (plan §5): the
-  // sticker drops in large and turned and springs flat, then the names arrive
-  // (story-card.js stickerPose). Only the preview moves. The exported image is drawn whole, on its own canvas, and a
-  // toggle pressed mid-way stops the assembly and shows the finished card.
+  // ready blob means the handler can call share() straight away. It is drawn
+  // whole on its own canvas (renderStoryCard, which also waits for the
+  // fonts), so a preview still assembling can never be what gets saved.
+  let exports = 0;
+  const refreshBlob = async () => {
+    exports += 1;
+    const mine = exports;
+    const fresh = await renderStoryCard(data, { ...prefs });
+    if (mine === exports) blob = fresh;
+  };
+
+  // The front card ASSEMBLES the poster once as the sheet opens (plan §5):
+  // the sticker drops in large and turned and springs flat, then the names
+  // arrive (story-card.js stickerPose). A change pressed mid-way stops it and
+  // shows the finished card.
   let assembly = null;
-  const stopAssembly = () => { assembly?.abort(); assembly = null; };
+  const stopAssembly = () => {
+    if (!assembly) return;
+    assembly.abort();
+    assembly = null;
+    THEMES.forEach(theme => paintCard(theme));
+  };
   const assemble = () => {
-    stopAssembly();
     const run = new AbortController();
+    const theme = prefs.theme;
     assembly = run;
-    if (!isReduced()) drawStoryCard(ctx, data, { ...prefs, grow: 0 });
-    animate({
+    if (!isReduced()) paintCard(theme, 0);
+    return animate({
       duration: ASSEMBLE_MS, ease: linear, signal: run.signal, reduced: "end",
       update: (p) => {
         // Closed mid-way: nothing left to draw on.
-        if (!canvas.isConnected) { run.abort(); return; }
-        drawStoryCard(ctx, data, { ...prefs, grow: p });
+        if (!stack.isConnected) { run.abort(); return; }
+        paintCard(theme, p);
       }
+    }).then(done => {
+      if (assembly === run) assembly = null;
+      return done;
     });
   };
 
-  let redraws = 0;
-  const redraw = async () => {
-    redraws += 1;
+  let changes = 0;
+  const redraw = () => {
+    changes += 1;
     stopAssembly();
-    drawStoryCard(ctx, data, prefs);
-    blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+    THEMES.forEach(theme => paintCard(theme));
+    refreshBlob();
   };
 
-  // First paint waits for document.fonts.ready (inside renderStoryCard);
-  // without it the opening frame draws in a fallback face. If a toggle was
-  // pressed while waiting (even one pressed and then pressed back), redraw()
-  // has already drawn and exported the finished card: leave it be.
-  renderStoryCard(data, { ...prefs }).then(first => {
-    if (redraws > 0) return;
-    blob = first;
-    assemble();
+  // --- the stack -----------------------------------------------------------
+  // `dx` is how far the front card has been dragged; 0 lets the stylesheet
+  // hold both cards where they rest.
+  const layout = (dx = 0) => {
+    const w = stack.clientWidth || 1;
+    const lift = Math.min(1, Math.abs(dx) / (w * LIFT_SHARE));
+    cards.forEach(el => {
+      const front = el.dataset.theme === prefs.theme;
+      el.classList.toggle("is-front", front);
+      if (!dx) el.style.transform = "";
+      else if (front) el.style.transform = `translateX(${dx}px) rotate(${(dx / w) * DRAG_TURN_DEG}deg)`;
+      else el.style.transform = `translateX(${BACK.x * (1 - lift)}%) scale(${BACK.scale + (1 - BACK.scale) * lift}) rotate(${BACK.turn * (1 - lift)}deg)`;
+    });
+    overlay.querySelectorAll(".share-style").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.value === prefs.theme)));
+  };
+
+  const choose = (theme) => {
+    if (theme !== prefs.theme) {
+      stopAssembly();
+      prefs.theme = theme;
+      writeSharePrefs(prefs);
+      refreshBlob();
+    }
+    layout(0);
+  };
+
+  let drag = null;
+  stack.addEventListener("pointerdown", (e) => {
+    if (e.button > 0) return;
+    const el = e.target.closest(".share-card");
+    if (!el) return;
+    drag = { x: e.clientX, dx: 0, theme: el.dataset.theme, moved: false };
+    stack.setPointerCapture?.(e.pointerId);
+    stack.classList.add("is-dragging");
+  });
+  stack.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    drag.dx = e.clientX - drag.x;
+    if (Math.abs(drag.dx) > TAP_PX) drag.moved = true;
+    if (drag.moved) layout(drag.dx);
+  });
+  const release = () => {
+    if (!drag) return;
+    const { dx, moved, theme } = drag;
+    drag = null;
+    stack.classList.remove("is-dragging");
+    if (!moved) return choose(theme);
+    if (Math.abs(dx) > stack.clientWidth * SWIPE_SHARE) return choose(behind());
+    layout(0);
+  };
+  stack.addEventListener("pointerup", release);
+  stack.addEventListener("pointercancel", release);
+  stack.addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    e.preventDefault();
+    choose(behind());
+  });
+  overlay.querySelectorAll(".share-style").forEach(btn => {
+    btn.addEventListener("click", () => choose(btn.dataset.value));
   });
 
+  const nudge = () => {
+    if (isReduced() || drag || !stack.isConnected) return;
+    layout(-stack.clientWidth * NUDGE_SHARE);
+    setTimeout(() => { if (!drag && stack.isConnected) layout(0); }, NUDGE_HOLD_MS);
+  };
+
+  // First paint waits for the fonts; without them the opening frame draws in
+  // a fallback face. If something was changed while waiting, redraw() has
+  // already drawn the finished cards: leave them be.
+  refreshBlob();
+  (document.fonts?.ready ?? Promise.resolve()).then(() => {
+    if (changes > 0 || !stack.isConnected) return;
+    paintCard(behind());
+    assemble().then(done => {
+      if (done && changes === 0) setTimeout(nudge, NUDGE_DELAY_MS);
+    });
+  });
+
+  // The shape and what each region shows.
+  const shapeName = overlay.querySelector(".share-shape-name");
   overlay.querySelectorAll(".share-toggle").forEach(btn => {
     btn.addEventListener("click", () => {
       const { group, value } = btn.dataset;
@@ -207,6 +323,7 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
       overlay.querySelectorAll(`.share-toggle[data-group="${group}"]`).forEach(other => {
         other.setAttribute("aria-pressed", String(other.dataset.value === value));
       });
+      if (group === "shape" && shapeName) shapeName.textContent = shapeNames[value];
       redraw();
     });
   });

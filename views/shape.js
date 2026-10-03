@@ -160,8 +160,9 @@ export function morphShape(svg, next, scope = null) {
 
 // Each view as a symbol (the owner, v157: symbols rather than words, on every
 // screen): the star, the radar's web, the asterism's joined dots. The word is
-// the button's name and its tooltip.
-const SHAPE_ICONS = {
+// the button's name and its tooltip. The share sheet's shape buttons use them
+// too (v182).
+export const SHAPE_ICONS = {
   star: `<path d="M12 2.5l1.6 5.6 5.1-2.8-2.8 5.1 5.6 1.6-5.6 1.6 2.8 5.1-5.1-2.8-1.6 5.6-1.6-5.6-5.1 2.8 2.8-5.1-5.6-1.6 5.6-1.6-2.8-5.1 5.1 2.8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>`,
   radar: `<g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 2.5l6.7 2.8 2.8 6.7-2.8 6.7-6.7 2.8-6.7-2.8-2.8-6.7 2.8-6.7z"/><path d="M12 7.5l3.2 1.3 1.3 3.2-1.3 3.2-3.2 1.3-3.2-1.3-1.3-3.2 1.3-3.2z" stroke-width="1.2"/><path d="M12 2.5v19M2.5 12h19" stroke-width="1"/></g>`,
   asterism: `<g fill="currentColor"><path d="M4.5 17.5L9 9.5l6 3 4.5-8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4.5" cy="17.5" r="2"/><circle cx="9" cy="9.5" r="2"/><circle cx="15" cy="12.5" r="2"/><circle cx="19.5" cy="4.5" r="2"/></g>`

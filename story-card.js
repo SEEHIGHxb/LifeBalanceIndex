@@ -21,7 +21,7 @@
 // The shape's geometry comes from chart.js (shapeKite, shapeRim), the same as
 // Home's, so the card and the page cannot disagree about where a score sits.
 
-import { t, dateLocale } from "./i18n.js";
+import { t } from "./i18n.js";
 import { radarPoints, shapeKite, shapeRim, asterismStarRadius, SHAPE_VIEWS, RADAR_KEYS, ASPECT_LABELS } from "./chart.js";
 
 export { STAR_VALLEY } from "./chart.js";
@@ -96,13 +96,8 @@ export const REGION_HUES = {
 
 // Font stacks carry Sarabun in second place so Thai falls through to it
 // instead of rendering as tofu. Canvas honours a stack exactly like CSS.
-// Must track --font-serif in index.css. Canvas cannot read a CSS custom
-// property, so this is the one place the stack is repeated by hand — and it
-// was still on the pre-v78 stack, which meant Thai headings on the shared
-// PNG rendered in Sarabun, the sans, while the same heading in the app
-// rendered in Maitree. The card is the only thing about this app anyone
-// else sees. tests/typography.test.mjs pins the two together.
-const SERIF = "'Source Serif 4', 'Maitree', Georgia, serif";
+// Since v182 nothing on the card is set in the serif (the name went, and the
+// code is set like the index), so it carries no serif stack to drift.
 const SANS = "'Inter', 'Sarabun', system-ui, sans-serif";
 // The wordmark face (css/frame.css --frame-word). It has no Thai, so a Thai
 // line in it falls through to Sarabun, as it does on the page.
@@ -110,22 +105,23 @@ const WORD = "'Anton', 'Sarabun', Impact, sans-serif";
 
 // Baselines, all inside the safe band. The star is sized so a label at each
 // of its points still fits between it and the card's edge.
+// The name and the date left in v182 (the owner, 2026-10-03), and the star
+// took the room.
 const LAYOUT = {
   wordmark: 422,
   url: 474,
-  name: 562,
-  date: 608,
   starCx: STORY_W / 2,
-  starCy: 990,
-  starR: 210,
+  starCy: 950,
+  starR: 226,
   // How far past the rim each region's label sits, and the least room kept
-  // between a label and the card's edge.
-  labelGap: 50,
-  labelEdge: 40,
-  indexLabel: 1440,
-  indexValue: 1530,
-  // Your constellation, under the index (v171).
-  type: 1612
+  // between a label and the card's edge. Tight enough that the longest name
+  // beside the star, The Still Water, still fits whole.
+  labelGap: 42,
+  labelEdge: 32,
+  // The line under the star: its heading, then the Balance Index or, with
+  // Character, your constellation (v182).
+  footLabel: 1440,
+  footValue: 1530
 };
 
 // The sticker's cut edge and lift, and how it sits: turned a little, as if
@@ -238,8 +234,8 @@ const SKY = { night: "#1b1b1b", speck: "rgba(255, 255, 255, 0.55)", line: "rgba(
 const SKY_SPECKS = [[-0.56, -0.42], [0.5, -0.66], [0.7, 0.3], [-0.4, 0.62], [0.16, 0.8], [-0.8, 0.1], [0.34, -0.2], [-0.2, -0.72], [0.84, -0.16], [-0.66, 0.46]];
 const RINGS = [0.25, 0.5, 0.75];
 // The star's tips only reach the rim at a perfect score, but the asterism's
-// disc is round and full width: drawn at the star's size it would cover the
-// date above it. So the whole sky is drawn a little smaller.
+// disc is round and full width: drawn at the star's size it would crowd the
+// labels round it. So the whole sky is drawn a little smaller.
 const SKY_SCALE = 0.86;
 const circle = (cx, cy, r, n = 72) => Array.from({ length: n }, (_, i) => ({ x: cx + Math.cos((i / n) * Math.PI * 2) * r, y: cy + Math.sin((i / n) * Math.PI * 2) * r }));
 
@@ -359,10 +355,14 @@ function drawAsterismView(ctx, scores, tips, pose, { cx, cy, r }) {
   ctx.shadowBlur = 0;
 }
 
+// What stands in for a character, or a constellation, that is not there yet.
+export const NONE = "–";
+
 // Each region's label: its name, and under it what the detail level shows,
-// the score or your character (a region with no character shows its score).
+// the score or your character. A region with no character shows a dash
+// (v182): its score there would read as a character's.
 export function legendValue(detail, score, character) {
-  if (detail === "character") return character || String(score);
+  if (detail === "character") return character || NONE;
   return String(score);
 }
 
@@ -409,9 +409,10 @@ function drawRegionLabels(ctx, theme, data, detail, grow) {
     ctx.fillStyle = theme.ink;
     ctx.fillText(name, left + DOT_SPACE, nameY);
 
-    // A score is a numeral in the display face; a character is words.
+    // A score is a numeral in the display face; a character is words. The dash
+    // sits in the display face too, muted.
     const numeral = /^\d+$/.test(value);
-    ctx.font = numeral ? font(400, 32, WORD) : font(400, 22, SANS);
+    ctx.font = numeral || value === NONE ? font(400, 32, WORD) : font(400, 22, SANS);
     ctx.fillStyle = numeral ? theme.ink : theme.muted;
     ctx.textAlign = side === "r" ? "left" : side === "l" ? "right" : "center";
     const valueX = side === "r" ? at.x + DOT_SPACE : side === "l" ? at.x : at.x + DOT_SPACE / 2;
@@ -452,37 +453,28 @@ export function drawStoryCard(ctx, data, opts = {}) {
   ctx.fillStyle = theme.muted;
   ctx.fillText("asterism.plainpoint.net", mid, LAYOUT.url);
 
-  if (data.name) {
-    ctx.font = font(700, 48, SERIF);
-    ctx.fillStyle = theme.ink;
-    ctx.fillText(fitText(ctx, data.name, maxWidth), mid, LAYOUT.name);
-  }
-  if (data.dateText) {
-    ctx.font = font(400, 28, SANS);
-    ctx.fillStyle = theme.muted;
-    ctx.fillText(fitText(ctx, data.dateText, maxWidth), mid, LAYOUT.date);
-  }
-
   // The sheet's own choice of view wins over the page's, which only seeds it.
   drawSticker(ctx, theme, SHAPE_VIEWS.includes(opts.shape) ? { ...data, shape: opts.shape } : data, grow);
   drawRegionLabels(ctx, theme, data, detail, grow);
+  drawFoot(ctx, theme, data, detail, maxWidth);
+}
 
+// The line under the star follows the labels (the owner, 2026-10-03): Score
+// shows the Balance Index, Character your constellation under its own
+// heading, or a dash until every region has a character. The code only,
+// never the answers behind it (v171-v172).
+function drawFoot(ctx, theme, data, detail, maxWidth) {
+  const mid = STORY_W / 2;
+  const coded = detail === "character";
+  const value = coded ? data.constellation?.code ?? NONE : String(data.index ?? "");
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
   ctx.font = font(700, 24, SANS);
   ctx.fillStyle = theme.muted;
-  ctx.fillText(t("Balance Index").toUpperCase(), mid, LAYOUT.indexLabel);
-
+  ctx.fillText(t(coded ? "Your constellation" : "Balance Index").toUpperCase(), mid, LAYOUT.footLabel);
   ctx.font = font(400, 72, WORD);
-  ctx.fillStyle = theme.ink;
-  ctx.fillText(String(data.index ?? ""), mid, LAYOUT.indexValue);
-
-  // The code only, never the answers behind it (the owner, v171-v172).
-  if (data.constellation) {
-    ctx.font = font(700, 36, SERIF);
-    ctx.fillStyle = theme.accent;
-    ctx.fillText(fitText(ctx, data.constellation.code, maxWidth), mid, LAYOUT.type);
-  }
+  ctx.fillStyle = value === NONE ? theme.muted : theme.ink;
+  ctx.fillText(fitText(ctx, value, maxWidth), mid, LAYOUT.footValue);
 }
 
 // The code as a plain string, or none: a card short of a character in any
@@ -503,15 +495,9 @@ function cardLabels(labels) {
 }
 
 // Everything the card needs, assembled from state the dashboard already has.
-// `date` is formatted here rather than by the caller so the card follows the
-// active language's locale (Thai dates on a Thai card).
-export function storyCardData({ name, date, aspects, index, shape, labels, constellation }) {
-  const when = date instanceof Date ? date : new Date(date || Date.now());
+// Not your name, nor the date (v182): the card is the star, not a record.
+export function storyCardData({ aspects, index, shape, labels, constellation }) {
   return {
-    name: name || "",
-    dateText: when.toLocaleDateString(dateLocale(), {
-      day: "numeric", month: "long", year: "numeric"
-    }),
     aspects: aspects || {},
     index,
     shape: SHAPE_VIEWS.includes(shape) ? shape : "star",

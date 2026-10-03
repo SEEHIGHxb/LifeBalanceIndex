@@ -56,13 +56,14 @@ test("Score shows each score, and Character each character", () => {
   CHAPTERS.forEach((c, i) => {
     const score = String(STATE.aspects[c.aspect]);
     assert.ok(scores[i].endsWith(` ${score}`), scores[i]);
-    assert.ok(characters[i].endsWith(labels[c.aspect].character || score), characters[i]);
+    assert.ok(characters[i].endsWith(labels[c.aspect].character || "–"), characters[i]);
   });
   assert.ok(Object.values(labels).some(l => l.character), "the fixture should earn at least one character");
 });
 
-test("a region with no character falls back to its score", () => {
-  assert.equal(legendValue("character", 40, null), "40");
+// v182: a score under Character read as if it were the character.
+test("a region with no character shows a dash", () => {
+  assert.equal(legendValue("character", 40, null), "–");
   assert.equal(legendValue("character", 40, "Stargazer"), "Stargazer");
   assert.equal(legendValue("full", 40, "Stargazer"), "40");
   assert.deepEqual(DETAIL_LEVELS, ["full", "character"]);

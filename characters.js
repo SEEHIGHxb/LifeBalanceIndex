@@ -73,7 +73,9 @@ const SIDES = {
   ],
   physical: (p) => [
     metMinutes(p) >= WHO_MET_MINUTES,
-    side(num(p.sleepHours) > 0 ? p.sleepHours : NaN, v => v >= SLEEP_HOURS)
+    // 0 is an answer: the form asks for it and allows it (v182; it read as no
+    // answer before, which left The Highlands without a character).
+    side(p.sleepHours, v => v >= SLEEP_HOURS)
   ],
   mental: (p, b) => [
     side(b.who5, v => v > WHO5_LOW_MAX),

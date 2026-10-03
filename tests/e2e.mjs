@@ -681,12 +681,22 @@ try {
     beforeDetail, { timeout: 5000 }
   );
 
-  const beforeTheme = await dataUrl();
-  await page.click('.share-toggle[data-value="navy"]');
-  await page.waitForFunction(
-    prev => document.getElementById("share-preview").toDataURL("image/png") !== prev,
-    beforeTheme, { timeout: 5000 }
-  );
+  // The dark card waits behind the light one (v182): a tap on its showing
+  // edge brings it forward, and it is drawn, not blank.
+  const edge = await page.evaluate(() => {
+    const front = document.querySelector(".share-card.is-front").getBoundingClientRect();
+    const back = document.querySelector('.share-card[data-theme="navy"]').getBoundingClientRect();
+    const sheet = document.querySelector(".share-sheet").getBoundingClientRect();
+    return { x: (front.right + Math.min(back.right, sheet.right)) / 2, y: front.top + front.height / 2 };
+  });
+  await page.mouse.click(edge.x, edge.y);
+  await page.waitForSelector('.share-card.is-front[data-theme="navy"]', { timeout: 5000 });
+  const darkBytes = await page.evaluate(async () => {
+    const c = document.querySelector('canvas[data-theme="navy"]');
+    const blob = await new Promise(r => c.toBlob(r, "image/png"));
+    return blob ? blob.size : 0;
+  });
+  if (darkBytes < 5000) problems.push(`flow4: the dark card is only ${darkBytes} bytes — likely blank`);
 
   // Preferences live outside the app's own save, so an erase cannot clear them
   // and no schema migration was needed to add them.

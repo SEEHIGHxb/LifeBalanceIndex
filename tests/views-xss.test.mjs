@@ -288,7 +288,7 @@ test("the share sheet routes user data to the canvas, never into its markup", as
   const src = readFileSync(join(root, "views/share.js"), "utf8");
 
   const start = src.indexOf("html: `");
-  const end = src.indexOf("</div>`");
+  const end = src.indexOf("</div>`", start);
   assert.ok(start > -1 && end > start, "could not locate the share sheet template");
   const template = src.slice(start, end);
 

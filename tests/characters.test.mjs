@@ -72,7 +72,17 @@ test("no character is drawn from answers that were never given", () => {
   for (const key of ["mental", "relationships", "environment", "finance"]) {
     assert.equal(characterFor(noBaseline, key), null, `${key} named someone with no questionnaire answers`);
   }
-  assert.equal(characterFor(make({ sleepHours: 0 }), "physical"), null, "no sleep answer, no Highlands character");
+  assert.equal(characterFor(make({ sleepHours: "" }), "physical"), null, "no sleep answer, no Highlands character");
+  assert.equal(characterFor(make({ sleepHours: null }), "physical"), null);
+});
+
+// v182: the form allows 0 hours, and 0 is an answer. It read as none, which
+// left The Highlands with no character and the constellation one short.
+test("0 hours of sleep is an answer: the short-rest side", () => {
+  const c = characterFor(make({ sleepHours: 0, weeklyWalkingDays: 0 }), "physical");
+  assert.ok(c, "0 hours gave no Highlands character");
+  assert.equal(c.name, "Pilgrim");
+  assert.equal(characterFor(make({ sleepHours: "0" }), "physical")?.sides[1].value, "Runs on little rest");
 });
 
 test("the grade plays no part: the same answers give the same character at any score", () => {

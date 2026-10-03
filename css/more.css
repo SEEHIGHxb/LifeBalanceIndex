@@ -144,6 +144,7 @@
   width: min(920px, calc(100vw - 32px));
   max-height: 92vh;
   max-height: 92dvh;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: 32px;
   border-radius: 28px;
@@ -182,23 +183,77 @@
 .share-sheet .pill-light { background: var(--frame-card); color: var(--frame-ink); }
 .share-sheet .share-toggle[aria-pressed="true"] { background: var(--frame-dark); color: #ffffff; }
 .share-sheet .pill:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
-.share-note,
-.share-care { margin: 0; font-size: 14px; line-height: 1.7; }
-.share-care { padding-left: 14px; border-left: 3px solid var(--frame-ink); font-weight: 600; }
+.share-care { margin: 0; font-size: 14px; line-height: 1.7; padding-left: 14px; border-left: 3px solid var(--frame-ink); font-weight: 600; }
 .share-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-.share-stage { display: grid; justify-items: center; }
-/* The canvas carries a 1080x1920 backing store; these bounds only scale how
-   it is shown. */
-.share-preview {
-  display: block;
-  width: auto;
-  height: auto;
-  max-width: 100%;
-  max-height: 72vh;
-  max-height: 72dvh;
-  border-radius: 18px;
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+/* The views as symbols (v182): round buttons, the icon at 26px so the radar's
+   inner ring and the asterism's dots stay apart. */
+.share-sheet .share-shape {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--frame-card);
+  color: var(--frame-ink);
+  cursor: pointer;
 }
+.share-shape svg { display: block; width: 26px; height: 26px; }
+.share-sheet .share-shape[aria-pressed="true"] { background: var(--frame-dark); color: #ffffff; }
+.share-sheet .share-shape:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 3px; }
+.share-shape-name { font-size: 12px; color: var(--frame-muted); }
+
+/* THE STACK (v182): both cards, the other one tucked behind and turned with
+   its edge showing (views/share.js BACK holds the same pose). A drag writes
+   its own transform; at rest the stylesheet places them. */
+.share-stage { display: grid; justify-items: center; gap: 14px; user-select: none; -webkit-user-select: none; }
+.share-stack {
+  position: relative;
+  width: min(84%, calc(70vh * 9 / 16));
+  width: min(84%, calc(70dvh * 9 / 16));
+  aspect-ratio: 9 / 16;
+  margin-right: 10%;
+  border-radius: 18px;
+  touch-action: pan-y;
+}
+.share-stack:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 6px; }
+.share-card {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+  transform-origin: 50% 85%;
+  transition: transform 460ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 460ms ease;
+  cursor: grab;
+}
+.share-card.is-front { z-index: 2; }
+.share-card:not(.is-front) { z-index: 1; transform: translateX(15%) scale(0.9) rotate(4deg); filter: brightness(0.93); cursor: pointer; }
+.share-stack.is-dragging .share-card { transition: none; cursor: grabbing; }
+/* The canvas carries a 1080x1920 backing store; the card only scales it. */
+.share-preview { display: block; width: 100%; height: 100%; pointer-events: none; }
+.share-styles { display: flex; gap: 6px; }
+.share-style {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--frame-muted);
+  font: 600 13px var(--font-sans);
+  cursor: pointer;
+}
+.share-style i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.share-style[aria-pressed="true"] { color: var(--frame-ink); }
+.share-style:focus-visible { outline: 2px solid var(--frame-ink); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .share-card { transition: none; }
+}
+html[data-reduce-motion] .share-card { transition: none; }
 
 /* ============================================================== your year */
 
@@ -384,7 +439,7 @@
 @media (max-width: 720px) {
   .share-sheet { grid-template-columns: minmax(0, 1fr); padding: 20px; gap: 20px; }
   .share-side { order: 0; }
-  .share-preview { max-height: 56vh; max-height: 56dvh; }
+  .share-stack { width: min(74%, calc(56vh * 9 / 16)); width: min(74%, calc(56dvh * 9 / 16)); }
 }
 
 /* ================================================================= Thai

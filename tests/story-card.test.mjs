@@ -125,7 +125,7 @@ test("the detail level decides what each region's label shows", () => {
   assert.ok(full.includes("71") && full.includes("30"), "Score printed every score");
   assert.ok(character.includes("The Still Water") && character.includes("Boatman"), "Character left out the character");
   assert.ok(!character.includes("71"), "a region with a character still printed its score");
-  assert.ok(character.includes("30"), "a region with no character should fall back to its score");
+  assert.ok(!character.includes("30") && character.includes("–"), "a region with no character shows a dash, not its score (v182)");
 });
 
 test("the card prints no grade letters", () => {
@@ -133,10 +133,9 @@ test("the card prints no grade letters", () => {
   assert.ok(!full.some(s => /\s{2}[A-F]$/.test(s)), `a grade letter was drawn: ${full.join(" | ")}`);
 });
 
-test("the card keeps the Balance Index and drops the band, the standing line and the old subtitle", () => {
+test("the card drops the band, the standing line and the old subtitle", () => {
   for (const detail of DETAIL_LEVELS) {
     const texts = draw({ detail }).texts;
-    assert.ok(texts.includes("58"), `${detail} dropped the Balance Index`);
     assert.ok(!texts.includes("Steady balance"), `${detail} still drew the band`);
     assert.ok(!texts.some(s => s.includes("5 of 8")), `${detail} still drew the standing line`);
     assert.ok(!texts.includes("LIFE BALANCE INDEX"), `${detail} still drew the old subtitle`);
@@ -158,7 +157,7 @@ test("no two drawn lines of text overlap", () => {
 
 test("each region's label sits outside the star, never on it", () => {
   const ctx = draw({ detail: "full" });
-  const cx = 540, cy = 990, rim = 210 + 18;
+  const cx = 540, cy = 950, rim = 226 + 18;
   const names = ctx.texts.extents.filter(e => /^(Finance|Physical|Mental|Relationships|Personal|Social|Environment|Humanity)/.test(e.s));
   assert.equal(names.length, 8);
   for (const e of names) {
@@ -220,12 +219,16 @@ test("out-of-range and missing scores are clamped, never escaping the rim", () =
   });
 });
 
-test("a hostile profile name is truncated instead of running off the card", () => {
-  const ctx = draw({ detail: "full" }, { name: "Jo".repeat(200) });
-  const drawn = ctx.calls.find(c => c[0] === "fillText" && String(c[1]).startsWith("Jo"));
-  assert.ok(drawn, "the name was not drawn at all");
-  assert.ok(drawn[1].endsWith("…"), "an over-long name should be ellipsised");
-  assert.ok(ctx.measureText(drawn[1]).width <= STORY_W - 160, "the truncated name still overflows");
+// The owner, 2026-10-03: the card needs neither the name nor the date.
+test("the card draws neither your name nor the date", () => {
+  for (const detail of DETAIL_LEVELS) {
+    const texts = draw({ detail }, { name: "Jojo" }).texts;
+    assert.ok(!texts.some(s => s.includes("Jojo")), `${detail} drew the name`);
+    assert.ok(!texts.some(s => /2026|July/.test(s)), `${detail} drew the date`);
+  }
+  const data = storyCardData({ name: "Jojo", date: new Date("2026-07-31T00:00:00Z") });
+  assert.equal(data.name, undefined);
+  assert.equal(data.dateText, undefined);
 });
 
 test("fitText leaves a name that already fits completely alone", () => {
@@ -253,15 +256,12 @@ test("the card is a 9:16 story frame with the reserved bands accounted for", () 
   assert.equal(SAFE_LOW, 1670);
 });
 
-test("storyCardData formats the date and survives missing fields", () => {
+test("storyCardData survives missing fields", () => {
   const bare = storyCardData({});
-  assert.equal(bare.name, "");
   assert.deepEqual(bare.aspects, {});
   assert.deepEqual(bare.labels, {});
-  assert.ok(bare.dateText.length > 0, "a date should always be produced");
-
-  const dated = storyCardData({ date: new Date("2026-07-31T00:00:00Z") });
-  assert.match(dated.dateText, /2026/);
+  assert.equal(bare.shape, "star");
+  assert.equal(bare.constellation, null);
 });
 
 // --- the card as the map (Phase 4): the symmetric Lumi Star -------------------
@@ -338,12 +338,26 @@ test("one draw's canvas state never carries into the next (the sheet reuses its 
 });
 
 // The owner, v171-v172: the card carries the code only, never the answers.
-test("the card draws your constellation inside the safe band, and only when complete", () => {
+// And 2026-10-03: Score shows the Balance Index; Character shows the code
+// under its own heading, and no Balance Index.
+test("the line under the star follows the labels: the index with Score, your constellation with Character", () => {
   const constellation = { complete: true, code: "TGPE-AWRC", left: 0 };
-  const ctx = draw({ detail: "full" }, { constellation });
-  assert.ok(ctx.texts.includes("TGPE-AWRC"));
+  const score = draw({ detail: "full" }, { constellation }).texts;
+  assert.ok(score.includes("BALANCE INDEX") && score.includes("58"), "Score dropped the Balance Index");
+  assert.ok(!score.includes("TGPE-AWRC") && !score.includes("YOUR CONSTELLATION"), "Score drew the constellation");
+
+  const ctx = draw({ detail: "character" }, { constellation });
+  assert.ok(ctx.texts.includes("YOUR CONSTELLATION"), "Character left out the heading");
+  assert.ok(ctx.texts.includes("TGPE-AWRC"), "Character left out the code");
+  assert.ok(!ctx.texts.includes("BALANCE INDEX") && !ctx.texts.includes("58"), "Character still drew the Balance Index");
   assert.deepEqual(ctx.points.filter(p => p.y < SAFE_TOP || p.y > SAFE_LOW), []);
-  const partial = draw({ detail: "full" }, { constellation: { complete: false, code: null, left: 3 } });
-  assert.ok(!partial.texts.some(s => /^[A-Z]{4}-[A-Z]{4}$/.test(s)), "no constellation before all eight regions");
+});
+
+test("before every region has a character, Character shows a dash under the heading", () => {
+  const partial = draw({ detail: "character" }, { constellation: { complete: false, code: null, left: 3 } }).texts;
+  assert.ok(partial.includes("YOUR CONSTELLATION"));
+  assert.ok(!partial.some(s => /^[A-Z]{4}-[A-Z]{4}$/.test(s)), "no constellation before all eight regions");
+  assert.ok(partial.filter(s => s === "–").length >= 1);
+  assert.ok(!partial.includes("58"), "the Balance Index stood in for the code");
   assert.equal(storyCardData({ constellation: { complete: true, code: 5 } }).constellation, null);
 });

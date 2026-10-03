@@ -1488,6 +1488,8 @@ export const TH = {
   "Character": "ตัวละคร",
   "Save image": "บันทึกรูปภาพ",
   "Close": "ปิด",
+  // v183 draft, awaiting the owner's review: the hint on the front card.
+  "Tap to flip": "แตะเพื่อพลิก",
   "This card shows your mental wellbeing alongside the other seven aspects. Choosing “Character” shows a character in place of each score where you have one.":
     "การ์ดนี้แสดงด้านจิตใจของคุณรวมอยู่กับอีกเจ็ดด้าน หากเลือก “ตัวละคร” การ์ดจะแสดงตัวละครแทนคะแนนในด้านที่คุณมีตัวละคร",
 

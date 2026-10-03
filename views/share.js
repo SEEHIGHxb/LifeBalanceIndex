@@ -62,6 +62,15 @@ const DRAG_TURN_DEG = 8;
 const NUDGE_SHARE = 0.16;
 const NUDGE_DELAY_MS = 600;
 const NUDGE_HOLD_MS = 420;
+// THE FLIP (v183). The owner, 2026-10-03, picked a card you turn over: a tap
+// on the front card (or Enter, or the switch under it) turns it edge-on, and
+// it comes round showing the other choice. Half of css/more.css share-flip.
+const FLIP_HALF_MS = 170;
+
+// Save is a download arrow, Share the arrow out of a tray, Close a cross.
+const ICON_SAVE = `<path d="M12 3v12M7.5 10.5L12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+const ICON_SEND = `<path d="M12 15V3M7.5 7.5L12 3l4.5 4.5M5 12v7.5h14V12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+const ICON_CLOSE = `<path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>`;
 
 // The same two choices label the star on its own page (views/star-page.js).
 export const DETAIL_LABELS = () => ({
@@ -120,29 +129,38 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
   const shapeNames = { star: t("Star"), radar: t("Radar"), asterism: t("Asterism") };
   const themeNames = { paper: t("Light"), navy: t("Dark") };
 
-  const toggle = (group, value, label, active) =>
-    `<button type="button" class="pill pill-light share-toggle" data-group="${group}" data-value="${value}" aria-pressed="${active}">${label}</button>`;
+  const detailButton = (level) =>
+    `<button type="button" class="share-toggle share-detail" data-group="detail" data-value="${level}" aria-pressed="${prefs.detail === level}">${labels[level]}</button>`;
   // Each view as its symbol (views/shape.js), its name the button's name.
   const shapeButton = (view, active) =>
     `<button type="button" class="share-toggle share-shape" data-group="shape" data-value="${view}" aria-pressed="${active}" aria-label="${shapeNames[view]}" title="${shapeNames[view]}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${SHAPE_ICONS[view]}</svg></button>`;
   const stackCard = (theme) =>
     `<div class="share-card${theme === prefs.theme ? " is-front" : ""}" data-theme="${theme}">` +
-    `<canvas${theme === "paper" ? ' id="share-preview"' : ""} class="share-preview" data-theme="${theme}" width="${STORY_W}" height="${STORY_H}" role="img" aria-label="${t("Preview of your shareable card")}: ${themeNames[theme]}"></canvas></div>`;
+    `<canvas${theme === "paper" ? ' id="share-preview"' : ""} class="share-preview" data-theme="${theme}" width="${STORY_W}" height="${STORY_H}" role="img" aria-label="${t("Preview of your shareable card")}: ${themeNames[theme]}"></canvas>` +
+    `<span class="share-flip-hint" aria-hidden="true">↻ ${t("Tap to flip")}</span></div>`;
+  const action = (id, label, icon, kind) =>
+    `<button type="button" class="share-act ${kind}" id="${id}">${label}<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${icon}</svg></button>`;
 
   // The poster sheet (R5; docs/prototype/redesign/social.js shareHTML): the
-  // choices beside, the poster itself on the right. On a phone the poster
-  // comes first and the choices follow it.
+  // poster with its own switches on the left, the shape and the two ways out
+  // on the right. On a phone it all fits one screen (css/more.css).
   const { overlay, close } = openDialog({
     label: t("Share your star"),
     html: `
     <div class="share-sheet">
+      <button type="button" class="share-x" id="share-close" aria-label="${t("Close")}" title="${t("Close")}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICON_CLOSE}</svg></button>
       <div class="share-stage">
         <div class="share-stack" tabindex="0" role="group" aria-label="${t("Card style")}">
           ${THEMES.map(stackCard).join("")}
         </div>
-        <span class="share-styles" role="group" aria-label="${t("Card style")}">
-          ${THEMES.map(theme => `<button type="button" class="share-style" data-value="${theme}" aria-pressed="${prefs.theme === theme}"><i aria-hidden="true"></i>${themeNames[theme]}</button>`).join("")}
-        </span>
+        <div class="share-under">
+          <span class="share-styles" role="group" aria-label="${t("Card style")}">
+            ${THEMES.map(theme => `<button type="button" class="share-style" data-value="${theme}" aria-pressed="${prefs.theme === theme}"><i aria-hidden="true"></i>${themeNames[theme]}</button>`).join("")}
+          </span>
+          <span class="share-details" role="group" aria-label="${t("What to show")}">
+            ${DETAIL_LEVELS.map(detailButton).join("")}
+          </span>
+        </div>
       </div>
       <div class="share-side">
         <h2 class="share-title">${t("Share your star")}</h2>
@@ -153,20 +171,12 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
           </span>
           <span class="share-shape-name" aria-hidden="true">${shapeNames[prefs.shape]}</span>
         </div>
-        <div class="share-option" role="group" aria-labelledby="share-show-label">
-          <span class="share-option-label" id="share-show-label">${t("What to show")}</span>
-          <span class="share-set">
-            ${DETAIL_LEVELS.map(level =>
-              toggle("detail", level, labels[level], prefs.detail === level)).join("")}
-          </span>
-        </div>
 
         ${showMentalNote ? `<p class="share-care">${t("This card shows your mental wellbeing alongside the other seven aspects. Choosing “Character” shows a character in place of each score where you have one.")}</p>` : ""}
 
         <div class="share-actions">
-          ${shareable ? `<button type="button" class="pill" id="share-send">${t("Share")}</button>` : ""}
-          <button type="button" class="pill" id="share-save">${t("Save image")}</button>
-          <button type="button" class="pill pill-light" id="share-close">${t("Close")}</button>
+          ${action("share-save", t("Save image"), ICON_SAVE, "is-save")}
+          ${shareable ? action("share-send", t("Share"), ICON_SEND, "is-send") : ""}
         </div>
       </div>
     </div>`
@@ -279,13 +289,19 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
     const { dx, moved, theme } = drag;
     drag = null;
     stack.classList.remove("is-dragging");
-    if (!moved) return choose(theme);
+    // A tap on the front card turns it over; on the one behind, brings it forward.
+    if (!moved) return theme === prefs.theme ? flip() : choose(theme);
     if (Math.abs(dx) > stack.clientWidth * SWIPE_SHARE) return choose(behind());
     layout(0);
   };
   stack.addEventListener("pointerup", release);
   stack.addEventListener("pointercancel", release);
   stack.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      flip();
+      return;
+    }
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
     e.preventDefault();
     choose(behind());
@@ -314,16 +330,39 @@ export function openShareSheet(card, { showMentalNote = false } = {}) {
 
   // The shape and what each region shows.
   const shapeName = overlay.querySelector(".share-shape-name");
+  const pick = (group, value) => {
+    prefs[group] = value;
+    writeSharePrefs(prefs);
+    overlay.querySelectorAll(`.share-toggle[data-group="${group}"]`).forEach(other => {
+      other.setAttribute("aria-pressed", String(other.dataset.value === value));
+    });
+  };
+
+  // Turning the card over: edge-on at the half, drawn with the other choice,
+  // then round again. Without motion it simply redraws.
+  let flipTimer = 0;
+  function flip(detail = prefs.detail === "full" ? "character" : "full") {
+    if (detail === prefs.detail) return;
+    pick("detail", detail);
+    if (isReduced()) return redraw();
+    changes += 1;
+    stopAssembly();
+    refreshBlob();
+    const front = canvasOf(prefs.theme);
+    front.classList.remove("is-flipping");
+    void front.offsetWidth;
+    front.classList.add("is-flipping");
+    clearTimeout(flipTimer);
+    flipTimer = setTimeout(() => THEMES.forEach(theme => paintCard(theme)), FLIP_HALF_MS);
+  }
+
   overlay.querySelectorAll(".share-toggle").forEach(btn => {
     btn.addEventListener("click", () => {
       const { group, value } = btn.dataset;
       if (prefs[group] === value) return;
-      prefs[group] = value;
-      writeSharePrefs(prefs);
-      overlay.querySelectorAll(`.share-toggle[data-group="${group}"]`).forEach(other => {
-        other.setAttribute("aria-pressed", String(other.dataset.value === value));
-      });
-      if (group === "shape" && shapeName) shapeName.textContent = shapeNames[value];
+      if (group === "detail") return flip(value);
+      pick(group, value);
+      if (shapeName) shapeName.textContent = shapeNames[value];
       redraw();
     });
   });

@@ -706,6 +706,26 @@ try {
     problems.push(`flow4: share prefs stored ${prefs}, expected detail=character theme=navy`);
   }
 
+  // A tap on the front card turns it over (v183): back to the scores, and
+  // the card is drawn again with them.
+  const beforeFlip = await page.evaluate(() => document.querySelector('canvas[data-theme="navy"]').toDataURL("image/png"));
+  const middle = await page.evaluate(() => {
+    const r = document.querySelector(".share-card.is-front").getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  });
+  await page.mouse.click(middle.x, middle.y);
+  await page.waitForSelector('.share-detail[data-value="full"][aria-pressed="true"]', { timeout: 5000 });
+  // Polled with evaluate: waitForFunction's polling trips the page's CSP
+  // (no 'unsafe-eval') once the first wait is past.
+  let redrawn = false;
+  for (let i = 0; i < 50 && !redrawn; i++) {
+    await page.waitForTimeout(100);
+    redrawn = await page.evaluate(prev => document.querySelector('canvas[data-theme="navy"]').toDataURL("image/png") !== prev, beforeFlip);
+  }
+  if (!redrawn) problems.push("flow4: turning the card over did not redraw it");
+  const flipped = await page.evaluate(() => document.querySelector(".share-card.is-front").dataset.theme);
+  if (flipped !== "navy") problems.push(`flow4: a tap on the front card swapped it to ${flipped}`);
+
   await page.click("#share-close");
   const stillOpen = await page.evaluate(() => !!document.getElementById("share-preview"));
   if (stillOpen) problems.push("flow4: the share sheet did not close");

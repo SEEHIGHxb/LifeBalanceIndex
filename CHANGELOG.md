@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `182`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `183`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.109.0] - 2026-10-03 · v183
+
+### Changed
+- Share your star: the card turns over. A tap on the front card (or Enter, or the new Score · Character switch under the stack) flips it edge-on and brings it round showing the other choice; a "Tap to flip" hint sits in the card's empty foot.
+- The two ways out are a matching pair of bars: Save image filled, Share outlined with its share icon. Close is now the × in the corner, so no two controls look alike.
+- On a phone the whole sheet fits one screen: the card is sized from the height left over, both switches share one row (in Thai too), the shape sits on one row, and Save and Share sit side by side.
+
+### Thai
+- New draft for the owner's review: "Tap to flip" → แตะเพื่อพลิก.
 
 ## [2.108.0] - 2026-10-03 · v182
 

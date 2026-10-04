@@ -7,8 +7,8 @@
 // blocks inline scripts, so this is the only way in). Every pose below is
 // therefore read at an exact frame.
 //
-//   0. The illustrated welcome: region selection, Eight Threads, pause and
-//      reduced motion, followed by navigation to the original journey.
+//   0. The Landing's star: a tap bursts sixteen stars and motifs and the
+//      lockup springs home, leaving no style behind.
 //   1. The same for every answer: choosing the lowest or the highest point on
 //      the first item writes no style on any item, and the next item's
 //      answers rise the same way.
@@ -172,52 +172,29 @@ const endingState = (page) => page.evaluate(() => {
 
 const browser = await chromium.launch();
 
-// --- 0. the illustrated welcome and its motion controls -------------------------------
+// --- 0. the Landing's star ----------------------------------------------------------
 try {
-  for (const reduced of [false, true]) {
-    const context = await browser.newContext({
-      viewport: { width: 1440, height: 900 },
-      reducedMotion: reduced ? "reduce" : "no-preference"
-    });
-    const page = await context.newPage();
-    page.on("pageerror", err => problems.push(`welcome uncaught: ${err.message}`));
-    await page.goto(BASE, { waitUntil: "networkidle" });
-    await page.waitForSelector(".living-welcome", { timeout: 10000 });
-    await page.click('#wl-region-picker [data-explore="6"]');
-    if (!(await page.locator("#wl-region-name").textContent()).includes("Wildwood")) {
-      problems.push("welcome: the region picker did not update the landscape");
-    }
-    await page.click('[data-variant="threads"]');
-    await page.waitForTimeout(700);
-    if (!(await page.locator("#wl-thread-canvas").evaluate(c => c.width > 0 && c.height > 0))) {
-      problems.push("welcome: Eight Threads did not draw");
-    }
-    const button = page.locator("#wl-motion");
-    if (reduced) {
-      if (!(await button.isDisabled()) || (await button.getAttribute("aria-pressed")) !== "false") {
-        problems.push("welcome: reduced motion did not disable animation");
-      }
-    } else {
-      await button.click();
-      if ((await button.getAttribute("aria-pressed")) !== "false") {
-        problems.push("welcome: Pause motion did not stop animation");
-      }
-    }
-    await page.waitForTimeout(150);
-    const still = await page.locator("#wl-thread-canvas").evaluate(c => c.toDataURL());
-    await page.waitForTimeout(200);
-    if (still !== await page.locator("#wl-thread-canvas").evaluate(c => c.toDataURL())) {
-      problems.push("welcome: the paused or reduced canvas kept moving");
-    }
-    await page.click('.hero a[href="#/journey"]');
-    await page.waitForSelector("#onboarding-form");
-    if (!(await page.locator("#site-header").isVisible()) || await page.locator(".living-welcome").count()) {
-      problems.push("welcome: the original journey chrome did not return");
-    }
-    await context.close();
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  page.on("pageerror", err => problems.push(`landing uncaught: ${err.message}`));
+  await page.addInitScript(installManualClock);
+  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.waitForSelector(".landing .mark-hit", { timeout: 10000 });
+  await page.click(".landing .mark-hit");
+  await advance(page, FRAME_MS * 3);
+  const flying = await page.evaluate(() => document.querySelectorAll(".hero .spr").length);
+  if (flying !== 16) problems.push(`landing: ${flying} particles burst from the star, not 16`);
+  await advance(page, 2500);
+  const home = await page.evaluate(() => ({
+    parts: document.querySelectorAll(".hero .spr").length,
+    styled: [...document.querySelectorAll(".hero .lockup, .hero .part")].map(el => el.style.transform).filter(Boolean)
+  }));
+  if (home.parts || home.styled.length) {
+    problems.push(`landing: not home after 2.5 s (${home.parts} particles, ${home.styled.join(" | ")})`);
   }
+  await context.close();
 } catch (err) {
-  problems.push(`welcome: ${err.message}`);
+  problems.push(`landing: ${err.message}`);
 }
 
 // --- 1. the same for every answer -------------------------------------------------------
@@ -637,4 +614,4 @@ if (problems.length) {
   console.error("MOMENTS E2E FAILED:\n  " + problems.join("\n  "));
   process.exit(1);
 }
-console.log("moments e2e passed: the welcome explores regions and draws Eight Threads, its pause and reduced motion stop the canvas, the original journey opens, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water wipes and bursts too, Home's star warps into its own page and flies back (the care notice too), a region page bursts nothing and opens the next at its top, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi stays off, and reduced motion moves nothing");
+console.log("moments e2e passed: the Landing's star bursts and comes home, every answer moves the same way, The Market wipes and bursts and lands, The Highlands types its name, The Still Water wipes and bursts too, Home's star warps into its own page and flies back (the care notice too), a region page bursts nothing and opens the next at its top, Goals' stickers stick on, the review wipes between regions and bursts at its end, Side by Side slides the picked star, Lumi stays off, and reduced motion moves nothing");

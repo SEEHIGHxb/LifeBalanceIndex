@@ -44,14 +44,13 @@ test("the markup draws each star in its region's hue, threads with a unit length
   for (const c of CHAPTERS) assert.ok(svg.includes(`--hue: ${c.hue};`), `${c.region} star missing`);
 });
 
-test("the Landing opens with the approved Atlas and eight named landmarks", async () => {
+test("the Landing's hero is the asterism, and a tap draws a new one", async () => {
   const { landingMarkup } = await import("../views/landing.js");
   const hero = landingMarkup().match(/<section class="hero"[\s\S]*?<\/section>/)[0];
-  assert.match(hero, /assets\/welcome\/atlas\.webp/);
-  assert.match(hero, /fetchpriority="high"/);
-  assert.equal((hero.match(/data-explore="\d"/g) || []).length, 8);
-  CHAPTERS.forEach(c => assert.ok(hero.includes(c.region)));
-  assert.match(read("views/landing.js"), /onRouteEnd\(/, "welcome motion ends with its route");
+  assert.match(hero, /<div class="mark"><svg class="asterism"/);
+  assert.doesNotMatch(hero, /#star"/, "the gilt star is gone from the Landing");
+  assert.match(read("views/landing.js"), /bindAsterismRedraw\(container\)/);
+  assert.match(read("views/asterism-mark.js"), /mark\.innerHTML = asterismMarkup\(\)/);
 });
 
 test("the asterism animates once and stands still under reduced motion", () => {

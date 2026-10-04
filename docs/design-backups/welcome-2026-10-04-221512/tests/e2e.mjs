@@ -124,15 +124,15 @@ try {
   await pL.goto(BASE, { waitUntil: "networkidle" });
   await pL.waitForSelector(".landing", { timeout: 10000 });
   if (await pL.$("#onboarding-form")) problems.push("flowL: a first visit opened the assessment, not the Landing");
-  if ((await pL.locator("#wl-hero-spots button").count()) !== 8) problems.push("flowL: the Atlas does not have eight named landmarks");
+  if (!(await pL.getAttribute(".hero .mark-hit", "aria-label"))) problems.push("flowL: the star's button has no name");
   if (await pans()) problems.push("flowL: the Landing scrolls sideways at 375px");
   // Two quick presses are there and back, even while the Thai dictionary is
   // still downloading (it loads on first use): they once both landed on Thai.
-  await pL.click("#wl-lang");
-  await pL.click("#wl-lang");
+  await pL.click("#btn-lang");
+  await pL.click("#btn-lang");
   await pL.waitForTimeout(1500);
   if (await pL.evaluate(() => document.documentElement.lang) !== "en") problems.push("flowL: two quick presses of the language button did not come back to English");
-  await pL.click("#wl-lang");
+  await pL.click("#btn-lang");
   await pL.waitForSelector("html[lang='th'] .landing", { timeout: 10000 });
   if (await pans()) problems.push("flowL: the Thai Landing scrolls sideways at 375px");
   await pL.setViewportSize({ width: 1440, height: 900 });

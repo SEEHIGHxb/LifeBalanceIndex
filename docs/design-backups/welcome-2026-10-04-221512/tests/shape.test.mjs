@@ -164,6 +164,6 @@ test("the Landing for a returning reader leads to their Home and offers no resto
   assert.match(first, /btn-restore-backup/);
   const back = landingMarkup({ returning: true });
   assert.doesNotMatch(back, /href="#\/journey"/);
-  assert.equal((back.match(/href="#\/dashboard"/g) || []).length, 4);
+  assert.equal((back.match(/href="#\/dashboard"/g) || []).length, 3);
   assert.doesNotMatch(back, /btn-restore-backup/);
 });

@@ -1,0 +1,2 @@
+# Preserve exact rollback sources and recorded hashes across Git checkouts.
+* -text

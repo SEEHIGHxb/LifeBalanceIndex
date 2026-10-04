@@ -137,8 +137,8 @@ test("the years filed are listed newest first", () => {
 test("the Landing's first screen has the call to begin", async () => {
   const { landingMarkup } = await import("../views/landing.js");
   const hero = landingMarkup().match(/<section class="hero"[\s\S]*?<\/section>/)?.[0] || "";
-  assert.match(hero, /<a class="primary" href="#\/journey">Start the journey/);
-  assert.match(landingMarkup({ resume: true }).match(/<section class="hero"[\s\S]*?<\/section>/)[0], />Continue the journey\s*</);
+  assert.match(hero, /<p class="hero-cta"><a class="pill pill-xl" href="#\/journey">Start the journey<\/a><\/p>/);
+  assert.match(landingMarkup({ resume: true }).match(/<section class="hero"[\s\S]*?<\/section>/)[0], />Continue the journey</);
 });
 
 test("before the journey the menu's Start opens the assessment and About the Landing", async () => {
@@ -160,19 +160,27 @@ test("the Landing offers to restore a backup before the journey", async () => {
 // v151, the owner: each region's picture and words were two cards that slid in
 // separately and drifted apart. Now one card each, pinning and stacking in CSS,
 // beside a rail of the eight emblems.
-test("the Landing keeps all eight regions in one connected explorer", async () => {
+test("the Landing's eight regions are one card each, with a rail to jump between them", async () => {
   const { landingMarkup } = await import("../views/landing.js");
   const out = landingMarkup();
-  assert.equal((out.match(/class="region-tab"/g) || []).length, 8);
-  CHAPTERS.forEach(c => assert.ok(out.includes(c.region)));
-  assert.match(out, /id="wl-explore-camera"/);
-  assert.match(out, /data-variant="atlas"/);
-  assert.match(out, /data-variant="threads"/);
-  assert.match(out, /A sample picture, not your assessment/);
-  assert.doesNotMatch(out, /journey-dialog|data-answer=|data-action="review"/, "welcome must not replace the real journey or weekly review");
-  const css = read("css/welcome.css");
-  assert.match(css, /prefers-reduced-motion:reduce/);
-  assert.match(css, /html\[data-reduce-motion\] \.living-welcome/);
+  const cards = out.match(/<article class="region-card"/g) || [];
+  assert.equal(cards.length, 8);
+  assert.doesNotMatch(out, /class="lcard|brand-visual|brand-logo|brand-photo/, "a region is split into two cards again");
+  CHAPTERS.forEach((c, i) => {
+    const card = out.split('<article class="region-card"')[i + 1];
+    assert.match(card, new RegExp(`id="region-${i}"[^>]*aria-labelledby="region-${i}-name"`));
+    assert.match(card, new RegExp(`--i: ${i}; --wash: ${c.wash.replace(/[()]/g, "\\$&")}`));
+    assert.ok(card.includes(`regions/${c.art}.jpg`) && card.includes(`emblems/${c.art}.webp`), `${c.region}: its photo and emblem are not in one card`);
+  });
+  const stops = out.match(/<button type="button" class="rail-stop" data-region="\d"/g) || [];
+  assert.equal(stops.length, 8, "the rail does not name all eight regions");
+  assert.equal((out.match(/aria-current="true"/g) || []).length, 1, "the rail starts on more or fewer than one region");
+
+  const css = read("css/stage-page.css");
+  assert.match(css, /\.region-card \{\s*position: sticky;/, "the cards no longer pin");
+  assert.match(css, /prefers-reduced-motion: reduce\) \{\s*\.region-card \{ position: static; \}/, "reduced motion still pins the cards");
+  assert.match(css, /:root\[data-reduce-motion\] \.region-card \{ position: static; \}/, "the in-app switch still pins the cards");
+  assert.doesNotMatch(read("views/stage-page.js"), /region-card|SLAB/, "the cards are driven by script again");
 });
 
 test("Profile is a text page that keeps every field and control", () => {

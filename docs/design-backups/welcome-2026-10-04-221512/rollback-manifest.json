@@ -1,0 +1,106 @@
+{
+  "description": "Living Atlas welcome-only redesign. Existing journey, dashboard, aspect, review, goals, profile, comparison and methodology page files are unchanged.",
+  "modified": [
+    {
+      "path": "index.html",
+      "before": "9c320bc681ffb05d41f0d54ea3cea8b7bc4b7d4c3f5dc1509814b588187b483a",
+      "after": "1324fa8ec8d8795f3e1578ba82f6be3f72a9f997a9012a4573ddda24e10587c9",
+      "afterNormalized": "1ceadf882138d35765bdf5e8dc1b66fee4af8864843ec0b5c577a0e8076c4064"
+    },
+    {
+      "path": "sw.js",
+      "before": "f59527cdd8afb838688a215a2d6a0356783c3086f9fc78318ddfd0fa023c2771",
+      "after": "52ccd1745ab7af5a6c8492c1d092810fbb6b3b21e98de2cb68d58fd1fd0ab117",
+      "afterNormalized": "59fcaebd72a9aa0e3b7c4723627d93d4463205e2deb9243b965a97dcd518cc6a"
+    },
+    {
+      "path": "th.js",
+      "before": "1ac34a01078179ad09d5275b3d26cd5e349dfb53a1a87f2c722c6dd480a04a0f",
+      "after": "237e7905388718cae75336ecc78f9aa61ba150bbb53a3c3c94ccf3c5327fa679",
+      "afterNormalized": "0ee7a119825c9266ff988fecc8ab2229ddce46c0e97eb9e408c541bccfa64652"
+    },
+    {
+      "path": "tests/asterism-mark.test.mjs",
+      "before": "74a03e1a58c09a1bd675ec0e4deb7f1def2024722900bd688a55b6a6a8696baa",
+      "after": "28d468d4deed8ffeb7906033402add4fc1c63986d95de8634185a06b589b0978",
+      "afterNormalized": "a8108e4dd6c29ba9342e9c5d3329563238194466068cf7ea30315c896b9c3b2d"
+    },
+    {
+      "path": "tests/e2e.mjs",
+      "before": "4fd64ce465bf2a10e111b571fb1bd81c3b8916ffad569e2c65a455220854468d",
+      "after": "8423d1307d46ab289d45d185575036770df3e072b9a79da81f6a1fc81c0f5a54",
+      "afterNormalized": "612e6a2d992a14d69cff9c68fa47ca7b4dd50aacfb67a5bc543ac7e1bfbc5d5d"
+    },
+    {
+      "path": "tests/load-speed.test.mjs",
+      "before": "34dbe804cb87d291d3457fb1d3c26f4a864ffd85b634e02c7bd04261a762de91",
+      "after": "59e1143e7881294d89fccc9397b05e3d14a4072a2b4145e534e03c1049065e5d",
+      "afterNormalized": "d33477990c141278659bd93a6ee67da865efb0092cc5e88141946f3cfc75b207"
+    },
+    {
+      "path": "tests/rest-of-map.test.mjs",
+      "before": "b09b74b4439c81b4e732bd22c26c616b15f6135b6095e436af614bee2d69b36c",
+      "after": "90830c8d42eb76059cc0911a8480e42912d42c1f6da46552885f054daeb2c57b",
+      "afterNormalized": "e1ac60efda1df306fe05f3021b6a0e2cdc4a646f38c58249cb258976d522fb02"
+    },
+    {
+      "path": "tests/shape.test.mjs",
+      "before": "180ac47e4c5124691bc586ba89195737d338f2587ff94a57a02322acb72e3dc0",
+      "after": "80d5161eec0558bcadb717eb001fcc57178afcb97eaa007d84dddfe6df36b30c",
+      "afterNormalized": "26e97c2a3e2b2176c44b7ce3f28d97551e90f38bbed86db0f1044511efbd2c95"
+    },
+    {
+      "path": "views/landing.js",
+      "before": "632bcd1fd02ce4e5c897bdb49fd5c161c26233c0861a232498bd35d16e191ea1",
+      "after": "03741140faa7fee9d8fa47a25dbcf07b843ddcc7beb946093922a265ae6bb0dc",
+      "afterNormalized": "42cb8b60e0d55d978859ef72662d28750562d96fc0269792d039e285a388ed33"
+    },
+    {
+      "path": "version.js",
+      "before": "63766991724333088c4b646846d0c008f843748e2316f7c08df5d0920106237a",
+      "after": "10cf34774b757025a237f4fa5c7ce4b9d73b27dbfb1d60974c076d639b7f8279",
+      "afterNormalized": "10cf34774b757025a237f4fa5c7ce4b9d73b27dbfb1d60974c076d639b7f8279"
+    },
+    {
+      "path": "privacy.html",
+      "before": "4b25a4c8e1f4fd2751c19e333173501ada378bf8c2c7e6fa99fd9ad78d670839",
+      "after": "d79be0a79c9f8f9197f5803a5a29e87a582188b48c96e36e86c6542f8e53c0d6",
+      "afterNormalized": "d79be0a79c9f8f9197f5803a5a29e87a582188b48c96e36e86c6542f8e53c0d6"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "before": "76937bcf19c8ec9930cd3e5a6af857bec09d1a1568aab551de2107c79fe493da",
+      "after": "f0e3bd21ee3f08f65fe20fe54aa9facf762552e2f13249435ec5799ca37a8513",
+      "afterNormalized": "45eb7116a1e29b79de18c156d314c2de1c0d189dd8b4e0187df39bc57274962c"
+    },
+    {
+      "path": "tests/moments-e2e.mjs",
+      "before": "c0db788092d2f9b66d9915ea6c799fa2510bd262ce267ff4ccc79881d1d40633",
+      "after": "4c54dc55a5d384f4421bb43bb9e93406334113e671efe2c9e55bfc9c270a1ac4",
+      "afterNormalized": "4c54dc55a5d384f4421bb43bb9e93406334113e671efe2c9e55bfc9c270a1ac4"
+    }
+  ],
+  "added": [
+    {
+      "path": "css/welcome.css",
+      "after": "caf3973871fd1c51a8a50f4d77266c14907a727876169e638826d6c5b2ebd066",
+      "afterNormalized": "329cd43a6895aee143f8f82888106ebb67cbc9708009c7704489a78f8e37845a"
+    },
+    {
+      "path": "assets/welcome/atlas.webp",
+      "after": "8973e4c983539ad5a0a3d5f11fd1a9f55181ca3643f501f84961634f34c3b9ee",
+      "afterNormalized": "d5eb5c895f13a2106c69e2e2c0b118a5a9b9791634ad57523c6083497dd6dca9"
+    },
+    {
+      "path": "assets/welcome/market.webp",
+      "after": "10cdb098d71d778abb9f4ac06dbbda61aecd1ed8e91b6538a409eb8b94d07fb7",
+      "afterNormalized": "ced2f87be015f9dbd45c153e9225f151919b48312f968a0db6cf330df677999c"
+    },
+    {
+      "path": "assets/welcome/threads.webp",
+      "after": "2f3717c7df9364606ba4a9c6094beb64086b9ce9d0112b025a05430c323b23fd",
+      "afterNormalized": "5aeb2faa11dcde3ab10324e70ea9669496ecd4240a30bc264bc48c0a3fe53fc9"
+    }
+  ],
+  "unchangedOriginalFiles": 327
+}

@@ -1441,6 +1441,18 @@ export const TH = {
   // prototype's (docs/prototype/redesign/content.js), Thai included.
   "Play with the star": "เล่นกับดาว",
   "Why": "ทำไม",
+  "Eight parts of one life,": "ชีวิตหนึ่งชีวิต แปดด้าน",
+  "measured against the evidence.": "วัดเทียบกับหลักฐานจริง",
+  "How it works": "ทำงานอย่างไร",
+  "A journey through eight places, from The Market to The Lookout. Each one asks about one part of your life.":
+    "การเดินทางผ่านแปดสถานที่ ตั้งแต่ตลาดไปจนถึงจุดชมวิว แต่ละแห่งถามถึงชีวิตคุณหนึ่งด้าน",
+  "Your answers are compared with cited Thai and international benchmarks.":
+    "คำตอบของคุณถูกเทียบกับเกณฑ์อ้างอิงของไทยและนานาชาติที่มีแหล่งที่มา",
+  "Local-first: your answers never leave your device, and there is no account.":
+    "ข้อมูลอยู่ในเครื่องคุณเท่านั้น ไม่มีการส่งออกไปที่ใด และไม่ต้องสมัครบัญชี",
+  "Begin": "เริ่มต้น",
+  "Eight chapters.": "แปดบท",
+  "One star at the end.": "และดาวหนึ่งดวงในตอนจบ",
   "Start the journey": "เริ่มการเดินทาง",
   // Not in the prototype: the same call when a draft of the journey is saved.
   "Continue the journey": "เดินทางต่อ",

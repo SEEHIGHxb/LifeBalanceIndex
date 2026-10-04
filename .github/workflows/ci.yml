@@ -88,7 +88,7 @@ jobs:
       # below is what catches anything that isn't.
       - name: Stage the site
         run: |
-          mkdir -p _site/views _site/css _site/assets/fonts _site/assets/regions _site/assets/emblems
+          mkdir -p _site/views _site/css _site/assets/fonts _site/assets/regions _site/assets/emblems _site/assets/welcome
           cp index.html privacy.html 404.html index.css manifest.webmanifest *.js _site/
           # The redesign's sheets, one per area (docs/redesign-build-plan.md).
           cp css/*.css _site/css/
@@ -108,6 +108,7 @@ jobs:
           # The Phase 4 art set: the sprite sheet and the region emblems.
           cp assets/sprites.svg assets/favicon.svg _site/assets/
           cp assets/emblems/*.webp _site/assets/emblems/
+          cp assets/welcome/*.webp _site/assets/welcome/
 
       # The service worker precaches APP_SHELL with cache.addAll, which is
       # atomic: one 404 rejects the whole install and the app silently loses

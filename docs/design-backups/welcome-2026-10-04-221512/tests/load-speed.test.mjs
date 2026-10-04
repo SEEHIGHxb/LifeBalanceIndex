@@ -74,16 +74,13 @@ test("the first screen's two fonts are preloaded", () => {
   }
 });
 
-test("the welcome loads its hero first and leaves lower artwork lazy", async () => {
+test("the Landing's region photographs wait until they are near the screen", async () => {
   const { landingMarkup } = await import("../views/landing.js");
   const out = landingMarkup();
-  const photos = [...out.matchAll(/<img [^>]*src="\.\/assets\/welcome\/[^"]+"[^>]*>/g)].map(m => m[0]);
-  assert.equal(photos.length, 4, "hero, region close scene, sample Atlas and Threads backdrop");
-  assert.match(photos[0], /fetchpriority="high"/);
-  for (const img of photos.slice(1)) assert.match(img, /loading="lazy"/);
-  const sw = read("sw.js");
-  for (const file of ["atlas.webp", "market.webp", "threads.webp"]) assert.ok(sw.includes(`"./assets/welcome/${file}"`));
-  assert.ok(sw.includes('"./css/welcome.css"'));
+  assert.doesNotMatch(out, /background-image: url\('\.\/assets\/regions/, "a background image downloads at once");
+  const photos = [...out.matchAll(/<img [^>]*src="\.\/assets\/regions\/[^"]+"[^>]*>/g)].map(m => m[0]);
+  assert.equal(photos.length, 8 + 3, "eight cards and the three-photo band");
+  for (const img of photos) assert.match(img, /loading="lazy"/);
 });
 
 // A Thai reader's app.js runs only once i18n.js has fetched the dictionary (a

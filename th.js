@@ -12,7 +12,7 @@ export const TH = {
   "1 of 65,536 possible constellations": "1 ใน 65,536 กลุ่มดาวที่เป็นไปได้",
   "Your constellation appears once all eight regions have a character. {n} to go.": "กลุ่มดาวของคุณจะปรากฏเมื่อทั้งแปดดินแดนมีตัวละครครบ อีก {n} แห่ง",
   "One letter per region, from your character there, in Overview's order. Made up for fun, not a professional assessment.": "หนึ่งตัวอักษรต่อหนึ่งดินแดน มาจากตัวละครของคุณในดินแดนนั้น เรียงตามลำดับในหน้าภาพรวม แต่งขึ้นเพื่อความสนุก ไม่ใช่การประเมินทางวิชาชีพ",
-  // v190 drafts, awaiting the owner's review: your constellation's name, its
+  // v190-v191, approved by the owner 2026-10-04: your constellation's name, its
   // subtitle and the story of why (constellation.js, views/dashboard.js).
   "Taurus": "กลุ่มดาววัว",
   "The bull: a steady strength that keeps the store full.": "วัวกระทิง พลังที่มั่นคงซึ่งทำให้ยุ้งฉางเต็มอยู่เสมอ",

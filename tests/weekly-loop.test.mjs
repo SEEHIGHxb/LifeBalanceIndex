@@ -143,7 +143,8 @@ test("v166: the review's step list, pledges, week strip, and a route change at t
   assert.ok(strip, "the done page shows the week");
   assert.equal((strip[1].match(/<li/g) || []).length, 7, "Monday to Sunday (v174)");
   assert.equal((strip[1].match(/is-today/g) || []).length, 1);
-  assert.match(strip[1], /class="is-today is-done"><span>[^<]+<\/span><b>\d+<\/b><svg/, "reviewed today: ringed and starred");
+  // On a Sunday, today is review day too, and carries is-next as well.
+  assert.match(strip[1], /class="is-today is-done(?: is-next)?"><span>[^<]+<\/span><b>\d+<\/b><svg/, "reviewed today: ringed and starred");
   assert.match(strip[1], /<li class="[^"]*is-next[^"]*"><span>[^<]+<\/span><b>\d+<\/b>(<svg[\s\S]*?<\/svg>)?<\/li>$/, "Sunday, the last day, is review day");
 
   // A route change starts the next page at its top, before it draws.

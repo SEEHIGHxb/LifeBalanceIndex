@@ -293,7 +293,10 @@ test("Overview shows your constellation's name, subtitle and code once every reg
   };
   const html = render(full);
   assert.match(html, /<p class="home-type-name">[^<]+<\/p>\s*<p class="home-type-sub">The \w+ \w+<\/p>/);
-  assert.match(html, /<p class="home-type-code">[A-Z]{4}-[A-Z]{4}<\/p>/);
+  // v192: the code moved to note 3; the top is the name and subtitle only.
+  const top = html.match(/<div class="home-type">[\s\S]*?<\/div>/)[0];
+  assert.doesNotMatch(top, /home-type-code|65,536/);
+  assert.match(html, /<p><span class="home-type-code">[A-Z]{4}-[A-Z]{4}<\/span> · 1 of 65,536 possible constellations<\/p>/);
   // Note 3 tells the story of each part of the name, from the scores.
   assert.match(html, /<ul class="home-type-why">(<li><b>[^<]+<\/b> [^<]+<\/li>){3}<\/ul>/);
   assert.match(html, /Your two strongest regions are The [\w ]+ \(\d+\) and The [\w ]+ \(\d+\)\./);

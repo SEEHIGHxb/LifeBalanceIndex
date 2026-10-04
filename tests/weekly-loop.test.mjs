@@ -120,8 +120,11 @@ test("v166: the review's step list, pledges, week strip, and a route change at t
     assert.equal((sec.match(/class="rv-jump" data-to="/g) || []).length, i, `screen ${i}: only the screens before it are buttons`);
     assert.match(sec, /<li class="is-now" aria-current="step">/);
   });
-  // The second Body screen is a dot, not the emblem again.
-  assert.equal((sections[0].match(/class="rv-dot"/g) || []).length, 1);
+  // v192: both Body screens wear the emblem and name their part; no dot.
+  assert.doesNotMatch(sections[0], /rv-dot/);
+  assert.equal((sections[0].match(/<img src="\.\/assets\/emblems\//g) || []).length, 6, "every screen has its emblem");
+  assert.match(sections[0], /<span>The Highlands · Activity<\/span>/);
+  assert.match(sections[0], /<span>The Highlands · Sleep and nutrition<\/span>/);
   assert.match(sections[0], /class="q-count sr-only"/, "the count is still read out");
   // Each pledge on the screen whose answers grade it, and nowhere else.
   const pledgesOn = (sec) => [...sec.matchAll(/<li class="rv-pledge[^"]*">\s*<i[^>]*>[\s\S]*?<b>([^<]+)<\/b>/g)].map(m => m[1]);

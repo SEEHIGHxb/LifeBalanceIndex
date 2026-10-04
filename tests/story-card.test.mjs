@@ -365,6 +365,23 @@ test("Character draws your constellation's name and subtitle above its code", ()
   assert.ok(!score.includes("PLEIADES"), "Score drew the name");
 });
 
+// v192: Thai has no italic or Anton, so its name and subtitle draw upright.
+test("a Thai constellation name draws upright, never a fake italic", () => {
+  const constellation = { complete: true, code: "TGPE-AWRC", left: 0, name: { title: "ดาวลูกไก่", subtitle: "เตาไฟที่สว่างไสว" } };
+  const fontOf = (title, subtitle) => {
+    const ctx = stubContext();
+    const drawn = {};
+    const fillText = ctx.fillText;
+    ctx.fillText = function (s, x, y) { drawn[s] = this.font; return fillText.call(this, s, x, y); };
+    drawStoryCard(ctx, storyCardData({ aspects: ASPECTS, index: 58, constellation: { ...constellation, name: { title, subtitle } } }), { detail: "character" });
+    return drawn;
+  };
+  const th = fontOf("ดาวลูกไก่", "เตาไฟที่สว่างไสว");
+  assert.doesNotMatch(th["เตาไฟที่สว่างไสว"], /italic/);
+  assert.match(th["ดาวลูกไก่"], /^700 /);
+  assert.match(fontOf("Pleiades", "The Bright Hearth")["The Bright Hearth"], /^italic/, "English keeps its italic");
+});
+
 test("before every region has a character, Character shows a dash under the heading", () => {
   const partial = draw({ detail: "character" }, { constellation: { complete: false, code: null, left: 3 } }).texts;
   assert.ok(partial.includes("YOUR CONSTELLATION"));

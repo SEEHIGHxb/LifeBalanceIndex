@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Two version numbers, on purpose
 
-- **`APP_VERSION`** (`version.js`, currently `191`) is a monotonic **cache-bust
+- **`APP_VERSION`** (`version.js`, currently `192`) is a monotonic **cache-bust
   counter**, not semver. It appears in the `?v=N` query on every versioned
   asset and in the service worker's `CACHE_NAME`. Bump it on *any* release that
   changes a shipped file. `tests/consistency.test.mjs` fails CI if the sites
@@ -15,6 +15,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 They are deliberately independent: a one-character CSS fix needs a cache bust
 but not a minor version.
+
+## [2.115.2] - 2026-10-04 · v192
+
+### Fixed
+- The Weekly Review's step list showed The Highlands twice, the second with a dot where its emblem should be. Both Body screens now wear the emblem and name their part: The Highlands · Activity, and The Highlands · Sleep and nutrition (Thai draft for the second awaits the owner's review).
+- Thai on Overview: the constellation's name sets in bold Sarabun with room for its marks (Anton has no Thai), the subtitle upright in Maitree instead of a slanted fake italic, and the labels lose their tracking. The share card draws a Thai name and subtitle upright too.
+
+### Changed
+- The constellation code moved from the top of Overview into note 3, beside how it is worked out (the owner): the name says it now. The share card keeps it, small.
 
 ## [2.115.1] - 2026-10-03 · v191
 

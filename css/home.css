@@ -54,10 +54,16 @@
    title under it; the code drops to a quiet tracked line. */
 .home-type-name { margin: calc(6 * var(--px)) 0 0; font-family: var(--frame-word); font-size: max(32px, calc(64 * var(--px))); font-weight: 400; line-height: 0.95; text-transform: uppercase; letter-spacing: 0.01em; }
 .home-type-sub { margin: calc(6 * var(--px)) 0 calc(10 * var(--px)); font-family: 'Source Serif 4', 'Maitree', Georgia, serif; font-style: italic; font-size: max(18px, calc(28 * var(--px))); line-height: 1.2; }
-.home-type-code { margin: 0; font-size: max(13px, calc(18 * var(--px))); font-weight: 700; letter-spacing: 0.16em; }
+.home-type-code { font-weight: 700; letter-spacing: 0.16em; }
 .home-type-why { margin: 0 0 1em; padding: 0; list-style: none; display: grid; gap: 0.6em; }
 .home-type-why b { display: block; font-size: 0.86em; letter-spacing: 0.08em; text-transform: uppercase; }
 .home-type-count { font-size: max(13px, calc(20 * var(--px))); color: var(--frame-muted); }
+/* v192: Thai has no Anton and no italic, so the name sets in Sarabun with
+   room for its marks above and below, the subtitle upright in Maitree, and
+   the labels lose their tracking. The code now lives in note 3. */
+html[lang="th"] .home-type-name { font-family: 'Sarabun', sans-serif; font-weight: 700; font-size: max(28px, calc(52 * var(--px))); line-height: 1.35; letter-spacing: 0; }
+html[lang="th"] .home-type-sub { margin-top: calc(2 * var(--px)); font-family: 'Maitree', 'Sarabun', serif; font-style: normal; line-height: 1.5; }
+html[lang="th"] :is(.home-type-label, .home-type-why b) { letter-spacing: 0; }
 
 /* The notes folded at every width; the fold stands in for the label. */
 .home .has-notes-fold .label { display: none; }

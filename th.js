@@ -876,6 +876,7 @@ export const TH = {
   "Body composition": "องค์ประกอบร่างกาย",
   "Asian BMI bands (18.5-22.9 ideal)": "เกณฑ์ BMI เอเชีย (18.5-22.9 คือช่วงดี)",
   "Sleep": "การนอน",
+  "Sleep and nutrition": "การนอนและโภชนาการ", // v192 draft, awaiting the owner's review
   "{h}h/night + baseline quality {jss}/20 issues": "{h} ชม./คืน + ปัญหาคุณภาพการนอน {jss}/20 ณ จุดเริ่มต้น",
   "Sleep duration": "ระยะเวลานอน",
   "{h}h/night (7-9h ideal)": "{h} ชม./คืน (7-9 ชม. คือช่วงดี)",

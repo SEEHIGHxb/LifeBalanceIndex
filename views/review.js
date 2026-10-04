@@ -79,11 +79,11 @@ const FIELD_IDS = {
 export const REVIEW_STEPS = Object.freeze([
   { aspect: "finance", fields: ["monthlySavings"] },
   {
-    aspect: "physical",
+    aspect: "physical", part: "Activity",
     fields: ["weeklyVigorousDays", "weeklyVigorousMins", "weeklyModerateDays", "weeklyModerateMins", "weeklyWalkingDays", "weeklyWalkingMins"]
   },
   {
-    aspect: "physical", title: "And day to day: sleep, water, vegetables.",
+    aspect: "physical", part: "Sleep and nutrition", title: "And day to day: sleep, water, vegetables.",
     fields: ["sleepHours", "waterLiters", "vegetablePortions"]
   },
   { aspect: "personalGoals", fields: ["weeklyLearningHours"] },
@@ -300,7 +300,7 @@ function stepMarkup(step, i, { box, intro, goals }) {
           <p class="label">(${escapeHtml(chapter.region)})</p>
           <img class="q-emblem" src="./assets/emblems/${chapter.art}.webp" alt="" width="224" height="224" loading="lazy" decoding="async">
           <p class="q-count sr-only">${escapeHtml(tp("Weekly Review · {i} / {n}", { i: i + 1, n: STEPS.length }))}</p>
-          ${stepperMarkup(STEPS.map(st => st.aspect), i)}
+          ${stepperMarkup(STEPS.map(st => ({ aspect: st.aspect, part: st.part ? t(st.part) : "" })), i)}
           <span class="rv-progress" aria-hidden="true"><i style="width: ${progress}%;"></i></span>
         </div>
         <div class="q-main">

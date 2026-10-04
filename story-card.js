@@ -138,6 +138,7 @@ const CORE_R = 30;
 const SIDE_MARGIN = 80;
 
 const font = (weight, size, family) => `${weight} ${size}px ${family}`;
+const THAI = /[฀-๿]/;
 
 // THE CARD AS THE MAP. The reader's star is the same symmetric Lumi Star as
 // Home's (symbols.md S1; chart.js): the outline never changes, and each ray
@@ -479,10 +480,13 @@ function drawFoot(ctx, theme, data, detail, maxWidth) {
   ctx.fillText(t(coded ? "Your constellation" : "Balance Index").toUpperCase(), mid, LAYOUT.footLabel);
   const named = coded && data.constellation?.name;
   if (named) {
-    ctx.font = font(400, 72, WORD);
+    // Thai has no Anton and no italic (v192): its name sets bold in Sarabun
+    // and its subtitle upright, never a slanted fake.
+    const thai = THAI.test(data.constellation.name + data.constellation.subtitle);
+    ctx.font = thai ? font(700, 64, SANS) : font(400, 72, WORD);
     ctx.fillStyle = theme.ink;
     ctx.fillText(fitText(ctx, data.constellation.name.toUpperCase(), maxWidth), mid, LAYOUT.footName);
-    ctx.font = font("italic 400", 34, SANS);
+    ctx.font = font(thai ? 400 : "italic 400", 34, SANS);
     ctx.fillText(fitText(ctx, data.constellation.subtitle, maxWidth), mid, LAYOUT.footSub);
     ctx.font = font(700, 22, SANS);
     ctx.fillStyle = theme.muted;
